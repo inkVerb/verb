@@ -44,10 +44,11 @@ i=1
 already="false"
 /usr/bin/ssh -q ns1 [[ -f "/srv/sns/${ServerName}-${ServerTLD}/calls/${checkserf}" ]] && already="true"
 while [ $already = "true" ]; do
-	if [ "$i" -ge "20" ]; then echo "Call for ${checkserf} is already pending on NS1 for over 1 minute. Try later."; exit 0; fi
+	if [ "$i" -ge "20" ]; then /usr/bin/echo "Call for ${checkserf} is already pending on NS1 for over 1 minute. Try later."; exit 0; fi
 	/usr/bin/ssh -q ns1 [[ -f "/srv/sns/${ServerName}-${ServerTLD}/calls/${checkserf}" ]] || already="false"
 	/usr/bin/sleep 3
 	i=$(( i + 1 ))
+	if [ "$i" -ge "60" ]; then /usr/bin/echo "This is taking too long. Domain not listed on NS nameservers."; exit 4; fi
 done
 
 # NS2
@@ -55,10 +56,11 @@ i=1
 already="false"
 /usr/bin/ssh -q ns2 [[ -f "/srv/sns/${ServerName}-${ServerTLD}/calls/${checkserf}" ]] && already="true"
 while [ $already = "true" ]; do
-	if [ "$i" -ge "20" ]; then echo "Call for ${checkserf} is already pending on NS2 for over 1 minute. Try later."; exit 0; fi
+	if [ "$i" -ge "20" ]; then /usr/bin/echo "Call for ${checkserf} is already pending on NS2 for over 1 minute. Try later."; exit 0; fi
 	/usr/bin/ssh -q ns2 [[ -f "/srv/sns/${ServerName}-${ServerTLD}/calls/${checkserf}" ]] || already="false"
 	/usr/bin/sleep 3
 	i=$(( i + 1 ))
+	if [ "$i" -ge "60" ]; then /usr/bin/echo "This is taking too long. Domain not listed on NS nameservers."; exit 4; fi
 done
 
 if [ -e "/opt/verb/mods/rinkcheck.after" ]; then . /opt/verb/mods/rinkupdateallverbs.after; fi # Follows this script
