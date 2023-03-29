@@ -4,16 +4,18 @@
 # This removes the config for a domain served on this DNS as a slave record if running a custom verber, not controlled by the control rink
 
 # How to use:
-## ./killinkdnslocalslavedns [ domain.tld ]
+## ./killinkdnslocalslavedns [ rink user ] [ domain.tld ] [ -n - optional flag for no inkdnsrefreshbind ]
 
 # Eg:
-## ./killinkdnslocalslavedns inkisaverb.com
-## ./killinkdnslocalslavedns sub.inkisaverb.com
+## ./killinkdnslocalslavedns john-ink inkisaverb.com
+## ./killinkdnslocalslavedns vern-blue sub.inkisaverb.com
+## ./killinkdnslocalslavedns john-ink inkisaverb.com -n
 
 usagenotes="This removes the config for a domain served on this DNS as a slave record if running a custom verber, not controlled by the control rink"
 usageformat="killinkdnslocalslavedns [ domain.tld ]"
-usageexample="killinkdnslocalslavedns inkisaverb.com
-killinkdnslocalslavedns sub.inkisaverb.com"
+usageexample="killinkdnslocalslavedns john.ink inkisaverb.com
+killinkdnslocalslavedns vern.blue sub.inkisaverb.com
+killinkdnslocalslavedns vern.blue sub.inkisaverb.com -n"
 hierarchy=( primary )
 vsetnames=( "Domain" )
 vsettypes=( isDomain )
@@ -37,26 +39,37 @@ if [ ! -f "/opt/verb/conf/inkdns/sdns/dnshost" ]; then
 fi
 
 # Argument check
-if [ -z "$1" ]; then
+if [ -z "$2" ]; then
   /bin/echo "You must specify a domain."; exit 0
 fi
 
+# Verber
+verber="$1"
 # Domain
-DOMAIN="$1"
+domain="$2"
 
 # Already existing check
-if [ ! -f "/opt/verb/conf/inkdns/sdns/s.${DOMAIN}" ]; then
-  /bin/echo "No SDNS configuration for ${DOMAIN}, I quit."; exit 0
+if [ ! -f "/srv/sns/${verber}/domains/${domain}" ]; then
+  /bin/echo "No SDNS configuration for ${domain}, I quit."; exit 0
 fi
 
 # Remove the config
-/usr/bin/rm -f /opt/verb/conf/inkdns/sdns/s.${DOMAIN}
+#/usr/bin/rm -f /opt/verb/conf/inkdns/sdns/s.${domain}
+/usr/bin/rm -f /srv/sns/${verber}/domains/${domain}
 
-# Refresh zones
-/opt/verb/serfs/inkdnsrefreshbind
+# Refresh Bind?
+## When run repeatedly, such as in some rink or "allverb" serfs, this creates systemctl errors "Start request repeated too quickly." & "Failed with result 'start-limit-hit'."
+if [ -z "$3" ] || [ "$3" != "-n" ]; then
+  /opt/verb/serfs/inkdnsrefreshbind
+  # Finish
+  /bin/echo "${domain} added to this DNS slave server and live."
+else
+  # Finish
+  /bin/echo "${domain} added to this DNS slave server. Changes will not be effective until you run inkdnsrefreshbind"
+fi
 
 # Finish
-/bin/echo "${DOMAIN} removed from this DNS server."
+/bin/echo "${domain} removed from this DNS server."
 
 
 

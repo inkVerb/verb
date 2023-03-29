@@ -41,12 +41,26 @@ elif [ "$RinkConfigured" = "rink" ] && [ -f "/opt/rink/run/addmasterdomain" ]; t
 	exit 0
 fi
 
-# Check for conflicts
-/opt/verb/serfs/rinkcheck inkdnsaddslave
-/opt/verb/serfs/rinkcheck killinkdnsslavedns
-
-# Insert the function statements
-/usr/bin/ssh ns1 "/usr/bin/echo 'inkdnsaddslave ${ServerName}-${ServerTLD} ${slavedomain} -n' > /srv/sns/${ServerName}-${ServerTLD}/calls/inkdnsaddslave"
-/usr/bin/ssh ns2 "/usr/bin/echo 'inkdnsaddslave ${ServerName}-${ServerTLD} ${slavedomain} -n' > /srv/sns/${ServerName}-${ServerTLD}/calls/inkdnsaddslave"
+# Add the configs to the domains/ folder on the NS nameservers
+/usr/bin/ssh ns1 <<EOS
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${slavedomain}
+sdnsDomain="${slavedomain}"
+sdnsIPv4="${ServerIPv4}"
+sdnsIPv4ARPA="${ServerARPAIPv4}"
+sdnsIPv6Exp="${ServerExpIPv6}"
+sdnsIPv6Cmp="${ServerIPv6}"
+sdnsIPv6ARPA="${ServerARPAIPv6}"
+EOF
+EOS
+/usr/bin/ssh ns2 <<EOS
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${slavedomain}
+sdnsDomain="${slavedomain}"
+sdnsIPv4="${ServerIPv4}"
+sdnsIPv4ARPA="${ServerARPAIPv4}"
+sdnsIPv6Exp="${ServerExpIPv6}"
+sdnsIPv6Cmp="${ServerIPv6}"
+sdnsIPv6ARPA="${ServerARPAIPv6}"
+EOF
+EOS
 
 if [ -e "/opt/verb/mods/rinkadddomain.after" ]; then . /opt/verb/mods/rinkadddomain.after; fi # Follows this script

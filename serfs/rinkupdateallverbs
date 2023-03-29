@@ -36,13 +36,173 @@ if [ "$RinkConfigured" != "true" ]; then
 	exit 0
 fi
 
-# Check for conflicts
-/opt/verb/serfs/rinkcheck inkdnsaddslaveallverbs
-/opt/verb/serfs/rinkcheck killinkdnsslavednsallverbs
-
-# Insert the function statements
-/usr/bin/ssh ns1 "/usr/bin/echo 'inkdnsaddslaveallverbs ${ServerName}-${ServerTLD}' > /srv/sns/${ServerName}-${ServerTLD}/calls/inkdnsaddslaveallverbs"
-/usr/bin/ssh ns2 "/usr/bin/echo 'inkdnsaddslaveallverbs ${ServerName}-${ServerTLD}' > /srv/sns/${ServerName}-${ServerTLD}/calls/inkdnsaddslaveallverbs"
+if [ $VERBemail=true ]; then
+/usr/bin/ssh ns1 <<EOS
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${emailURI}
+sdnsDomain="${emailURI}"
+sdnsIPv4="${ServerIPv4}"
+sdnsIPv4ARPA="${ServerARPAIPv4}"
+sdnsIPv6Exp="${ServerExpIPv6}"
+sdnsIPv6Cmp="${ServerIPv6}"
+sdnsIPv6ARPA="${ServerARPAIPv6}"
+EOF
+EOS
+wait
+/usr/bin/ssh ns2 <<EOS
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${emailURI}
+sdnsDomain="${emailURI}"
+sdnsIPv4="${ServerIPv4}"
+sdnsIPv4ARPA="${ServerARPAIPv4}"
+sdnsIPv6Exp="${ServerExpIPv6}"
+sdnsIPv6Cmp="${ServerIPv6}"
+sdnsIPv6ARPA="${ServerARPAIPv6}"
+EOF
+EOS
+fi
+wait
+if [ $VERBone=true ]; then
+/usr/bin/ssh ns1 <<EOS
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${oneURI}
+sdnsDomain="${oneURI}"
+sdnsIPv4="${ServerIPv4}"
+sdnsIPv4ARPA="${ServerARPAIPv4}"
+sdnsIPv6Exp="${ServerExpIPv6}"
+sdnsIPv6Cmp="${ServerIPv6}"
+sdnsIPv6ARPA="${ServerARPAIPv6}"
+EOF
+EOS
+wait
+/usr/bin/ssh ns2 <<EOS
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${oneURI}
+sdnsDomain="${oneURI}"
+sdnsIPv4="${ServerIPv4}"
+sdnsIPv4ARPA="${ServerARPAIPv4}"
+sdnsIPv6Exp="${ServerExpIPv6}"
+sdnsIPv6Cmp="${ServerIPv6}"
+sdnsIPv6ARPA="${ServerARPAIPv6}"
+EOF
+EOS
+fi
+wait
+if [ $VERBink=true ]; then
+/usr/bin/ssh ns1 <<EOS
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${inkURI}
+sdnsDomain="${inkURI}"
+sdnsIPv4="${ServerIPv4}"
+sdnsIPv4ARPA="${ServerARPAIPv4}"
+sdnsIPv6Exp="${ServerExpIPv6}"
+sdnsIPv6Cmp="${ServerIPv6}"
+sdnsIPv6ARPA="${ServerARPAIPv6}"
+EOF
+EOS
+wait
+/usr/bin/ssh ns2 <<EOS
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${inkURI}
+sdnsDomain="${inkURI}"
+sdnsIPv4="${ServerIPv4}"
+sdnsIPv4ARPA="${ServerARPAIPv4}"
+sdnsIPv6Exp="${ServerExpIPv6}"
+sdnsIPv6Cmp="${ServerIPv6}"
+sdnsIPv6ARPA="${ServerARPAIPv6}"
+EOF
+EOS
+fi
+wait
+if [ $VERBblue=true ]; then
+/usr/bin/ssh ns1 <<EOS
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${blueURI}
+sdnsDomain="${blueURI}"
+sdnsIPv4="${ServerIPv4}"
+sdnsIPv4ARPA="${ServerARPAIPv4}"
+sdnsIPv6Exp="${ServerExpIPv6}"
+sdnsIPv6Cmp="${ServerIPv6}"
+sdnsIPv6ARPA="${ServerARPAIPv6}"
+EOF
+EOS
+wait
+/usr/bin/ssh ns2 <<EOS
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${blueURI}
+sdnsDomain="${blueURI}"
+sdnsIPv4="${ServerIPv4}"
+sdnsIPv4ARPA="${ServerARPAIPv4}"
+sdnsIPv6Exp="${ServerExpIPv6}"
+sdnsIPv6Cmp="${ServerIPv6}"
+sdnsIPv6ARPA="${ServerARPAIPv6}"
+EOF
+EOS
+fi
+wait
+if [ $VERBvip=true ]; then
+/usr/bin/ssh ns1 <<EOS
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${vipURI}
+sdnsDomain="${vipURI}"
+sdnsIPv4="${ServerIPv4}"
+sdnsIPv4ARPA="${ServerARPAIPv4}"
+sdnsIPv6Exp="${ServerExpIPv6}"
+sdnsIPv6Cmp="${ServerIPv6}"
+sdnsIPv6ARPA="${ServerARPAIPv6}"
+EOF
+EOS
+wait
+/usr/bin/ssh ns2 <<EOS
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${vipURI}
+sdnsDomain="${vipURI}"
+sdnsIPv4="${ServerIPv4}"
+sdnsIPv4ARPA="${ServerARPAIPv4}"
+sdnsIPv6Exp="${ServerExpIPv6}"
+sdnsIPv6Cmp="${ServerIPv6}"
+sdnsIPv6ARPA="${ServerARPAIPv6}"
+EOF
+EOS
+fi
+wait
+if [ $VERBkiwi=true ]; then
+/usr/bin/ssh ns1 <<EOS
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${kiwiURI}
+sdnsDomain="${kiwiURI}"
+sdnsIPv4="${ServerIPv4}"
+sdnsIPv4ARPA="${ServerARPAIPv4}"
+sdnsIPv6Exp="${ServerExpIPv6}"
+sdnsIPv6Cmp="${ServerIPv6}"
+sdnsIPv6ARPA="${ServerARPAIPv6}"
+EOF
+EOS
+wait
+/usr/bin/ssh ns2 <<EOS
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${kiwiURI}
+sdnsDomain="${kiwiURI}"
+sdnsIPv4="${ServerIPv4}"
+sdnsIPv4ARPA="${ServerARPAIPv4}"
+sdnsIPv6Exp="${ServerExpIPv6}"
+sdnsIPv6Cmp="${ServerIPv6}"
+sdnsIPv6ARPA="${ServerARPAIPv6}"
+EOF
+EOS
+fi
+wait
+if [ $VERBred=true ]; then
+/usr/bin/ssh ns1 <<EOS
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${redURI}
+sdnsDomain="${redURI}"
+sdnsIPv4="${ServerIPv4}"
+sdnsIPv4ARPA="${ServerARPAIPv4}"
+sdnsIPv6Exp="${ServerExpIPv6}"
+sdnsIPv6Cmp="${ServerIPv6}"
+sdnsIPv6ARPA="${ServerARPAIPv6}"
+EOF
+EOS
+wait
+/usr/bin/ssh ns2 <<EOS
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${redURI}
+sdnsDomain="${redURI}"
+sdnsIPv4="${ServerIPv4}"
+sdnsIPv4ARPA="${ServerARPAIPv4}"
+sdnsIPv6Exp="${ServerExpIPv6}"
+sdnsIPv6Cmp="${ServerIPv6}"
+sdnsIPv6ARPA="${ServerARPAIPv6}"
+EOF
+EOS
+fi
 
 
 if [ -e "/opt/verb/mods/rinkupdateallverbs.after" ]; then . /opt/verb/mods/rinkupdateallverbs.after; fi # Follows this script

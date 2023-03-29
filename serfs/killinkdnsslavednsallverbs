@@ -42,48 +42,48 @@ if [ -z "$1" ]; then
 fi
 
 # Rink
-RINK="$1"
+verber="$1"
 
 # Rink user check
-if [ ! -d "/srv/sns/${RINK}" ]; then
-  /bin/echo "This server does not supply rink user ${RINK}, I quit."; exit 0
+if [ ! -d "/srv/sns/${verber}" ]; then
+  /bin/echo "This server does not supply rink user ${verber}, I quit."; exit 0
 fi
 
 # Rink user settings check
-if [ ! -f "/srv/sns/${RINK}/servertldstatus" ] || [ ! -f "/srv/sns/${RINK}/conf" ] || [ ! -f "/srv/sns/${RINK}/siteurilist" ]; then
-  /bin/echo "Rink user ${RINK} not properly configured, this shouldn't be possible. I quit."; exit 0
+if [ ! -f "/srv/sns/${verber}/servertldstatus" ] || [ ! -f "/srv/sns/${verber}/conf" ] || [ ! -f "/srv/sns/${verber}/siteurilist" ]; then
+  /bin/echo "Rink user ${verber} not properly configured, this shouldn't be possible. I quit."; exit 0
 fi
 
-. /srv/sns/${RINK}/servertldstatus
-. /srv/sns/${RINK}/siteurilist
+. /srv/sns/${verber}/servertldstatus
+. /srv/sns/${verber}/siteurilist
 
 # Add the active verb domains, wait so we don't congest the server
 if [ $VERBemail=true ]; then
-/opt/verb/serfs/killinkdnsslavedns ${RINK} ${emailURI} -n 
+/opt/verb/serfs/killinkdnsslavedns ${verber} ${emailURI} -n 
 fi
 wait
 if [ $VERBone=true ]; then
-/opt/verb/serfs/killinkdnsslavedns ${RINK} ${oneURI} -n 
+/opt/verb/serfs/killinkdnsslavedns ${verber} ${oneURI} -n 
 fi
 wait
 if [ $VERBink=true ]; then
-/opt/verb/serfs/killinkdnsslavedns ${RINK} ${inkURI} -n 
+/opt/verb/serfs/killinkdnsslavedns ${verber} ${inkURI} -n 
 fi
 wait
 if [ $VERBblue=true ]; then
-/opt/verb/serfs/killinkdnsslavedns ${RINK} ${blueURI} -n 
+/opt/verb/serfs/killinkdnsslavedns ${verber} ${blueURI} -n 
 fi
 wait
 if [ $VERBvip=true ]; then
-/opt/verb/serfs/killinkdnsslavedns ${RINK} ${vipURI} -n 
+/opt/verb/serfs/killinkdnsslavedns ${verber} ${vipURI} -n 
 fi
 wait
 if [ $VERBkiwi=true ]; then
-/opt/verb/serfs/killinkdnsslavedns ${RINK} ${kiwiURI} -n 
+/opt/verb/serfs/killinkdnsslavedns ${verber} ${kiwiURI} -n 
 fi
 wait
 if [ $VERBred=true ]; then
-/opt/verb/serfs/killinkdnsslavedns ${RINK} ${redURI} -n 
+/opt/verb/serfs/killinkdnsslavedns ${verber} ${redURI} -n 
 fi
 
 # Refresh Bind

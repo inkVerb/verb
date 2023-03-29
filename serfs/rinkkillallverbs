@@ -36,13 +36,41 @@ if [ "$RinkConfigured" != "true" ]; then
 	exit 0
 fi
 
-# Check for conflicts
-/opt/verb/serfs/rinkcheck inkdnsaddslaveallverbs
-/opt/verb/serfs/rinkcheck killinkdnsslavednsallverbs
-
-# Insert the function statements
-/usr/bin/ssh ns1 "/usr/bin/echo 'killinkdnsslavednsallverbs ${ServerName}-${ServerTLD} -n' > /srv/sns/${ServerName}-${ServerTLD}/calls/killinkdnsslavednsallverbs"
-/usr/bin/ssh ns2 "/usr/bin/echo 'killinkdnsslavednsallverbs ${ServerName}-${ServerTLD} -n' > /srv/sns/${ServerName}-${ServerTLD}/calls/killinkdnsslavednsallverbs"
+# Add the active verb domains, wait so we don't congest the server
+if [ $VERBemail=true ]; then
+/usr/bin/ssh ns1 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${emailURI}"
+/usr/bin/ssh ns2 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${emailURI}"
+fi
+wait
+if [ $VERBone=true ]; then
+/usr/bin/ssh ns1 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${oneURI}"
+/usr/bin/ssh ns2 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${oneURI}"
+fi
+wait
+if [ $VERBink=true ]; then
+/usr/bin/ssh ns1 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${inkURI}"
+/usr/bin/ssh ns2 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${inkURI}"
+fi
+wait
+if [ $VERBblue=true ]; then
+/usr/bin/ssh ns1 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${blueURI}"
+/usr/bin/ssh ns2 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${blueURI}"
+fi
+wait
+if [ $VERBvip=true ]; then
+/usr/bin/ssh ns1 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${vipURI}"
+/usr/bin/ssh ns2 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${vipURI}"
+fi
+wait
+if [ $VERBkiwi=true ]; then
+/usr/bin/ssh ns1 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${kiwiURI}"
+/usr/bin/ssh ns2 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${kiwiURI}"
+fi
+wait
+if [ $VERBred=true ]; then
+/usr/bin/ssh ns1 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${redURI}"
+/usr/bin/ssh ns2 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${redURI}"
+fi
 
 
 if [ -e "/opt/verb/mods/rinkkillallverbs.after" ]; then . /opt/verb/mods/rinkkillallverbs.after; fi # Follows this script

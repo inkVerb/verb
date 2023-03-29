@@ -38,12 +38,10 @@ if [ "$RinkConfigured" != "true" ]; then
 	exit 0
 fi
 
-# Check for conflicts
-/opt/verb/serfs/rinkcheck inkdnsaddslave
-/opt/verb/serfs/rinkcheck killinkdnsslavedns
-
 # Insert the function statements
-/usr/bin/ssh ns1 "/usr/bin/echo 'killinkdnsslavedns ${ServerName}-${ServerTLD} ${servedomain} -n' > /srv/sns/${ServerName}-${ServerTLD}/calls/killinkdnsslavedns"
-/usr/bin/ssh ns2 "/usr/bin/echo 'killinkdnsslavedns ${ServerName}-${ServerTLD} ${servedomain} -n' > /srv/sns/${ServerName}-${ServerTLD}/calls/killinkdnsslavedns"
+/usr/bin/ssh ns1 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${servedomain}"
+/usr/bin/ssh ns2 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${servedomain}"
+# /usr/bin/ssh ns1 "/usr/bin/echo 'killinkdnsslavedns ${ServerName}-${ServerTLD} ${servedomain} -n' > /srv/sns/${ServerName}-${ServerTLD}/calls/killinkdnsslavedns"
+# /usr/bin/ssh ns2 "/usr/bin/echo 'killinkdnsslavedns ${ServerName}-${ServerTLD} ${servedomain} -n' > /srv/sns/${ServerName}-${ServerTLD}/calls/killinkdnsslavedns"
 
 if [ -e "/opt/verb/mods/rinkkilldomain.after" ]; then . /opt/verb/mods/rinkkilldomain.after; fi # Follows this script

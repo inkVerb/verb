@@ -1,9 +1,10 @@
 #!/bin/bash
 #inkVerbKnight! verb.ink
 
-# This adds a slave domain to this nameserver's DNS configuration based on a given rink user config
+# This manually adds a slave domain to this nameserver's DNS configuration based on a given rink user config, this is only used by the Rink in run/setuprinkns
 ## This is only for use on a nameserver or rink, not on a normal verber
-## This will create records for 
+## This creates the config file in a served verber's /srv/sns/ folder which inkdnsrefreshbind loops through to create slave NS entries
+## This should notmally not be used
 
 # How to use:
 ## ./inkdnsaddslave [ rink user ] [ domain.tld ] [ -n - optional flag for no inkdnsrefreshbind ]
@@ -13,7 +14,7 @@
 ## ./inkdnsaddslave vern-blue sub.inkisaverb.com
 ## ./inkdnsaddslave john-ink inkisaverb.com -n
 
-usagenotes="This adds a slave domain to this nameserver's DNS configuration based on a given rink user config"
+usagenotes="This manually adds a slave domain to this nameserver's DNS configuration based on a given rink user config, this is only used by the Rink in run/setuprinkns"
 usageformat="inkdnsaddslave [ rink user ] [ domain.tld ]"
 usageexample="inkdnsaddslave john.ink inkisaverb.com
 inkdnsaddslave vern.blue sub.inkisaverb.com
@@ -29,7 +30,7 @@ dependencyinstall=( inkdnsinstall make-dns )
 prerequesite=(  )
 usedby=( inkdnsaddslaveallverbs rinkadddomain )
 useserfs=( inkdnsrefreshbind )
-useconfigs=(  )
+useconfigs=( sns/VERBER/servertldstatus sns/VERBER/conf )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/inkdnsaddslave.replace" ]; then . /opt/verb/mods/inkdnsaddslave.replace; return 0; fi # Replaces this script
 if [ -e "/opt/verb/mods/inkdnsaddslave.before" ]; then . /opt/verb/mods/inkdnsaddslave.before; fi # Precedes this script
@@ -45,7 +46,7 @@ if [ -z "$2" ]; then
   /bin/echo "Not enough arguments, I quit."; exit 5
 fi
 
-# Rink
+# Verber
 verber="$1"
 # Domain
 domain="$2"
@@ -64,7 +65,7 @@ fi
 . /srv/sns/${verber}/conf
 
 # Already existing check
-if [ -f "/opt/verb/conf/inkdns/sdns/s.${domain}" ]; then
+if [ -f "/srv/sns/${verber}/domains/${domain}" ]; then
   /bin/echo "SDNS configuration for ${domain} already exists; doing nothing."; exit 7
 fi
 
