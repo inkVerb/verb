@@ -136,17 +136,20 @@ EOF
     fi
     /bin/echo "\$INCLUDE \"/var/named/nv.slavedns\";" >> /var/named/nv.verber
     ### Served slave records
-    if [ -d "/opt/verb/conf/inkdns/sdns" ]; then
-      for sverber in /opt/verb/conf/inkdns/sdns/*; do
-        # Proper directory structure?
-        if [ ! -d "${sverber}/domains" ]; then continue; fi
+    if [ -d "/opt/verb/conf/inkdns/sdns" ] && [ -d "/srv/sns" ]; then
+      for snsverber in /srv/sns/*; do
+        #### Proper directory structure?
+        if [ ! -d "${snsverber}/domains" ]; then continue; fi
         #### DNS slave listings
-        for slv in "${sverber}/domains/"*; do
+        for slv in "${snsverber}/domains/"*; do
           . ${slv}
+          ##### File properly lists itself?
+          if [ ! -f "${snsverber}/domains/${sdnsDomain}" ]; then continue; fi
+          ##### Make the rDNS entry for this domain
           /bin/echo "zone \"${sdnsDomain}\" { type slave; masters { ${sdnsIPv6Cmp}; ${sdnsIPv4}; }; allow-transfer { none; }; file \"db.${sdnsDomain}\"; };" >> /var/named/named.conf.verb
         done
         #### rDNS slave listing (host only, which populates individual items through the named interchagne system)
-        . "${sverber}/conf"
+        . "${snsverber}/conf"
         /bin/echo "zone \"${VerbARPAIPv4}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"nv4.${VerbHostID}.${VerbName}.${VerbTLD}\"; };" >> /var/named/named.conf.rdns
         /bin/echo "zone \"${VerbARPAIPv6}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"nv6.${VerbHostID}.${VerbName}.${VerbTLD}\"; };" >> /var/named/named.conf.rdns
       done
