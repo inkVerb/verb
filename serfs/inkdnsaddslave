@@ -167,7 +167,7 @@ SIPV6CMP=$(compress_ipv6 ${SIPV6})
 SIPV6ARPA=$(rarpa_ipv6 ${SIPV6EXP})
 
 ## Create the config
-/usr/bin/cat <<EOF > /opt/verb/conf/inkdns/sdns/s.${domain}
+/usr/bin/cat <<EOF > /srv/sns/${verber}/domains/${domain}
 sdnsDomain="${domain}"
 sdnsIPv4="${SIPV4}"
 sdnsIPv4ARPA="${SIPV4ARPA}"
@@ -175,9 +175,6 @@ sdnsIPv6Exp="${SIPV6EXP}"
 sdnsIPv6Cmp="${SIPV6CMP}"
 sdnsIPv6ARPA="${SIPV6ARPA}"
 EOF
-
-# Make a record
-/usr/bin/touch /srv/sns/${verber}/domains/${domain}
 
 # Refresh Bind?
 ## When run repeatedly, such as in some rink or "allverb" serfs, this creates systemctl errors "Start request repeated too quickly." & "Failed with result 'start-limit-hit'."
