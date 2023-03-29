@@ -1,0 +1,170 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This installs ghost as an app to permanently replace a pre-created domain, such as domain.com or sub.domain.com
+## Each ghost installation needs a different port, blog...ink uses the 2368 default
+## Each additional /srv/www/ghost/ghostsite-DOMAIN requires a port number higher than 2368, usually by one, such as 2369, 2370, etc
+
+# You MUST HAVE EMAIL SETUP with an email address. Once you set this password you can't change it. Probably ghost@your-name.verb.ink
+
+# New Ghost Port: incrementally above 2368 per Ghost site (2369 and up)
+
+# NOTE: Put the email password in "double quotes" to avoid problems with special characters.
+
+# How to use:
+## ./installghostsite [domain] [emailusername] "[emailpassword]" [new ghost port]
+
+
+CVAPPNAME=ghost
+
+DOMAIN=$1
+EMAILUSER=$2
+EMAILPASS=$3
+NEWPORT=$4
+
+# Basic credential check
+if [ -z ${4} ]; then
+/bin/echo "You need to set all four variables (domain, ghost port, email, and password) to install Ghost to a domain. See \"How to use\" in the serf."
+exit 5
+fi
+
+# Include settings
+. /opt/verb/conf/servernameip
+
+# Install Node.js (LTS req by Ghost, this is v 14.x)
+/usr/bin/pacman -S --noconfirm --needed nodejs-lts-fermium
+if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
+
+# Install NVM
+## (We are not setting it for use on the command line in the bash startup script)
+## Use installnvm to install NVM for use on the command line
+/usr/bin/su worker -c '/usr/bin/yay -S --noconfirm --needed nvm'
+if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
+## Source NVM
+source /usr/share/nvm/init-nvm.sh
+
+# Install Ghost
+cd /srv/www/ghost || exit 0
+/usr/bin/curl -L https://ghost.org/zip/ghost-latest.zip -o ghost.zip
+/usr/bin/unzip -uo ghost.zip -d ghostsite-${DOMAIN}
+/bin/rm -f ghost.zip
+
+## Now install it with npm
+cd /srv/www/ghost/ghostsite-${DOMAIN} || exit 0
+npm install --production
+
+# Set up the Ghost config
+cd /srv/www/ghost/ghostsite-${DOMAIN} || exit 0
+/bin/cp config.example.js config.js
+/bin/sed -i "s/url: 'http:\/\/my-ghost-blog.com'/url: 'http:\/\/${DOMAIN}'/g" config.js
+/bin/sed -i "s/host: '127.0.0.1'/host: '${SITEIP}'/g" config.js
+/bin/sed -i "s/2368/${NEWPORT}/g" config.js
+/bin/sed -i "s/mail: {}/mail: {transport: 'SMTP', options: {host: 'localhost', port: 25, service: 'dovecot', auth: {user: '${EMAILUSER}', pass: '${EMAILPASS}'}}}/g" config.js
+
+# Set UFW to allow the Ghost port
+/usr/bin/ufw allow ${NEWPORT}
+
+# Reset all permissions
+/bin/rm -f /srv/www/html/${DOMAIN}
+/bin/echo "Ghost Site" > /srv/www/html/${DOMAIN}
+/bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}.${DOMAIN}
+
+# Web server
+. /opt/verb/conf/servertype
+if [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
+  /bin/rm -f /opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf
+  /bin/cp -f /opt/verb/conf/site-files/conf/newnginxghostsite.conf /opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf
+  /bin/sed -i "s/ghostsite286/${DOMAIN}/g" /opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf
+  /bin/sed -i "s/2368/${NEWPORT}/g" /opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf
+  /usr/bin/systemctl restart nginx
+elif [ ${ServerType} = "lamp" ]; then
+  ## IP4?
+  if [ "${ServerIPv4}" != "NOIP4" ]; then
+    SITEIP="${ServerIPv4}"
+  ## IP6?
+  elif [ "${ServerIPv6}" != "NOIP6" ]; then
+    SITEIP="[${ServerIPv6}]" # Brackets because we include a port number, and this is the proper format
+  fi
+  /bin/rm -f /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf
+  /bin/cp -f /opt/verb/conf/site-files/conf/newghostsite.conf /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf
+  /bin/sed -i "s/ghostsite286/${DOMAIN}/g" /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf
+  /bin/sed -i "s/2368/${NEWPORT}/g" /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf
+  /bin/sed -i "s/ipv4286/${SITEIP}/g" /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf
+  /usr/bin/systemctl restart httpd
+fi
+
+## inkCert SSL certs
+### Not setup
+if /bin/grep -Fq "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN}; then
+/bin/echo "FYI: inkCert is not yet setup for ${DOMAIN}."
+fi
+### inkCert-LE DONE
+if /bin/grep -Fq "InkCerted=DONE_LE" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN}; then
+/bin/echo "inkCert-LE is already setup for ${DOMAIN}. Updating the Apache configs..."
+/opt/verb/serfs/inkcertaddle ${DOMAIN}
+wait
+fi
+### inkCert-CBSINGLE DONE
+if /bin/grep -Fq "InkCerted=DONE_CBSINGLE" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN}; then
+/bin/echo "inkCert-CBSINGLE is already setup for ${DOMAIN}. Updating the Apache configs..."
+/opt/verb/serfs/inkcertaddcbsingle ${DOMAIN}
+wait
+fi
+### inkCert-CB DONE
+if /bin/grep -Fq "InkCerted=DONE_CB" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN}; then
+/bin/echo "inkCert-CB is already setup for ${DOMAIN}. Updating the Apache configs..."
+/opt/verb/serfs/inkcertaddcb ${DOMAIN}
+wait
+fi
+
+## Restert webserver
+if [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
+  /usr/bin/systemctl restart nginx
+elif [ ${ServerType} = "lamp" ]; then
+  /usr/bin/systemctl restart httpd
+fi
+
+# Make it a service at startup
+/bin/cp /opt/verb/conf/site-files/conf/ghostsite.conf /etc/init/ghostsite-${DOMAIN}.conf
+/bin/sed -i "s/ghostsite/ghostsite-${DOMAIN}/g" /etc/init/ghostsite-${DOMAIN}.conf
+/bin/sed -i "s/ghostdomain286/${DOMAIN}/g" /etc/init/ghostsite-${DOMAIN}.conf
+
+# Write the config for backup
+/bin/echo "#!/bin/bash
+GHOSTDOMAIN=\"${DOMAIN}\"
+GHOSTPORT=\"${NEWPORT}\"
+GHOSTEMAIL=\"${EMAILUSER}\"
+GHOSTEMLPAS=\"${EMAILPASS}\"" > /opt/verb/conf/vapp.${CVAPPNAME}.${DOMAIN}
+
+# Record the port in the Ghost port inklist
+/bin/echo "${DOMAIN} ${NEWPORT}" >> /opt/verb/conf/inklists/ghostserverports
+
+### Below (Forever) is expirimental on inkVerb, but working, and should be replaced with a way to run Ghost as a proper service at startup
+# Run Ghost with Forever
+npm install -g forever
+## Production forever
+cd /srv/www/ghost/ghostsite-${DOMAIN} && NODE_ENV=production forever start index.js || exit 0
+## Non-production / developer forever
+#forever start index.js
+## If you want, stop Forever with:
+### cd /srv/www/ghost/ghostsite-${DOMAIN} && forever stop index.js
+
+##### Don't use this normally because it halts the current script and does not finish the rest of the jobs
+## Start Ghost only for this server session
+#cd /srv/www/ghost/ghostsite-${DOMAIN}
+#npm start --production
+#####
+
+# Finish
+/bin/echo "Ghost is setup.
+Go to http://${DOMAIN}/ghost to install."
+
+# Optional server restart
+#/bin/echo "But first, wait two minutes for the server to restart."
+#sleep 3
+#reboot
+
+
+
+
+if [ -e "/opt/verb/mods/installghostsite.after" ]; then . /opt/verb/mods/installghostsite.after; fi # Follows this script

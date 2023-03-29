@@ -1,0 +1,84 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This batch runs inkCert-Certbot request and install scripts for a given domain, including inkVerb namespace domains
+## It also applies to all subdomains for that domain
+## Prereqesite: inkcertinstall
+
+# How to use:
+## ./inkcertdocbsingle [ domain.tld NO SUBDOMAINS ]
+
+#Eg:
+## ./inkcertdocbsingle inkisaverb.com
+## ./inkcertdocbsingle YOURNAME.verb.blue
+
+usagenotes="This batch runs inkCert-Certbot request and install scripts for a given domain, including inkVerb namespace domains"
+usageformat="inkcertdocbsingle [ domain.tld NO SUBDOMAINS ]"
+usageexample="inkcertdocbsingle inkisaverb.com
+inkcertdocbsingle YOURNAME.verb.one"
+hierarchy=( primary )	# Choose: primary (works by itself, may use secondaries or tertiaries); secondary (can work by itself, but not normally, may use other secondaries or tertiaries); tertiary (cannot run by itself, must be run by a secondary or primary);oversight (uses primaries)
+vsetnames=( "Domain" )	# "Pretty" names for each setting, must be in order of settings
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkcertinstall )
+prerequesite=( inkcertinstall )
+usedby=( inkcertdocbsingle-all-verbs )
+useserfs=( inkcertreqcbsingle inkcertaddallcbsingle setinkcertmailcerts )
+useconfigs=( siteurilist )	# List config files of any kind used in this serf, please preserve order of appearance
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkcertdocbsingle.replace" ]; then . /opt/verb/mods/inkcertdocbsingle.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkcertdocbsingle.before" ]; then . /opt/verb/mods/inkcertdocbsingle.before; fi # Precedes this script
+
+
+DOMAIN=$1
+
+# Check inkCert installed
+if [ "${InkCertInstalled}" = "NOT_YET" ]; then
+/bin/echo "inkCert not yet installed.
+
+First run inkcertinstall
+"
+exit 0
+fi
+
+# Check variables
+if [ -z ${1} ]; then
+/bin/echo "You need to specify a domain. Read the instructions."; exit 0
+fi
+
+# Request and get the certs
+/opt/verb/serfs/inkcertreqcbsingle ${DOMAIN}; wait
+
+# Install the certs
+if /bin/grep -q "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN}; then
+  if [ -e /etc/inkcert/le/live/${DOMAIN} ]; then
+    /opt/verb/serfs/inkcertaddcbsingle ${DOMAIN}; wait
+  fi
+fi
+
+# Domain check for mail certs
+. /opt/verb/conf/siteurilist
+if [ "${DOMAIN}" = "${nameURI}" ]; then
+  /opt/verb/serfs/setinkcertmailcerts ${DOMAIN} inkvmail
+elif [ "${DOMAIN}" != "${emailTLD}" ] && [ "${DOMAIN}" != "${hostURI}" ] && [ "${DOMAIN}" != "${serveURI}" ] && [ "${DOMAIN}" != "${emailTLDURI}" ] && [ "${DOMAIN}" != "${emailURI}" ] && [ "${DOMAIN}" != "${oneURI}" ] && [ "${DOMAIN}" != "${inkURI}" ] && [ "${DOMAIN}" != "${blueURI}" ] && [ "${DOMAIN}" != "${vipURI}" ] && [ "${DOMAIN}" != "${kiwiURI}" ] && [ "${DOMAIN}" != "${redURI}" ]; then
+  /opt/verb/serfs/setinkcertmailcerts ${DOMAIN}
+fi
+
+# Update the inkCert-DOMAIN config file, fail silently (eg. when used on subdomains)
+/bin/sed -i "s/InkCerted=.*/InkCerted=DONE_CBSINGLE/" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN} 2> /dev/null
+
+# Finish
+/bin/echo "
+Excellent!
+Verify above exits - IMPORTANT NOTES: ... - Congratulations!
+
+If so, then ${DOMAIN} and all subdomains are now live with inkCert Letsencrypt certificates.
+"
+
+
+
+
+if [ -e "/opt/verb/mods/inkcertdocbsingle.after" ]; then . /opt/verb/mods/inkcertdocbsingle.after; fi # Follows this script

@@ -1,0 +1,127 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This sets the main Inker as the backup DNS for on this server
+## The default backup nameservers are already ns1.inkisaverb.com and ns2.inkisaverb.com
+## This can replace ns2.inkisaverb.com, but is not recommended
+## To replace ns2.inkisaverb.com, use inkdnssetns2
+
+# How to use:
+## ./inkdnssetns1 [ -d OR domain.tld - optional, rare ] [ -i OR IPv4 Address - optional ] [ IPv6 Address - optional ]
+
+# Eg:
+## ./inkdnssetns1
+## ./inkdnssetns1 -d 111.222.333.444 0000:ef89::2001
+## ./inkdnssetns1 -d 111.222.333.444
+## ./inkdnssetns1 -d -i 0000:ef89::2001
+## ./inkdnssetns1 ns1.inkisaverb.com
+## ./inkdnssetns1 ns.poetryiscode.com
+## ./inkdnssetns1 ns1.inkisaverb.com 111.222.333.444
+## ./inkdnssetns1 ns1.inkisaverb.com -i 0000:ef89::2001
+## ./inkdnssetns1 ns.poetryiscode.com 555.555.555.555 8001:0056::489a
+
+usagenotes="This sets the main Inker as the backup DNS for on this server"
+usageformat="inkdnssetns1 [ -d OR domain.tld - optional, rare ] [ -i OR IPv4 Address - optional ] [ IPv6 Address - optional ]"
+usageexample="inkdnssetns1
+inkdnssetns1 -d 111.222.333.444 0000:ef89::2001
+inkdnssetns1 -d 111.222.333.444
+inkdnssetns1 -d -i 0000:ef89::2001
+inkdnssetns1 ns1.inkisaverb.com
+inkdnssetns1 ns.poetryiscode.com
+inkdnssetns1 ns1.inkisaverb.com 111.222.333.444
+inkdnssetns1 ns1.inkisaverb.com -i 0000:ef89::2001
+inkdnssetns1 ns.poetryiscode.com 555.555.555.555 8001:0056::489a"
+hierarchy=( secondary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=( "-d || Domain" "-i || IPv4" "IPv6" )
+vopttypes=( "string_match || isDomain" "string_match || isIP4" "isIP6" )
+voptflags=( d i )
+voptflagpurpose=( "No domain, but other args" "No IP4, but other args" )
+dependencyinstall=( inkdnsinstall )
+prerequesite=(  )
+usedby=( inkdnsinstall rink::addvps )
+useserfs=( inkdnsrefreshbind )
+useconfigs=( servernameip inklists/inkdnsnameservers )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then exit 0 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdnssetns1.replace" ]; then . /opt/verb/mods/inkdnssetns1.replace; exit 0 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdnssetns1.before" ]; then . /opt/verb/mods/inkdnssetns1.before; exit 0 0; fi # Precedes this script
+
+
+# No custom settings? Refresh defaults
+. /opt/verb/conf/inklists/inkdnsnameservers
+if [ -z "$1" ] && [ -z "$CUSTOMRINK" ] || [ "$CUSTOMRINK" != "true" ]; then
+  . /opt/verb/conf/servernameip
+  cd /opt/verb/ || exit 0
+  /usr/bin/git clone https://github.com/${ServerUpdateOrg}/verb
+  /usr/bin/cp -f /opt/verb/verb/conf/inklists/inkdnsnameservers /opt/verb/conf/inklists/
+  /usr/bin/rm -rf /opt/verb/verb
+fi
+
+# Defaults
+. /opt/verb/conf/inklists/inkdnsnameservers
+
+# Check variables present
+## Domain
+if [ -z "$1" ] || [ "$1" = "-d" ]; then
+  if [ -f "/opt/verb/conf/inkdns/sdns/dnshost" ]; then
+    /bin/echo "This is a DNS server, so its nameservers must be set manually. No harm done; do this later."
+    exit 0
+  else
+    /bin/echo "Rink domain not specified; using default."
+    NsdnsDomainAIN="${DefaultNS1}"
+  fi
+else
+  NsdnsDomainAIN="$1"
+  customns="true"
+fi
+## IP4
+if [ -z "$2" ] || [ "$2" = "-i" ]; then
+  if [ -f "/opt/verb/conf/inkdns/sdns/dnshost" ]; then
+    /bin/echo "This is a DNS server, so its nameservers must be set manually. No harm done; do this later."
+    exit 0
+  else
+    /bin/echo "IPv4 not specified; using default."
+    NsdnsIPv4="${NameserverNS1IPv4}"
+  fi
+else
+  NsdnsIPv4="$2"
+  customns="true"
+fi
+## IP6
+if [ -z "$3" ]; then
+  if [ -f "/opt/verb/conf/inkdns/sdns/dnshost" ]; then
+    /bin/echo "This is a DNS server, so its nameservers must be set manually. No harm done; do this later."
+    exit 0
+  else
+    /bin/echo "IPv6 not specified; using default."
+    NSIP6="${NameserverNS1IPv6}"
+  fi
+else
+  NSIP6="$3"
+  customns="true"
+fi
+
+# Set the changes
+/bin/sed -i "s/ServerNS1DNS.*/ServerNS1DNS=\"${NsdnsDomainAIN}\"/" /opt/verb/conf/servernameip
+/bin/sed -i "s/ServerNS1IPv4.*/ServerNS1IPv4=\"${NsdnsIPv4}\"/" /opt/verb/conf/servernameip
+/bin/sed -i "s/ServerNS1IPv6.*/ServerNS1IPv6=\"${NSIP6}\"/" /opt/verb/conf/servernameip
+
+# Custom NS, need this setting?
+if [ -n "$customns" ] && [ "$customns" = "true" ]; then
+  /bin/sed -i "s/DefaultNS1.*/DefaultNS1=\"${NsdnsDomainAIN}\"/" /opt/verb/conf/inklists/inkdnsnameservers
+  /bin/sed -i "s/NameserverNS1IPv4.*/NameserverNS1IPv4=\"${NsdnsIPv4}\"/" /opt/verb/conf/inklists/inkdnsnameservers
+  /bin/sed -i "s/NameserverNS1IPv6.*/NameserverNS1IPv6=\"${NSIP6}\"/" /opt/verb/conf/inklists/inkdnsnameservers
+  if [ -z "$CUSTOMRINK" ] || [ "$CUSTOMRINK" != "true" ]; then
+    /bin/echo 'CUSTOMRINK="true"' >> /opt/verb/conf/inklists/inkdnsnameservers
+  fi
+fi
+
+# Finish
+/opt/verb/serfs/inkdnsrefreshbind
+/bin/echo "Primary DNS nameserver set to: ${NsdnsIPv4} & ${NSIP6} for ${NsdnsDomainAIN}"
+
+
+
+
+if [ -e "/opt/verb/mods/inkdnssetns1.after" ]; then . /opt/verb/mods/inkdnssetns1.after; fi # Follows this script

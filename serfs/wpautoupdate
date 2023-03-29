@@ -1,0 +1,26 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This adds the Auto-Update must-use plugin from inkVerb with its 'mu-plugin' folder for an already-installed WordPress site.
+## The plugin has further information embedded
+## You can use this for blog.NAME.verb.ink by using "ink.blog" as the domain
+
+# How to use:
+## ./wpautoupdate [full domain of WP site]
+
+
+DOMAIN=$1
+
+# Copy the folder
+/bin/cp -R /opt/verb/conf/lib/mu-plugins /srv/www/html/${DOMAIN}/wp-content
+
+# Own
+/bin/chown -R www:www /srv/www/html/${DOMAIN}/wp-content/mu-plugins
+
+# Finished
+/bin/echo "inkVerb Auto-Update added to ${DOMAIN}. No further action is necessary."
+
+
+
+
+if [ -e "/opt/verb/mods/wpautoupdate.after" ]; then . /opt/verb/mods/wpautoupdate.after; fi # Follows this script

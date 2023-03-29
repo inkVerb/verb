@@ -1,0 +1,48 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This sets inkCert csr information in a named file
+
+# How to use:
+## ./inkcertsetcsr [name of info profile] [country code] [state name] [locality/city] [organization] [unit/department] [email] [legal corp. name - optional]
+
+# NOTE: Use "quotes" around anything with a space.
+
+# Eg:
+## ./inkcertsetcsr Acme US "New York" "Acme Ville" "Acme & Company" "Info Systems" "itsys@acme.verb.ink" "Acme & Verbs, Inc."
+## ./inkcertsetcsr inkVerbProfile US Kansas Smallville inkVerb InfoSys it@verb.ink
+
+
+INFPROFILE=$1
+COUNTRY=$2
+STATE=$3
+LOCALITY=$4
+ORGANIZATION=$5
+ORGANIZATIONALUNIT=$6
+EMAIL=$7
+COMPANYNAME=$8
+
+# Write the csr info file
+/bin/echo "#!/bin/bash
+## inkVerb's inkCert SSL csr information profile file
+
+COUNTRY=\"${COUNTRY}\"
+STATE=\"${STATE}\"
+LOCALITY=\"${LOCALITY}\"
+ORGANIZATION=\"${ORGANIZATION}\"
+ORGANIZATIONALUNIT=\"${ORGANIZATIONALUNIT}\"
+EMAIL=\"${EMAIL}\"
+CHALLENGEPASSWORD=\"NOT_USED\"
+COMPANYNAME=\"${COMPANYNAME}\"
+" > /opt/verb/conf/inkcert/csr-inf/csr.${INFPROFILE}.inf
+
+# Finish
+/bin/echo "
+Ready to go. Run newinkcertcsr ${INFPROFILE}... to use this profile.
+"
+
+
+
+
+
+if [ -e "/opt/verb/mods/inkcertsetcsr.after" ]; then . /opt/verb/mods/inkcertsetcsr.after; fi # Follows this script

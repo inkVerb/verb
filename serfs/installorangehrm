@@ -1,0 +1,93 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This downloads and installs OrangeHRM manually from inkisaverb.com/repo and linnks it to ....verb.blue
+
+# All options are optional, but must are sequential, omit last options first.
+
+# How to use:
+## ./installorangehrm [dbase] [dbuser] [dbpassword]
+
+
+CVAPPNAME=orangehrm
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+
+DBASE=$1
+DBUSER=$2
+DBPASSWORD=$3
+CLEANNAME=$(/bin/echo $CVAPPNAME | sed -e 's/\.//g')
+
+# Check if already installed
+## Config
+if [ -f /opt/verb/conf/vapp.${CVAPPNAME} ]; then
+/bin/echo "This is already installed."
+exit 0; fi
+## Directory
+if [ -d /srv/www/vapps/${CVAPPNAME} ]; then
+/bin/echo "OrangeHRM already exists in the system. If it isn't working, look deeper on the server. For now, doing nothing."
+exit 8; fi
+
+# Download and unpack the latest checked version from inkisaverb.com/repo
+cd /srv/www/vapps || exit 0
+/opt/verb/serfs/inkget ${CVAPPNAME} check; wait
+if [ "$?" = 4 ]; then
+/bin/echo "Repo failed to retrieve the file."
+exit 4; fi
+
+/bin/mkdir -p /srv/www/vapps/${CVAPPNAME}/lib/logs
+/bin/mkdir -p /srv/www/vapps/${CVAPPNAME}/symfony/cache
+/bin/mkdir -p /srv/www/vapps/${CVAPPNAME}/symfony/log
+/opt/verb/serfs/setvapplinkon ${CVAPPNAME}; wait
+/bin/chown -R www:www /srv/www/verb/red.hrm; wait
+/bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}; wait
+
+# Auto database
+if [ -z ${3} ]; then
+DBPASSWORD=$(/usr/bin/pwgen -s -1 10); fi
+if [ -z ${1} ]; then
+DBASE=${CLEANNAME}$(/usr/bin/pwgen -s -1 6); fi
+if [ -z ${2} ]; then
+DBUSER=${DBASE}; fi
+
+# Create the database and credentials
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+CREATE DATABASE  ${DBASE};
+GRANT ALL PRIVILEGES ON ${DBASE}.* TO '${DBUSER}'@'localhost' IDENTIFIED BY '${DBPASSWORD}';
+FLUSH PRIVILEGES;"
+
+# Config files
+## Preconfig setup is currently disabled until OrangeHRM installation allows, but this would be a start:
+#cp /srv/www/vapps/orangehrm/lib/confs/Conf.php-distribution /srv/www/vapps/orangehrm/lib/confs/Conf.php
+#sed -i "s/dbname   = 'hr_mysql'/dbname   = '${DBASE}'/g" /srv/www/vapps/orangehrm/lib/confs/Conf.php
+#sed -i "s/dbuser   = 'root'/dbuser   = '${DBUSER}'/g" /srv/www/vapps/orangehrm/lib/confs/Conf.php
+#sed -i "s/dbpass   = 'orangehrm'/dbpass   = '${DBPASSWORD}'/g" /srv/www/vapps/orangehrm/lib/confs/Conf.php
+
+# Firewall
+/usr/bin/ufw allow 3306
+
+# Write the config for backup
+/bin/echo "#!/bin/bash
+APPDBASE=${DBASE}
+APPDDBUSR=${DBUSER}
+APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.${CVAPPNAME}
+
+/bin/echo "These are setup:
+
+Database Host Name: localhost
+Database: ${DBASE}
+OrangeHRM Database user (and Privileged user if applicable, use the same): ${DBUSER}
+Database user password: ${DBPASSWORD}
+
+*Select \"Existing database\" in setup to make life easier, if you want.
+*Enable Data Encryption? - Probably NOT!
+
+Go to http://hrm.${redURI} to install.
+"
+
+
+
+
+if [ -e "/opt/verb/mods/installorangehrm.after" ]; then . /opt/verb/mods/installorangehrm.after; fi # Follows this script

@@ -1,0 +1,47 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This unsets up a WordPress vapp for multisite after it has been setup
+
+# How to use:
+## ./wpmuunsetconfig [domain.tld]
+
+# Eg:
+## ./wpmusetconfig inkisaverb.com
+## ./wpmusetconfig mysubsite.inkisaverb.com
+
+
+WPDOMAIN=$1
+
+# Check the configs are ready
+if /bin/grep -Fq "define( 'WP_ALLOW_MULTISITE', true );" /srv/www/html/${WPDOMAIN}/wp-config.php; then
+/bin/echo "Proceeding..."; else
+/bin/echo "Multisite isn't even setup, dufis. Run: wpmuseton"
+exit 8; fi
+
+# Check if already set
+if /bin/grep -Fq "define('MULTISITE', true);" /srv/www/html/${WPDOMAIN}/wp-config.php; then
+/bin/echo "Proceeding..."; else
+/bin/echo "Multisite is ready to install, but hasn't been setup. To set it up use: wpmusetconfig"
+exit 8; fi
+
+# Delete the settings
+## Subdomain install
+/bin/sed -i "/* Multisite Settings via inkVerb */d" /srv/www/html/${WPDOMAIN}/wp-config.php
+/bin/sed -i "/define('MULTISITE', true);/d" /srv/www/html/${WPDOMAIN}/wp-config.php
+/bin/sed -i "/define('MULTISITE', false);/d" /srv/www/html/${WPDOMAIN}/wp-config.php
+/bin/sed -i "/define('SUBDOMAIN_INSTALL', true);/d" /srv/www/html/${WPDOMAIN}/wp-config.php
+/bin/sed -i "/define('DOMAIN_CURRENT_SITE', '${WPDOMAIN}');/d" /srv/www/html/${WPDOMAIN}/wp-config.php
+/bin/sed -i "/define('PATH_CURRENT_SITE', '\/');/d" /srv/www/html/${WPDOMAIN}/wp-config.php
+/bin/sed -i "/define('SITE_ID_CURRENT_SITE', 1);/d" /srv/www/html/${WPDOMAIN}/wp-config.php
+/bin/sed -i "/define('BLOG_ID_CURRENT_SITE', 1);/d" /srv/www/html/${WPDOMAIN}/wp-config.php
+/bin/sed -i "/* Multisite inkVerb End */d" /srv/www/html/${WPDOMAIN}/wp-config.php
+
+## Finish
+/bin/echo "WP Multisite for http://${WPDOMAIN} is now off. You may need to log in again."
+
+
+
+
+
+if [ -e "/opt/verb/mods/wpmuunsetconfig.after" ]; then . /opt/verb/mods/wpmuunsetconfig.after; fi # Follows this script

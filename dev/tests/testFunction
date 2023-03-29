@@ -1,0 +1,14 @@
+#!/bin/bash
+
+testedvar="$1"
+testdev2="$2"
+iDir="/home/jc/Dropbox/DocTools/Dev/vrk-verb-ink/ink"
+InkPB="${iDir}/actions.pb"
+vDir="/home/jc/Dropbox/DocTools/Dev/vrk-verb-ink/ink"
+Serfs="${vDir}/serfs"
+
+testFunction() {
+TEST FUNCTION HERE
+}
+
+testFunction "$testedvar" "$testdev2"

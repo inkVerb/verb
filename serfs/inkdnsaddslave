@@ -1,0 +1,195 @@
+#!/bin/bash
+#inkVerbKnight! verb.ink
+
+# This adds a slave domain to this nameserver's DNS configuration based on a given rink user config
+## This is only for use on a nameserver or rink, not on a normal verber
+## This will create records for 
+
+# How to use:
+## ./inkdnsaddslave [ rink user ] [ domain.tld ] [ -n - optional flag for no inkdnsrefreshbind ]
+
+# Eg:
+## ./inkdnsaddslave john-ink inkisaverb.com
+## ./inkdnsaddslave vern-blue sub.inkisaverb.com
+## ./inkdnsaddslave john-ink inkisaverb.com -n
+
+usagenotes="This adds a slave domain to this nameserver's DNS configuration based on a given rink user config"
+usageformat="inkdnsaddslave [ rink user ] [ domain.tld ]"
+usageexample="inkdnsaddslave john.ink inkisaverb.com
+inkdnsaddslave vern.blue sub.inkisaverb.com
+inkdnsaddslave vern.blue sub.inkisaverb.com -n"
+hierarchy=( primary )
+vsetnames=( "Existing rink user in /srv/sns/" "Domain" )
+vsettypes=( NAME.VTLD isDomain )
+voptnames=( "No refresh Bind" )
+vopttypes=( "string_match" )
+voptflags=( "n" )
+voptflagpurpose=(  )
+dependencyinstall=( inkdnsinstall make-dns )
+prerequesite=(  )
+usedby=( inkdnsaddslaveallverbs rinkadddomain )
+useserfs=( inkdnsrefreshbind )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdnsaddslave.replace" ]; then . /opt/verb/mods/inkdnsaddslave.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdnsaddslave.before" ]; then . /opt/verb/mods/inkdnsaddslave.before; fi # Precedes this script
+
+
+# Config check
+if [ ! -f "/opt/verb/conf/inkdns/sdns/dnshost" ]; then
+  /bin/echo "This server is not a DNS, I quit."; exit 8
+fi
+
+# Argument check
+if [ -z "$2" ]; then
+  /bin/echo "Not enough arguments, I quit."; exit 5
+fi
+
+# Rink
+verber="$1"
+# Domain
+domain="$2"
+
+# Rink user check
+if [ ! -d "/srv/sns/${verber}" ]; then
+  /bin/echo "This server does not supply rink user ${verber}, I quit."; exit 8
+fi
+
+# Rink user settings check
+if [ ! -f "/srv/sns/${verber}/servertldstatus" ] || [ ! -f "/srv/sns/${verber}/conf" ]; then
+  /bin/echo "Rink user ${verber} not properly configured, this shouldn't be possible. I quit."; exit 6
+fi
+
+. /srv/sns/${verber}/servertldstatus
+. /srv/sns/${verber}/conf
+
+# Already existing check
+if [ -f "/opt/verb/conf/inkdns/sdns/s.${domain}" ]; then
+  /bin/echo "SDNS configuration for ${domain} already exists; doing nothing."; exit 7
+fi
+
+# IP4 ARPA
+SIPV4="${VerbIPv4}"
+SIPV4ARPA=$(/bin/echo ${SIPV4} | sed -r 's/^([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3})$/\4.\3.\2.\1.in-addr.arpa/')
+
+# IP6
+SIPV6="${VerbIPv6}"
+### helper to convert hex to dec (portable version)
+hex2dec(){
+    [ "$1" != "" ] && printf "%d" "$(( 0x$1 ))"
+}
+
+### expand an IPv6 address
+expand_ipv6() {
+    ip=$1
+
+    # prepend 0 if we start with :
+    /bin/echo $ip | /bin/grep -qs "^:" && ip="0${ip}"
+
+    # expand ::
+    if /bin/echo $ip | /bin/grep -qs "::"; then
+        colons=$(/bin/echo $ip | sed 's/[^:]//g')
+        missing=$(/bin/echo ":::::::::" | sed "s/$colons//")
+        expanded=$(/bin/echo $missing | sed 's/:/:0/g')
+        ip=$(/bin/echo $ip | sed "s/::/$expanded/")
+    fi
+
+    blocks=$(/bin/echo $ip | /bin/grep -o "[0-9a-f]\+")
+    set $blocks
+
+    printf "%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x\n" \
+        $(hex2dec $1) \
+        $(hex2dec $2) \
+        $(hex2dec $3) \
+        $(hex2dec $4) \
+        $(hex2dec $5) \
+        $(hex2dec $6) \
+        $(hex2dec $7) \
+        $(hex2dec $8)
+}
+
+### returns a compressed IPv6 address under the form recommended by RFC5952
+compress_ipv6() {
+    ip=$1
+
+    blocks=$(/bin/echo $ip | /bin/grep -o "[0-9a-f]\+")
+    set $blocks
+
+    # compress leading zeros
+    ip=$(printf "%x:%x:%x:%x:%x:%x:%x:%x\n" \
+        $(hex2dec $1) \
+        $(hex2dec $2) \
+        $(hex2dec $3) \
+        $(hex2dec $4) \
+        $(hex2dec $5) \
+        $(hex2dec $6) \
+        $(hex2dec $7) \
+        $(hex2dec $8)
+    )
+
+    # prepend : for easier matching
+    ip=:$ip
+
+    # :: must compress the longest chain
+    for pattern in :0:0:0:0:0:0:0:0 \
+            :0:0:0:0:0:0:0 \
+            :0:0:0:0:0:0 \
+            :0:0:0:0:0 \
+            :0:0:0:0 \
+            :0:0; do
+        if /bin/echo $ip | /bin/grep -qs $pattern; then
+            ip=$(/bin/echo $ip | sed "s/$pattern/::/")
+            # if the substitution occured before the end, we have :::
+            ip=$(/bin/echo $ip | sed 's/:::/::/')
+            break # only one substitution
+        fi
+    done
+
+    # remove prepending : if necessary
+    /bin/echo $ip | /bin/grep -qs "^:[^:]" && ip=$(echo $ip | sed 's/://')
+
+    /bin/echo $ip
+}
+
+### reverse expanded IPv6 for ARPA
+## THANKS https://stackoverflow.com/a/53674816/10343144
+rarpa_ipv6() {
+  local idx s=${1//:}
+  for (( idx=${#s} - 1; idx>=0; idx-- )); do
+    printf '%s.' "${s:$idx:1}"
+  done
+  printf 'ip6.arpa\n'
+}
+
+## Our new variables for the rest
+SIPV6EXP=$(expand_ipv6 ${SIPV6})
+SIPV6CMP=$(compress_ipv6 ${SIPV6})
+SIPV6ARPA=$(rarpa_ipv6 ${SIPV6EXP})
+
+## Create the config
+/usr/bin/cat <<EOF > /opt/verb/conf/inkdns/sdns/s.${domain}
+sdnsDomain="${domain}"
+sdnsIPv4="${SIPV4}"
+sdnsIPv4ARPA="${SIPV4ARPA}"
+sdnsIPv6Exp="${SIPV6EXP}"
+sdnsIPv6Cmp="${SIPV6CMP}"
+sdnsIPv6ARPA="${SIPV6ARPA}"
+EOF
+
+# Make a record
+/usr/bin/touch /srv/sns/${verber}/domains/${domain}
+
+# Refresh Bind?
+## When run repeatedly, such as in some rink or "allverb" serfs, this creates systemctl errors "Start request repeated too quickly." & "Failed with result 'start-limit-hit'."
+if [ -z "$3" ] || [ "$3" != "-n" ]; then
+  /opt/verb/serfs/inkdnsrefreshbind
+  # Finish
+  /bin/echo "${domain} added to this DNS slave server and live."
+else
+  # Finish
+  /bin/echo "${domain} added to this DNS slave server. Changes will not be effective until you run inkdnsrefreshbind"
+fi
+
+
+
+if [ -e "/opt/verb/mods/inkdnsaddslave.after" ]; then . /opt/verb/mods/inkdnsaddslave.after; fi # Follows this script

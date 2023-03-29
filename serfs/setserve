@@ -1,0 +1,115 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+
+# This creates and sets the serve.NAME.verb.TLD webspace to serve files needed for download
+## This is run automatically by setup
+## If no argument is made, this will only remake the directory without changing the TLD or its URI.
+
+# How to use:
+## ./setserve [ TLD - optional ]
+
+# Eg:
+## ./setserve  # Do this if you only want to change the download directory's name, a good idea for security.
+## ./setserve email
+## ./setserve ink
+
+
+# Set the variables
+. /opt/verb/conf/servernameip
+if [ -z "${1}" ]; then
+  vTLD="${ServerServeTLD}"
+else
+  vTLD="${1}"
+fi
+sDIR="$(/usr/bin/pwgen -s -1 128)"
+nServeURI="${vTLD}URI"
+CHECKtld="VERB${vTLD}"
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/servertldstatus
+. /opt/verb/conf/servertype
+
+# Check and set the configs
+if [ "${!CHECKtld}" != true ]; then
+/bin/echo "Not an acceptable TLD, chose a valid TLD."; exit 0; fi
+
+# Remove the old settings
+/bin/rm -f /opt/verb/conf/webserver/httpd/sites-available/${serveURI}.conf
+/bin/sed -i "s/, ${serveURI}//g" /opt/verb/conf/inkcert/cli-ini/cli.*
+
+/bin/sed -i "s/ServerServeTLD=.*/ServerServeTLD=\"${vTLD}\"/" /opt/verb/conf/servernameip
+/bin/sed -i "s/ServerServeDir=.*/ServerServeDir=\"${sDIR}\"/" /opt/verb/conf/servernameip
+/bin/sed -i "s/ServerServePath=.*/ServerServePath=\"serve\.${!nServeURI}\/${sDIR}\"/" /opt/verb/conf/servernameip
+/bin/sed -i "s/serveURI=.*/serveURI=\"serve\.${!nServeURI}\"/" /opt/verb/conf/siteurilist
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+
+if [ ${ServerType} = "lemp" ]; then
+  # Nginx
+  /bin/cp /opt/verb/conf/site-files/conf/serve.conf /opt/verb/conf/webserver/nginx/sites-available/${serveURI}.conf
+  /bin/sed -i "s/serveURI286/${serveURI}/g" /opt/verb/conf/webserver/nginx/sites-available/${serveURI}.conf
+  /bin/sed -i "s/serveTLD286/${vTLD}/g" /opt/verb/conf/webserver/nginx/sites-available/${serveURI}.conf
+  /opt/verb/serfs/ensitenginx -r ${serveURI}
+elif [ ${ServerType} = "lamp" ]; then
+  # Apache
+  /bin/cp /opt/verb/conf/site-files/conf/serve.conf /opt/verb/conf/webserver/httpd/sites-available/${serveURI}.conf
+  /bin/sed -i "s/serveURI286/${serveURI}/g" /opt/verb/conf/webserver/httpd/sites-available/${serveURI}.conf
+  /bin/sed -i "s/serveTLD286/${vTLD}/g" /opt/verb/conf/webserver/httpd/sites-available/${serveURI}.conf
+  /opt/verb/serfs/ensiteapache -r ${serveURI}
+elif [ ${ServerType} = "laemp" ]; then
+  # Nginx
+  /bin/cp /opt/verb/conf/site-files/conf/servenginx.conf /opt/verb/conf/webserver/nginx/sites-available/${serveURI}.conf
+  /bin/sed -i "s/serveURI286/${serveURI}/g" /opt/verb/conf/webserver/nginx/sites-available/${serveURI}.conf
+  /bin/sed -i "s/serveTLD286/${vTLD}/g" /opt/verb/conf/webserver/nginx/sites-available/${serveURI}.conf
+  /opt/verb/serfs/ensitenginx -r ${serveURI}
+  # Apache
+  /bin/cp /opt/verb/conf/site-files/conf/serveapache.conf /opt/verb/conf/webserver/httpd/sites-available/${serveURI}.conf
+  /bin/sed -i "s/serveURI286/${serveURI}/g" /opt/verb/conf/webserver/httpd/sites-available/${serveURI}.conf
+  /bin/sed -i "s/serveTLD286/${vTLD}/g" /opt/verb/conf/webserver/httpd/sites-available/${serveURI}.conf
+  /opt/verb/serfs/ensiteapache -r ${serveURI}
+fi
+
+# inkCert
+## Ensure that you don't get double entries
+/bin/sed -i "s/, ${serveURI}//g" /opt/verb/conf/inkcert/cli-ini/cli.${!nServeURI}.ini
+## Add it to the cli-ini
+/bin/sed -i "/^domains =/ s/$/, ${serveURI}/" /opt/verb/conf/inkcert/cli-ini/cli.${!nServeURI}.ini
+
+# Create the serve dir
+/bin/rm -rf /srv/www/verb/${vTLD}.serve
+/bin/mkdir -p /srv/www/verb/${vTLD}.serve/${sDIR}
+/bin/echo "<?php header(\"HTTP/1.1 301 Moved Permanently\"); header(\"Location: http://${nameURI}\"); die(); ?>" > /srv/www/verb/${vTLD}.serve/index.php
+/bin/chmod -R 750 /srv/www/verb/${vTLD}.serve
+
+# Create cron to delete download directories
+/bin/echo "#!/bin/bash
+# inkNet cron, verb.ink
+find /srv/www/verb/${vTLD}.serve/${sDIR}/* -type d -mmin +30 -exec rm -rf {} \;" > /opt/verb/donjon/rmdldirs.sh
+/bin/chmod 750 /opt/verb/donjon/rmdldirs.sh
+/bin/echo '14,44 * * * * root /opt/verb/donjon/rmdldirs.sh > /dev/null 2>&1' > /etc/cron.d/rmdldirs
+/bin/chmod 0644 /etc/cron.d/rmdldirs
+
+# DNS
+/bin/echo "; Subdomain Records Added by inkDNS ${serveURI}" >> /opt/verb/conf/inkdns/inkzones/db.${!nServeURI}
+## IP4?
+if [ "${ServerIPv4}" != "NOIP4" ]; then
+  /bin/echo "${serveURI}\tIN  A\t\t${ServerIPv4}" >> /opt/verb/conf/inkdns/inkzones/db.${!nServeURI}
+fi
+## IP6?
+if [ "${ServerIPv6}" != "NOIP6" ]; then
+  /bin/echo "${serveURI}\tIN  AAAA\t\t${ServerIPv6}" >> /opt/verb/conf/inkdns/inkzones/db.${!nServeURI}
+fi
+
+## Set the Serial No
+/opt/verb/serfs/inkdnsserial ${!nServeURI} verber
+
+# Finish
+/bin/echo "Service download files set"
+
+
+
+
+if [ -e "/opt/verb/mods/setserve.after" ]; then . /opt/verb/mods/setserve.after; fi # Follows this script

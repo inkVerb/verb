@@ -1,0 +1,82 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This script creates a new boss user that is a sudoer who can can run serfs
+
+# How to use:
+## ./newboss [ new boss user ] [ boss password ]
+
+usagenotes="This script creates a new boss user that is a sudoer who can can run serfs"
+usageformat="newboss [ new boss user ] [ boss password ]"
+usageexample="newboss managerjohn NotSecure125"
+hierarchy=( primary )
+vsetnames=( "Username" "Password" )
+vsettypes=( isUsername string_quote )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( newftpvip 'or' newftpfiler )
+usedby=(  )
+useserfs=( ensiteapache ensitenginx inkdnsaddvipsub inkcertaddcb )
+useconfigs=( servernameip serverport )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/newboss.replace" ]; then . /opt/verb/mods/newboss.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/newboss.before" ]; then . /opt/verb/mods/newboss.before; fi # Precedes this script
+
+
+# Include the config file
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/serverport
+
+NEWBoss=$1
+NEWBossPASS=$2
+
+# Old create new boss user
+# /usr/sbin/adduser ${NEWBoss} --gecos ",,," --disabled-password
+# /bin/echo "${NEWBoss}:${NEWBossPASS}" | chpasswd
+# usermod -a -G sudo ${NEWBoss}
+# usermod -a -G www-data ${NEWBoss}
+# /bin/ln -s /opt/verb/boss /home/${NEWBoss}/
+
+# Create the new boss user
+/usr/bin/groupadd ${NEWBoss}
+/usr/bin/useradd -g ${NEWBoss} ${NEWBoss}
+/bin/echo "${NEWBoss}:${NEWBossPASS}" | chpasswd
+/usr/bin/usermod -a -G sudo ${NEWBoss}
+/usr/bin/usermod -a -G www ${NEWBoss}
+/usr/bin/mkdir -p /home/${NEWBoss}
+/bin/ln -sfn /opt/verb/boss /home/${NEWBoss}/
+## User privilege specification
+/usr/bin/setfacl -R -m user:${NEWBoss}:rwx /home/${NEWBoss}  # DEV see if this line works
+/bin/echo '# Added by newboss inkVerb serf' >> /etc/sudoers.d/${NEWBoss}
+/bin/echo "${NEWBoss}  ALL=(ALL:ALL) ALL" >> /etc/sudoers.d/${NEWBoss}
+## Vim preferences
+echo 'nnoremap <C-c> "+y
+vnoremap <C-c> "+y
+nnoremap <C-p> "+p
+vnoremap <C-p> "+p' > /home/${NEWBoss}/.vimrc
+## BASH settings
+/opt/verb/serfs/setbashrc ${NEWBoss}
+## Own
+/usr/bin/chown -R ${NEWBoss}:${NEWBoss} /home/${NEWBoss}
+
+# Finished
+  if [ "${ServerIPv4}" != "NOIP4" ] && [ "${ServerIPv6}" != "NOIP6" ]; then
+    IPADDRBLOCK="'ssh ${NEWBoss}@${ServerIPv4} -p ${ServerPort} 'or 'ssh ${NEWBoss}@${ServerIPv6} -p ${ServerPort}'"
+  ## IP4?
+  elif [ "${ServerIPv4}" != "NOIP4" ]; then
+    IPADDRBLOCK="'ssh ${NEWBoss}@${ServerIPv4} -p ${ServerPort}'"
+  ## IP6?
+  elif [ "${ServerIPv6}" != "NOIP6" ]; then
+    IPADDRBLOCK="'ssh ${NEWBoss}@${ServerIPv6} -p ${ServerPort}'"
+  fi
+/bin/echo "The boss user ${NEWBoss} has been created.
+Log in using ${IPADDRBLOCK}'
+"
+
+
+
+
+if [ -e "/opt/verb/mods/newboss.after" ]; then . /opt/verb/mods/newboss.after; fi # Follows this script

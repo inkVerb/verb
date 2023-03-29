@@ -1,0 +1,53 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This removes mail subdomains domains from the inkCert Letsencrypt cli-ini file
+## This is run automatically by killinkcertmail (used in installinkvmail and newdomainshell) and normally should not be run independently
+
+# How to use:
+## ./killinkcertmailsubdomains [ domain.tld ]
+
+usagenotes="This removes mail subdomains domains from the inkCert Letsencrypt cli-ini file"
+usageformat="killinkcertmailsubdomains [ domain.tld ]"
+usageexample="killinkcertmailsubdomains inkisaverb.com"
+hierarchy=( tertiary killdomainshell )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( setinkcertmailsubdomains )
+usedby=( killinkcertmail )
+useserfs=(  )
+useconfigs=( inkcertstatus inkdnsconf servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/killinkcertmailsubdomains.replace" ]; then . /opt/verb/mods/killinkcertmailsubdomains.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/killinkcertmailsubdomains.before" ]; then . /opt/verb/mods/killinkcertmailsubdomains.before; fi # Precedes this script
+
+
+DOMAIN="$1"
+
+# Include the config
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/servertype
+
+# Make sure we don't kill a verb domain
+if /bin/grep -q "${DOMAIN}" /opt/verb/conf/siteurilist; then
+  /usr/bin/echo "Can't kill a verber domain, I quit."; exit 9
+fi
+
+# inkCert
+## Delete the mail entries entries
+/bin/sed -i "s/, mail.${DOMAIN}//g" /opt/verb/conf/inkcert/cli-ini/cli.${DOMAIN}.ini
+/bin/sed -i "s/, smtp.${DOMAIN}//g" /opt/verb/conf/inkcert/cli-ini/cli.${DOMAIN}.ini
+/bin/sed -i "s/, imap.${DOMAIN}//g" /opt/verb/conf/inkcert/cli-ini/cli.${DOMAIN}.ini
+/bin/sed -i "s/, pop3.${DOMAIN}//g" /opt/verb/conf/inkcert/cli-ini/cli.${DOMAIN}.ini
+/bin/sed -i "s/, pop2.${DOMAIN}//g" /opt/verb/conf/inkcert/cli-ini/cli.${DOMAIN}.ini
+/bin/sed -i "s/, pop.${DOMAIN}//g" /opt/verb/conf/inkcert/cli-ini/cli.${DOMAIN}.ini
+
+
+
+
+if [ -e "/opt/verb/mods/killinkcertmailsubdomains.after" ]; then . /opt/verb/mods/killinkcertmailsubdomains.after; fi # Follows this script

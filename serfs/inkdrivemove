@@ -1,0 +1,151 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+# This moves a mounted folder from a block storage drive to another drive or back to its original location
+## All credentials must be entered correctly for accurate confirmation
+
+# How to use:
+## ./inkdrivemove [ folder ] [ new drive name - optional, default is original location ]
+
+# Eg:
+## ./inkdrivemove www
+## ./inkdrivemove nextcloud newdrive
+## ./inkdrivemove wp.inkisaverb.com newdrive
+
+
+usagenotes="This moves a mounted folder from a block storage drive to another drive or back to its original location"
+usageformat="inkdrivemove [ folder ] [ new drive name - optional, default is original location ]"
+usageexample="inkdrivemove www
+inkdrivemove nextcloud newdrive
+inkdrivemove wp.inkisaverb.com newdrive"
+hierarchy=( primary )
+vsetnames=( "Folder" )
+vsettypes=( isExists )
+voptnames=( "Drive name" )
+vopttypes=( isExists )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( inkdriveadd "inkdrivesvc / inkdriveapp" )
+usedby=(  )
+useserfs=(  )
+useconfigs=( inkdrive/inkdriveinfo )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdrivemove.replace" ]; then . /opt/verb/mods/inkdrivemove.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdrivemove.before" ]; then . /opt/verb/mods/inkdrivemove.before; fi # Precedes this script
+
+# Check if installed
+if [ ! -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
+  /usr/bin/echo "inkDrive not installed. Nothing to show."
+fi
+
+# Vapp or service
+if [ -z "$1" ]; then
+  /usr/bin/echo "You must specify a vapp or service. I quit."
+  exit 5
+else
+  VappSvc="$1"
+fi
+if [[ "${VappSvc}" =~ ^wp.* ]] && [ -e "/srv/www/vapps/${Vapp}/wp-content" ]; then
+  VappSvcType="WordPress"
+  VappSvcData="/srv/www/vapps/${Vapp}/wp-content"
+  VappSvcDataFolder="/srv/www/vapps/${Vapp}"
+  DataName="wp-content"
+  Owner="www:www"
+elif [ "${VappSvc}" = "nextcloud" ] && [ -e "/srv/www/vapps/nextcloud/data" ]; then
+  VappSvcType="Nextcloud"
+  VappSvcData="/srv/www/vapps/nextcloud/data"
+  VappSvcDataFolder="/srv/www/vapps/nextcloud"
+  DataName="data"
+  Owner="www:www"
+elif [ "${VappSvc}" = "www" ]; then
+  VappSvcType="Web folder"
+  VappSvcData="/srv/www"
+  VappSvcDataFolder="/srv"
+  DataName="www"
+  Owner="www:www"
+elif [ "${VappSvc}" = "mysql" ]; then
+  VappSvcType="MySQL"
+  VappSvcData="/var/lib/mysql"
+  VappSvcDataFolder="/var/lib"
+  DataName="mysql"
+  Owner="mysql:mysql"
+elif [ "${VappSvc}" = "vmail" ]; then
+  VappSvcType="Vmail"
+  VappSvcData="/srv/vmail"
+  VappSvcDataFolder="/srv"
+  DataName="vmail"
+  Owner="vmail:vmail"
+else
+  /usr/bin/echo "${VappSvc} is not services by inkDrive. Nothing to do."
+  exit 8
+fi
+
+# Check that it is actually mounted
+if [ -d "${VappSvcData}" ]; then
+  /usr/bin/echo "${VappSvc} is not mounted to any drive, therefore there is nothing to move. Use inkdriveapp or inkdrivesvc appropriatly."
+  exit 5
+fi
+
+# Origin
+Origin="$(/usr/bin/readlink -f "${VappSvcData}")"
+
+# Move to new drive
+if [ -n "$2" ]; then
+  Mnt="$2"
+  if [ ! -d "/mnt/${Mnt}" ]; then
+    /usr/bin/echo "${Mnt} is not a mounted drive."
+    exit 5
+  elif [ -f "/opt/verb/conf/inkdrive/ssd.${Mnt}" ]; then
+    Typ="ssd"
+  elif [ -f "/opt/verb/conf/inkdrive/hdd.${Mnt}" ]; then
+    Typ="hdd"
+  else
+    /usr/bin/echo "${Mnt} is a mounted drive, but has no config. Something is very wrong."
+    exit 6
+  fi
+  Dest="/mnt/${Mnt}/${VappSvc}"
+  /usr/bin/mkdir -p "${Dest}"
+
+# Move back to original location
+else
+    case $Svc in
+        www) Dest="/srv";;
+        mysql) Dest="/var/lib";;
+        vmail) Dest="/srv";;
+        *) Dest="/srv/www/vapps/${VappSvc}";;
+    esac
+fi
+
+# Space
+SpaceAvail="$(/usr/bin/df -k "${Dest}" | /usr/bin/awk 'NR==2 { print $4 }')"
+SpaceNeed="$(/usr/bin/du -s "${Origin}" | /usr/bin/awk '{ print $1 }')"
+if [ "${SpaceNeed}" -gt "${SpaceAvail}" ]; then
+    SpaceAvailH="$(/usr/bin/df -h "${Dest}" | /usr/bin/awk 'NR==2 { print $4 }')"
+    SpaceNeedH="$(/usr/bin/du -sh "${Origin}" | /usr/bin/awk '{ print $1 }')"
+    echo "Not enough space. ${SpaceNeedH} needed, but only ${SpaceAvailH} available."
+    exit 4
+fi
+
+# Move
+/usr/bin/mv "${Origin}/${DataName}" "${Dest}/"
+if [ ! -d "${Dest}/${DataName}" ]; then
+    /usr/bin/echo "Could not move. Something is very wrong."
+    exit 6
+fi
+## Mounting and need to re-link?
+if [ -n "${Mnt}" ]; then
+    /usr/bin/ln -sfn "${Dest}/${DataName}" "${VappSvcDataFolder}/"
+    if [ ! -e "${VappSvcDataFolder}/${DataName}" ]; then
+      /usr/bin/echo "Could not move. Something is very wrong."
+      exit 6
+    fi
+    /usr/bin/chown -R ${Owner} "${VappSvcDataFolder}/${DataName}"
+fi
+/usr/bin/chown -R ${Owner} "${Dest}/${DataName}"
+## Legacy for vmail
+if [ "${Svc}" = "vmail" ]; then
+  /usr/bin/ln -sfn "${Dest}/vmail" /var/vmail
+  /usr/bin/chown -R ${Owner} /var/vmail
+fi
+
+if [ -e "/opt/verb/mods/inkdrivemove.after" ]; then . /opt/verb/mods/adddoinkdrivemovemain.after; fi # Follows this script

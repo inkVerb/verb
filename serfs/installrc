@@ -1,0 +1,205 @@
+#!/bin/sh
+#inkVerbSerf! verb.ink
+
+# This installs Roundcube
+## Prerequisite: verbemail IF using a verb domain other than verb.email
+
+# Auxiliary Prereqs...
+## Prerequisite: installpostfix (so that the installer can work)
+## Prerequisite: installpfa (to create the email inbox so the installer can work)
+## Prerequisite: * installpostfix and installpfa and this script are included in installemail. Run installemail to meet these auxiliary prerequisites
+
+# How to use:
+## ./installrc [ path folder ]
+
+# Eg:
+## (To use at box.NAME.verb.email/mysecretpath do:)
+## ./installrc mysecretpath
+
+
+usagenotes="This installs Roundcube"
+usageformat="installrc [ path folder ]"
+usageexample="installrc myrcpath
+installrc wink822"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=( "RoundCube web path" )
+vopttypes=( isazAZ09lines )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( "inkCert certs should be installled for at least the emailTLDURI for this verber" )
+usedby=( installinkvmail )
+useserfs=( installrccomposer )
+useconfigs=( servertype servernameip siteurilist servermailpass servermailpath )	# List config files of any kind used in this serf, please preserve order of appearance
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/installrc.replace" ]; then . /opt/verb/mods/installrc.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installrc.before" ]; then . /opt/verb/mods/installrc.before; fi # Precedes this script
+
+
+CVAPPNAME="roundcube"
+
+# Include the config files
+. /opt/verb/conf/servertype
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/servermailpass
+. /opt/verb/conf/servermailpath
+
+# Check dependencies and to see if already installed
+if [ ${ServerMailStatus} != "VMAIL_SERVER" ]; then
+/bin/echo "
+The email server must be installed first. Run: installpostfix
+"
+exit 8; fi
+if [ ${ServerRCPath} = "RC_NOT_ALLOWED" ]; then
+/bin/echo "
+This is a backup email server and Roundcube is not allowed.
+"
+exit 0; fi
+if [ ${ServerRCPath} != "RC_NOT_ALLOWED" ]; then
+/bin/echo "
+Roundcube is already installed.
+"
+exit 0; fi
+if [ ${ServerMailStatus} = "EMAIL_NOT_INSTALLED" ]; then
+/bin/echo "
+This is a backup email server and Roundcube is not allowed.
+"
+exit 8; fi
+if /bin/grep -Fq "Email Control Records" /opt/verb/conf/inkdns/inkzones/db.${emailTLDURI}; then
+/bin/echo "Proceeding..."; else
+/bin/echo "
+Email Control Records not declared in the email domain DNS zone file. This won't work.
+"
+exit 8; fi
+
+# Security & path
+if [ -n "$1" ]; then
+  RCFOLDER=$1
+else
+  RCFOLDER="$(/usr/bin/pwgen -0 5 1)"
+fi
+RCPASSGEN=$(/usr/bin/pwgen -s -1 5)
+DESSALTGEN=$(/usr/bin/pwgen -s -1 24)
+
+if [ "${ServerBoxPath}" = "${RCFOLDER}" ]; then
+  RCFOLDER="$(/usr/bin/pwgen -0 5 1)"
+  echo "Folder already taken by box, new folder will be: ${RCFOLDER}. This can be changed with setrcpath"
+fi
+
+# Get inkVerb's latest and install
+cd /srv/www/email
+/opt/verb/serfs/inkget ${CVAPPNAME} check; wait
+### Check
+if [ "$?" = 4 ]; then
+  /bin/echo "Repo failed to retrieve the file."
+  exit 4; fi
+
+# Create the MySQL database and user
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+CREATE DATABASE rcmail DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+GRANT ALL PRIVILEGES ON rcmail.* TO 'rcmailusr'@'localhost' IDENTIFIED BY 'rcpass${RCPASSGEN}';
+FLUSH PRIVILEGES;"
+## Initiate the database
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf rcmail < /srv/www/email/roundcube/SQL/mysql.initial.sql
+
+# Webserver
+## Web directories
+/usr/bin/mkdir -p /srv/www/verb/${ServerEmailTLD}.box
+/usr/bin/ln -sfn /srv/www/email/roundcube /srv/www/verb/${ServerEmailTLD}.box/${RCFOLDER}
+/usr/bin/chown -R www:www /srv/www/verb/${ServerEmailTLD}.box
+## Hosting conf
+if [ ${ServerType} = "laemp" ]; then
+  /usr/bin/cp /opt/verb/conf/site-files/conf/box-nginx.conf /opt/verb/conf/webserver/nginx/sites-available/box.${emailTLDURI}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/box-httpd.conf /opt/verb/conf/webserver/httpd/sites-available/box.${emailTLDURI}.conf
+  /opt/verb/serfs/ensitenginx box.${emailTLDURI}
+  /opt/verb/serfs/ensiteapache box.${emailTLDURI}
+  /usr/bin/systemctl restart nginx; wait
+  /usr/bin/systemctl restart httpd; wait
+elif [ ${ServerType} = "lemp" ]; then
+  /usr/bin/cp /opt/verb/conf/site-files/conf/box-nginx.conf /opt/verb/conf/webserver/nginx/sites-available/box.${emailTLDURI}.conf
+  /opt/verb/serfs/ensitenginx box.${emailTLDURI}
+  /usr/bin/systemctl restart nginx; wait
+elif [ ${ServerType} = "lamp" ]; then
+  /usr/bin/cp /opt/verb/conf/site-files/conf/box-httpd.conf /opt/verb/conf/webserver/httpd/sites-available/box.${emailTLDURI}.conf
+  /opt/verb/serfs/ensiteapache box.${emailTLDURI}
+  /usr/bin/systemctl restart httpd; wait
+fi
+
+# inkCert
+. /opt/verb/conf/inkcert/cli-ini/siteinkcert.${emailURI}
+if [ "${InkCerted}" = "DONE_LE" ]; then
+  /opt/verb/serfs/inkcertaddle box.${emailURI} ${emailURI}
+elif [ "${InkCerted}" = "DONE_CB" ]; then
+  /opt/verb/serfs/inkcertaddcb box.${emailURI} ${emailURI}
+elif [ "${InkCerted}" = "DONE_CBSINGLE" ]; then
+  /opt/verb/serfs/inkcertaddcbsingle box.${emailURI}
+elif [ "${InkCerted}" = "DONE_SC" ]; then
+  /opt/verb/serfs/inkcertaddsc box.${emailURI}
+fi
+
+# Settings
+/usr/bin/cp /opt/verb/conf/lib/vmail/roundcube/mime.types /srv/www/email/roundcube/
+#cp /etc/httpd/conf/mime.types /srv/www/email/roundcube/mime.types # If getting mime types from server
+/usr/bin/cp /opt/verb/conf/lib/vmail/roundcube/config/roundcube286-config.inc.php /srv/www/email/roundcube/config/config.inc.php
+/usr/bin/cp /opt/verb/conf/lib/vmail/roundcube/config/roundcube286-defaults.inc.php /srv/www/email/roundcube/config/defaults.inc.php
+/usr/bin/sed -i "s/emailTLDURI286/${emailTLDURI}/g" /srv/www/email/roundcube/config/config.inc.php
+/usr/bin/sed -i "s/emailTLDURI286/${emailTLDURI}/g" /srv/www/email/roundcube/config/defaults.inc.php
+/usr/bin/sed -i "s/nameURI286/${nameURI}/g" /srv/www/email/roundcube/config/config.inc.php
+/usr/bin/sed -i "s/nameURI286/${nameURI}/g" /srv/www/email/roundcube/config/defaults.inc.php
+/usr/bin/sed -i "s/rcpass286/rcpass${RCPASSGEN}/g" /srv/www/email/roundcube/config/config.inc.php
+/usr/bin/sed -i "s/rcpass286/rcpass${RCPASSGEN}/g" /srv/www/email/roundcube/config/defaults.inc.php
+/usr/bin/sed -i "s/rcemailconfdeskeysalt286/${DESSALTGEN}/g" /srv/www/email/roundcube/config/config.inc.php
+# In the event that installpfa was run first
+if [ -e "/srv/www/email/postfixadmin/config.inc.php" ]; then
+/usr/bin/sed -i "s/rcfolder286/${RCFOLDER}/g" /srv/www/email/postfixadmin/config.inc.php
+fi
+
+# Copy the branding files
+/usr/bin/cp /opt/verb/conf/lib/vmail/roundcube/roundcubepics/verbink_logo.png /srv/www/email/roundcube/
+/usr/bin/cp /opt/verb/conf/lib/vmail/roundcube/roundcubepics/skins/elastic/images/logo.svg /srv/www/email/roundcube/skins/elastic/images/
+/usr/bin/cp /opt/verb/conf/lib/vmail/roundcube/roundcubepics/skins/elastic/images/favicon.ico /srv/www/email/roundcube/skins/elastic/images/
+/usr/bin/cp /opt/verb/conf/lib/vmail/roundcube/roundcubepics/favicon.ico /srv/www/email/roundcube/
+
+# Own
+/usr/bin/chown -R www:www /srv/www/email/roundcube
+
+# DNS
+/usr/bin/sed -i "s/; Email Control Records/; Email Control Records\nbox.${emailTLDURI}.  \tIN  A \t${ServerIPv4}\nbox.${emailTLDURI}.  \tIN  AAAA \t${ServerIPv6}/" /opt/verb/conf/inkdns/inkzones/db.${emailTLDURI}
+/usr/bin/sed -i "s/; Email Control Records/; Email Control Records\n${ServerARPAIPv4} \tIN  PTR \tbox.${emailTLDURI}.\n${ServerARPAIPv6} \tIN  PTR \tbox.${emailTLDURI}./" /opt/verb/conf/inkdns/inkzones/nv.${emailTLDURI}
+# Set the config for backup
+/usr/bin/sed -i "s/ServerBoxPassApg.*/ServerBoxPassApg=\"${RCPASSGEN}\"/g" /opt/verb/conf/servermailpass
+/usr/bin/sed -i "s/ServerRCPath.*/ServerRCPath=\"${RCFOLDER}\"/g" /opt/verb/conf/servermailpath
+
+# Fool RoundCube into accepting current versions of PHP
+## This is unrelated to Composer, but earlier so we make sure it gets done
+/usr/bin/sed -i "s/if (PHP_VERSION_ID >= .*/if (PHP_VERSION_ID >= 110000) {/" /srv/www/email/roundcube/program/include/iniset.php
+
+# Sledgehammertime (Composer Plugins)
+## Download Composer
+cd /srv/www/email/roundcube
+/usr/bin/curl -s https://getcomposer.org/installer | php
+/usr/bin/cp composer.json-dist composer.json
+## Run the Composer installation
+/opt/verb/serfs/installrccomposer
+
+# Remove the installer so it is ready to go
+#/opt/verb/serfs/postinstallrc # uncomment when everything works
+
+# Finished
+/bin/echo "
+Roundcube is installed and can be accessed at: https://box.${emailTLDURI}/${RCFOLDER}
+(It may be using self-signed SSL certificates until the production certificates are installed.)
+"
+
+# exit status for the ink CLI tool if installrccomposer failed
+if [ "$composersuccess" != "true" ]; then
+  exit 2
+fi
+
+# Remove the installer folder
+##/usr/bin/rm -rf /srv/www/email/roundcube/installer
+
+if [ -e "/opt/verb/mods/installrc.after" ]; then . /opt/verb/mods/installrc.after; fi # Follows this script

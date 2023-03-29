@@ -1,0 +1,55 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This creates config files for this Verber to connect to a secondary CA Verber, such as other than the Inker
+## This can be run to update an existing config
+
+# How to use:
+## ./inknetaddsecondarycaverber [CA Verber host] [CA Verber IP]
+
+# Eg: (almost certainly exactly this, but verify from inkVerb instructions at registration and available Inkers, probably region-specific)
+## ./inknetaddsecondarycaverber ink.ink.verb.ink 999.999.99.999 (for ink namespace - the master Inker site)
+## ./inknetaddsecondarycaverber john.john.verb.ink 999.999.99.999 (for john namespace - if you want your own Verber to act as your keys)
+## ./inknetaddsecondarycaverber ink2.ink.inkisaverb.com 999.999.99.999 (for Domain Verber mod)
+
+
+# Verify that this Verber candidate is already a Client Verber
+if [ ! -f /opt/verb/conf/inknet/rink.client.cnf ]; then
+/bin/echo "Not bad, Bucko. But, this must be a Verber Client, even to itself if need be, before it can become a CA to anything else.
+
+First run, according to instructions: inknetmakeverberclient
+"
+exit 0; fi
+
+INPCAVERBERHOST=$1
+NEWCAVERBERURI="$(/bin/echo ${NEWCAVERBERHOST} | rev | cut -d'.' -f-3 | rev)"
+NEWCAVERBERNAME="$(/bin/echo ${INPCAVERBERHOST} | sed 's/\./_/g')"
+NEWCAVERBERHOST="$(/bin/echo ${NEWCAVERBERNAME} | sed 's/_/\./g')"
+NEWCAVERBERIP=$2
+
+# Set configs
+## For the secondary CA Verber
+/bin/echo "#!/bin/bash
+# inkNet config, verb.ink
+## This contains information about this a secondary CA Verber
+
+CAVERBERHOST=\"${NEWCAVERBERHOST}\"
+CAVERBERURI=\"${NEWCAVERBERURI}\"
+CAVERBERNAME=\"${NEWCAVERBERNAME}\"
+CAVERBERIP=\"${NEWCAVERBERIP}\"
+CLIENTSAILOR=\"NOT_SET\"
+" > /opt/verb/conf/inknet/2cav.${NEWCAVERBERNAME}.cnf
+
+# inkNet ivApp Sailor (to login to the CA Verber)
+/opt/verb/serfs/inknetivappnewclientsailor ${NEWCAVERBERHOST}
+wait
+
+# Finish
+/bin/echo "The secondary CA Verber credentials have been added for ${NEWCAVERBERNAME} at ${NEWCAVERBERHOST}.${NEWCAVERBERURI} with IP ${NEWCAVERBERIP}
+Now run inknetnewverber2clientkey"
+
+
+
+
+
+if [ -e "/opt/verb/mods/inknetaddsecondarycaverber.after" ]; then . /opt/verb/mods/inknetaddsecondarycaverber.after; fi # Follows this script

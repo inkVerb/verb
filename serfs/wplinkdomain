@@ -1,0 +1,22 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This links a domain to it's wp location in vapps
+## It is useful for backup restore wordpress instances, inclusion in scripts, or other backend server work
+## Prerequesite: The domain must exist for Apache in www/html as a symlink, not a real directory
+
+# How to use:
+## ./wplinkdomain [full domain of WP site]
+
+
+DOMAIN=$1
+
+/bin/rm -f /srv/www/html/${DOMAIN}
+/bin/ln -s /srv/www/vapps/wp.${DOMAIN} /srv/www/html/${DOMAIN}
+/bin/chown -R www:www /srv/www/html/${DOMAIN}
+
+
+
+
+
+if [ -e "/opt/verb/mods/wplinkdomain.after" ]; then . /opt/verb/mods/wplinkdomain.after; fi # Follows this script

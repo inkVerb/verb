@@ -1,0 +1,64 @@
+#!/bin/bash
+#inkVerbKnight! verb.ink
+
+# This removes the config for a domain served on this DNS as a slave record if running a custom verber, not controlled by the control rink
+
+# How to use:
+## ./killinkdnslocalslavedns [ domain.tld ]
+
+# Eg:
+## ./killinkdnslocalslavedns inkisaverb.com
+## ./killinkdnslocalslavedns sub.inkisaverb.com
+
+usagenotes="This removes the config for a domain served on this DNS as a slave record if running a custom verber, not controlled by the control rink"
+usageformat="killinkdnslocalslavedns [ domain.tld ]"
+usageexample="killinkdnslocalslavedns inkisaverb.com
+killinkdnslocalslavedns sub.inkisaverb.com"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkdnsinstall make-dns )
+prerequesite=( inkdnsaddlocalslave )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/killinkdnslocalslavedns.replace" ]; then . /opt/verb/mods/killinkdnslocalslavedns.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/killinkdnslocalslavedns.before" ]; then . /opt/verb/mods/killinkdnslocalslavedns.before; fi # Precedes this script
+
+
+# Config check
+if [ ! -f "/opt/verb/conf/inkdns/sdns/dnshost" ]; then
+  /bin/echo "This server is not a DNS, I quit."; exit 0
+fi
+
+# Argument check
+if [ -z "$1" ]; then
+  /bin/echo "You must specify a domain."; exit 0
+fi
+
+# Domain
+DOMAIN="$1"
+
+# Already existing check
+if [ ! -f "/opt/verb/conf/inkdns/sdns/s.${DOMAIN}" ]; then
+  /bin/echo "No SDNS configuration for ${DOMAIN}, I quit."; exit 0
+fi
+
+# Remove the config
+/usr/bin/rm -f /opt/verb/conf/inkdns/sdns/s.${DOMAIN}
+
+# Refresh zones
+/opt/verb/serfs/inkdnsrefreshbind
+
+# Finish
+/bin/echo "${DOMAIN} removed from this DNS server."
+
+
+
+
+if [ -e "/opt/verb/mods/killinkdnslocalslavedns.after" ]; then . /opt/verb/mods/killinkdnslocalslavedns.after; fi # Follows this script

@@ -1,0 +1,10 @@
+#!/usr/bin/fossil
+repository: /vip/fossil/projects.fossil
+
+## INSTRUCTIONS:
+# This is a cgi file pointing to the first .fossil repo in fossil.your-name.verb.vip.
+# It is initially called "projects" and is accessivle via fossil.your-name.verb.vip/projects
+# Change this name to anything you want and it will become fossil.your-name.verb.vip/WHAT-YOU-CHANGE-THIS-FILE-TO
+# Or copy it to the new name and both will be accessible and...
+# it will still point to whatever .fossil file you create and define on line 2 of this copied file
+# The name of this file and the .fossil file in line 2 do not need to be the same

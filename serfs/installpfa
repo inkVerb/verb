@@ -1,0 +1,172 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This installs postfix admin
+## PostfixAdmin setup secure option: use "secure" for a password required, otherwise anything else including empty
+## If using 'secure', you must set the hash via setpfapass
+## Prerequisite: verbemail IF using a verb domain other than verb.email
+## Prerequisite: installinkvmail, installrc
+
+# How to use:
+## ./installpfa [ path folder ] [ setup password option ]
+
+# Eg: (To use at po.NAME.verb.email/mysecretpath do:)
+## ./installpfa mysecretpath
+## ./installpfa mysecretpath somepassword
+
+usagenotes="This installs Roundcube"
+usageformat="installpfa [ path folder ]"
+usageexample="installpfa myrcpath
+installpfa wink822"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=( "PostfixAdmin web path" "PostfixAdmin setup password" )
+vopttypes=( isazAZ09lines isazAZ09 )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( "inkCert certs should be installled for at least the emailTLDURI for this verber" )
+usedby=( installinkvmail )
+useserfs=(  )
+useconfigs=( servertype servernameip siteurilist servermailpass servermailpath )	# List config files of any kind used in this serf, please preserve order of appearance
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/installpfa.replace" ]; then . /opt/verb/mods/installpfa.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installpfa.before" ]; then . /opt/verb/mods/installpfa.before; fi # Precedes this script
+
+CVAPPNAME="postfixadmin"
+
+# Include the config files
+. /opt/verb/conf/servertype
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/servermailpass
+. /opt/verb/conf/servermailpath
+
+# Check dependencies and to see if already installed
+if [ ${ServerMailStatus} != "VMAIL_SERVER" ]; then
+/bin/echo "
+The email server must be installed first. Run: installpostfix
+"
+exit 8; fi
+if [ ${ServerPFAPath} = "PFA_NOT_ALLOWED" ]; then
+/bin/echo "
+This is a backup email server and PostfixAdmin is not allowed.
+"
+exit 0; fi
+if [ ${ServerPFAPath} != "PFA_NOT_INSTALLED" ]; then
+/bin/echo "
+PostfixAdmin is already installed.
+"
+exit 0; fi
+if /bin/grep -Fq "Email Control Records" /opt/verb/conf/inkdns/inkzones/db.${emailTLDURI}; then
+/bin/echo "Proceeding..."; else
+/bin/echo "
+Email Control Records not declared in the email domain DNS zone file. This won't work.
+"
+exit 8; fi
+
+# Options & secure path
+if [ -n "$1" ]; then
+  PFAFOLDER=$1 # We need this variable in our Finish echo statement when running via installinkvmail
+else
+  PFAFOLDER="$(/usr/bin/pwgen -0 5 1)" # We need this variable in our Finish echo statement when running via installinkvmail
+fi
+if [ -n "$2" ]; then
+  PFAPASS=$2 # We need this variable in our Finish echo statement when running via installinkvmail
+else
+  PFAPASS="$(pwgen -1Bcn 10)" # We need this variable in our Finish echo statement when running via installinkvmail
+fi
+
+# Download from repo
+cd /srv/www/email || exit 0
+/opt/verb/serfs/inkget ${CVAPPNAME} check; wait
+if [ "$?" = 4 ]; then
+  /bin/echo "Repo failed to retrieve the file."
+  exit 4; fi
+
+## Fix a bug
+/bin/mkdir -p /srv/www/email/postfixadmin/templates_c
+
+# Copy the branding files
+/bin/cp /opt/verb/conf/lib/vmail/postfixadmin/pfapics/images/logo-ink.png /srv/www/email/postfixadmin/public/images/
+
+# Settings
+/usr/bin/cp /opt/verb/conf/lib/vmail/postfixadmin/postfixadmin286-config.local.php /srv/www/email/postfixadmin/config.local.php
+/bin/sed -i "s/emailTLDURI286/${emailTLDURI}/g" /srv/www/email/postfixadmin/config.local.php
+/bin/sed -i "s/nameURI286/${nameURI}/g" /srv/www/email/postfixadmin/config.local.php
+/bin/sed -i "s/mailpassword/mailpass${ServerMailPassApg}/g" /srv/www/email/postfixadmin/config.local.php
+/bin/sed -i "s/pfafolder286/${PFAFOLDER}/g" /srv/www/email/postfixadmin/config.local.php
+if [ "${ServerRCPath}" != "RC_NOT_INSTALLED" ]; then
+  /bin/sed -i "s/rcfolder286/${ServerRCPath}/g" /srv/www/email/postfixadmin/config.local.php
+else
+  /bin/sed -i "/rcfolder286/d" /srv/www/email/postfixadmin/config.local.php
+fi
+## Whether web-generated (secure) or auto-generated password
+/opt/verb/serfs/setpfapass ${PFAPASS}
+
+# Replace
+/bin/sed -i "s/emailTLDURI286/${emailTLDURI}/g" /srv/www/email/postfixadmin/config.local.php
+/bin/sed -i "s/nameURI286/${nameURI}/g" /srv/www/email/postfixadmin/config.local.php
+/bin/sed -i "s/mailpassword/mailpass${ServerMailPassApg}/g" /srv/www/email/postfixadmin/config.local.php
+/bin/sed -i "s/rcfolder286/${ServerRCPath}/g" /srv/www/email/postfixadmin/config.local.php
+/bin/sed -i "s/pfafolder286/${PFAFOLDER}/g" /srv/www/email/postfixadmin/config.local.php
+
+# Copy the branding files
+/bin/cp /opt/verb/conf/lib/vmail/postfixadmin/pfapics/images/logo-ink.png /srv/www/email/postfixadmin/public/images/
+/bin/cp /opt/verb/conf/lib/vmail/postfixadmin/pfapics/images/favicon-ink.ico /srv/www/email/postfixadmin/public/images/
+
+# Webserver
+/usr/bin/mkdir -p /srv/www/verb/${ServerEmailTLD}.pfa
+/bin/ln -sfn /srv/www/email/postfixadmin/public /srv/www/verb/${ServerEmailTLD}.pfa/${PFAFOLDER}; wait
+/usr/bin/chown -R www:www /srv/www/verb/${ServerEmailTLD}.pfa; wait
+/usr/bin/chown -R www:www /srv/www/email/postfixadmin; wait
+## Hosting conf
+if [ ${ServerType} = "laemp" ]; then
+  /bin/cp /opt/verb/conf/site-files/conf/po-nginx.conf /opt/verb/conf/webserver/nginx/sites-available/po.${emailTLDURI}.conf
+  /bin/cp /opt/verb/conf/site-files/conf/po-httpd.conf /opt/verb/conf/webserver/httpd/sites-available/po.${emailTLDURI}.conf
+  /opt/verb/serfs/ensitenginx po.${emailTLDURI}
+  /opt/verb/serfs/ensiteapache po.${emailTLDURI}
+  /usr/bin/systemctl restart nginx; wait
+  /usr/bin/systemctl restart httpd; wait
+elif [ ${ServerType} = "lemp" ]; then
+  /bin/cp /opt/verb/conf/site-files/conf/po-nginx.conf /opt/verb/conf/webserver/nginx/sites-available/po.${emailTLDURI}.conf
+  /opt/verb/serfs/ensitenginx po.${emailTLDURI}
+  /usr/bin/systemctl restart nginx; wait
+elif [ ${ServerType} = "lamp" ]; then
+  /bin/cp /opt/verb/conf/site-files/conf/po-httpd.conf /opt/verb/conf/webserver/httpd/sites-available/po.${emailTLDURI}.conf
+  /opt/verb/serfs/ensiteapache po.${emailTLDURI}
+  /usr/bin/systemctl restart httpd; wait
+fi
+
+# inkCert
+. /opt/verb/conf/inkcert/cli-ini/siteinkcert.${emailURI}
+if [ "${InkCerted}" = "DONE_LE" ]; then
+  /opt/verb/serfs/inkcertaddle po.${emailURI} ${emailURI}
+elif [ "${InkCerted}" = "DONE_CB" ]; then
+  /opt/verb/serfs/inkcertaddcb po.${emailURI} ${emailURI}
+elif [ "${InkCerted}" = "DONE_CBSINGLE" ]; then
+  /opt/verb/serfs/inkcertaddcbsingle po.${emailURI}
+elif [ "${InkCerted}" = "DONE_SC" ]; then
+  /opt/verb/serfs/inkcertaddsc po.${emailURI}
+fi
+
+# DNS
+/bin/sed -i "s/; Email Control Records/; Email Control Records\npfa.${emailTLDURI}. \tIN  A \t${ServerIPv4}\npfa.${emailTLDURI}. \tIN  AAAA \t${ServerIPv6}/" /opt/verb/conf/inkdns/inkzones/db.${emailTLDURI}
+/bin/sed -i "s/; Email Control Records/; Email Control Records\n${ServerARPAIPv4} \tIN  PTR \tpfa.${emailTLDURI}.\n${ServerARPAIPv6} \tIN  PTR \tpfa.${emailTLDURI}./" /opt/verb/conf/inkdns/inkzones/nv.${emailTLDURI}
+
+# Write the config
+/bin/sed -i "s/ServerPFAPath.*/ServerPFAPath=\"${PFAFOLDER}\"/g" /opt/verb/conf/servermailpath
+
+# Finish
+/bin/echo "
+Postfix Admin is installed and ready to be set up at: https://po.${emailTLDURI}/${PFAFOLDER}/setup.php
+Use the Setup password: '${PFAPASS}'
+(It may be using self-signed SSL certificates until the production certificates are installed.)
+When finished, run ./postinstallpfa
+"
+
+
+
+
+if [ -e "/opt/verb/mods/installpfa.after" ]; then . /opt/verb/mods/installpfa.after; fi # Follows this script

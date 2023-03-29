@@ -1,0 +1,12 @@
+#!/bin/bash
+## This is a config file for the status of inkCert installations
+
+InkCertEmail="inkcertemail286"
+InkCertInstalled="NOT_YET"
+FirstInkCertAdd="NOT_YET"
+FirstInkCertAddLE="NOT_YET"
+FirstInkCertAddCB="NOT_YET"
+FirstInkCertAddCBWILD="NOT_YET"
+InkCertSSLCA="NOT_SET"
+InkCertSSHCA="NOT_SET"
+

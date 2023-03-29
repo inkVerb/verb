@@ -1,0 +1,59 @@
+#!/bin/bash
+#inkVerbInk! verb.ink
+if [ "$(id -u)" -ne 0 ]; then echo "The 'ink' command must be run with sudo or as root."; exit 0; fi
+
+# This is the "Inkman" who manages a Verber by interacting with "Serfs", "Knights", the "Donjon", et cetera.
+## This uses "ink" to execute commands relevant to a Verber, similarly to how "apt", "yum", and "pacman" manage packages.
+## ink streamlines help queries, checks for required parameters, and provides a production-worthy layer of "fool-proofing".
+## ink retrieves available options, tools, settings, notes, parameter requirements, et cetera from the Verber assets themselves using functions & tools like grep and occasionally a central index. This is partially why formatting Serfs is important.
+
+# How to use:
+## ink action schema setting1 setting2 setting3 setting4 -o option1 option2 option3
+
+# Put the path to the setting file here
+export INKSET=/opt/verb/ink/ink.set
+## Include the settings & functions
+. ${INKSET}
+. ${iDir}/ink.functions
+
+# Settings, Options, and input variables
+## Parse arguments
+export ACTION=${1}
+export SCHEMA=${2}
+export HELPOPT=${3}
+shift 2
+ALLARGS="$*"
+
+# Help?
+## Ink
+if [ "${ACTION}" == "-h" ] || [ "${ACTION}" == "--help" ]; then
+usageInk
+exit 0; fi
+
+## Action help
+if [ "${SCHEMA}" == "-h" ] || [ "${SCHEMA}" == "--help" ]; then
+usageSur "${ACTION}"
+exit 0; fi
+
+## Schema help
+if [ "${HELPOPT}" == "-h" ] || [ "${HELPOPT}" == "--help" ]; then
+usageSur "${ACTION}${SCHEMA}"
+exit 0; fi
+
+# Lists
+## Ink
+if [ "${ACTION}" == "-a" ] || [ "${ACTION}" == "--actions" ]; then
+getActions
+exit 0; fi
+
+## Action
+if [ "${SCHEMA}" == "-s" ] || [ "${SCHEMA}" == "--schemas" ]; then
+getSchemas "${ACTION}"
+exit 0; fi
+
+# Run the .ink file
+if [ -f "${Felt}/${ACTION}${SCHEMA}.ink" ]; then
+  ${Felt}/${ACTION}${SCHEMA}.ink ${ALLARGS}
+else
+  echo "Action and schema unknown. Use: ink -h"
+fi

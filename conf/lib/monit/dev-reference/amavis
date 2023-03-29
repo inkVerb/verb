@@ -1,0 +1,7 @@
+check process amavisd with pidfile /var/run/amavis/amavisd.pid
+  every 5 cycles
+  group mail
+  start program = "/etc/init.d/amavis start"
+  stop  program = "/etc/init.d/amavis stop"
+  if failed port 10024 protocol smtp then restart
+  if 5 restarts within 25 cycles then timeout

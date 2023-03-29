@@ -1,0 +1,36 @@
+# This is the setting file for the inkVerb inkman "ink"
+## Paths must be absolute
+## setup places this in the ink/ directory and confirms the $vDir setting
+
+# Installed "verb" directory
+export vDir="/opt/verb"
+
+# Installed "ink" location
+export iDir"=${vDir}/ink"
+
+# Ink
+export InkFort="${iDir}"
+export InkHelpDir="${iDir}/help"
+export Felt="${iDir}/felt"
+export InkPB="${iDir}/actions.pb"
+export PHPCities="${iDir}/PHPcities.pb"
+export LogDir="${iDir}/log"
+export InkRun="${iDir}/ink.run"
+
+# Verb
+export Serfs="${vDir}/serfs"
+export Conf="${vDir}/conf"
+export Donjon="${vDir}/donjon"
+export Droids="${vDir}/droids"
+export Tools="${vDir}/tools"
+export Repo="${vDir}/repo"
+export Boss="${vDir}/boss"
+export Docs="${vDir}/docs"
+export WWWhtml="/srv/www/html"
+export VappsDir="/srv/www/vapps"
+export WWWDomains="/srv/www/domains"
+export WWWForwards="/srv/www/forwards"
+export FPTFilers="/srv/vip/filers"
+
+# Settings
+export VerbTLDs=( one ink email blue kiwi red vip )

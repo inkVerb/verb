@@ -1,0 +1,15 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This displays the vbak backup tools currently in cron
+
+# How to use:
+## ./showvbakstatus
+
+ls /etc/cron.d/*-vbak
+
+
+
+
+
+if [ -e "/opt/verb/mods/showvbakstatus.after" ]; then . /opt/verb/mods/showvbakstatus.after; fi # Follows this script

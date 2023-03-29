@@ -1,0 +1,130 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This installs inkVPN, thus preparing the server to create a client file with inkvpnclient
+
+# How to use:
+## ./inkvpninstall
+
+
+# Include the config
+. /opt/verb/conf/inkvpn/inkvpnstatus
+
+# Check if already installed
+if [ "${InkVPNInstalled}" != "NOT_YET" ]; then
+/bin/echo "inkVPN already installed. Doing nothing."; exit 0; fi
+
+# Set the email
+/opt/verb/serfs/inkvpnemail
+## Reload the configs
+. /opt/verb/conf/inkvpn/inkvpnstatus
+
+# Install
+/usr/bin/apt-get install -y openvpn easy-rsa
+/bin/mkdir -p /opt/openvpn
+cd /opt/openvpn || exit 0
+make-cadir certificates
+#/bin/ln -sfn /opt/openvpn/certificates /opt/verb/conf/inkvpn/ # Before this was commented, all other instances of '/opt/openvpn/certificates' was '/opt/verb/conf/inkvpn/certificates', changed due to security concerns of permissions
+cd /opt/openvpn/certificates || exit 0
+
+# Locale & config settings
+/bin/sed -i "s/export KEY_ConfIG=/#export KEY_ConfIG=/" /opt/openvpn/certificates/vars
+/bin/sed -i "s/export KEY_COUNTRY=/#export KEY_COUNTRY=/" /opt/openvpn/certificates/vars
+/bin/sed -i "s/export KEY_PROVINCE=/#export KEY_PROVINCE=/" /opt/openvpn/certificates/vars
+/bin/sed -i "s/export KEY_CITY=/#export KEY_CITY=/" /opt/openvpn/certificates/vars
+/bin/sed -i "s/export KEY_ORG=/#export KEY_ORG=/" /opt/openvpn/certificates/vars
+/bin/sed -i "s/export KEY_EMAIL=/#export KEY_EMAIL=/" /opt/openvpn/certificates/vars
+/bin/sed -i "s/export KEY_OU=/#export KEY_OU=/" /opt/openvpn/certificates/vars
+/bin/echo "
+# Added by inkVerb #
+export KEY_ConfIG=\"\$EASY_RSA/openssl-1.0.0.cnf\"
+export KEY_COUNTRY=\"${INKVPNCountr}\"
+export KEY_PROVINCE=\"${InkVPNProvin}\"
+export KEY_CITY=\"${InkVPNCity}\"
+export KEY_ORG=\"${InkVPNOrg}\"
+export KEY_EMAIL=\"${InkVPNClientEmail}\"
+export KEY_OU=\"${InkVPNOU}\"
+## Added by inkVerb ##
+" >> /opt/openvpn/certificates/vars
+
+# OpenSSL conf
+echo '
+[server_cert]
+basicConstraints = CA:FALSE
+nsCertType = server
+nsComment = "OpenSSL Generated Server Certificate"
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid,issuer:always
+keyUsage = critical, digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth
+
+[client_cert]
+basicConstraints = CA:FALSE
+nsCertType = client, email
+nsComment = "OpenSSL Generated Client Certificate"
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid,issuer
+keyUsage = critical, nonRepudiation, digitalSignature, keyEncipherment
+extendedKeyUsage = clientAuth, emailProtection' >> $EASY_RSA/openssl-1.0.0.cnf
+
+# OpenVPN Settings
+gzip -d -c /usr/share/doc/openvpn/examples/sample-config-files/server.conf.gz | tee /etc/openvpn/server.conf > /dev/null
+/bin/sed -i "s/^port.*/port ${InkVPNPort}/" /etc/openvpn/server.conf
+
+# Firewall
+/usr/bin/ufw allow openvpn
+/usr/bin/ufw allow from any to any port ${InkVPNPort} proto udp
+## If bugs, try uncommenting:
+#/usr/bin/ufw allow 1194/udp
+#/usr/bin/ufw allow OpenSSH
+
+## Uncomment an important line to allow Internet traffic on the VPN tunnel
+/bin/sed -i 's/;push "redirect-gateway def1 bypass-dhcp"/push "redirect-gateway def1 bypass-dhcp"/' /etc/openvpn/server.conf
+
+# IP table to NAT the VPN
+## For this session only
+iptables -t nat -A POSTROUTING -s 10.8.0.0/24 -o eth0 -j MASQUERADE
+## For after reboot
+### DEV NOTE: This "should" be added as the first rule in file, before all others..., but so far it works with `/bin/echo ... >>` to add at the end. If something doesn't work, try putting it at the front of the file as the first rule.
+/bin/echo "
+# Added by inkVerb #
+*nat
+:POSTROUTING ACCEPT [0:0]
+-A POSTROUTING -s 10.8.0.0/8 -o eth0 -j MASQUERADE
+COMMIT
+## Added by inkVerb ##" >> /etc/ufw/before.rules
+
+# Packet forwarding
+/bin/sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/' /etc/sysctl.conf
+/bin/sed -i 's/#net.ipv6.conf.all.forwarding=1/net.ipv6.conf.all.forwarding=1/' /etc/sysctl.conf
+## Allow packet forwarding through the firewall
+/bin/sed -i 's/DEFAULT_FORWARD_POLICY="DROP"/DEFAULT_FORWARD_POLICY="ACCEPT"/' /etc/default/ufw
+## Reload
+sysctl -p /etc/sysctl.conf
+ufw reload
+
+# Create the keys for the server
+/opt/verb/serfs/inkvpncakey
+
+# Start the OpenVPN server
+/bin/systemctl start openvpn@server
+## Check status for the record
+if [ "$(/bin/systemctl is-active openvpn@server)" != "active" ]; then
+  /bin/systemctl restart openvpn@server
+fi
+if [ "$(/bin/systemctl is-active openvpn@server)" = "active" ]; then
+  /bin/echo "Good to go! Systemctl check on inkVPN says \"active\"!"
+else
+  /bin/echo "Something's wrong. Systemctl says OpenVPN is not active. I quit."; exit 6
+fi
+
+# Create the keys and login file for the client
+/opt/verb/serfs/inkvpnclientkey
+
+# Finish
+/bin/sed -i "s/InkVPNInstalled=.*/InkVPNInstalled=\"INSTALLED_OPENVPN\"/" /opt/verb/conf/inkvpn/inkvpnstatus
+
+
+
+
+if [ -e "/opt/verb/mods/inkvpninstall.after" ]; then . /opt/verb/mods/inkvpninstall.after; fi # Follows this script

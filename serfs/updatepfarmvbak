@@ -1,0 +1,21 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This removes the Postfix Admin backup generated when updating Postfix Admin
+# Prereq: Postfix Admin was updated via updaterc and is functioning properly
+
+# How to use:
+## ./updatepfarmvbak
+
+
+/bin/rm -rf /srv/www/email/postfixadmin.vbak
+
+/bin/echo "
+Postfix Admin update backup removed.
+"
+
+
+
+
+
+if [ -e "/opt/verb/mods/updatepfarmvbak.after" ]; then . /opt/verb/mods/updatepfarmvbak.after; fi # Follows this script

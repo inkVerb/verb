@@ -1,0 +1,43 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This imports a MySQL/MariaDB database from a .sql file with the same name
+## The .sql file to import must be in the vip/sql/ directory
+## Omit or include the .sql extension on the end of the file name
+
+# How to use:
+## ./mysqlin [ database name ]
+
+usagenotes="This imports a MySQL/MariaDB database from a .sql file with the same name"
+usageformat="mysqlin [ database name ]"
+usageexample="mysqlin myGreat99DB"
+hierarchy=( primary )
+vsetnames=( "Database name" )
+vsettypes=( isSQLDatabasename )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( mysqlinstall )
+prerequesite=( mysqlnewdb )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/mysqlin.replace" ]; then . /opt/verb/mods/mysqlin.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/mysqlin.before" ]; then . /opt/verb/mods/mysqlin.before; fi # Precedes this script
+
+
+INPUT=$1
+DBASE=${INPUT%.sql}
+
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${DBASE} < /srv/vip/sql/${DBASE}.sql
+
+if [ $? = "0" ]; then
+  echo "${DBASE} database restored."
+fi
+
+
+
+
+if [ -e "/opt/verb/mods/mysqlin.after" ]; then . /opt/verb/mods/mysqlin.after; fi # Follows this script

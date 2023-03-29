@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# This sets the proper names in each script per mod name from the serf-header raw format
+
+for file in *; do
+  if [ "$file" = "${0}" ]; then continue; fi 
+  sed -i '/$infoINKonly/a if [ -e "\/opt\/verb\/mods\/${0}.before" ]; then . \/opt\/verb\/mods\/${0}.before; fi # Precedes this script' $file
+  sed -i '/$infoINKonly/a if [ -e "\/opt\/verb\/mods\/${0}.replace" ]; then . \/opt\/verb\/mods\/${0}.replace; return 0; fi # Replaces this script' $file
+  echo '
+if [ -e "/opt/verb/mods/0append.after" ]; then . /opt/verb/mods/0append.after; fi # Follows this script' >> $file
+done
+

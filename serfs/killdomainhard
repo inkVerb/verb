@@ -1,0 +1,86 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This "hard" kills a domain added with adddomain
+## This removes everything. The server probably wouldn't even know that the domain existed, except for any connected vapp
+
+## This DOES NOT:
+### Remove any connected vapp
+
+## This DOES:
+### Remove the SSL certificate for the domain and all subdomains thereof.
+### Remove files formerly in the domain from the server, which are retained in the domains folder that an ftpvip can access
+### Remove files for subdomains in the domains folder, just the same.
+### Remove any subdomain folders belonging to the domain.
+### Remove opekDKIM/inkDKIM keys.
+### Remove the inkDNS zone file
+
+# How to use:
+## ./killdomainhard [ domaintokill.tld ]
+
+usagenotes="This 'hard' kills a domain added with adddomain, removing every trace of the domain except a connected vapp"
+usageformat="killdomainhard [ domaintokill.tld ]"
+usageexample="killdomainhard inkisaverb.com"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( adddomain )
+usedby=(  )
+useserfs=( killdomainshell )
+useconfigs=( servermailpath inkdnsconf inkcertstatus )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/killdomainhard.replace" ]; then . /opt/verb/mods/killdomainhard.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/killdomainhard.before" ]; then . /opt/verb/mods/killdomainhard.before; fi # Precedes this script
+
+
+# Dependencies
+if ! /bin/grep -q 'InkCertInstalled="DONE"' /opt/verb/conf/inkcertstatus; then
+  /usr/bin/echo "Install inkCert first, I quit."; exit 8
+fi
+if ! /bin/grep -q 'InkDNSStat="INSTALLED"' /opt/verb/conf/inkdnsconf; then
+  /usr/bin/echo "Install inkDNS first, I quit."; exit 8
+fi
+if ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpath; then
+  /usr/bin/echo "Install Postfix Vmail first, I quit."; exit 8
+fi
+
+KILLDOMAIN=$1
+
+# Remove all config files, symlinks, and directories
+if [ ${ServerType} = "lemp" ]; then
+  /bin/rm -f /etc/nginx/sites-enabled/${KILLDOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/nginx/sites-available/${KILLDOMAIN}.conf
+  /usr/bin/systemctl restart nginx
+elif [ ${ServerType} = "lamp" ]; then
+  /bin/rm -f /etc/httpd/sites-enabled/${KILLDOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/httpd/sites-available/${KILLDOMAIN}.conf
+  /usr/bin/systemctl restart httpd
+elif [ ${ServerType} = "laemp" ]; then
+  /bin/rm -f /etc/httpd/sites-enabled/${KILLDOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/httpd/sites-available/${KILLDOMAIN}.conf
+  /bin/rm -f /etc/nginx/sites-enabled/${KILLDOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/nginx/sites-available/${KILLDOMAIN}.conf
+  /usr/bin/systemctl restart httpd
+  /usr/bin/systemctl restart nginx
+fi
+/bin/rm -f /srv/www/html/${KILLDOMAIN}
+/bin/rm -f /srv/www/html/*${KILLDOMAIN}
+/bin/rm -rf /srv/www/domains/${KILLDOMAIN}
+/bin/rm -rf /srv/www/domains/*${KILLDOMAIN}
+
+# Other services
+/opt/verb/serfs/killdomainshell ${KILLDOMAIN}; wait
+
+# Finish
+/bin/echo "${KILLDOMAIN} is all gone, bye bye. Some vapps might remain.
+"
+
+
+
+
+if [ -e "/opt/verb/mods/killdomainhard.after" ]; then . /opt/verb/mods/killdomainhard.after; fi # Follows this script

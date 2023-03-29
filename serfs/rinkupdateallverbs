@@ -1,0 +1,48 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This remote runs inkdnsaddslaveallverbs
+
+# How to use:
+## ./rinkupdateallverbs
+
+usagenotes="This remote runs inkdnsaddslaveallverbs"
+usageformat="rinkupdateallverbs"
+usageexample="rinkupdateallverbs"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( "Controlled by Rink" )
+prerequesite=(  )
+usedby=( rink::addvps )
+useserfs=(  )
+useconfigs=( servernameip )
+
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/rinkupdateallverbs.replace" ]; then . /opt/verb/mods/rinkupdateallverbs.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/rinkupdateallverbs.before" ]; then . /opt/verb/mods/rinkupdateallverbs.before; fi # Precedes this script
+
+
+# Configs
+. /opt/verb/conf/servernameip
+
+# Already configured?
+if [ "$RinkConfigured" != "true" ]; then
+	/usr/bin/echo "Rink NS server keys not configured, this won't work"
+	exit 0
+fi
+
+# Check for conflicts
+/opt/verb/serfs/rinkcheck inkdnsaddslaveallverbs
+/opt/verb/serfs/rinkcheck killinkdnsslavednsallverbs
+
+# Insert the function statements
+/usr/bin/ssh ns1 "/usr/bin/echo 'inkdnsaddslaveallverbs ${ServerName}-${ServerTLD}' > /srv/sns/${ServerName}-${ServerTLD}/calls/inkdnsaddslaveallverbs"
+/usr/bin/ssh ns2 "/usr/bin/echo 'inkdnsaddslaveallverbs ${ServerName}-${ServerTLD}' > /srv/sns/${ServerName}-${ServerTLD}/calls/inkdnsaddslaveallverbs"
+
+
+if [ -e "/opt/verb/mods/rinkupdateallverbs.after" ]; then . /opt/verb/mods/rinkupdateallverbs.after; fi # Follows this script

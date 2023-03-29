@@ -1,0 +1,16 @@
+#!/bin/bash
+#inkVerbKnight! verb.ink
+
+# This displays the current Verber type
+
+# How to use:
+## ./showverbtype
+
+. /opt/verb/conf/inklists/verberverno
+/bin/echo "${VTYPE}"
+
+
+
+
+
+if [ -e "/opt/verb/mods/showverbtype.after" ]; then . /opt/verb/mods/showverbtype.after; fi # Follows this script

@@ -1,0 +1,64 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This checks to see if a serf script is waiting in a verb user call directory on both NS Servers
+## This is used by rink serfs to make sure that a conflicting command is not pending in the sns/ verb rink user directory
+
+# How to use:
+## ./rinkcheck [ serf to check ]
+
+usagenotes="This checks to see if a serf script is waiting in a verb user call directory on both NS Servers"
+usageformat="rinkcheck"
+usageexample="rinkcheck"
+hierarchy=( secondary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( "Controlled by Rink" )
+prerequesite=(  )
+usedby=( rinkadddomain rinkkilldomain rinkupdateallverbs rinkkillallverbs )
+useserfs=(  )
+useconfigs=( servernameip )
+
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/rinkcheck.replace" ]; then . /opt/verb/mods/rinkupdateallverbs.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/rinkcheck.before" ]; then . /opt/verb/mods/rinkupdateallverbs.before; fi # Precedes this script
+
+
+checkserf=$1
+
+# Configs
+. /opt/verb/conf/servernameip
+
+# Already configured?
+if [ "$RinkConfigured" != "true" ]; then
+	/usr/bin/echo "Rink NS server keys not configured, this won't work"
+	exit 0
+fi
+
+# NS1
+i=1
+already="false"
+/usr/bin/ssh -q ns1 [[ -f "/srv/sns/${ServerName}-${ServerTLD}/calls/${checkserf}" ]] && already="true"
+while [ $already = "true" ]; do
+	if [ "$i" -ge "20" ]; then echo "Call for ${checkserf} is already pending on NS1 for over 1 minute. Try later."; exit 0; fi
+	/usr/bin/ssh -q ns1 [[ -f "/srv/sns/${ServerName}-${ServerTLD}/calls/${checkserf}" ]] || already="false"
+	/usr/bin/sleep 3
+	i=$(( i + 1 ))
+done
+
+# NS2
+i=1
+already="false"
+/usr/bin/ssh -q ns2 [[ -f "/srv/sns/${ServerName}-${ServerTLD}/calls/${checkserf}" ]] && already="true"
+while [ $already = "true" ]; do
+	if [ "$i" -ge "20" ]; then echo "Call for ${checkserf} is already pending on NS2 for over 1 minute. Try later."; exit 0; fi
+	/usr/bin/ssh -q ns2 [[ -f "/srv/sns/${ServerName}-${ServerTLD}/calls/${checkserf}" ]] || already="false"
+	/usr/bin/sleep 3
+	i=$(( i + 1 ))
+done
+
+if [ -e "/opt/verb/mods/rinkcheck.after" ]; then . /opt/verb/mods/rinkupdateallverbs.after; fi # Follows this script

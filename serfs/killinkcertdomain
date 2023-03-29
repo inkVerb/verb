@@ -1,0 +1,54 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This removes all inkCert files entirely for inkCert-LE, inkCert-CB, and inkCert-CB-Single
+
+# How to use:
+## ./killinkcertdomain [ domain.tld ]
+
+usagenotes="This removes all inkCert files entirely for inkCert-LE, inkCert-CB, and inkCert-CB-Single"
+usageformat="killinkcertdomain [ domain.tld ]"
+usageexample="killinkcertdomain inkisaverb.com"
+hierarchy=( tertiary killdomainshell )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( newdomainshell )
+usedby=( killdomainshell )
+useserfs=(  )
+useconfigs=( inkcertstatus inkdnsconf servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/killinkcertdomain.replace" ]; then . /opt/verb/mods/killinkcertdomain.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/killinkcertdomain.before" ]; then . /opt/verb/mods/killinkcertdomain.before; fi # Precedes this script
+
+
+# Dependencies
+if ! /bin/grep -q 'InkCertInstalled="DONE"' /opt/verb/conf/inkcertstatus; then
+  /usr/bin/echo "Install inkCert first, I quit."; exit 8
+fi
+if ! /bin/grep -q 'InkDNSStat="INSTALLED"' /opt/verb/conf/inkdnsconf; then
+  /usr/bin/echo "Install inkDNS first, I quit."; exit 8
+fi
+if ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpath; then
+  /usr/bin/echo "Install Postfix Vmail first, I quit."; exit 8
+fi
+
+KILLDOMAIN=$1
+
+# Remove inkCert configs
+/bin/rm -f /opt/verb/conf/inkcert/cli-ini/cli.${KILLDOMSHELL}.ini
+/bin/rm -f /opt/verb/conf/inkcert/cli-ini/siteinkcert.${KILLDOMSHELL}
+/bin/rm -f /etc/inkcert/cli.${KILLDOMAIN}.ini
+/bin/rm -rf /etc/inkcert/le/live/${KILLDOMAIN}
+/bin/rm -rf /etc/inkcert/live/${KILLDOMAIN}
+/bin/rm -f /etc/ssl/server/mail/${KILLDOMAIN}.crt
+/bin/rm -f /etc/ssl/server/mail/${KILLDOMAIN}.key
+
+
+
+
+if [ -e "/opt/verb/mods/killinkcertdomain.after" ]; then . /opt/verb/mods/killinkcertdomain.after; fi # Follows this script

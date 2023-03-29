@@ -1,0 +1,14 @@
+When having trouble with the server...
+
+| config.inc.php:
+$config['debug_level'] = 4;
+$config['imap_debug'] = true;
+$config['smtp_debug'] = true;
+
+| dovecot.conf:
+mail_debug = yes
+
+Then check...
+roundcube/logs/errors.log
+journalctl -xn --unit dovecot
+journalctl -xn --unit postfix

@@ -1,0 +1,75 @@
+#!/bin/sh
+#inkVerb! repo donjon dragon, verb.ink
+#set -e
+
+# This updates the InfiniteWP-Admin repo package
+
+# How to use:
+## ./iwpadmin.updaterepo [email address for registration]
+
+# Eg:
+## ./iwpadmin.updaterepo dev@inkisaverb.com
+
+
+# Check email is set
+if [ -z $1 ]; then
+/bin/echo "You must set an email for the repo package in InfiniteWP-Admin."
+exit 8; fi
+
+IWPEMAIL=$1
+CVAPPNAME=iwpadmin
+# Include the config files
+. /opt/verb/conf/serverinkget
+. /opt/verb/conf/inklists/repoverlist
+DISTVER="${iwpadmin}"
+
+if [ $InkGet_Method != "ZJZ" ]; then
+  cd /opt/verb/repo; fi
+
+# Check current version
+for VERFILE in ${CVAPPNAME}.ver.*; do
+if [ "${DISTVER}" -le "$(cat ${VERFILE})" ]; then
+/bin/echo "Current version in repo is up to date. Nothing to do."
+exit 0; fi; done
+
+# Announce
+/bin/echo "Updating the InfiniteWP-Admin package to v${DISTVER}..."
+
+# Get the package
+/usr/bin/wget https://infinitewp.com/iwp-admin-panel-download.php?installedEmail=${IWPEMAIL}
+# Fix the package
+/bin/mv iwp-admin-panel-download.php?installedEmail=${IWPEMAIL} iwpadmin-${DISTVER}.zip
+if [ ! -f "iwpadmin-${DISTVER}.zip" ]; then
+/bin/echo "Failed download."; touch "${CVAPPNAME}.failed"
+exit 4; else
+/bin/rm -f ${CVAPPNAME}.failed; fi
+## Check the hash
+### Every download is different, can't be checked
+#CHECKSHA=$(shasum -a 256 iwpadmin-${DISTVER}.zip)
+#if [ "${CHECKSHA}" = "${iwpadminsha}  iwpadmin-${DISTVER}.zip" ]; then
+#/bin/echo "Download checks out."
+#else
+#/bin/echo "SHA check failed. The downloaded file is not what was expected. Did you set both the IWPAdmin version AND the IWPAdmin SHA per instructions?"
+#exit 4
+#fi
+
+if [ $InkGet_Method != "ZJZ" ]; then
+  # Set it as the new package
+  /bin/rm -f ${CVAPPNAME}.legacy.txz
+  /usr/bin/touch ${CVAPPNAME}.txz
+  /bin/mv ${CVAPPNAME}.txz ${CVAPPNAME}.legacy.txz
+fi
+/usr/bin/echo "Extracting from vendor..."
+/usr/bin/unzip -q iwpadmin-${DISTVER}.zip
+/bin/rm iwpadmin-${DISTVER}.zip
+/bin/mv IWPAdminPanel_v${DISTVER} ${CVAPPNAME}
+if [ $InkGet_Method != "ZJZ" ]; then
+  /opt/verb/serfs.txzin ${CVAPPNAME}; wait
+  /bin/rm -rf ${CVAPPNAME}
+
+  # Make a record of current version
+  /bin/echo "${DISTVER}" > ${CVAPPNAME}.ver.${DISTVER}
+fi
+
+# Finish
+/bin/echo "Downloaded InfiniteWP-Admin v${DISTVER}."

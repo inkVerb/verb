@@ -1,0 +1,11 @@
+#!/bin/sh
+#inkVerb! repo donjon dragon, verb.ink
+set -e
+
+# This shows the list of available wpadd recipes, for humans looking for the app namespace
+
+# How to use:
+## ./wpaddshowlist
+
+/bin/cat /opt/verb/donjon/wpaddsites/wpadd.human.list
+

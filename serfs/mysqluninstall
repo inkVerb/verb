@@ -1,0 +1,48 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This completely removes MySQL/MariaDBL
+## WARNING: This WILL cause the Apocalypse!
+## WARNING: Only use this if the Apocalypse already began and you are ready for fallout.
+## WARNING: Your mail server, if installed, will permanently break and you'll have to install the entire server again.
+## WARNING: Use only if you have a good reason. Re-installing the entire server from backups may save time.
+
+# How to use:
+## ./mysqluninstall
+
+usagenotes="This completely removes MySQL/MariaDBL and WILL bring the Apocalypse on the server; use only if the server Apocalypse has already begone"
+usageformat="mysqlinstall"
+usageexample="mysqlinstall"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( mysqlinstall )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/mysqluninstall.replace" ]; then . /opt/verb/mods/mysqluninstall.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/mysqluninstall.before" ]; then . /opt/verb/mods/mysqluninstall.before; fi # Precedes this script
+
+
+/bin/systemctl stop mysql
+killall -KILL mysql mysqld_safe mysqld
+/usr/bin/apt-get --yes purge mysql-server mysql-client
+/usr/bin/apt-get --yes autoremove --purge
+/usr/bin/apt-get autoclean
+/usr/sbin/deluser --remove-home mysql
+/usr/sbin/delgroup mysql
+/bin/rm -rf /etc/apparmor.d/abstractions/mysql /etc/apparmor.d/cache/usr.sbin.mysqld /etc/mysql /var/lib/mysql /var/log/mysql* /var/log/upstart/mysql.log* /var/run/mysqld
+updatedb
+exit
+
+
+
+
+
+if [ -e "/opt/verb/mods/mysqluninstall.after" ]; then . /opt/verb/mods/mysqluninstall.after; fi # Follows this script

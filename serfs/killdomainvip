@@ -1,0 +1,36 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This removes an existing domain from /srv/vip/_domains/
+
+# How to use:
+## ./killdomainvip [ olddomain.tld ]
+
+usagenotes="This removes an existing domain from /srv/vip/_domains/"
+usageformat="killdomainvip [ domain.tld ]"
+usageexample="killdomainvip inkisaverb.com"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( adddomainvip )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/killdomainvip.replace" ]; then . /opt/verb/mods/killdomainvip.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/killdomainvip.before" ]; then . /opt/verb/mods/killdomainvip.before; fi # Precedes this script
+
+
+OLDDOMAIN=$1
+
+/bin/rm -f /srv/vip/_domains/${OLDDOMAIN}
+
+
+
+
+if [ -e "/opt/verb/mods/killdomainvip.after" ]; then . /opt/verb/mods/killdomainvip.after; fi # Follows this script

@@ -1,0 +1,94 @@
+#!/bin/bash
+#inkVerbKnight! verb.ink
+
+# This removes the DNS configuration for all verb domains based on a given rink user config
+
+# How to use:
+## ./killinkdnsslavednsallverbs [ rink user ]
+
+# Eg:
+## ./killinkdnsslavednsallverbs john.ink
+## ./killinkdnsslavednsallverbs vern.blue
+
+usagenotes="This removes the DNS configuration for all verb domains based on a given rink user config"
+usageformat="killinkdnsslavednsallverbsallverbs [ rink user ]"
+usageexample="killinkdnsslavednsallverbs john.ink
+killinkdnsslavednsallverbs vern.blue"
+hierarchy=( oversight )
+vsetnames=( "Existing rink user in /srv/sns/" )
+vsettypes=( NAME.VTLD )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkdnsinstall make-dns )
+prerequesite=( inkdnsaddslaveallverbs )
+usedby=(  )
+useserfs=( killinkdnsslavedns )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/killinkdnsslavednsallverbs.replace" ]; then . /opt/verb/mods/killinkdnsslavednsallverbs.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/killinkdnsslavednsallverbs.before" ]; then . /opt/verb/mods/killinkdnsslavednsallverbs.before; fi # Precedes this script
+
+
+# Config check
+if [ ! -f "/opt/verb/conf/inkdns/sdns/dnshost" ]; then
+  /bin/echo "This server is not a DNS, I quit."; exit 0
+fi
+
+# Argument check
+if [ -z "$1" ]; then
+  /bin/echo "Not enough arguments, I quit."; exit 0
+fi
+
+# Rink
+RINK="$1"
+
+# Rink user check
+if [ ! -d "/srv/sns/${RINK}" ]; then
+  /bin/echo "This server does not supply rink user ${RINK}, I quit."; exit 0
+fi
+
+# Rink user settings check
+if [ ! -f "/srv/sns/${RINK}/servertldstatus" ] || [ ! -f "/srv/sns/${RINK}/conf" ] || [ ! -f "/srv/sns/${RINK}/siteurilist" ]; then
+  /bin/echo "Rink user ${RINK} not properly configured, this shouldn't be possible. I quit."; exit 0
+fi
+
+. /srv/sns/${RINK}/servertldstatus
+. /srv/sns/${RINK}/siteurilist
+
+# Add the active verb domains, wait so we don't congest the server
+if [ $VERBemail=true ]; then
+/opt/verb/serfs/killinkdnsslavedns ${RINK} ${emailURI} -n 
+fi
+wait
+if [ $VERBone=true ]; then
+/opt/verb/serfs/killinkdnsslavedns ${RINK} ${oneURI} -n 
+fi
+wait
+if [ $VERBink=true ]; then
+/opt/verb/serfs/killinkdnsslavedns ${RINK} ${inkURI} -n 
+fi
+wait
+if [ $VERBblue=true ]; then
+/opt/verb/serfs/killinkdnsslavedns ${RINK} ${blueURI} -n 
+fi
+wait
+if [ $VERBvip=true ]; then
+/opt/verb/serfs/killinkdnsslavedns ${RINK} ${vipURI} -n 
+fi
+wait
+if [ $VERBkiwi=true ]; then
+/opt/verb/serfs/killinkdnsslavedns ${RINK} ${kiwiURI} -n 
+fi
+wait
+if [ $VERBred=true ]; then
+/opt/verb/serfs/killinkdnsslavedns ${RINK} ${redURI} -n 
+fi
+
+# Refresh Bind
+/opt/verb/serfs/inkdnsrefreshbind
+
+
+
+if [ -e "/opt/verb/mods/killinkdnsslavednsallverbs.after" ]; then . /opt/verb/mods/killinkdnsslavednsallverbs.after; fi # Follows this script

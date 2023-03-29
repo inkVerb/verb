@@ -1,0 +1,192 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This sets the settings for this Verber to be an inkNet CA Verber
+## The inkNet domain MUST be the main verb tld and will be set that way automatically. This is for credentials in SSH signing.
+
+# How to use:
+## ./inknetmakeca
+
+
+# Include the config
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+NEWCAURI="${nameURI}"
+NEWCANAME="$(/bin/echo ${NEWCAHOST} | sed 's/\./_/g')"
+if [ "${NEWCAHOST}" = "$(hostname -f)" ]; then
+NEWCAHOST="${hostURI}"
+else
+/bin/echo "The full hostname doesn't match the inkVerb namespace URI and host settings. Fix that before proceeding.
+These are set in /etc/hosts and /etc/hostname
+Check with your hosting provider if you still have trouble.
+I quit."
+exit 8; fi
+
+# inkNet prerequisites
+## Verify that the main domain is installed (this is mainly a DNS record-ready check, the CA's actual URI stands as a subdomain to itself.)
+if [ ! -f /opt/verb/conf/inkcert/cli-ini/siteinkcert.${NEWCAURI} ]; then
+/bin/echo "Bunkertime! ${NEWCAURI} is not on this machine, but it should BE the machine!
+Something is really wronggg here!
+"
+exit 8; fi
+## Verify that this CA Verber candidate is already a Client Verber itself
+if [ ! -f /opt/verb/conf/inknet/rink.client.cnf ]; then
+/bin/echo "Sorry, Bucko. This must be a Verber Client, even to itself, before it can become a CA to anything else.
+
+First run, according to instructions: inknetmakeverberclient
+"
+exit 8; fi
+## Verify not already installed
+if [ -f /opt/verb/conf/inknet/ca.verber.cnf ]; then
+/bin/echo "This Inker already has the inkNet CA installed. This is totally unnecessary.
+"
+exit 0; fi
+## Verify web directory doesn't exist
+if [ -d /srv/www/html/${NEWCAHOST}/inknet ]; then
+/bin/echo "Fascinating, Captain. This is not an Inker CA, but the web folder for it (${NEWCAHOST}/inknet) exists.
+There is no logical explanation. We must purge and begin anew.
+"
+exit 8; fi
+
+# inkCert prerequisites
+. /opt/verb/conf/inkcertstatus
+if [ "${InkCertInstalled}" = "NOT_YET" ]; then
+/bin/echo "inkCert not yet installed. Installing now...
+"
+/opt/verb/serfs/inkcertinstall
+wait
+fi
+
+# Set based on web directory and Apache status
+if [ -e /srv/www/html/${NEWCAHOST} ]; then
+ if [ -f /opt/verb/conf/webserver/httpd/sites-available/${NEWCAHOST}.conf ]; then
+  if [ -e /etc/httpd/sites-enabled/${NEWCAHOST}.conf ]; then
+  /bin/echo "Great, ${NEWCAHOST} already exists..."
+  else
+  /bin/echo "Enabling ${NEWCAHOST}..."
+  /opt/verb/serfs/ensiteapache ${NEWCAHOST}
+  fi
+ else
+ /bin/echo "Cute. The Apache config for ${NEWCAHOST} does not exist, but the web directory does. Fix this how you want and start over, Tiger."
+ exit 8
+ fi
+else
+## Add the full URI as a subdomain
+### Make sure it the Inker has the repo properly setup
+ if [ ! -e /srv/www/domains/${NEWCAHOST} ]; then
+ /bin/echo "Creating ${NEWCAHOST}..."
+## Remove any duplicate, because that can happen in the known plasmaverse and interwebverse.
+  if [ -f /opt/verb/conf/webserver/httpd/sites-available/${NEWCAHOST}.conf ]; then
+  rm -f /opt/verb/conf/webserver/httpd/sites-available/${NEWCAHOST}.conf; fi
+  if [ -e /etc/httpd/sites-enabled/${NEWCAHOST}.conf ]; then
+  rm -f /etc/httpd/sites-enabled/${NEWCAHOST}.conf; fi
+  /opt/verb/serfs/adddomain ${nameTLD} ${nameURI}
+  wait
+### Set up SSL certs based on situation
+#### If not done
+  if /bin/grep -Fq "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${NEWCAURI}; then
+  /bin/echo "Need SSL certs for ${NEWCAURI}. Getting via inkCert-LE (Letsencrypt)..."
+  /opt/verb/serfs/inkcertdole ${NEWCAURI}
+  wait
+  fi
+#### If domain is already done via inkCert-LE
+  if /bin/grep -Fq "InkCerted=DONE_LE" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${NEWCAURI}; then
+  /bin/echo "Need to update inkCert-LE (Letsencrypt) SSL certs for ${NEWCAURI} to include ${nameTLD}.${NEWCAURI}..."
+  /opt/verb/serfs/inkcertreqle ${NEWCAURI} r
+  wait
+  /opt/verb/serfs/inkcertaddallle ${NEWCAURI}
+  wait
+  fi
+#### If domain is already done via inkCert-CB
+  if /bin/grep -Fq "InkCerted=DONE_CB" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${nameURI}; then
+  /bin/echo "Need to update inkCert-CB (Certbot) SSL wildcard certs for ${NEWCAURI} to use ${nameTLD} wildcard certs..."
+  /opt/verb/serfs/inkcertaddcb ${NEWCAURI} ${nameURI}
+  wait
+  fi
+## If the html link doesn't exist but the domain is in a folder on the server.
+ else
+ /bin/echo "Cute. The domain directory for ${NEWCAHOST} exists, but isn't available in www/html. Fix this how you want and start over, Tiger."
+ exit 8
+ fi
+fi
+
+# In case web directory already existed and large if-section above was skipped, but still no inkCert
+if /bin/grep -Fq "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${NEWCAURI}; then
+/bin/echo "Need SSL certs for ${NEWCAURI}. Getting via inkCert-LE (Letsencrypt)..."
+/opt/verb/serfs/inkcertdole ${NEWCAURI}
+else
+/bin/echo "And great, ${NEWCAHOST} already has SSL certs..."
+fi
+
+# Set up download directories
+## For inkNet Certs
+/bin/mkdir -p /srv/www/html/${NEWCAHOST}/inknet
+/bin/chown -R www:www /srv/www/html/${NEWCAHOST}
+
+# Make/verify the CA directories
+/bin/mkdir -p /opt/verb/conf/inknet/clients
+/bin/mkdir -p /opt/verb/conf/inknet/vrk
+/bin/mkdir -p /opt/verb/conf/inknet/verber
+/bin/mkdir -p /root/.ssh/inknet/ca
+if [ "${USER}" != "root" ]; then
+/bin/mkdir -p ~/.ssh/inknet/ca
+fi
+
+# Set CA Verber host key cert that will be made with inknetnewcahostkey
+## Prep addition comments to SSH config
+/bin/echo "### Below added by inkVerb's inkNet ###" >> /etc/ssh/sshd_config
+## Change the location of user keys (to avoid locations such as www-data/.ssh)
+/bin/mkdir -p /etc/ssh/authorized_keys
+### For root, so as not to interfere with other system functions
+if [ -e "/etc/ssh/authorized_keys/root" ] && [ ! -L "/etc/ssh/authorized_keys/root" ]; then
+/bin/echo "/etc/ssh/authorized_keys/root exists, but not as a link. That's not allowed for this configuration. Look at $0 instructions about this directory path."
+exit 8; fi
+/bin/rm -f /etc/ssh/authorized_keys/root
+/bin/ln -sfn /root/.ssh/authorized_keys /etc/ssh/authorized_keys/root
+### In case the user is not root
+if [ "${USER}" != "root" ]; then
+ if [ -e "/etc/ssh/authorized_keys/${USER}" ] && [ ! -L "/etc/ssh/authorized_keys/${USER}" ]; then
+ /bin/echo "/etc/ssh/authorized_keys/${USER} exists, but not as a link. That's not allowed for this configuration. Look at $0 instructions about this directory path for \"\${USER}\"."
+ exit 8; fi
+/bin/rm -f /etc/ssh/authorized_keys/${USER}
+/bin/ln -sfn ~/.ssh/authorized_keys /etc/ssh/authorized_keys/${USER}
+fi
+
+######## NO BEING STRANGE
+#### Change the setting to recognize the new location
+#/bin/echo "## inkNet: Change the location of user keys (to avoid locations such as www-data/.ssh)
+#AuthorizedKeysFile /etc/ssh/authorized_keys/%u" >> /etc/ssh/sshd_config
+##############
+
+## Comment any previous HostCerts - THEY WILL ConfLICT!! (which probably don't exist, but just in case...)
+/bin/sed -i "s/HostCertificate/#inkVerb-COMMENT HostCertificate/g" /etc/ssh/sshd_config
+## Add the standard key to the SSH config
+/bin/echo "HostKey /etc/ssh/inknet/in_cav_${NEWCANAME}_key" >> /etc/ssh/sshd_config
+## Echo in the new settings
+/bin/echo "HostCertificate /etc/ssh/inknet/in_cav_${NEWCANAME}_key-cert.pub" >> /etc/ssh/sshd_config
+
+# Reload SSH services
+/bin/systemctl reload ssh
+/bin/systemctl reload sshd
+
+# Write the CA inkNet configs
+/bin/echo "#!/bin/bash
+# inkNet config, verb.ink
+## This contains information about this CA Verber's credentials used in signing Verber/Vrk Client SSH keys for inkNet
+
+INKNETSTATUS=\"MADE_INSTALL_READY\"
+IAMCAHOST=\"${NEWCAHOST}\"
+IAMCAURI=\"${NEWCAURI}\"
+IAMCANAME=\"${NEWCANAME}\"
+" > /opt/verb/conf/inknet/ca.verber.cnf
+
+# Secure the download bundle inknet/ directory
+/opt/verb/serfs/inknetsecuredldircron
+
+# Finish
+/bin/echo "This server now considers itself an inkNet CA Verber, now just a little more work to do in the flow..."
+
+
+
+
+if [ -e "/opt/verb/mods/inknetmakeca.after" ]; then . /opt/verb/mods/inknetmakeca.after; fi # Follows this script

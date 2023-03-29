@@ -1,0 +1,39 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This decompresses a .tvxz file and places its contents in same directory, all in the PWD
+## The .txz file could simply be renamed to .tar.xz and be used accordingly
+## This alternate extention name is intended to prevent tampering and to maintain consistency within inkVerb deployment
+
+# The .txz file MUST be in the PWD!
+# Do NOT include the .txz extension in the filename parameter!
+
+# How to use:
+## ./vtxzout .txzfile]
+
+# Eg:
+## ./vtxzout mystuff
+
+
+FIL="$1"
+
+# Test for a .tar of the same name
+if [ -e "${FIL}.tar.xz" ]; then
+  /bin/echo "The file ${FIL}.tar.xz exists, which conflicts with this operation. Deal with that out first."
+exit 7; fi
+
+# Move to the proper name
+/bin/mv ${FIL}.txz ${FIL}.tar.xz
+
+# Extract
+/usr/bin/echo "Quietly extracting ${FIL}.tar.xz..."
+/usr/bin/tar xf ${FIL}.tar.xz
+/usr/bin/echo "Done."
+
+# Remove
+/usr/bin/rm ${FIL}.tar.xz
+
+
+
+
+if [ -e "/opt/verb/mods/vtxzout.after" ]; then . /opt/verb/mods/vtxzout.after; fi # Follows this script

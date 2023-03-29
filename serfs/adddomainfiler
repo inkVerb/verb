@@ -1,0 +1,36 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+# This adds an existing domain to an existing ftpfiler's home ~/domains folder
+## Prerequesite: newftpfiler used to create an ftpfiler
+
+# How to use:
+## ./adddomainfiler [ olddomain.tld ] [ filer username ]
+
+usagenotes="This adds an existing domain to an existing ftpfiler's home ~/domains/ folder"
+usageformat="adddomainfiler [ olddomain.tld ] [ filer username ]"
+usageexample="adddomainfiler inkisaverb.com john"
+hierarchy=( primary )
+vsetnames=( "Domain" "Username" )
+vsettypes=( isDomain isUsername )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( newftpfiler )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/adddomainfiler.replace" ]; then . /opt/verb/mods/adddomainfiler.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/adddomainfiler.before" ]; then . /opt/verb/mods/adddomainfiler.before; fi # Precedes this script
+
+OLDDOMAIN=$1
+FILER=$2
+
+/bin/ln -s /srv/www/domains/${OLDDOMAIN} /srv/vsftpd/${FILER}/_domains/${OLDDOMAIN}
+
+
+
+
+if [ -e "/opt/verb/mods/adddomainfiler.after" ]; then . /opt/verb/mods/adddomainfiler.after; fi # Follows this script

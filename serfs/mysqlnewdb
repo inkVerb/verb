@@ -1,0 +1,63 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This creates a new MySQL/MariaDB database and a limited-permissions (client: data & structure) user with password
+
+# How to use:
+## ./mysqlnewdb [ database name ] [ database userename ] [ database user password - optional ]
+
+usagenotes="This creates a new MySQL/MariaDB database and a limited-permissions (client: data & structure) user with password"
+usageformat="mysqlnewdb [ database ename ] [ database userename ] [ database user password - optional ]"
+usageexample="mysqlnewdb myGreat99DB myGreat99DBuser"
+hierarchy=( primary )
+vsetnames=( "Database name" "Database username" )
+vsettypes=( isSQLDatabasename isSQLUserCredential )
+voptnames=( "Database user password" )
+vopttypes=( isSQLUserCredential )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( mysqlinstall )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/mysqlnewdb.replace" ]; then . /opt/verb/mods/mysqlnewdb.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/mysqlnewdb.before" ]; then . /opt/verb/mods/mysqlnewdb.before; fi # Precedes this script
+
+
+DBASE="${1}"
+DBUSER="${2}"
+
+# Auto password
+if [ -z ${3} ]; then
+DBPASSWORD="$(/usr/bin/pwgen -s -1 32)"
+serfOUT="New Password: ${DBPASSWORD}"
+else
+DBPASSWORD="${3}"
+fi
+
+# Create the SQL items
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+CREATE DATABASE ${DBASE} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+GRANT SELECT, INSERT, UPDATE, DELETE, FILE, CREATE, ALTER, INDEX, DROP, CREATE TEMPORARY TABLES, SHOW VIEW, CREATE ROUTINE, ALTER ROUTINE, EXECUTE, CREATE VIEW, EVENT, TRIGGER ON ${DBASE}.* TO '${DBUSER}'@'localhost' IDENTIFIED BY '${DBPASSWORD}';
+FLUSH PRIVILEGES;"
+
+# Create a Verber record
+echo "DBASE=\"${DBASE}\"
+DBUSER=\"${DBUSER}\"
+DBPASSWORD=\"${DBPASSWORD}\"
+UTYPE=\"CLIENT\"" > /opt/verb/conf/mysqldb.${DBASE}
+
+# Create the MySQL login .cnf
+echo "[client]
+user = ${DBUSER}
+password = ${DBPASSWORD}
+database = ${DBASE}
+host = localhost
+" > /opt/verb/conf/mysqldb.${DBASE}.cnf
+
+
+
+
+if [ -e "/opt/verb/mods/mysqlnewdb.after" ]; then . /opt/verb/mods/mysqlnewdb.after; fi # Follows this script

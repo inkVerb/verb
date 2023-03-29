@@ -1,0 +1,82 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This restores a backup .vbak file from an inkVerb app backed-up using backup
+
+# Prereq: The app may already be installed, but will be totally replaced, no symlink from the html/tld.app folder to the vapps/APP folder is needed
+
+# Instructions:
+## The file can have any name, even if you changed it from the original, as long as it ends in .vbak
+## The file MUST be uploaded to the "www/vip" folder, which can be done with vsftp installed and an ftpvip
+
+# How to use:
+## ./backuprestore [app namespace] [filename]
+
+## This uses the same app namespace as installAPPNAME and vapp.APPNAME configs
+## This does not work for ghost sites
+## For WordPress installed to a domain, the namespace follows the format: wp-DOMAIN.TLD or wp-SUB.DOMAIN.TLD
+
+# Eg:
+## ./backuprestore orangehrm verb.orangehrm.sF52.vbak
+## ./backuprestore wp.inkisaverb.com verb.wp.inkisaverb.com.ftU8.vbak
+
+
+APPNAME=$1
+FILENAME=$2
+
+# Include the site config
+. /opt/verb/conf/servernameip
+
+# Backup and remove whatever the original status is
+if [ -e "/opt/verb/conf/vapp.${APPNAME}" ]; then
+. /opt/verb/conf/vapp.${APPNAME}
+cd /srv/www/vapps/${APPNAME}/ || exit 0
+/opt/verb/serfs/mysqlvappex vapp.${APPNAME}; wait
+/bin/mv /opt/verb/conf/vapp.${APPNAME} .
+cd /srv/www/vapps/ || exit 0
+/opt/verb/serfs/vtxzin ${APPNAME}
+/bin/mv ${APPNAME}.txz verb.${APPNAME}.restore-originalbackedup.vbak
+/bin/mv verb.${APPNAME}.restore-originalbackedup.vbak /srv/www/vip/
+/opt/verb/serfs/mysqlkilldb ${APPDBASE}; wait
+/opt/verb/serfs/mysqlkilluser ${APPDDBUSR}; wait
+/bin/rm -rf ${APPNAME}
+fi
+
+# Unpack the file
+cd /srv/www/vip || exit 0
+/bin/mv ${FILENAME} ${APPNAME}.txz
+/opt/verb/serfs/vtxzout ${APPNAME}; wait
+/bin/mv ${APPNAME} /srv/www/vapps/
+
+# Set up the vapp symlink
+/opt/verb/serfs/setvapplinkon ${APPNAME}
+
+# Restore and include the app config
+/bin/mv /srv/www/vapps/${APPNAME}/vapp.${APPNAME} /opt/verb/conf/
+. /opt/verb/conf/vapp.${APPNAME}
+
+# Create the SQL database
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+CREATE DATABASE ${APPDBASE} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+GRANT ALL PRIVILEGES ON ${APPDBASE}.* TO '${APPDDBUSR}'@'localhost' IDENTIFIED BY '${APPDDBPAS}';
+FLUSH PRIVILEGES;"
+
+# Restore the database
+cd /srv/www/vapps/${APPNAME} || exit 0
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${APPDBASE} < ${APPDBASE}.sql; wait
+/bin/rm -f ${APPDBASE}.sql
+/bin/rm -f servernameip*
+
+# Own
+/bin/chown -R www:www /srv/www/vapps/${APPNAME}
+
+# Finish
+/bin/echo "${APPNAME} has been restored and all its backup files removed from this server.
+
+A backup of the previous ${APPNAME} on this server has been saved in the vip folder just in case.
+"
+
+
+
+
+if [ -e "/opt/verb/mods/backuprestore.after" ]; then . /opt/verb/mods/backuprestore.after; fi # Follows this script

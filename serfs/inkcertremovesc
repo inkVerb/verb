@@ -1,0 +1,148 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This script removes the server credentials and certificates for inkCert Self-Cert certs for a domain and replaces the Snakeoil certificate
+## It applies only to one domain/subdomain at a time
+## Prerequesite: inkcertrevokesc
+## This is intended as a subscript of inkcertundosc
+
+
+# Dev NOTE:
+## The portion of this script that calls the CA to revoke the cert has not been written yet.
+
+# How to use:
+## ./inkcertremovesc [domain.tld or sub.domain.tld]
+
+#Eg:
+## ./inkcertremovesc inkisaverb.com
+## ./inkcertremovesc YOURNAME.verb.one
+## ./inkcertremovesc owncloud.YOURNAME.verb.blue
+
+
+DOMAIN=$1
+
+# Include the config
+. /opt/verb/conf/servertype
+
+if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
+  ## Check Nginx config status
+  if /bin/grep -Fq "#INKVERB-INKCERT=DONE_SC" /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf ; then
+  /bin/echo "Removing inkCert-IC configs from ${DOMAIN}..."
+  else
+   if /bin/grep -Fq "#INKVERB-INKCERT=DONE_LE" /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf ; then
+    /bin/echo "Server configs use inkCert-LE. Use: inkcertremovele"
+    exit 8
+   elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_CBSINGLE" /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf ; then
+    /bin/echo "Server configs use inkCert Proper. Use: inkcertremovecbsingle"
+    exit 8
+   elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_CB" /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf ; then
+    /bin/echo "Server configs use inkCert-Certbot. Use: inkcertremovecb"
+    exit 8
+   elif /bin/grep -Fq "#INKVERB-INKCERT=NO" /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf ; then
+    /bin/echo "inkCert certs aren't setup. Nothing to do."
+    exit 0
+   else
+    /bin/echo "Something's really wrong. No inkCert, no non-inkCert either. I quit."
+    exit 6
+   fi
+  fi
+
+  ## Check that the certs are no longer live
+  if [ ! -d /etc/inkcert/live/${DOMAIN} ]; then
+
+  ## Uncomment the Snakeoil cert configs
+  /bin/sed -i "s/#INKVERB-INKCERT-COMMENT-ssl_certificate/ssl_certificate/g" /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf
+
+  ## Remove the inkCert cert lines
+  /bin/sed -i '/#INKVERB-INKCERT=DONE_SC/,/#INKVERB-INKCERT-stop/{/#INKVERB-INKCERT=DONE_SC/!{/#INKVERB-INKCERT-stop/!d}}' /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf
+  /bin/sed -i 's/#INKVERB-INKCERT=DONE_SC/#INKVERB-INKCERT=INK_NO_REMOVED/' /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf
+  /bin/sed -i '/#INKVERB-INKCERT-stop/d' /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf
+  /bin/systemctl reloat nginx; wait
+
+  ## Note to the config
+  /bin/sed -i "s/InkCerted=DONE_SC/InkCerted=NO_REMOVED_SC/" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN}
+
+  ## Remove the certs
+  for i in /etc/inkcert/sc/live/${DOMAIN}/*.pem
+  do
+  /bin/rm  "$(readlink -f $i)"
+  /bin/rm "$i"
+  done
+  /bin/rm -rf /etc/inkcert/sc/live/${DOMAIN}
+
+  ## Finish
+  /bin/echo "inkCert has been uninstalled from ${DOMAIN}. Using Snakeoil certs."
+  exit 0
+  else
+
+  ## If they are live
+  /bin/echo "Something's wrong...
+
+The certs still seem to be live. Did you first run inkcertrevoke or simply run inkcertundo?
+"
+  fi
+
+elif [ ${ServerType} = "lamp" ]; then
+  ## Check Apache config status
+  if /bin/grep -Fq "#INKVERB-INKCERT=DONE_SC" /opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf ; then
+  /bin/echo "Removing inkCert-IC configs from ${DOMAIN}..."
+  else
+   if /bin/grep -Fq "#INKVERB-INKCERT=DONE_LE" /opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf ; then
+    /bin/echo "Server configs use inkCert-LE. Use: inkcertremovele"
+    exit 8
+   elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_CBSINGLE" /opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf ; then
+    /bin/echo "Server configs use inkCert Proper. Use: inkcertremovecbsingle"
+    exit 8
+   elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_CB" /opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf ; then
+    /bin/echo "Server configs use inkCert-Certbot. Use: inkcertremovecb"
+    exit 8
+   elif /bin/grep -Fq "#INKVERB-INKCERT=NO" /opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf ; then
+    /bin/echo "inkCert certs aren't setup. Nothing to do."
+    exit 0
+   else
+    /bin/echo "Something's really wrong. No inkCert, no non-inkCert either. I quit."
+    exit 6
+   fi
+  fi
+
+  ## Check that the certs are no longer live
+  if [ ! -d /etc/inkcert/live/${DOMAIN} ]; then
+  ## Uncomment the Snakeoil cert configs
+  /bin/sed -i "s/#INKVERB-INKCERT-COMMENT-SSLCertificateFile/SSLCertificateFile/g" /opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf
+  /bin/sed -i "s/#INKVERB-INKCERT-COMMENT-SSLCertificateKeyFile/SSLCertificateKeyFile/g" /opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf
+
+  ## Remove the inkCert cert lines
+  /bin/sed -i '/#INKVERB-INKCERT=DONE_SC/,/#INKVERB-INKCERT-stop/{/#INKVERB-INKCERT=DONE_SC/!{/#INKVERB-INKCERT-stop/!d}}' /opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf
+  /bin/sed -i 's/#INKVERB-INKCERT=DONE_SC/#INKVERB-INKCERT=INK_NO_REMOVED/' /opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf
+  /bin/sed -i '/#INKVERB-INKCERT-stop/d' /opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf
+  /usr/bin/systemctl restart httpd
+
+  ## Note to the config
+  /bin/sed -i "s/InkCerted=DONE_SC/InkCerted=NO_REMOVED_SC/" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN}
+
+  ## Remove the certs
+  for i in /etc/inkcert/sc/live/${DOMAIN}/*.pem
+  do
+  /bin/rm  "$(readlink -f $i)"
+  /bin/rm "$i"
+  done
+  /bin/rm -rf /etc/inkcert/sc/live/${DOMAIN}
+
+  ## Finish
+  /bin/echo "inkCert has been uninstalled from ${DOMAIN}. Using Snakeoil certs."
+  exit 0
+  else
+
+  ## If they are live
+  /bin/echo "Something's wrong...
+
+The certs still seem to be live. Did you first run inkcertrevoke or simply run inkcertundo?
+"
+  fi
+
+fi
+
+
+
+
+if [ -e "/opt/verb/mods/inkcertremovesc.after" ]; then . /opt/verb/mods/inkcertremovesc.after; fi # Follows this script

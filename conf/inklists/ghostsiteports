@@ -1,0 +1,7 @@
+#!/bin/sh
+# inkVerb Verber™ version information config, verb.ink
+
+# This contains IP addresses used by Ghost instances.
+## This is useful for webmaster reference and required for automated install script calculations.
+
+

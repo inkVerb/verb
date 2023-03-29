@@ -1,0 +1,82 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This script points your-name.verb.one subdomains to custom-made subdomains, 
+
+# How to use:
+## ./pointvip [subdomain only]
+
+# Eg: (This will point name.verb.vip to lucky.your-name.verb.vip)
+## ./pointvip lucky
+
+# Type ./pointvip -h for help
+
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+
+if [ "$1" = "-h" ]; then
+    /bin/echo "Usage: ./pointvip [subdomain only]
+Examples:
+ ./pointvip lucky (points ${vipURI} to lucky.your-name.verb.one
+ ./pointvip verb.vip (resets ${vipURI} to point to itself)
+ you may use any subdomain you want except
+ verb.vip, which will reset ${vipURI}
+ and
+ cgi, fpt, files, fossil, mysql, net2ftp, repo which are already taken."
+exit 0
+fi
+
+if [ "$1" = "verb.vip" ]; then
+    cp /srv/www/verb/vip/index-vip.php /srv/www/html/vip/index.php
+    /bin/echo "Reset, done."
+exit 0
+fi
+
+if [ "$1" = "cgi" ]; then
+    /bin/echo "That one's already taken. Sorry, sparky."
+exit 0
+fi
+
+if [ "$1" = "ftp" ]; then
+    /bin/echo "That one's already taken. Sorry, sparky."
+exit 0
+fi
+
+if [ "$1" = "files" ]; then
+    /bin/echo "That one's already taken. Sorry, sparky."
+exit 0
+fi
+
+if [ "$1" = "fossil" ]; then
+    /bin/echo "That one's already taken. Sorry, sparky."
+exit 0
+fi
+
+if [ "$1" = "mysql" ]; then
+    /bin/echo "That one's already taken. Sorry, sparky."
+exit 0
+fi
+
+if [ "$1" = "net2ftp" ]; then
+    /bin/echo "That one's already taken. Sorry, sparky."
+exit 0
+fi
+
+if [ "$1" = "repo" ]; then
+    /bin/echo "That one's already taken. Sorry, sparky."
+exit 0
+fi
+
+NEWONESUB=$1
+
+    cp /srv/www/verb/vip/index-newvipsub.php /srv/www/html/vip/index.php
+    sed -i "s/newvipsub/${NEWONESUB}/g" /srv/www/verb/vip/index.php
+    /bin/echo "Pointing to http://${NEWONESUB}.${vipURI}, done."
+exit 0
+
+
+
+
+if [ -e "/opt/verb/mods/pointvip.after" ]; then . /opt/verb/mods/pointvip.after; fi # Follows this script

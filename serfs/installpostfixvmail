@@ -1,0 +1,443 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This installs Postfix as the email server wtih Dovecot and OpenDKIM
+## This creates a database accessed by PostfixAdmin as a web tool, but PFA is not a requirement for the database and inkvmail to work
+## Prerequisite: sertupverb
+## This only performs basic back-end server setup and creates no mail accounts
+## Once this is done it is set for the server permanently.
+
+# How to use:
+## ./installpostfixvmail
+
+
+usagenotes="This installs Postfix as the email server wtih Dovecot and OpenDKIM"
+usageformat="installpostfixvmail"
+usageexample="installpostfixvmail"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( "inkCert certs should be installled for at least the nameURI for this verber" )
+usedby=( installinkvmail )
+useserfs=( installspamassassin setinkcertmailcerts setinkcertmail inkvmailbaseaddrs inkdnsaddmail newinkdkim inkdnsaddinkdkim inkvmailsysmailbox )
+useconfigs=( servernameip siteurilist servertype servermailpath )	# List config files of any kind used in this serf, please preserve order of appearance
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/installpostfixvmail.replace" ]; then . /opt/verb/mods/installpostfixvmail.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installpostfixvmail.before" ]; then . /opt/verb/mods/installpostfixvmail.before; fi # Precedes this script
+
+
+# Include the config files
+. /opt/verb/conf/servertype
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/servermailpath
+
+# Check to see if already installed
+if [ "${ServerMailStatus}" = "VMAIL_SERVER" ]; then
+/bin/echo "
+Email server already installed.
+"
+exit 0; fi
+if [ "${ServerMailStatus}" = "EMAIL_BACKUP_MX" ]; then
+/bin/echo "
+Email server is already a backup server.
+"
+exit 0; fi
+if [ "${ServerMailStatus}" = "PMAIL_SERVER" ]; then
+/bin/echo "
+Email server is already installed.
+"
+exit 0; fi
+if ! /usr/bin/grep -Fq 'Email Control Records' /opt/verb/conf/inkdns/inkzones/db.${emailTLDURI}; then
+/bin/echo "
+Email Control Records not declared in the email domain DNS zone file. This won't work.
+"
+exit 7; fi
+
+# Update Keyring
+/usr/bin/pacman -Sy archlinux-keyring --noconfirm
+
+# Update Packages
+/usr/bin/pacman -Syyu --noconfirm --needed
+
+# Generate the mailpassword appendage
+MAILPASSGEN="$(/usr/bin/pwgen -s -1 5)"
+## Create the MySQL login .cnf
+/bin/echo "[client]
+user = mail
+password = mailpass${MAILPASSGEN}
+database = mail
+host = localhost
+" > /opt/verb/conf/mysqldb.vmail.cnf
+## Set the config for backup
+/bin/sed -i "s/ServerMailPassApg.*/ServerMailPassApg=\"${MAILPASSGEN}\"/g" /opt/verb/conf/servermailpass
+
+# Packages already installed from make-verber-* postfix postfix-mysql dovecot php-imap spamassassin pigeonhole perl-cpanplus-dist-arch clamav razor cyrus-sasl opendkim
+
+# Virtual mail user
+/bin/mkdir -p /srv/vmail
+/usr/bin/groupadd -g 5000 vmail
+/usr/bin/useradd -u 5000 -g vmail -s /usr/bin/nologin vmail
+/usr/bin/usermod -d /srv/vmail vmail
+/bin/chmod -R 770 /srv/vmail
+/bin/chown -R vmail:vmail /srv/vmail
+## Symlink for legacy support
+if [ ! -d "/var/vmail" ]; then
+  /usr/bin/ln -sfn /srv/vmail /var/vmail
+  /bin/chown -R vmail:vmail /var/vmail
+fi
+
+# Postfix
+## Copy configs
+/usr/bin/touch /etc/postfix/virtual_ssl.map
+/bin/cp /opt/verb/conf/lib/vmail/postfix/main.cf /etc/postfix/
+/bin/cp /opt/verb/conf/lib/vmail/postfix/master.cf /etc/postfix/
+/bin/cp /opt/verb/conf/lib/vmail/postfix/virtual_alias_domains.cf /etc/postfix/
+/bin/cp /opt/verb/conf/lib/vmail/postfix/virtual_alias_domains_maps.cf /etc/postfix/
+/bin/cp /opt/verb/conf/lib/vmail/postfix/virtual_alias_maps.cf /etc/postfix/
+/bin/cp /opt/verb/conf/lib/vmail/postfix/virtual_mailbox_domains.cf /etc/postfix/
+/bin/cp /opt/verb/conf/lib/vmail/postfix/virtual_mailbox_domainaliases_maps.cf /etc/postfix/
+/bin/cp /opt/verb/conf/lib/vmail/postfix/virtual_mailbox_maps.cf /etc/postfix/
+/bin/cp /opt/verb/conf/lib/vmail/postfix/virtual_sender_login_maps.cf /etc/postfix/
+/bin/cp /opt/verb/conf/lib/vmail/postfix/header_checks /etc/postfix/
+/bin/cp /opt/verb/conf/lib/vmail/postfix/smtp_header_checks /etc/postfix/
+/bin/rm /etc/postfix/main.cf.default
+## Replace configs
+/bin/sed -i "s/mailpassword/mailpass${MAILPASSGEN}/g" /etc/postfix/virtual_alias_domains.cf
+/bin/sed -i "s/mailpassword/mailpass${MAILPASSGEN}/g" /etc/postfix/virtual_alias_domains_maps.cf
+/bin/sed -i "s/mailpassword/mailpass${MAILPASSGEN}/g" /etc/postfix/virtual_alias_maps.cf
+/bin/sed -i "s/mailpassword/mailpass${MAILPASSGEN}/g" /etc/postfix/virtual_mailbox_domains.cf
+/bin/sed -i "s/mailpassword/mailpass${MAILPASSGEN}/g" /etc/postfix/virtual_mailbox_domainaliases_maps.cf
+/bin/sed -i "s/mailpassword/mailpass${MAILPASSGEN}/g" /etc/postfix/virtual_mailbox_maps.cf
+/bin/sed -i "s/mailpassword/mailpass${MAILPASSGEN}/g" /etc/postfix/virtual_sender_login_maps.cf
+/bin/sed -i "s/hostURI286/${hostURI}/g" /etc/postfix/main.cf
+## Permissions
+/usr/bin/chmod 644 /etc/postfix/virtual_alias_domains.cf
+/usr/bin/chmod 644 /etc/postfix/virtual_alias_domains_maps.cf
+/usr/bin/chmod 644 /etc/postfix/virtual_alias_maps.cf
+/usr/bin/chmod 644 /etc/postfix/virtual_mailbox_domains.cf
+/usr/bin/chmod 644 /etc/postfix/virtual_mailbox_domainaliases_maps.cf
+/usr/bin/chmod 644 /etc/postfix/virtual_mailbox_maps.cf
+/usr/bin/chmod 644 /etc/postfix/virtual_sender_login_maps.cf
+## Add an important setting
+/usr/bin/cat <<EOF >> /etc/services
+smtps 465/tcp # inkVerb
+smtps 465/udp # inkVerb
+EOF
+/usr/bin/postmap /etc/postfix/transport
+## Service
+/usr/bin/systemctl enable postfix
+/usr/bin/systemctl start postfix
+
+# SASL
+/usr/bin/mkdir -p /etc/sasl2
+/usr/bin/cat <<EOF > /etc/sasl2/smtpd.conf
+pwcheck_method: saslauthd
+mech_list: PLAIN LOGIN
+log_level: 7
+EOF
+/usr/bin/mkdir -p /etc/pam.d
+/usr/bin/cat <<EOF > /etc/pam.d/smtp
+#%PAM-1.0
+auth            required        pam_unix.so
+account         required        pam_unix.so
+EOF
+## Service
+/usr/bin/systemctl enable saslauthd
+/usr/bin/systemctl start saslauthd
+
+# Dovecot
+/usr/bin/mkdir -p /etc/dovecot/sieve.before.d /etc/dovecot/sieve-filter /etc/dovecot/crt.d
+/bin/cp -r /usr/share/doc/dovecot/example-config/conf.d /etc/dovecot
+/bin/cp /opt/verb/conf/lib/vmail/dovecot/dovecot.conf /etc/dovecot/
+/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/10-auth.conf /etc/dovecot/conf.d/
+/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/10-mail.conf /etc/dovecot/conf.d/
+/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/10-master.conf /etc/dovecot/conf.d/
+/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/10-ssl.conf /etc/dovecot/conf.d/
+/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/15-lda.conf /etc/dovecot/conf.d/
+/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/15-mailboxes.conf /etc/dovecot/conf.d/
+/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/20-lmtp.conf /etc/dovecot/conf.d/
+/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/20-lmtp.conf /etc/dovecot/conf.d/
+/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/20-managesieve.conf /etc/dovecot/conf.d/
+/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/90-plugin.conf /etc/dovecot/conf.d/
+/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/90-sieve.conf /etc/dovecot/conf.d/
+/bin/cp /opt/verb/conf/lib/vmail/dovecot/dovecot-sql.conf.ext /etc/dovecot/
+/bin/cp /opt/verb/conf/lib/vmail/dovecot/dovecot.conf /etc/dovecot/
+### Diffie-Helman Group file (unique & extra large for email server)
+/usr/bin/rm -f /etc/dovecot/dh.pem
+#/usr/bin/openssl dhparam -out /etc/dovecot/dh.pem 4096
+/usr/bin/openssl dhparam -out /etc/dovecot/dh.pem 2048
+/bin/chmod 600 /etc/dovecot/dh.pem
+## Replace configs
+/bin/sed  -i "s/nameURI286/${nameURI}/g" /etc/dovecot/conf.d/10-ssl.conf
+/bin/sed  -i "s/nameURI286/${nameURI}/g" /etc/dovecot/conf.d/15-lda.conf
+/bin/sed  -i "s/mailpassword/mailpass${MAILPASSGEN}/g" /etc/dovecot/dovecot-sql.conf.ext
+## Own
+/bin/chown -R vmail:dovecot /etc/dovecot
+/bin/chmod -R o-rwx /etc/dovecot
+## Service
+/usr/bin/systemctl enable dovecot
+/usr/bin/systemctl start dovecot
+
+# SpamAssassin
+/opt/verb/serfs/installspamassassin
+#/opt/verb/serfs/installspamassassin clamav # Usee the 'clamav' argument to also install clamav, otherwise you can run the serf later 'installclamav' if you want to install clamav
+
+# Spam filter
+if [ SASTATUS = "INSTALLED" ]; then
+  ## Dovecot integration
+  /usr/bin/mkdir -p /etc/dovecot/sieve-filter
+  /usr/bin/cat <<EOF > /var/lib/dovecot/sieve/global_sieves/move_to_spam_folder.sieve
+require "spamtestplus";
+require "fileinto";
+require "relational";
+require "comparator-i;ascii-numeric";
+
+if spamtest :value "ge" :comparator "i;ascii-numeric" "5" {
+  fileinto "Junk";
+}
+EOF
+  /usr/bin/ln -sfn /usr/bin/vendor_perl/spamc /etc/dovecot/sieve-filter/spamc
+  #DEV why is this EOFdoc here?
+  /usr/bin/cat <<EOF > /etc/dovecot/sieve.before.d/spamassassin.sieve
+require [ "vnd.dovecot.filter" ];
+filter "spamc" [ "-d", "127.0.0.1", "--no-safe-fallback" ];
+EOF
+  ## Compile the SpamAssassin Dovecot Sieve rules
+  /usr/bin/sievec /var/lib/dovecot/sieve/global_sieves
+  ## Services
+  /usr/bin/systemctl enable spamassassin.service; wait
+  /usr/bin/systemctl start spamassassin.service; wait
+  /usr/bin/systemctl enable spamassassin-update.timer; wait
+  /usr/bin/systemctl start spamassassin-update.timer; wait
+  #/usr/bin/systemctl enable clamav-daemon.service; wait # Way too big on memory
+  #/usr/bin/systemctl start clamav-daemon.service; wait
+  /usr/bin/systemctl restart spamassassin.service; wait
+  if [ "$?" = "0" ]; then /usr/bin/echo "SpamAssassin installed and enabled."; else /usr/bin/echo "SpamAssassin could not be enabled for some reason."; fi
+else
+  /usr/bin/echo "SpamAssassin not installed yet for dev reasons."
+fi
+
+# Virtual mail SQL database
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+CREATE DATABASE mail DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+GRANT ALL PRIVILEGES ON mail.* TO 'mail'@'localhost' IDENTIFIED BY 'mailpass${MAILPASSGEN}';
+FLUSH PRIVILEGES;"
+
+# SSL certs
+## Directory
+/usr/bin/mkdir -p /etc/ssl/server/mail
+## Snakeoil
+if /usr/bin/grep -Fq "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${nameURI}; then
+  /usr/bin/rm -f /etc/ssl/server/mail/vmail.crt
+  /usr/bin/sed -i "s?^#ssl_cert = </etc/ssl/server/server.crt?ssl_cert = </etc/ssl/server/server.crt?" /etc/dovecot/conf.d/10-ssl.conf
+  /usr/bin/sed -i "s?^ssl_cert = </etc/ssl/server/mail/vmail.crt?#ssl_cert = </etc/ssl/server/mail/vmail.crt?" /etc/dovecot/conf.d/10-ssl.conf
+  /usr/bin/rm -f /etc/ssl/server/mail/vmail.key
+  /usr/bin/sed -i "s?^#smtpd_tls_chain_files = /etc/ssl/server/server.key?smtpd_tls_chain_files = /etc/ssl/server/server.key?" /etc/postfix/main.cf
+  /usr/bin/sed -i "s?^#ssl_cert = </etc/ssl/server/server.crt?ssl_cert = </etc/ssl/server/server.crt?" /etc/dovecot/conf.d/10-ssl.conf
+  /usr/bin/sed -i "s?^smtpd_tls_chain_files = /etc/ssl/server/mail/vmail.key?#smtpd_tls_chain_files = /etc/ssl/server/mail/vmail.key?" /etc/postfix/main.cf
+  /usr/bin/sed -i "s?^ssl_key = </etc/ssl/server/mail/vmail.key?#ssl_key = </etc/ssl/server/mail/vmail.key?" /etc/dovecot/conf.d/10-ssl.conf
+  /usr/bin/sed -i "s?^ssl_dh = </etc/dovecot/dh.pem?#ssl_dh = </etc/dovecot/dh.pem?" /etc/dovecot/conf.d/10-ssl.conf
+## inkCert
+else
+  /opt/verb/serfs/setinkcertmailcerts ${nameURI} inkvmail
+  /opt/verb/serfs/setinkcertmail ${nameURI} verber
+fi
+
+# Create the mailbox table
+## We want these UNIQUE so we can update/insert appropriately with inkvmailsys* tools
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "CREATE TABLE IF NOT EXISTS mailbox (
+    username varchar(255) NOT NULL UNIQUE,
+    password varchar(255) NOT NULL,
+    name varchar(255) CHARACTER SET utf8 NOT NULL,
+    maildir varchar(255) NOT NULL,
+    quota bigint(20) NOT NULL DEFAULT '0',
+    local_part varchar(255) NOT NULL,
+    domain varchar(255) NOT NULL,
+    created datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    modified datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    active tinyint(1) NOT NULL DEFAULT '1',
+    phone varchar(30) CHARACTER SET utf8 NOT NULL DEFAULT '',
+    email_other varchar(255) CHARACTER SET utf8 NOT NULL DEFAULT '',
+    token varchar(255) CHARACTER SET utf8 NOT NULL DEFAULT '',
+    token_validity datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (username),
+    KEY domain (domain)
+  ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Postfix Vmail - Virtual Mailboxes';
+  CREATE TABLE IF NOT EXISTS alias (
+    address varchar(255) NOT NULL UNIQUE,
+    goto text NOT NULL,
+    domain varchar(255) NOT NULL,
+    created DATETIME,
+    modified DATETIME,
+    active tinyint(1) NOT NULL default '1',
+    PRIMARY KEY  (address),
+    KEY domain (domain)
+  ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Postfix Vmail - Virtual Aliases';
+  CREATE TABLE IF NOT EXISTS domain (
+    domain varchar(255) NOT NULL UNIQUE,
+    description varchar(255) NOT NULL,
+    aliases int(10) NOT NULL default '0',
+    mailboxes int(10) NOT NULL default '0',
+    maxquota bigint(20) NOT NULL default '0',
+    quota bigint(20) NOT NULL default '0',
+    transport varchar(255) default NULL,
+    backupmx tinyint(1) NOT NULL default '0',
+    created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    modified DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    active tinyint(1) NOT NULL default '1',
+    PRIMARY KEY (domain)
+  ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Postfix Vmail - Virtual Domains';
+  CREATE TABLE alias_domain (
+    alias_domain varchar(255) NOT NULL DEFAULT '',
+    target_domain varchar(255) NOT NULL DEFAULT '',
+    created datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    modified datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    active tinyint(1) NOT NULL DEFAULT '1',
+    PRIMARY KEY (alias_domain),
+    KEY active (active),
+    KEY target_domain (target_domain)
+  ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Postfix Admin - Domain Aliases';
+  CREATE TABLE IF NOT EXISTS admin (
+    username varchar(255) NOT NULL UNIQUE,
+    password varchar(255) NOT NULL,
+    superadmin tinyint(1) NOT NULL default '0',
+    created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    modified DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    active tinyint(1) NOT NULL DEFAULT '1',
+    phone varchar(30) CHARACTER SET utf8 NOT NULL DEFAULT '',
+    email_other varchar(255) CHARACTER SET utf8 NOT NULL DEFAULT '',
+    token varchar(255) CHARACTER SET utf8 NOT NULL DEFAULT '',
+    token_validity datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (username)
+  ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Postfix Vmail - Virtual Admins';
+  CREATE TABLE IF NOT EXISTS domain_admins (
+    username varchar(255) NOT NULL UNIQUE,
+    domain varchar(255) NOT NULL,
+    created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    active tinyint(1) NOT NULL default '1',
+    KEY username (username)
+  ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Postfix Vmail - Domain Admins';"
+
+# OpenDKIM
+## Create/reset OpenDKIM files
+/bin/mkdir -p /etc/opendkim/keys
+/bin/cp /opt/verb/conf/lib/vmail/default/opendkim /etc/default/
+/bin/cp /opt/verb/conf/lib/vmail/opendkim.conf /etc/opendkim/
+/bin/echo "127.0.0.1
+localhost
+${hostURI}" > /etc/opendkim/TrustedHosts
+## IP4?
+if [ "${ServerIPv4}" != "NOIP4" ]; then
+  /bin/echo "${ServerIPv4}" >> /etc/opendkim/TrustedHosts
+fi
+## IP6?
+if [ "${ServerIPv6}" != "NOIP6" ]; then
+  /bin/echo "${ServerIPv6}" >> /etc/opendkim/TrustedHosts
+fi
+/bin/echo "inkdkim._domainkey.${nameURI} ${nameURI}:inkdkim:/etc/opendkim/keys/${nameURI}/inkdkim.private" > /etc/opendkim/KeyTable
+/bin/echo "${nameURI} inkdkim._domainkey.${nameURI}" > /etc/opendkim/SigningTable
+## OpenDKIM Key for initial site
+/bin/mkdir -p /etc/opendkim/keys/${nameURI}
+cd /etc/opendkim/keys/${nameURI} || exit 0
+/usr/bin/opendkim-genkey -r -S -s inkdkim -d ${nameURI}; wait
+cd $OLDPWD || exit 0
+/bin/chmod 660 /etc/opendkim/keys/${nameURI}/inkdkim.private
+/bin/chown -R opendkim:opendkim /etc/opendkim
+## Start
+/usr/bin/systemctl enable opendkim
+/usr/bin/systemctl start opendkim
+
+# DNS MX and TXT mail records for this server
+/opt/verb/serfs/inkdnsaddmail ${nameURI} verber; wait
+## DKIM keys & TXT records
+/opt/verb/serfs/newinkdkim ${nameURI}; wait
+/opt/verb/serfs/inkdnsaddinkdkim ${nameURI} verber; wait
+
+# UFW (services and ports below them if known)
+#/usr/bin/ufw allow postfix
+#/usr/bin/ufw allow smtp
+#/usr/bin/ufw allow 25
+/usr/bin/ufw allow smtps
+/usr/bin/ufw allow 465
+/usr/bin/ufw allow 587
+#/usr/bin/ufw allow pop3
+/usr/bin/ufw allow pop3s
+/usr/bin/ufw allow 995
+/usr/bin/ufw allow 110
+#/usr/bin/ufw allow imap
+/usr/bin/ufw allow imaps
+/usr/bin/ufw allow 993
+/usr/bin/ufw allow 143
+
+# for OpenDKIM
+/usr/bin/ufw allow 8891
+/usr/bin/ufw allow 12301
+
+# Monit
+#/bin/cp /opt/verb/conf/lib/vmail/monit/monitrc.d/amavis /etc/monit/monitrc.d/
+/bin/cp /opt/verb/conf/lib/vmail/monit/monitrc.d/dovecot /etc/monit/monitrc.d/
+/bin/cp /opt/verb/conf/lib/vmail/monit/monitrc.d/opendkim /etc/monit/monitrc.d/
+/bin/cp /opt/verb/conf/lib/vmail/monit/monitrc.d/postfix /etc/monit/monitrc.d/
+/bin/cp /opt/verb/conf/lib/vmail/monit/monitrc.d/spamassassin /etc/monit/monitrc.d/
+/bin/systemctl enable monit
+/bin/systemctl start monit
+
+# Config settings to "EMAIL_INSTALLED"
+/bin/sed -i "s/ServerMailStatus=.*/ServerMailStatus=\"VMAIL_SERVER\"/g" /opt/verb/conf/servermailpath
+
+# PHP mail log
+if ! /usr/bin/grep -q '^mail.log = /var/log/phpmail.log' /opt/verb/conf/php.ini; then
+  /bin/sed -i "s/^mail.log = /;mail.log = /" /opt/verb/conf/php.ini
+  if /usr/bin/grep -q ';mail.log = /var/log/phpmail.log' /opt/verb/conf/php.ini; then
+    /bin/sed -i "s?^;mail.log = /var/log/phpmail.log?mail.log = /var/log/phpmail.log?" /opt/verb/conf/php.ini
+  else
+    /bin/echo "mail.log = /var/log/phpmail.log" >> /opt/verb/conf/php.ini
+  fi
+  /usr/bin/systemctl restart httpd
+fi
+/usr/bin/touch /var/log/phpmail.log
+/usr/bin/chown www:www /var/log/phpmail.log
+
+# Add base domains & addresses
+/opt/verb/serfs/inkvmailbaseaddrs
+
+# Setup PHP to send system mail
+#/opt/verb/serfs/inkvmailsysmailbox
+/opt/verb/serfs/inkvmailsysmailboxmsmtp
+
+# Grand Restart
+if [ ${ServerType} = "laemp" ]; then
+  /usr/bin/systemctl restart nginx; wait
+  /usr/bin/systemctl restart httpd; wait
+elif [ ${ServerType} = "lemp" ]; then
+  /usr/bin/systemctl restart nginx; wait
+elif [ ${ServerType} = "lamp" ]; then
+  /usr/bin/systemctl restart httpd; wait
+fi
+/usr/bin/systemctl restart postfix
+/usr/bin/postmap -F hash:/etc/postfix/virtual_ssl.map # Because we made an entry in this file and this is the only way to refresh that
+/usr/bin/systemctl restart spamassassin
+#/usr/bin/systemctl restart clamav-daemon
+/usr/bin/systemctl restart dovecot
+/usr/bin/systemctl daemon-reload
+
+# Remove unneeded packages
+/usr/bin/pacman -Qdt --noconfirm
+/usr/bin/pacman -Scc --noconfirm
+#/usr/bin/su worker -c '/usr/bin/yay -Scc --noconfirm' # We didn't install an AUR packages
+
+# Finish
+/bin/echo "The Postfix vmail server for inkVerb has been installed.
+The email server is https://${emailTLDURI}
+"
+
+
+
+
+if [ -e "/opt/verb/mods/installinkvmail.after" ]; then . /opt/verb/mods/installinkvmail.after; fi # Follows this script

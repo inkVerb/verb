@@ -1,0 +1,101 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This adds the mail subdomain A & AAAA records in the inkDNS zone file on the server
+
+# How to use:
+## ./inkdnsaddmail [ domain.tld ]
+## ./inkdnsaddmail [ domain.tld ] verber
+
+usagenotes="This adds the mail subdomain A & AAAA records in the inkDNS zone file on the server"
+usageformat="inkdnsaddmail [ domain.tld ] verber"
+usageexample="inkdnsaddmail inkisaverb.com
+inkdnsaddmail myself.verb.blue verber"
+hierarchy=( tertiary newdomainshell )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=( "verber" )
+vopttypes=( string_match )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkdnsinstall )
+prerequesite=(  )
+usedby=( newdomainshell )
+useserfs=( inkdnsserial inkdnsrefreshbind )
+useconfigs=( servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdnsaddmail.replace" ]; then . /opt/verb/mods/inkdnsaddmail.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdnsaddmail.before" ]; then . /opt/verb/mods/inkdnsaddmail.before; fi # Precedes this script
+
+
+DNsdnsDomainAIN="$1"
+if [ -n $2 ] && [ "$2" = "verber" ]; then
+  ZONEDIR="inkzones"
+else
+  ZONEDIR="zones"
+fi
+
+# Include the configs
+. /opt/verb/conf/servernameip
+
+# Check if already added
+if /bin/grep -Fq "; Hostname Mail Record Defaults" /opt/verb/conf/inkdns/${ZONEDIR}/db.${DNsdnsDomainAIN}; then
+/bin/echo "Mail Record Defaults already added to . Use killinkdnsmail to remove them."
+exit 0; fi
+
+# Echo the records
+## db.DOM
+/bin/echo "; Hostname Mail Record Defaults
+email.${DNsdnsDomainAIN}. IN  CNAME	mail.${DNsdnsDomainAIN}.
+${DNsdnsDomainAIN}.       IN  MX 50	mail.${DNsdnsDomainAIN}.
+mail.${DNsdnsDomainAIN}.  IN  A    	${ServerIPv4}
+smtp.${DNsdnsDomainAIN}.  IN  A    	${ServerIPv4}
+imap.${DNsdnsDomainAIN}.  IN  A    	${ServerIPv4}
+pop3.${DNsdnsDomainAIN}.  IN  A    	${ServerIPv4}
+pop2.${DNsdnsDomainAIN}.  IN  A    	${ServerIPv4}
+pop.${DNsdnsDomainAIN}.   IN  A    	${ServerIPv4}
+mail.${DNsdnsDomainAIN}.  IN  AAAA 	${ServerIPv6}
+smtp.${DNsdnsDomainAIN}.  IN  AAAA 	${ServerIPv6}
+imap.${DNsdnsDomainAIN}.  IN  AAAA 	${ServerIPv6}
+pop3.${DNsdnsDomainAIN}.  IN  AAAA 	${ServerIPv6}
+pop2.${DNsdnsDomainAIN}.  IN  AAAA 	${ServerIPv6}
+pop.${DNsdnsDomainAIN}.   IN  AAAA 	${ServerIPv6}
+;; End Mail Defaults" >> /opt/verb/conf/inkdns/${ZONEDIR}/db.${DNsdnsDomainAIN}
+/bin/sed -i "s/; Text Record Defaults/; Text Record Defaults\n${DNsdnsDomainAIN}.	\tIN  TXT	\t\"v=spf1 a mx a:${DNsdnsDomainAIN} ip4:${ServerIPv4} ip6:${ServerIPv6} -all\"\n_dmarc.${DNsdnsDomainAIN}.	\tIN  TXT	\t\"v=DMABOX1; p=reject; fo=0; aspf=r; adkim=r; pct=100; ri=86400; rua=mailto:dmark@${DNsdnsDomainAIN};\"/" /opt/verb/conf/inkdns/${ZONEDIR}/db.${DNsdnsDomainAIN}
+
+## nv.DOM
+/bin/echo "; PTR Hostname Mail Record Defaults
+${ServerARPAIPv4}		IN  PTR  mail.${DNsdnsDomainAIN}.
+${ServerARPAIPv4}		IN  PTR  smtp.${DNsdnsDomainAIN}.
+${ServerARPAIPv4}		IN  PTR  imap.${DNsdnsDomainAIN}.
+${ServerARPAIPv4}		IN  PTR  pop3.${DNsdnsDomainAIN}.
+${ServerARPAIPv4}		IN  PTR  pop2.${DNsdnsDomainAIN}.
+${ServerARPAIPv4}		IN  PTR   pop.${DNsdnsDomainAIN}.
+${ServerARPAIPv6}		IN  PTR  mail.${DNsdnsDomainAIN}.
+${ServerARPAIPv6}		IN  PTR  smtp.${DNsdnsDomainAIN}.
+${ServerARPAIPv6}		IN  PTR  imap.${DNsdnsDomainAIN}.
+${ServerARPAIPv6}		IN  PTR  pop3.${DNsdnsDomainAIN}.
+${ServerARPAIPv6}		IN  PTR  pop2.${DNsdnsDomainAIN}.
+${ServerARPAIPv6}		IN  PTR   pop.${DNsdnsDomainAIN}.
+;; End Mail Defaults" >> /opt/verb/conf/inkdns/${ZONEDIR}/nv.${DNsdnsDomainAIN}
+
+# Set the Serial No
+if [ "${ZONEDIR}" = "inkzones" ]; then
+  /opt/verb/serfs/inkdnsserial ${DNsdnsDomainAIN} verber
+elif [ "${ZONEDIR}" = "zones" ]; then
+  /opt/verb/serfs/inkdnsserial ${DNsdnsDomainAIN}
+fi
+
+# Refresh zones
+if [ -f "/opt/verb/conf/inkdnsconf" ]; then
+  . /opt/verb/conf/inkdnsconf
+  if [ "${InkDNSStat}" = "INSTALLED" ]; then
+/opt/verb/serfs/inkdnsrefreshbind; fi; fi
+
+# Finish
+/bin/echo "The Mail Record Defaults have been added to the ${DNsdnsDomainAIN} DNS zone file."
+
+
+
+
+if [ -e "/opt/verb/mods/inkdnsaddmail.after" ]; then . /opt/verb/mods/inkdnsaddmail.after; fi # Follows this script

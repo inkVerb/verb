@@ -1,0 +1,112 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This runs installpostfix, installrc, and installpfa as one job
+## Prerequisite: setup of course, and verbemail if you wish an email tld other than .email
+## Check prerequisites for those
+
+# OPTIONAL Prerequesite:
+## If restoring from a backupinkvmail backup, the .vbak file must be in vip
+
+# How to use:
+## ./installinkvmail [ RoundCube webmail path - optional: '-n' to skip ] [ PostfixAdmin email pfa path - optional: if no other arguments and same as RoundCube - '-n' to skip ] [ PostfixAdmin setup password - optional: '-n' to skip ] [ backup filename IF restoring from backupinkvmail backup, optional ]
+
+# Eg:
+## ./installinkvmail # Auto-generated secure paths (different for PFA and BOX), no setup password nor backup
+## ./installinkvmail roundcubesecretpath postfixadminsecretpath setup-password  # Setup password given, but no backup
+## ./installinkvmail rcbase pfabase setup-password myemailfile.vbak # Backup and setup password
+## ./installinkvmail rcbase pfabase -n myemailfile.vbak  # Backup, not setup password
+## ./installinkvmail rciscool pfarocks # No setup password, no backup
+## ./installinkvmail inkvmailpath # Same path for BOX and PFA, no setup password, no backup
+## ./installinkvmail -n -n -n myemailfile.vbak  # Backup, no other settings
+
+usagenotes="This runs installpostfix, installrc, and installpfa as one job"
+usageformat="installinkvmail [ RoundCube webmail path ] [ PostfixAdmin email pfa path - optional: if no other arguments and same as RoundCube ] [ PostfixAdmin setup password - optional: 'no' to skip ] [ backup filename IF restoring from backupinkvmail backup, optional ]"
+usageexample="installinkvmail roundcubesecretpath postfixadminsecretpath setup-password  # Setup password given, but no backup
+installinkvmail rcbase pfabase setup-password myemailfile.vbak # Backup and setup password
+installinkvmail rcbase pfabase -n myemailfile.vbak  # Backup, not setup password
+installinkvmail rciscool pfarocks # No setup password, no backup
+installinkvmail inkvmailpath # Same path for BOX and PFA, no setup password, no backup
+installinkvmail -n -n -n myemailfile.vbak  # Backup, no other settings"
+hierarchy=( oversight )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=( "RoundCube web path" "PostfixAdmin web path" "PostfixAdmin setup password, optional -n flag" "Vmail backup file" )
+vopttypes=( 'isazAZ09lines || string_match' 'isazAZ09lines || string_match' 'isazAZ09 || string_match' "www/vip/verb.vmail.*.vbak backup file name and location" )
+voptflags=( n )
+voptflagpurpose=( "No PostfixAdmin setup password, but using backup email file" )
+dependencyinstall=(  )
+prerequesite=( "inkCert certs should be installled for at least the emailTLDURI and nameURI for this verber" )
+usedby=(  )
+useserfs=( installpostfixvmail installpfa installrc )
+useconfigs=( siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/installinkvmail.replace" ]; then . /opt/verb/mods/installinkvmail.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installinkvmail.before" ]; then . /opt/verb/mods/installinkvmail.before; fi # Precedes this script
+
+
+# Include the config
+. /opt/verb/conf/siteurilist
+
+# BOX folder
+if [ -n "$1" ] && [ "$1" != "-n" ]; then
+  BOXFOLDER="$1"
+else
+  BOXFOLDER="$(/usr/bin/pwgen -0 5 1)"
+fi
+
+# PFA folder
+if [ -n "$2" ] && [ "$2" != "-n" ]; then
+  PFAFOLDER="$2"
+elif [ -n "$1" ] && [ "$1" != "-n" ]; then
+  PFAFOLDER="$1"
+else
+  PFAFOLDER="$(/usr/bin/pwgen -0 5 1)"
+fi
+
+# PFA install password
+if [ -n "$3" ] && [ "$3" != "-n" ]; then
+  PFAPASS="$3"
+else
+  PFAPASS="$(pwgen -1Bcn 10)"
+fi
+
+# Postfix vmail
+/opt/verb/serfs/installpostfixvmail; wait
+
+# Roundcube
+/opt/verb/serfs/installrc ${BOXFOLDER}; wait
+
+# PostfixAdmin
+/opt/verb/serfs/installpfa ${PFAFOLDER} ${PFAPASS}; wait
+
+# Backup
+if [ -n "$4" ]; then
+  BACKUPRESTORE=$4
+  /opt/verb/serfs/backupinkvmailrestore ${BACKUPRESTORE}; wait
+fi
+
+# inkCert check and FYI
+if /bin/grep -Fq "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${emailTLDURI}; then
+  /bin/echo "Note: ${emailTLDURI} still doesn't have proper SSL certs. You can install, but will get SSL warnings due to \"self-signed\" or \"snakeoil\" certs.
+You may ignore these warnings if you choose. If you want proper SSL certs, you still need to run inkCert for ${emailTLDURI}.
+"
+fi
+
+# Finished
+/bin/echo "
+You must restart the server in order for email boxes to send and receive.
+
+Postfix Admin:
+- https://po.${emailTLDURI}/${PFAFOLDER}/setup.php
+- Use the install password '${PFAPASS}'
+- Then run ./postinstallpfa
+
+Roundcube:
+- https://box.${emailTLDURI}/${BOXFOLDER}
+"
+
+
+
+
+if [ -e "/opt/verb/mods/installinkvmail.after" ]; then . /opt/verb/mods/installinkvmail.after; fi # Follows this script

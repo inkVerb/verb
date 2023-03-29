@@ -1,0 +1,106 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+# This mounts a block storage drive in /dev/ to the /mnt/ directory and makes an entry in /etc/fstab
+## This places a config in verb/conf/inkdrive/
+## The first of a type (ssh/hdd) you add with this will become the default for that type in verb/conf/inkdrive/inkdriveinfo
+### Drive type defaults are used by inkdriveapp and inkdrivesvc
+## When managed by the rink, the drive names will reflext the disk type (hdd = hdd, ssd = ssh, hdd1 = second HDD disk likely for transfer purposes)
+
+# How to use:
+## ./inkdriveadd [ dev ] [ drive name ] [ disk type: hdd/ssd ]
+
+# Eg:
+## ./inkdriveadd vdb mydrive ssd
+## ./inkdriveadd vdc harddrive hdd
+
+
+usagenotes="This mounts a block storage drive in /dev/ to the /mnt/ directory and makes an entry in /etc/fstab"
+usageformat="inkdriveadd [ dev ] [ drive name ] [ disk type: hdd/ssd ]"
+usageexample="inkdriveadd vdb mydrive ssd
+inkdriveadd vdc harddisk hdd
+inkdriveadd vdd nvme ssd
+inkdriveadd vde slow ssd"
+hierarchy=( primary )
+vsetnames=( "Device" "Drive name" "Disk type" )
+vsettypes=( isExists isFilename isChoice )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( inkdrive/inkdriveinfo )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdriveadd.replace" ]; then . /opt/verb/mods/inkdriveadd.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdriveadd.before" ]; then . /opt/verb/mods/inkdriveadd.before; fi # Precedes this script
+
+Dev="$1"
+Mnt="$2"
+Typ="$3"
+
+# Checks
+/usr/bin/mkdir -p /opt/verb/conf/inkdrive
+/usr/bin/chmod -R 750 /opt/verb/conf/inkdrive
+if /bin/grep -q "/dev/${Dev}" /etc/fstab; then
+  /usr/bin/echo "That device is already in use."
+  exit 0
+fi
+if /bin/grep -q "/mnt/${Mnt}" /etc/fstab; then
+  /usr/bin/echo "That drive name is already in use."
+  exit 0
+fi
+if /bin/grep -q "/dev/${Dev}" /opt/verb/conf/inkdrive/*; then
+  /usr/bin/echo "That device is already listed, but isn't in use; something is wrong."
+  exit 0
+fi
+if ls "/opt/verb/conf/inkdrive/*.${Mnt}" 1> /dev/null 2>&1; then
+  /usr/bin/echo "That drive name is already listed, but isn't in use; something is wrong."
+  exit 0
+fi
+if [ "${Typ}" = "ssd" ]; then
+  TypDescr="SSD"
+elif [ "${Typ}" = "hdd" ]; then
+  TypDescr="HDD"
+else
+  /usr/bin/echo "Type must be 'ssd' or 'hdd'"
+  exit 0
+fi
+
+# Create the config
+echo "Device=${Dev}
+Mount=${Mnt}
+Type=${Typ}" > /opt/verb/conf/inkdrive/"${Typ}"."${Mnt}"
+/usr/bin/chmod -R 750 /opt/verb/conf/inkdrive/*
+
+# Drive drfaults
+if [ -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
+  . /opt/verb/conf/inkdrive/inkdriveinfo
+fi
+if [ -z "${Typ}default" ]; then
+  /usr/bin/echo "${Typ}default=${Mnt}" >> /opt/verb/conf/inkdrive/inkdriveinfo
+  /usr/bin/echo "Setting '${Mnt}' as the default ${TypDescr} drive."
+else
+  /usr/bin/echo "Default ${TypDescr} is already set to '${Typ}default'. Setting '${Mnt}' an additional ${TypDescr} drive."
+fi
+  
+# Mount the drive
+/usr/bin/parted -s "/dev/${Dev}" mklabel gpt
+/usr/bin/parted -s "/dev/${Dev}" unit mib mkpart primary 0% 100%
+/usr/bin/mkfs.ext4 "/dev/${Dev}1"
+/usr/bin/mkdir /mnt/${Mnt}
+/usr/bin/touch /etc/fstab
+/usr/bin/echo "/dev/${Dev}1               /mnt/${Mnt}       ext4    defaults,noatime,nofail 0 0" >> /etc/fstab
+/usr/bin/mount /mnt/${Mnt}
+
+# Finish
+if [ -d "/mnt/${Mnt}" ]; then
+  /usr/bin/echo "${TypDescr} drive ${Dev} successfully mounted at /mnt/${Mnt}"
+else
+  /usr/bin/echo "Something is wrong, ${TypDescr} drive ${Dev} could not be mounted at /mnt/${Mnt}!!"
+  exit 6
+fi
+
+
+if [ -e "/opt/verb/mods/inkdriveadd.after" ]; then . /opt/verb/mods/inkdriveadd.after; fi # Follows this script

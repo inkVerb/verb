@@ -1,0 +1,17 @@
+#!/bin/bash
+#inkVerbKnight! verb.ink
+
+# This displays the current Verber version number
+
+# How to use:
+## ./showverbver
+
+. /opt/verb/conf/inklists/verberverno
+. /opt/verb/conf/servernameip
+/bin/echo "${ServerUpdateRepo} ${VERNO}"
+
+
+
+
+
+if [ -e "/opt/verb/mods/showverbver.after" ]; then . /opt/verb/mods/showverbver.after; fi # Follows this script

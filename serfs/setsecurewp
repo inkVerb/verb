@@ -1,0 +1,44 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This adds/updates the secure salts to wp-config.php files of a pre-installed (or installing) WordPress site in www/domains
+## This does not normally need to be run on fresh WP installations since the same functions and behavior are embedded in the installwp serfs.
+
+# How to use:
+## ./setsecurewp [domain.tld or folder]
+
+
+DOMAIN=$1
+AUTH_KEY="$(/usr/bin/pwgen -s -1 27)"
+SECURE_AUTH_KEY="$(/usr/bin/pwgen -s -1 27)"
+LOGGED_IN_KEY="$(/usr/bin/pwgen -s -1 27)"
+NONCE_KEY="$(/usr/bin/pwgen -s -1 27)"
+AUTH_SALT="$(/usr/bin/pwgen -s -1 27)"
+SECURE_AUTH_SALT="$(/usr/bin/pwgen -s -1 27)"
+LOGGED_IN_SALT="$(/usr/bin/pwgen -s -1 27)"
+NONCE_SALT="$(/usr/bin/pwgen -s -1 27)"
+
+# Writable Permissions
+/bin/chmod -R 644 wp-config.php
+
+# Insert the random pwgen strings
+cd /srv/www/html/${DOMAIN}/ || exit 0
+/bin/sed -i "s/define( 'AUTH_KEY',         .*/define( 'AUTH_KEY',         '${AUTH_KEY}' );/g" wp-config.php
+/bin/sed -i "s/define( 'SECURE_AUTH_KEY',  .*/define( 'SECURE_AUTH_KEY',  '${SECURE_AUTH_KEY}' );/g" wp-config.php
+/bin/sed -i "s/define( 'LOGGED_IN_KEY',    .*/define( 'LOGGED_IN_KEY',    '${LOGGED_IN_KEY}' );/g" wp-config.php
+/bin/sed -i "s/define( 'NONCE_KEY',        .*/define( 'NONCE_KEY',        '${NONCE_KEY}' );/g" wp-config.php
+/bin/sed -i "s/define( 'AUTH_SALT',        .*/define( 'AUTH_SALT',        '${AUTH_SALT}' );/g" wp-config.php
+/bin/sed -i "s/define( 'SECURE_AUTH_SALT', .*/define( 'SECURE_AUTH_SALT', '${SECURE_AUTH_SALT}' );/g" wp-config.php
+/bin/sed -i "s/define( 'LOGGED_IN_SALT',   .*/define( 'LOGGED_IN_SALT',   '${LOGGED_IN_SALT}' );/g" wp-config.php
+/bin/sed -i "s/define( 'NONCE_SALT',       .*/define( 'NONCE_SALT',       '${NONCE_SALT}' );/g" wp-config.php
+
+# Reset all permissions
+/bin/chmod -R 440 wp-config.php
+/bin/chown -R www:www /srv/www/html/${DOMAIN}/
+
+/bin/echo "${DOMAIN} now has secure strings and permissions."
+
+
+
+
+if [ -e "/opt/verb/mods/setsecurewp.after" ]; then . /opt/verb/mods/setsecurewp.after; fi # Follows this script

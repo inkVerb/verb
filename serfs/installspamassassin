@@ -1,0 +1,114 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This installs SpamAssassin with ClamAV and Razor, integrated with Postfix and Dovecot
+## This is intended to be used only by installinkvmail and not used by itself
+## This is in separate development because ClamAV can be quirky
+
+# How to use:
+## ./installspamassassin [ clamav - optional to install clamav also ]
+
+# Eg:
+## ./installspamassassin
+## ./installspamassassin clamav
+
+usagenotes="This installs SpamAssassin with ClamAV and Razor, integrated with Postfix and Dovecot"
+usageformat="installspamassassin [ clamav - optional to install clamav also ]"
+usageexample="installspamassassin
+installspamassassin clamav"
+hierarchy=( secondary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=( "'clamav' - ClamAV install option" )
+vopttypes=( string_match )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installpostfixvmail )
+prerequesite=(  )
+usedby=( installpostfixvmail )
+useserfs=( installclamav )
+useconfigs=( servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/installspamassassin.replace" ]; then . /opt/verb/mods/installspamassassin.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installspamassassin.before" ]; then . /opt/verb/mods/installspamassassin.before; fi # Precedes this script
+
+
+# Only if SpamAssassin is installed
+. /opt/verb/conf/servermailpath
+if [ "${SASTATUS}" = "INSTALLED" ]; then
+  /bin/echo "SpamAssassin already installed."
+  exit 0
+fi
+
+# Update Keyring
+/usr/bin/pacman -Sy archlinux-keyring --noconfirm
+
+# Update Packages
+/usr/bin/pacman -Syyu --noconfirm --needed
+
+# Install
+/usr/bin/pacman -S --noconfirm --needed spamassassin razor
+if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
+
+# Remove unneeded packages
+/usr/bin/pacman -Qdt --noconfirm
+/usr/bin/pacman -Scc --noconfirm
+
+# SpamAssassin
+## Just making sure
+/usr/bin/mkdir -p /etc/mail/spamassassin
+/usr/bin/chmod 755 /etc/mail/spamassassin
+## Other related files
+/usr/bin/mkdir -p /var/lib/dovecot/sieve/global_sieves /etc/mail/sa-update-keys /etc/mail/spamassassin/sa-update-keys
+/usr/bin/chown -R spamd:spamd /etc/mail/sa-update-keys /etc/mail/spamassassin/sa-update-keys
+## Service
+/usr/bin/cat <<EOF > /etc/systemd/system/spamassassin-update.service
+[Unit]
+Description=spamassassin housekeeping stuff
+After=network.target
+
+[Service]
+Type=oneshot
+
+ExecStart=sudo -u spamd /usr/bin/vendor_perl/sa-update --allowplugins
+SuccessExitStatus=1
+ExecStart=sudo -u spamd /usr/bin/vendor_perl/sa-compile
+ExecStart=/usr/bin/systemctl -q --no-block try-restart spamassassin.service
+EOF
+/usr/bin/cat <<EOF > /etc/systemd/system/spamassassin-update.timer
+[Unit]
+Description=spamassassin house keeping
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+EOF
+
+# Razor
+/usr/bin/mkdir -p /etc/mail/spamassassin/razor
+/usr/bin/chown spamd:spamd /etc/mail/spamassassin/razor
+cd /etc/mail/spamassassin/razor || exit 0
+/usr/bin/sudo -u spamd razor-admin -home=/etc/mail/spamassassin/razor -register
+/usr/bin/sudo -u spamd razor-admin -home=/etc/mail/spamassassin/razor -create
+/usr/bin/sudo -u spamd razor-admin -home=/etc/mail/spamassassin/razor -discover
+cd $OLDPWD || exit 0
+
+# Finish
+/bin/echo "SASTATUS=\"INSTALLED\"" >> /opt/verb/conf/servermailpath
+
+# ClamAV?
+if [ -n "$2" ] && [ "$2" = "clamav" ]; then
+  /opt/verb/serfs/installclamav
+fi
+
+# Remove unneeded packages
+/usr/bin/pacman -Qdt --noconfirm
+/usr/bin/pacman -Scc --noconfirm
+/usr/bin/su worker -c '/usr/bin/yay -Scc --noconfirm'
+
+
+
+if [ -e "/opt/verb/mods/installspamassassin.after" ]; then . /opt/verb/mods/installspamassassin.after; fi # Follows this script

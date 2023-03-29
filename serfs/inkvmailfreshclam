@@ -1,0 +1,51 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This runs freshclam, stopping several services so it can have enough RAM to work right
+
+# How to use:
+## ./inkvmailfreshclam
+
+
+
+usagenotes="This runs freshclam, stopping several services so it can have enough RAM to work right"
+usageformat="inkvmailfreshclam"
+usageexample="inkvmailfreshclam"
+hierarchy=( secondary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installpostfixvmail )
+prerequesite=(  )
+usedby=( installspamassassin cron )
+useserfs=(  )
+useconfigs=( servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkvmailfreshclam.replace" ]; then . /opt/verb/mods/inkvmailfreshclam.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkvmailfreshclam.before" ]; then . /opt/verb/mods/inkvmailfreshclam.before; fi # Precedes this script
+
+
+# Ensure that SpamAssassin is installed
+. /opt/verb/conf/servermailpath
+if [ "${SASTATUS}" != "INSTALLED" ]; then
+  /bin/echo "SpamAssassin not installed, doing nothing."
+  exit 0
+fi
+
+/usr/bin/killall freshclam 2>/dev/null
+/usr/bin/systemctl stop httpd
+/usr/bin/systemctl stop nginx
+/usr/bin/systemctl stop spamassassin
+/usr/bin/systemctl stop mariadb opendkim monit postfix saslauthd dovecot named
+/usr/bin/freshclam
+wait
+/usr/bin/systemctl start httpd
+/usr/bin/systemctl start nginx
+/usr/bin/systemctl start spamassassin
+/usr/bin/systemctl start mariadb opendkim monit postfix saslauthd dovecot named
+
+
+if [ -e "/opt/verb/mods/inkvmailfreshclam.after" ]; then . /opt/verb/mods/inkvmailfreshclam.after; fi # Follows this script

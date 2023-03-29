@@ -1,0 +1,34 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This opens MySQL/MariaDB with a specific user/database in the terminal without entering any password
+
+# How to use:
+## ./mysqldb [ database name ]
+
+usagenotes="This opens MySQL/MariaDB with a specific user/database in the terminal without entering any password"
+usageformat="mysqldb [ database name ]"
+usageexample="mysqldb myGreat99DB"
+hierarchy=( primary )
+vsetnames=( "Database name" )
+vsettypes=( isSQLDatabasename )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( mysqlinstall )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/mysqldb.replace" ]; then . /opt/verb/mods/mysqldb.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/mysqldb.before" ]; then . /opt/verb/mods/mysqldb.before; fi # Precedes this script
+
+
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.${1}.cnf
+
+
+
+
+if [ -e "/opt/verb/mods/mysqldb.after" ]; then . /opt/verb/mods/mysqldbuser.after; fi # Follows this script

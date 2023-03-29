@@ -1,0 +1,48 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This purges (deletes) the inkvmail directory of an email domain from the inkvmail server
+
+# How to use:
+## ./inkvmailpurgedomain [ domain ]
+
+
+usagenotes="This purges (deletes) the inkvmail directory of an email domain from the inkvmail server"
+usageformat="inkvmailpurgedomain [ domain ]"
+usageexample="inkvmailpurgedomain inkisaverb.com"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomian )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installinkvmail )
+prerequesite=( inkvmaildomain )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkvmailpurgedomain.replace" ]; then . /opt/verb/mods/inkvmailpurgedomain.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkvmailpurgedomain.before" ]; then . /opt/verb/mods/inkvmailpurgedomain.before; fi # Precedes this script
+
+
+# Check to see if inkvmail is installed
+. /opt/verb/conf/servermailpath
+if [ "$ServerMailStatus" != "VMAIL_SERVER" ]; then
+  /bin/echo "Vmail not installed. Do that first."
+  exit 0; fi
+
+# Variable
+domain="$1"
+
+# Delete
+/bin/rm -rf /srv/vmail/$domain
+
+# Finish
+/bin/echo "Email domain $domain purged from server"
+
+
+
+
+if [ -e "/opt/verb/mods/inkvmailpurgedomain.after" ]; then . /opt/verb/mods/inkvmailpurgedomain.after; fi # Follows this script

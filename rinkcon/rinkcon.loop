@@ -1,0 +1,74 @@
+#!/bin/bash
+# This does not execute files in the /srv/sns/USER/calls directory; it tests them against functions in rinkcon.functions by the same name as the serf
+## If rinkcon.functions does not contain a function by the name of a serf, then it will not execute
+## This limits the serfs that can be run in this manner
+# This file should not be run as a cron task, but as a service that loops infinitely
+
+
+# Include our functions
+export INKSET=/opt/verb/ink/ink.set # Same as verb/ink/ink
+. ${INKSET}
+. ${iDir}/ink.functions
+. /opt/verb/rinkcon/rinkcon.functions
+
+# Get to the directory
+cd /srv/sns || exit 0
+
+while :; do
+
+	# See if any such vuser directories exist
+	if ls /srv/sns/*-*/calls > /dev/null 2>&1; then
+
+		# Iterate through each user
+		for vuser in *-*; do
+
+			# See if any calls exist
+			if ls /srv/sns/$vuser/calls/* > /dev/null 2>&1; then
+
+				cd /srv/sns/$vuser/calls
+				# Run the loop
+				for call in *; do
+					# Skip if we are already working
+					if [ -f "/srv/sns/$vuser/calls/$call.calling" ]; then continue; fi
+					# Skip .calling files
+					if [[ "$call" =~ ".calling" ]]; then continue; fi
+
+					# Process
+					calldate=$(ls -lh /srv/sns/$vuser/calls/$call)
+					runscript=$(/usr/bin/cat $call)
+					serf=$(/usr/bin/echo $call | /usr/bin/sed 's/\s.*$//')
+
+					# Type
+					if [ "$call" != "$serf" ] || [ ! -f "/opt/verb/serfs/$call" ]; then
+						/usr/bin/echo "Not any serf :--: $(/usr/bin/date) :--: $vuser :--: $call :--: $runscript :--: Modified $calldate" >> /opt/verb/rinkcon/log/nonmatch
+						/usr/bin/rm -f /srv/sns/$vuser/calls/$call
+						exit 0
+					elif [[ $(type -t $serf) == function ]]; then
+						. /srv/sns/${vuser}/conf
+						/usr/bin/echo "Is some serf :--: $(/usr/bin/date) :--: $vuser :--: $call :--: $runscript :--: Modified $calldate" >> /opt/verb/rinkcon/log/haomatch
+						# Indicate that we are working, so as to avoid redundant concurrency
+						/usr/bin/touch /srv/sns/$vuser/calls/$call.calling
+						# Source the call file to run as script
+						. /srv/sns/$vuser/calls/$call
+						/opt/verb/serfs/inkdnsrefreshbind
+						/usr/bin/echo "Success :--: $(/usr/bin/date) :--: $runscript" >> /opt/verb/rinkcon/log/exec.$(/usr/bin/date +%U)
+						/usr/bin/rm -f /srv/sns/$vuser/calls/$call
+						/usr/bin/rm -f /srv/sns/$vuser/calls/$call.calling
+					else
+						/usr/bin/echo "Not function :--: $(/usr/bin/date) :--: $vuser :--: $call :--: $runscript :--: Modified $calldate" >> /opt/verb/rinkcon/log/nonmatch
+						/usr/bin/rm -f /srv/sns/$vuser/calls/$call
+					fi
+					/usr/bin/chmod 660 /opt/verb/rinkcon/log/*
+				done
+
+			fi # call exists
+
+		done # loop for vusers
+
+	fi # vuser dir exists
+
+	# finished
+	break
+
+	/usr/bin/sleep 1
+done # endless loop

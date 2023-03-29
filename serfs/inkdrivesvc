@@ -1,0 +1,124 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+# This mounts a block storage drive to the /mnt/ directory and makes an entry in /etc/fstab
+## This places a config in verb/conf/inkdrive/
+## When managed by the rink, the drive names will reflext the disk type (hdd = hdd, ssd = ssh, hdd1 = second HDD disk likely for transfer purposes)
+
+# How to use:
+## ./inkdrivesvc [ service ] [ drive name - optional ]
+
+# Eg:
+## ./inkdrivesvc www mydrive 
+## ./inkdrivesvc mysql
+
+
+usagenotes="This relocates a service directory to an inkDrive mounted with inkdriveadd, such as www/ vmail/ mysql/"
+usageformat="inkdrivesvc [ service ] [ mount dir - optional ]"
+usageexample="inkdrivesvc www mydrive 
+inkdrivesvc mysql"
+hierarchy=( primary )
+vsetnames=( "Service name" )
+vsettypes=( isChoice )
+voptnames=( "Drive name" )
+vopttypes=( isExists )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( inkdriveadd )
+usedby=(  )
+useserfs=(  )
+useconfigs=( inkdrive/inkdriveinfo )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdrivesvc.replace" ]; then . /opt/verb/mods/inkdrivesvc.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdrivesvc.before" ]; then . /opt/verb/mods/inkdrivesvc.before; fi # Precedes this script
+
+# Config check
+if [ ! -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
+  /usr/bin/echo "No drives installed; do that first."
+  exit 8
+else
+  . /opt/verb/conf/inkdrive/inkdriveinfo
+fi
+
+# Defaults (prefer SSD)
+Svc="$1"
+if [ -n "$2" ]; then
+  Mnt="$2"
+  if [ -f "/opt/verb/conf/inkdrive/ssd.${Mnt}" ]; then
+    Typ="ssd"
+  elif [ -f "/opt/verb/conf/inkdrive/hdd.${Mnt}" ]; then
+    Typ="hdd"
+  fi
+elif [ -n "${SSDdefault}" ]; then
+  Mnt=${SSDdefault}
+  Typ="ssd"
+elif [ -n "${HDDdefault}" ]; then
+  Mnt=${HDDdefault}
+  Typ="hdd"
+else
+  /usr/bin/echo "There is no default drive. Something is very wrong."
+  exit 6
+fi
+
+# Checks
+if [ "${Svc}" = "www" ] && [ "${Typ}" = "hdd" ]; then
+  if [ -n "$2" ]; then
+    /usr/bin/echo "Cannot mount the www folder to HDD drive. Choose an SSD drive or leave 'Mount name' argument empty to try the default."
+  else
+    /usr/bin/echo "Cannot mount the www folder to HDD drive. Add an SSD drive first."
+  fi
+  exit 5
+fi
+
+# Service
+case $Svc in
+  www) SrcPath="/srv/www"; Owner="www:www" ;;
+  mysql) SrcPath="/var/lib/mysql"; Owner="mysql:mysql" ;;
+  vmail) SrcPath="/srv/vmail"; Owner="vmail:vmail" ;;
+esac
+
+# Checks
+if [ -d "/mnt/${Mnt}/${Svc}" ] && [ "$(/usr/bin/readlink -f "${SrcPath}")" = "/mnt/${Mnt}/${Svc}" ]; then
+  /usr/bin/echo "That service is already mounted to that drive."
+  exit 0
+elif [ -d "/mnt/${Mnt}/${Svc}" ] && [ "$(/usr/bin/readlink -f "${SrcPath}")" ]; then
+  /usr/bin/echo "That service is already mounted to $(/usr/bin/readlink -f "${SrcPath}")."
+  exit 7
+elif [ -d "/mnt/${Mnt}/${Svc}" ]; then
+  /usr/bin/echo "'${Svc}' already exists on that drive, but it isn't for any service on the server. Something is wrong."
+  exit 6
+elif [ -e "/mnt/${Mnt}/${Svc}" ] && [ "$(/usr/bin/readlink -f /mnt/${Mnt}/${Svc})" ]; then
+  /usr/bin/echo "'${Svc}' is a link on that drive pointing to $(/usr/bin/readlink -f /mnt/${Mnt}/${Svc}). Something is wrong."
+  exit 6
+elif [ -f "/mnt/${Mnt}/${Svc}" ]; then
+  /usr/bin/echo "A file '${Svc}' is already on that drive. Something is very wrong."
+  exit 6
+fi
+
+# Space
+SpaceAvail="$(/usr/bin/df -k "/mnt/${Mnt}" | /usr/bin/awk 'NR==2 { print $4 }')"
+SpaceNeed="$(/usr/bin/du -s "${SrcPath}" | /usr/bin/awk '{ print $1 }')"
+if [ "${SpaceNeed}" -gt "${SpaceAvail}" ]; then
+  SpaceAvailH="$(/usr/bin/df -h "/mnt/${Mnt}" | /usr/bin/awk 'NR==2 { print $4 }')"
+  SpaceNeedH="$(/usr/bin/du -sh "${SrcPath}" | /usr/bin/awk '{ print $1 }')"
+  echo "Not enough space. ${SpaceNeedH} needed, but only ${SpaceAvailH} available."
+  exit 4
+fi
+
+# Move & link
+/usr/bin/mv "${SrcPath}" "/mnt/${Mnt}/"
+/usr/bin/ln -sfn "/mnt/${Mnt}" "${SrcPath}"
+/usr/bin/chown -R ${Owner} "${SrcPath}"
+/usr/bin/chown -R ${Owner} "/mnt/${Mnt}/${Svc}"
+## Legacy for vmail
+if [ "{Svc}" = "vmail" ]; then
+  /usr/bin/ln -sfn "/mnt/${Mnt}" /var/vmail
+fi
+
+# Finish
+if [ -d "/mnt/${Mnt}" ] && [ "$(/usr/bin/readlink -f "${SrcPath}")" = "/mnt/${Mnt}/${Svc}" ]; then
+  /usr/bin/echo "${Svc} folder successfully mounted on ${Typ} drive at /mnt/${Mnt}"
+fi
+
+
+if [ -e "/opt/verb/mods/inkdrivesvc.after" ]; then . /opt/verb/mods/inkdrivesvc.after; fi # Follows this script

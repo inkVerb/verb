@@ -1,0 +1,44 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This opens MySQL/MariaDB with root in the terminal without entering any password
+## You may specify a specific boss
+
+# How to use:
+## ./mysqlboss [ mysqlboss-name - optional ]
+
+usagenotes="This opens MySQL/MariaDB with root or sudo in the terminal without entering any password, if no user is specified then a default boss user will be used"
+usageformat="mysqlboss [ mysqlboss username - optional ]"
+usageexample="mysqlboss
+mysqlboss myBossDBuser99"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=( "Database username" )
+vopttypes=( isSQLUserCredential )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( mysqlinstall )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/mysqlboss.replace" ]; then . /opt/verb/mods/mysqlboss.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/mysqlboss.before" ]; then . /opt/verb/mods/mysqlboss.before; fi # Precedes this script
+
+
+if [ -n "${1}" ]; then
+  if [ -f "/opt/verb/conf/mysqlboss.${1}.cnf" ]; then
+    /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.${1}.cnf
+  else
+    echo "MySQL boss ${1} does not exist."; exit 0
+  fi
+else
+  /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf
+fi
+
+
+
+
+if [ -e "/opt/verb/mods/mysqlboss.after" ]; then . /opt/verb/mods/mysqlboss.after; fi # Follows this script

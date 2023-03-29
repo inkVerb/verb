@@ -1,0 +1,52 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This remote runs inkdnsaddslave on both NS rink slave servers
+## This is run automatically by newdomainshell and rinkimportme; it normally should not be run independently
+
+# How to use:
+## ./rinkadddomain [ domain.tld ]
+
+usagenotes="This remote runs inkdnsaddslave on both NS rink slave servers"
+usageformat="rinkadddomain [ domain.tld ]"
+usageexample="rinkadddomain inkisaverb.com"
+hierarchy=( tertiary newdomainshell )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( "Controlled by Rink" )
+prerequesite=(  )
+usedby=( newdomainshell rinkimportme )
+useserfs=(  )
+useconfigs=( servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/rinkadddomain.replace" ]; then . /opt/verb/mods/rinkadddomain.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/rinkadddomain.before" ]; then . /opt/verb/mods/rinkadddomain.before; fi # Precedes this script
+
+
+slavedomain=$1
+
+# Configs
+. /opt/verb/conf/servernameip
+
+# Already configured?
+if [ "$RinkConfigured" != "true" ]; then
+	echo "Rink NS nameserver keys not configured, DNS nameserver zone files will need to be updated manually"
+	exit 0
+elif [ "$RinkConfigured" = "rink" ] && [ -f "/opt/rink/run/addmasterdomain" ]; then
+	/opt/rink/run/addmasterdomain ${slavedomain}
+	exit 0
+fi
+
+# Check for conflicts
+/opt/verb/serfs/rinkcheck inkdnsaddslave
+/opt/verb/serfs/rinkcheck killinkdnsslavedns
+
+# Insert the function statements
+/usr/bin/ssh ns1 "/usr/bin/echo 'inkdnsaddslave ${ServerName}-${ServerTLD} ${slavedomain} -n' > /srv/sns/${ServerName}-${ServerTLD}/calls/inkdnsaddslave"
+/usr/bin/ssh ns2 "/usr/bin/echo 'inkdnsaddslave ${ServerName}-${ServerTLD} ${slavedomain} -n' > /srv/sns/${ServerName}-${ServerTLD}/calls/inkdnsaddslave"
+
+if [ -e "/opt/verb/mods/rinkadddomain.after" ]; then . /opt/verb/mods/rinkadddomain.after; fi # Follows this script

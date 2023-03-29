@@ -1,0 +1,43 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This sets the inkVPN client and server email address
+## This is used by inkvpninstall but can also be used by itself
+## If the email is not set in the first argument, the default will be used by the Verber's nameURI
+
+# How to use:
+## ./inkvpncakey
+
+
+# Include the config
+. /opt/verb/conf/inkvpn/inkvpnstatus
+
+# Check if the directory exists
+if [ ! -d "/opt/openvpn/certificates" ]; then
+/bin/echo "The OpenVPN \"certificates\" directory does not exist, something's wrong. Bye."; exit 0; fi
+
+# Remove keys and start everything over
+cd /opt/openvpn/certificates || exit 0
+source vars
+./clean-all && ./build-ca --batch
+./build-key-server --batch server
+./build-dh
+openvpn --genkey --secret keys/ta.key
+/bin/rm -f /etc/openvpn/{server.crt,server.key,ca.crt,dh2048.pem,ta.key}
+/bin/cp keys/{server.crt,server.key,ca.crt,dh2048.pem,ta.key} /etc/openvpn/
+
+# Restart the OpenVPNserver if already installed
+if [ "${InkVPNInstalled}" = "INSTALLED_OPENVPN" ]; then
+  /bin/systemctl restart openvpn@server
+## Check status for the record
+  if [ "$(/bin/systemctl is-active openvpn@server)" = "active" ]; then
+    /bin/echo "Good to go! Systemctl check on inkVPN says \"active\"!"
+  else
+    /bin/echo "Something's wrong. Systemctl says OpenVPN is not active. I quit."; exit 6
+  fi
+fi
+
+
+
+
+if [ -e "/opt/verb/mods/inkvpncakey.after" ]; then . /opt/verb/mods/inkvpncakey.after; fi # Follows this script

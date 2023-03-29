@@ -1,0 +1,53 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This activates a domain to work with either the FTP-accessible domains/ directory or a vapp
+## This could be used as drop-in code for install- serfs for installing vapps
+
+# How to use:
+## ./activatedomain [ domain.tld ] [ vappname.domain.tld - if activating the vapp ]
+
+# Eg:
+## ./activatedomain inkisaverb.com				# activate inkisaverb.com for the FTP domains/ directory
+## ./activatedomain inkisaverb.com wp.inkisaverb.com	# activate inkisaverb.com for the WordPress vapp
+
+usagenotes="This activates a domain to work with either the FTP-accessible www/domains/ directory or a vapp"
+usageformat="activatedomain [ domain.tld ] [ vappname.domain.tld - if activating for a vapp ]"
+usageexample="activatedomain inkisaverb.com # activate inkisaverb.com for the FTP domains/ directory
+activatedomain inkisaverb.com wp.inkisaverb.com # activate inkisaverb.com for the WordPress vapp"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=( "Vapp name" )
+vopttypes=( isDomainPart )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( adddomain )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/activatedomain.replace" ]; then . /opt/verb/mods/activatedomain.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/activatedomain.before" ]; then . /opt/verb/mods/activatedomain.before; fi # Precedes this script
+
+
+DOMAIN=$1
+VAPPNM=$2
+
+if [ -n ${2} ]; then
+    /bin/rm -rf /srv/www/html/${DOMAIN}
+    /bin/ln -sfn /srv/www/vapps/${VAPPNM} /srv/www/html/${DOMAIN}
+    /bin/echo "${VAPPNM} vapp active at ${DOMAIN}."
+
+elif [ -z ${2} ]; then
+    /bin/rm -rf /srv/www/html/${DOMAIN}
+    /bin/ln -sfn /srv/www/domains/${DOMAIN} /srv/www/html/
+    /bin/echo "${DOMAIN} domain active."
+
+fi
+
+
+
+
+if [ -e "/opt/verb/mods/activatedomain.after" ]; then . /opt/verb/mods/activatedomain.after; fi # Follows this script

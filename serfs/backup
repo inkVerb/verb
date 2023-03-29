@@ -1,0 +1,72 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This backs up an installed webapp by exporting the database, app folder, and siteconfig file into one downloadable vbak file in the "vip" folder and symlinked to the main site domain.
+
+# How to use:
+## ./backup [app namespace] [securename 0-9, a-z, and A-Z only, optional] [-nl for no link, optional dep]
+
+## This uses the same app namespace as installAPPNAME and vapp.APPNAME configs
+## This does not work for ghost sites
+## For WordPress installed to a domain, the namespace follows the format: wp-DOMAIN.TLD or wp-SUB.DOMAIN.TLD
+
+# Eg:
+## ./backup suitecrm
+## ./backup orangehrm 583
+## ./backup wp.inkisaverb.com 7aJk -nl
+## ./backup wpinkblog b
+
+
+APPNAME=$1
+if [ -z "$2" ]; then
+SECNAME=$(/usr/bin/pwgen -s -1 12)
+else
+SECNAME=$2
+fi
+
+# Check if installed
+if [ -z "/opt/verb/conf/vapp.${APPNAME}" ]; then
+/bin/echo "${APPNAME} not installed. Nothing to backup."
+exit 0; fi
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/vapp.${APPNAME}
+
+# Export the database
+cd /srv/www/vapps/${APPNAME}/ || exit 0
+/opt/verb/serfs/mysqlvappex vapp.${APPNAME}; wait
+/bin/cp /srv/vip/sql/${APPDBASE}.sql /srv/www/vapps/${APPNAME}/ || exit 4
+
+# Backup the config
+/bin/cp /opt/verb/conf/vapp.${APPNAME} /srv/www/vapps/${APPNAME}/
+
+# Pack the directory
+cd /srv/www/vapps || exit 0
+/opt/verb/serfs/vtxzin ${APPNAME}
+/bin/mv ${APPNAME}.txz verb.${APPNAME}.${SECNAME}.vbak
+/bin/mv verb.${APPNAME}.${SECNAME}.vbak /srv/www/vip/
+
+# Finish
+if [ "$3" = "-nl" ]; then
+/bin/echo "${APPNAME} has been backed up to the 'vip' folder.
+
+Note that the app remains live.
+"
+exit 0
+fi
+
+/bin/ln -sfn /srv/www/vip/verb.${APPNAME}.${SECNAME}.vbak /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/
+/bin/chown -R www:www /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/verb.${APPNAME}.${SECNAME}.vbak
+/bin/echo "${APPNAME} has been backed up to the 'vip' folder and can also be downloaded at:
+
+http://${ServerServePath}/verb.${APPNAME}.${SECNAME}.vbak
+
+Note that the app remains live.
+"
+
+
+
+
+if [ -e "/opt/verb/mods/backup.after" ]; then . /opt/verb/mods/backup.after; fi # Follows this script

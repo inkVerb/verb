@@ -1,0 +1,18 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This displays the Verber service download URL
+
+# How to use:
+## ./showservepath
+
+
+. /opt/verb/conf/servernameip
+
+/bin/echo "${ServerServePath}"
+
+
+
+
+
+if [ -e "/opt/verb/mods/showservepath.after" ]; then . /opt/verb/mods/showservepath.after; fi # Follows this script

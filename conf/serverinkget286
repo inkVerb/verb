@@ -1,0 +1,8 @@
+#!/bin/bash
+## This is a config file for the method used by the inkget serf
+
+InkGet_Method="ZJZ"
+InkGet_Repo="TEMP"
+InkGet_List="AUTO_UPDATE"
+InkNet_Repo="NOT_SET"
+

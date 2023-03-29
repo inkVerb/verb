@@ -1,0 +1,35 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This runs the auto updater for LE inkCert.
+## The script is already written, this merely runs it via Serf
+
+# How to use:
+## ./inkcertrenewcbleall
+
+usagenotes="This renews all certificates done via inkCert-Letsencrypt or inkCert-Certbot"
+usageformat="inkcertrenewcbleall"
+usageexample=""
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkcertinstall )
+prerequesite=( inkcertdole 'or' inkcertdobc 'or' inkcertdocbsingle )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkcertrenewcbleall.replace" ]; then . /opt/verb/mods/inkcertrenewcbleall.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkcertrenewcbleall.before" ]; then . /opt/verb/mods/inkcertrenewcbleall.before; fi # Precedes this script
+
+
+/opt/verb/conf/inkcert/inkcertcble-renew-all.sh
+
+
+
+
+if [ -e "/opt/verb/mods/inkcertrenewcbleall.after" ]; then . /opt/verb/mods/inkcertrenewcbleall.after; fi # Follows this script

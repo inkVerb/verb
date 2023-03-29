@@ -1,0 +1,19 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This runs the basic updater for /usr/bin/apt-get and includes bugfixes
+## Dialogs menues will still appear, so this should be run while being monitored
+
+# How to use:
+## ./updateapt
+
+
+/usr/bin/apt-get update
+/usr/bin/apt-get upgrade -y
+/usr/bin/dpkg --configure -a
+/usr/bin/apt-get autoremove -y
+
+
+
+
+if [ -e "/opt/verb/mods/updateapt.after" ]; then . /opt/verb/mods/updateapt.after; fi # Follows this script

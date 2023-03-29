@@ -1,0 +1,104 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This adds a Verber Client for this inkNet CA Verber to host
+## This can be run to update an existing config
+## Prerequisite Serf: inknetinstallca
+
+## Note: underscores are allowed in the host
+
+# How to use:
+## ./inknetaddverberclient [Verber Host/Name] [Verber IP]
+
+# Eg:
+## ./inknetaddverberclient joey.joey.verb.ink 999.999.999.999 (most common)
+## ./inknetaddverberclient joey_joey_verb_ink 999.999.999.999 (underscores always allowed in host, like this)
+## ./inknetaddverberclient joey.joey.verb.email 999.999.999.999 (if email is on a different server)
+## ./inknetaddverberclient joey2.ink.inkisaverb.com 999.999.999.999 (Domain Mod)
+
+# Prerequesites
+if [ -f /opt/verb/conf/inknet/ca.verber.cnf ]; then
+. /opt/verb/conf/inknet/ca.verber.cnf
+ if [ "${INKNETSTATUS}" != "INSTALLED" ]; then
+/bin/echo "inkNet not quite installed. First, run inknetinstallca"
+exit 0
+ fi
+else
+/bin/echo "inkNet not installed. First, run inknetinstallca"
+exit 0
+fi
+
+ICHOST=$1
+ADDIP=$2
+ADDHOST="$(/bin/echo ${ICHOST} | sed 's/_/\./g')"
+ADDNAME="$(/bin/echo ${ICHOST} | sed 's/\./_/g')"
+ADDURI="$(/bin/echo ${ADDHOST} | rev | cut -d'.' -f-3 | rev)"
+URINAME="$(/bin/echo ${ADDURI} | sed 's/\./_/g')"
+
+if [ -z ${2} ]; then
+/bin/echo "Dude. You need both options. Read the instructions."
+exit 0
+fi
+ADDAPG=$(/usr/bin/pwgen -1 -0 -A 4)
+## Truncate the new username to fit appendage before the 32 character limit
+CUTUSERNAME=$(/bin/echo ${URINAME} | cut -c1-28)
+# New username based on user, random appendage, and computer name
+ADDUSERNAME=${CUTUSERNAME}${ADDAPG}
+ADDPASSWORD=$(/usr/bin/pwgen -1 -s 15)
+
+# Just in case user already exists
+if [ -f /opt/verb/conf/inknet/verber/client.verber.${ADDNAME}.cnf ]; then
+/bin/echo "Umm... How do I say this...
+
+It looks like you have already done this for this verber. A config already exists for that Verber name.
+
+For example: Try a hostname like one of these: \"${ADDTLD}${ADDHOST}\" or \"${ADDTLD}2${ADDHOST}\"
+
+But, if this really is a separate Verber, you're going to need either change the short \"host\" name or re-install that Verber with a new hostname if you can't.
+
+If you really need to continue and replace the existing profile by this name, first delete the profile for ${ADDNAME} at inknet/verber/client.verber.${ADDNAME}.cnf in configs on the Verber
+...then run this again.
+"
+exit 0
+fi
+
+# Create the config
+if [ ! -d "/opt/verb/conf/inknet/verber" ]; then
+/bin/mkdir -p /opt/verb/conf/inknet/verber; fi
+. /opt/verb/conf/serverport
+ADDLOGINPORT=${ServerPort}
+/bin/echo "#!/bin/bash
+# inkNet config, verb.ink
+## This contains information about a Verber Client's credentials used in signing SSH keys for inkNet on this CA Verber
+
+CLIENTHOST=\"${ADDHOST}\"
+CLIENTURI=\"${ADDURI}\"
+CLIENTNAME=\"${ADDNAME}\"
+CLIENTIP=\"${ADDIP}\"
+CLIENTUSERNAME=\"${ADDUSERNAME}\"
+CLIENTPASSWORD=\"${ADDPASSWORD}\"
+CLIENTPORT=\"${ADDLOGINPORT}\"
+" > /opt/verb/conf/inknet/verber/client.verber.${ADDNAME}.cnf
+
+# Create the ivApp user
+/opt/verb/serfs/inknetivappadduser ${ADDUSERNAME} ${ADDPASSWORD} vrb
+wait
+
+# Create the inkNet Client tool links
+/bin/ln -sfn /opt/verb/tools/verber /opt/ivapp/inknet/verber/${ADDUSERNAME}/tools
+
+# Finish
+/bin/echo " \"${ADDHOST}\" has been added as a Verber Client."
+
+## Serf message
+/bin/echo "
+Now, you need to add the client ssh-rsa key via: inknetaddclientkey
+
+Then follow instructions.
+"
+
+
+
+
+
+if [ -e "/opt/verb/mods/inknetaddverberclient.after" ]; then . /opt/verb/mods/inknetaddverberclient.after; fi # Follows this script

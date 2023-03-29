@@ -1,0 +1,57 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This reinstall MySQ/MariaDBL with new bosses and passwords after it has been removed via mysqluninstall
+
+# How to use:
+## ./mysqlinstall
+
+
+usagenotes="This reinstall MySQ/MariaDBL with new bosses and passwords after it has been removed via mysqluninstall"
+usageformat="mysqlinstall"
+usageexample="mysqlinstall"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( mysqlinstall )
+prerequesite=( mysqluninstall )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/mysqlinstall.replace" ]; then . /opt/verb/mods/mysqlinstall.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/mysqlinstall.before" ]; then . /opt/verb/mods/mysqlinstall.before; fi # Precedes this script
+
+
+MYSQLPASS=$(/usr/bin/pwgen -0 -1 -A -B 11)
+MYSQLBossPASS=$(/usr/bin/pwgen -s -1 10)
+
+# Record the MySQL root password
+/bin/echo "${MYSQLPASS}" > /opt/verb/inst/mysqlrootpassword
+/bin/echo "mysql-server mysql-server/root_password password ${MYSQLPASS}" | debconf-set-selections
+/bin/echo "mysql-server mysql-server/root_password_again password ${MYSQLPASS}" | debconf-set-selections
+
+# Install MySQL
+/usr/bin/apt-get -y install mysql-server mysql-client
+
+# MySQL superuser to auto-create databases
+/usr/bin/mysql -uroot -p${MYSQLPASS} -e "
+CREATE USER mysqlboss@localhost;
+SET PASSWORD FOR mysqlboss@localhost=PASSWORD('${MYSQLBossPASS}');
+GRANT ALL PRIVILEGES ON *.* TO 'mysqlboss'@'localhost' IDENTIFIED BY '${MYSQLBossPASS}' WITH GRANT OPTION;
+FLUSH PRIVILEGES;"
+## Set the mysqlboss as the mysqlboss config file so the password is not in the line command
+/bin/echo "[client]
+user = mysqlboss
+password = ${MYSQLBossPASS}
+host = localhost" > /opt/verb/conf/mysqlboss.cnf
+
+
+
+
+
+if [ -e "/opt/verb/mods/mysqlinstall.after" ]; then . /opt/verb/mods/mysqlinstall.after; fi # Follows this script

@@ -1,0 +1,1162 @@
+#!/bin/bash
+#inkVerbMaker! verb.ink
+## THIS IS THE BIG ONE! THIS INSTALLS THE NAME AND SETS THE SERVER INTO PRODUCTION ##
+
+# This initially sets the server to the specific namespace at verb.ink etc.
+## The SSL email is for registering with Letsencrypt.
+## Domains are added to the server after this
+## This changes the SSH login port, to keep it the same use 22
+## This creates a sudo user with login AND a MySQL superuser by the same name and password
+## If using the domain mod (make-dommod), the namespace must be your domain.
+
+# How to use:
+## ./setup [namespace] [tld] [email] [IT] [ID_no-host] [serverIPv4 - if none use NOIP4 ] [serverIPv6 - if none use NOIP6 ] [SSLemail] [php.file-limit] [php.up-size] [php.city] [new-port] [new-boss] [boss-pass] [verb-update - optional update repo] [inkverb - optional update GitHub org]
+# Elaborate how to use:
+## ./setup [inkVerb-registered namespace, willbecome namespace.verb.ink etc] [inkVerb namespace] [FQDN tld, should be 'ink' except multiple servers for namespace] [email server tld, should be 'email' except multiple servers for namespace] [IT-SQL-FTP server tld, should be 'vip' except multiple servers for namespace] [ID number for verber, becomes hidden nameserver FQDN host] [server IPv4] [server IPv4] [SSL email - used for Letsencrypt and the like] [php file upload limit] [php upload size in MB] [php timezone city] [new port number for ssh/terminal login] [new "boss" sudo user] [boss user password] [verb-update - optional update repo if different from verb-update] [inkverb - optional update GitHub org if different from inkverb]
+
+# IMPORTANT: Choose a hostname that is: 1. short, 2. unique, 3. memorable, and 4. has only numbers and lower-case letters.
+## You will see this name in terminal tabs and window titles when you connect to your Verber via command line.
+## Do not choose the same host name on different Verbers of the same namespace, for example ...verb.email and ...verb.ink also need different hosts.
+## Consider combining your verb.TLD extension with your Verb namespace
+## Eg: joesbigasphalttrucking.verb.ink = joeink OR joesbigasphalttrucking.verb.email joeemail
+
+## PHP timezone can't use third option of state or country such as America/Indiana/Knox, only such as America/Chicago
+## Get PHP timezone list at: http://php.net/manual/en/timezones.php
+# Timezone list: http://php.net/manual/en/timezones.php
+# Common lo/bin/cations:
+# Europe/Berlin
+# Asia/Tokyo
+# Asia/Hong_Kong
+# Asia/Singapore
+# America/New_York
+# America/Chicago
+# America/Phoenix
+# America/Los_Angeles
+
+# Everything after the PHP Timezone is optional
+
+# Eg:
+## ./setup johnny ink email vip 1 56.22.108.77 NOIP6 letsencrypt-messages@emaildomain.com 100 1000 Asia/Singapore 22 boss bosspassword
+## ./setup johnny ink email vip somehost 56.22.108.77 ffff:894:aad8::821 letsencrypt-messages@emaildomain.com 100 1000 Europe/Bucharest 867 boss
+## ./setup johnny blue blue blue 3 56.22.108.77 NOIP6 letsencrypt-messages@emaildomain.com 100 1000 America/New_York 5290 boss "$(/usr/bin/pwgen -s -1 16)" verb-update
+## ./setup johnny red one kiwi rocks 4 56.22.108.77 ffff:894:aad8::821 letsencrypt-messages@emaildomain.com 100 1000 America/Phoenix 5290 boss "$(/usr/bin/pwgen -s -1 16)" verb-update inkverb
+
+### Domain Mod:
+## ./setup isa ink email vip somehost 56.22.108.77 NOIP6 letsencrypt-messages@emaildomain.com 100 1000 America/Detroit 22 boss
+## ./setup iv ink email vip 2 56.22.108.77 ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff letsencrypt-messages@emaildomain.com 100 1000 America/Detroit 22 boss "$(/usr/bin/pwgen -s -1 16)"
+
+
+# Arg check
+if [ -z "${11}" ]; then
+/bin/echo "You must set all required settings."
+exit 8; fi
+
+# Where is verb?
+vDir="$(pwd | sed 's:/inst::')"
+
+# Setup check
+if [ -f "/opt/verb/inst/make-preverber" ]; then
+  /bin/echo "Run make-preverber first, then try again."
+exit 8; fi
+if [ -f "/opt/verb/inst/make-verber-lemp" ] && [ -f "/opt/verb/inst/make-verber-lamp" ] && [ -f "/opt/verb/inst/make-verber-laemp" ]; then
+  /bin/echo "You didn't yet make the verber LEMP, LAMP, or LAEMP, I quit."
+exit 8; fi
+
+# File check
+if [ ! -f "/opt/verb/inst/setup" ]; then
+  /bin/echo "I'm not where I'm supposed to be, I quit."
+exit 8; fi
+
+# Slave DNS Server check
+VNAME="$1"
+SERVERTLD="$2"
+## Check for consistency if there is a domain mod
+if [ -f "/opt/verb/inst/domain.mod.conf" ]; then
+  . /opt/verb/inst/domain.mod.conf
+  #DEV if statement removed becuase it's too picky and not necessary, NS host does not need to match verb namespace
+  # if [ "${DOMMODHOST}" = "$1" ]; then
+    VNAME="$1"
+  # else
+  #   /bin/echo "Argued host is not the same as the DNS preconfig, I quit."
+  #   exit 8
+  # fi
+
+fi
+## This will check for consistency in the Slave DNS hostname preconfiguration and the host argument
+if [ -f "/opt/verb/conf/inkdns/sdns/dnshost" ]; then
+  . /opt/verb/conf/inkdns/sdns/dnshost
+  if [ "${Hostname}" = "$5" ]; then
+    VNAME="$1"
+    HOSTURI="${DNSSlave}"
+  else
+    /usr/bin/echo "Argued host is not the same as the host in the DNS preconfig, I quit."
+    exit 8
+  fi
+  # Add rinkcon.loop to startup
+  /usr/bin/echo '[Unit]
+Description=inkDNS NS Rink Control call checks
+
+[Service]
+Type=simple
+ExecStart=/opt/verb/rinkcon/rinkcon.loop
+
+[Install]
+WantedBy=multi-user.target' > /etc/systemd/system/inkdnscontrol.service
+  /usr/bin/chmod 755 /etc/systemd/system/inkdnscontrol.service
+  /usr/bin/systemctl enable inkdnscontrol.service
+  /bin/chmod 750 /opt/verb/rinkcon/rinkcon.loop
+else # Normal verber, not Slave DNS
+  . /opt/verb/conf/inklists/inkdnsnameservers
+  VNAME="$1"
+  Hostname="$5"
+  custom_hostname="true"
+  # Remove rinkcon files used by a Slave DNS (because this is not)
+  /usr/bin/rm -f /opt/verb/rinkcon/rinkcon.*
+fi
+
+SVMAILTLD="$3"
+ITSQLTLD="$4"
+SERVERIPV4="$6"
+SERVERIPV6="$7"
+SSLEMAIL="$8"
+PHPLIMIT="$9"
+PHPSIZE="${10}"
+PHPCITY="${11}"
+
+# Validation functions
+setupDomainPart() {
+local DOMAINPT="$1"
+local vvar="$2"
+local DOMAINPTregex="[-A-Za-z0-9_]"
+
+if [[ "${DOMAINPT}" =~ ${DOMAINPTregex} ]] && [[ "${DOMAINPT}" != *- ]] && [[ "${DOMAINPT}" != -* ]] ; then
+setupDomainPart="true"; else
+setupDomainPart="false"; fi
+
+if [ "${setupDomainPart}" = "false" ]; then
+/bin/echo "\"${1}\" rejected: ${vvar} must be a valid subdomain part, including alphanumeric characters, underscore, and hyphen"
+exit 0; fi
+}
+
+setupVerbTLD() {
+local verbTLD="$1"
+local vvar="$2"
+local VerbTLDs=( one ink email blue kiwi red vip )
+if [[ "${VerbTLDs[*]}" =~ "${verbTLD}" ]]; then
+setupVerbTLD="true"; else
+setupVerbTLD="false"; fi
+
+if [ "${setupVerbTLD}" = "false" ]; then
+/bin/echo "\"${1}\" rejected: ${vvar} must a valid verb TLD: ${VerbTLDs[*]}"
+exit 0; fi
+}
+
+setupIP4() {
+local IP4="$1"
+local vvar="$2"
+local VALIDregex="^([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})"
+if [[ "${IP4}" =~ ${VALIDregex} ]]; then
+setupIP4="true"; else
+setupIP4="false"; fi
+
+if [ "${setupIP4}" = "false" ]; then
+/bin/echo "\"${1}\" rejected: ${vvar} must be a valid IPv4 address."
+exit 0; fi
+}
+
+### Expanded or compressed IPv6 formats both work
+setupIP6() {
+local IP6="$1"
+local vvar="$2"
+local VALIDregex="(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))"
+if [[ "${IP6}" =~ ${VALIDregex} ]]; then
+setupIP6="true"; else
+setupIP6="false"; fi
+
+if [ "${setupIP6}" = "false" ]; then
+/bin/echo "\"${1}\" rejected: ${vvar} must be a valid IPv6 address."
+exit 0; fi
+}
+
+setupEmail() {
+local EMAIL="$1"
+local vvar="$2"
+local EMAILregex="^[a-z0-9!#\$%&'*+/=?^_\`{|}~-]+(\.[a-z0-9!#$%&'*+/=?^_\`{|}~-]+)*@([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z0-9]([a-z0-9-]*[a-z0-9])?\$"
+
+if [[ "${EMAIL}" =~ ${EMAILregex} ]] ; then
+setupEmail="true"; else
+setupEmail="false"; fi
+
+if [ "${setupEmail}" = "false" ]; then
+/bin/echo "\"${1}\" rejected: ${vvar} must be a valid email address."
+exit 0; fi
+}
+
+setupInt() {
+local INT=$1
+local vvar="$2"
+local VALIDregex="^[-?[:digit:]]*$"
+if [[ "${INT}" =~ ${VALIDregex} ]]; then
+setupInt="true"; else
+setupInt="false"; fi
+
+if [ "${setupInt}" = "false" ]; then
+/bin/echo "\"${1}\" rejected: ${vvar} must be a valid integer."
+exit 0; fi
+}
+
+setupPHPcity() {
+local tCITY="$1"
+local vvar="$2"
+if ls "/usr/share/zoneinfo/${tCITY}" > /dev/null 2>&1; then
+setupPHPcity="true"; else
+setupPHPcity="false"; fi
+
+if [ "${setupPHPcity}" = "false" ]; then
+/bin/echo "\"${1}\" rejected: ${vvar} must be an accepted city, such as: \"Asia/Hong_Kong\"
+Full list here: https://www.php.net/manual/en/timezones.php"
+exit 0; fi
+}
+
+setupUsername() {
+local USER="$1"
+local vvar="$2"
+local USERregex='^[[:lower:]_][[:lower:][:digit:]_-]{2,31}$'
+
+if [[ "${USER}" =~ ${USERregex} ]] ; then
+setupUsername="true"; else
+setupUsername="false"; fi
+
+if [ "${setupUsername}" = "false" ]; then
+/bin/echo "\"${1}\" rejected: ${vvar} must be a valid username: alphanumeric, hyphen, underscore, numbers; all lowercase, start with letter or underscore; 16 characters max."
+exit 0; fi
+}
+
+setupPassword() {
+local PASSWORD="$1"
+local vvar="$2"
+
+local PASSWORDregex="^[[:alnum:]_-]{2,100}$"
+if [[ "${PASSWORD}" =~ ${PASSWORDregex} ]] ; then
+#if [[ ${#PASSWORD} -ge 6 && "${PASSWORD}" == *[A-Z]* && "${PASSWORD}" == *[a-z]* && "${PASSWORD}" == *[0-9]* ]] ; then
+setupPassword="true"; else
+setupPassword="false"; fi
+
+if [ "${setupPassword}" = "false" ]; then
+/bin/echo "\"${1}\" rejected: ${vvar} must be a valid password."
+exit 0; fi
+}
+
+# Checks
+setupDomainPart "${VNAME}" "Verb namespace"
+setupVerbTLD "${SERVERTLD}" "Main server Verb TLD"
+setupVerbTLD "${SVMAILTLD}" "Email server Verb TLD"
+setupVerbTLD "${ITSQLTLD}" "IT/SQL server Verb TLD"
+if [ -n "${custom_hostname}" ] && [ "${custom_hostname}" = "true" ]; then
+  setupDomainPart "${Hostname}" "Host name"
+fi
+## IPv4?
+if [ -n "${SERVERIPV4}" ] && [ "${SERVERIPV4}" != "NOIP4" ]; then
+  setupIP4 "${SERVERIPV4}" "IPv4 address"
+elif [ -n "${SERVERIPV4}" ] && [ "${SERVERIPV4}" = "NOIP4" ]; then
+  /bin/sed -i "s/ ipv4286//" /etc/httpd/conf/rpaf.conf
+  /bin/sed -i "/hostipv4286/d" /opt/verb/conf/inkdns/inkzones/db.*
+  /bin/sed -i "/hostipv4286/d" /opt/verb/conf/inkdns/db.dnsdomain
+  /bin/sed -i "/hostarpaipv4286/d" /opt/verb/conf/inkdns/inkzones/nv.*
+  /bin/sed -i "/hostarpaipv4286/d" /opt/verb/conf/inkdns/nv.dnsdomain
+fi
+## IPv6?
+if [ -n "${SERVERIPV6}" ] && [ "${SERVERIPV6}" != "NOIP6" ]; then
+  setupIP6 "${SERVERIPV6}" "IPv6 address"
+elif [ -n "${SERVERIPV6}" ] && [ "${SERVERIPV6}" = "NOIP6" ]; then
+  /bin/sed -i "s/ ipv6286//" /etc/httpd/conf/rpaf.conf
+  /bin/sed -i "/hostipv6286/d" /opt/verb/conf/inkdns/inkzones/db.*
+  /bin/sed -i "/hostipv6286/d" /opt/verb/conf/inkdns/db.dnsdomain
+  /bin/sed -i "/hostarpaipv6286/d" /opt/verb/conf/inkdns/inkzones/nv.*
+  /bin/sed -i "/hostarpaipv6286/d" /opt/verb/conf/inkdns/nv.dnsdomain
+fi
+setupEmail "${SSLEMAIL}" "SSL cert contact email address"
+setupInt "${PHPLIMIT}" "PHP upload file count limit"
+setupInt "${PHPSIZE}" "PHP upload file size"
+setupPHPcity "${PHPCITY}" "PHP city"
+
+if [ -z "${12}" ]; then
+  NEWPORT="22"
+else
+  NEWPORT="${12}"
+  setupInt "${NEWPORT}" "New SSH port"
+fi
+
+if [ -z "${13}" ]; then
+  NEWBoss=$(/usr/bin/pwgen -s -1 16)
+else
+  NEWBoss="${13}"
+  setupUsername "${NEWBoss}" "New Linux 'boss' user"
+fi
+
+if [ -z "${14}" ]; then
+  NEWBossPASS=$(/usr/bin/pwgen -s -1 16)
+else
+  NEWBossPASS="${14}"
+  setupPassword "${NEWBossPASS}" "New Linux 'boss' user password"
+fi
+
+if [ -z "${15}" ]; then
+  VUPRepo="verb-update"
+else
+  VUPRepo="${15}"
+  setupDomainPart "${VUPRepo}" "Custom Git repository"
+fi
+
+if [ -z "${16}" ]; then
+  VUPORG="inkverb"
+else
+  VUPORG="${16}"
+  setupDomainPart "${VUPORG}" "Custom Git organization"
+fi
+
+# IP processing
+## Compress IPv6
+hex2dec(){
+    [ "$1" != "" ] && printf "%d" "$(( 0x$1 ))"
+}
+compress_ipv6() {
+    ip=$1
+
+    blocks=$(/bin/echo $ip | /bin/grep -o "[0-9a-f]\+")
+    set $blocks
+
+    # compress leading zeros
+    ip=$(printf "%x:%x:%x:%x:%x:%x:%x:%x\n" \
+        $(hex2dec $1) \
+        $(hex2dec $2) \
+        $(hex2dec $3) \
+        $(hex2dec $4) \
+        $(hex2dec $5) \
+        $(hex2dec $6) \
+        $(hex2dec $7) \
+        $(hex2dec $8)
+    )
+
+    # prepend : for easier matching
+    ip=:$ip
+
+    # :: must compress the longest chain
+    for pattern in :0:0:0:0:0:0:0:0 \
+            :0:0:0:0:0:0:0 \
+            :0:0:0:0:0:0 \
+            :0:0:0:0:0 \
+            :0:0:0:0 \
+            :0:0; do
+        if /bin/echo $ip | /bin/grep -qs $pattern; then
+            ip=$(/bin/echo $ip | sed "s/$pattern/::/")
+            # if the substitution occured before the end, we have :::
+            ip=$(/bin/echo $ip | sed 's/:::/::/')
+            break # only one substitution
+        fi
+    done
+
+    # remove prepending : if necessary
+    /bin/echo $ip | /bin/grep -qs "^:[^:]" && ip=$(echo $ip | sed 's/://')
+
+    /bin/echo $ip
+}
+## Expand IPv6
+expand_ipv6() {
+    ip=$1
+
+    # prepend 0 if we start with :
+    /bin/echo $ip | /bin/grep -qs "^:" && ip="0${ip}"
+
+    # expand ::
+    if /bin/echo $ip | /bin/grep -qs "::"; then
+        colons=$(/bin/echo $ip | sed 's/[^:]//g')
+        missing=$(/bin/echo ":::::::::" | sed "s/$colons//")
+        expanded=$(/bin/echo $missing | sed 's/:/:0/g')
+        ip=$(/bin/echo $ip | sed "s/::/$expanded/")
+    fi
+
+    blocks=$(/bin/echo $ip | /bin/grep -o "[0-9a-f]\+")
+    set $blocks
+
+    printf "%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x\n" \
+        $(hex2dec $1) \
+        $(hex2dec $2) \
+        $(hex2dec $3) \
+        $(hex2dec $4) \
+        $(hex2dec $5) \
+        $(hex2dec $6) \
+        $(hex2dec $7) \
+        $(hex2dec $8)
+}
+## Reverse IPv6
+rarpa_ipv6() {
+  local idx s=${1//:}
+  for (( idx=${#s} - 1; idx>=0; idx-- )); do
+    printf '%s.' "${s:$idx:1}"
+  done
+  printf 'ip6.arpa\n'
+}
+# Set IPv6 or set NA to none
+if [ "${SERVERIPV6}" != "NOIP6" ]; then
+  # Call the IPv6 compression function just created above
+  SERVERIPV6=$(compress_ipv6 ${SERVERIPV6})
+  SERVERIPV6EXP=$(expand_ipv6 ${SERVERIPV6})
+  SERVERIPV6ARPA=$(rarpa_ipv6 ${SERVERIPV6EXP})
+fi
+# Set IPv4 or set NA to none
+if [ "${SERVERIPV6}" != "NOIP4" ]; then
+  SERVERIPV4ARPA=$(/usr/bin/echo ${SERVERIPV4} | sed -r 's/^([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3})$/\4.\3.\2.\1.in-addr.arpa/')
+fi
+
+# Locale (in case a VPS deleted it after make-preverber)
+/usr/bin/localectl set-locale LANG=en_US.UTF-8
+
+# System timezone
+/bin/ln -sfn /usr/share/zoneinfo/${PHPCITY} /etc/localtime
+
+# Site settings
+## Configs
+/usr/bin/mv /opt/verb/inst/mysqlrootpassword /opt/verb/conf/
+/usr/bin/mv /opt/verb/conf/servernameip286 /opt/verb/conf/servernameip
+/usr/bin/mv /opt/verb/conf/serverport286 /opt/verb/conf/serverport
+/usr/bin/mv /opt/verb/conf/serverinkget286 /opt/verb/conf/serverinkget
+/usr/bin/mv /opt/verb/conf/servermailpath286 /opt/verb/conf/servermailpath
+/usr/bin/mv /opt/verb/conf/servertldstatus286 /opt/verb/conf/servertldstatus
+/usr/bin/mv /opt/verb/conf/inkcertstatus286 /opt/verb/conf/inkcertstatus
+/usr/bin/mv /opt/verb/conf/inkdnsconf286 /opt/verb/conf/inkdnsconf
+/usr/bin/mv /opt/verb/conf/inksiteinstallstatus286 /opt/verb/conf/inksiteinstallstatus
+## Ensure scripts are executable
+/bin/chmod 750 /opt/verb/serfs/*
+/bin/chmod 750 /opt/verb/donjon/*.sh
+/bin/chmod 750 /opt/verb/donjon/repoupdate/*
+/bin/chmod 750 /opt/verb/donjon/wpaddsites/*.wpsh
+
+## Domain Mod?
+if [ -f "/opt/verb/inst/domain.mod.conf" ]; then
+  baseDOM="${VNAME}.${DModBase}"
+  /bin/sed -i "s/name286/DOMAIN_MOD-${baseDOM}/" /opt/verb/conf/servernameip
+else
+  /bin/sed -i "s/name286/${VNAME}/" /opt/verb/conf/servernameip
+fi
+
+# Site URI List
+## domain.mod?
+if [ -f "/opt/verb/inst/domain.mod.conf" ]; then
+  Hostname="${DModHost}"
+  ## Is the host already set as a slave server?
+  if [ -n "${HOSTURI}" ] && [ "${HOSTURI}" != "${Hostname}.${DModBase}" ]; then
+    /usr/bin/echo "Because this is an NS server, the NS host must be agree with the domain mod host
+    NS server host URI: ${HOSTURI}
+    Domainmod host URI: ${Hostname}.${DModBase}
+    Re-start the installation and use the same host when running make-dns & make-dommod"
+    exit 5
+  else
+    HOSTURI="${Hostname}.${DModBase}"
+  fi
+/usr/bin/cat <<EOF > /opt/verb/conf/siteurilist
+#!/bin/sh
+baseDOM="${baseDOM}"
+nameTLD="${SERVERTLD}"
+emailTLD="${SVMAILTLD}"
+itsqlTLD="${ITSQLTLD}"
+nameURI="${SERVERTLD}.${baseDOM}"
+hostURI="${HOSTURI}"
+serveURI="serve.${SERVERTLD}.${baseDOM}"
+emailTLDURI="${SVMAILTLD}.${baseDOM}"
+itsqlTLDURI="${ITSQLTLD}.${baseDOM}"
+emailURI="email.${baseDOM}"
+oneURI="one.${baseDOM}"
+inkURI="ink.${baseDOM}"
+blueURI="blue.${baseDOM}"
+vipURI="vip.${baseDOM}"
+kiwiURI="kiwi.${baseDOM}"
+redURI="red.${baseDOM}"
+EOF
+## Normal verb domains
+else
+  ## Is the host already set as a slave server?
+  if [ -z "${HOSTURI}" ]; then
+    HOSTURI="${Hostname}.${VNAME}.verb.${SERVERTLD}"
+  fi
+/usr/bin/cat <<EOF > /opt/verb/conf/siteurilist
+#!/bin/sh
+nameTLD="${SERVERTLD}"
+emailTLD="${SVMAILTLD}"
+itsqlTLD="${ITSQLTLD}"
+nameURI="${VNAME}.verb.${SERVERTLD}"
+hostURI="${HOSTURI}"
+serveURI="serve.${VNAME}.verb.${SERVERTLD}"
+emailTLDURI="${VNAME}.verb.${SVMAILTLD}"
+itsqlTLDURI="${VNAME}.verb.${ITSQLTLD}"
+emailURI="${VNAME}.verb.email"
+oneURI="${VNAME}.verb.one"
+inkURI="${VNAME}.verb.ink"
+blueURI="${VNAME}.verb.blue"
+vipURI="${VNAME}.verb.vip"
+kiwiURI="${VNAME}.verb.kiwi"
+redURI="${VNAME}.verb.red"
+EOF
+fi
+. /opt/verb/conf/siteurilist
+
+# Snakeoil cert (larger file for production)
+/usr/bin/mkdir -p /etc/ssl/server
+cd /etc/ssl/server || exit 0
+/usr/bin/rm -f server.key
+/usr/bin/openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out server.key
+/usr/bin/chmod 400 server.key
+/usr/bin/rm -f server.csr
+country="na"
+state="na"
+locality="na"
+organization="${nameURI}"
+organizationalunit="IT"
+commonname="${nameURI}"
+email="snakeoil@${nameURI}"
+companyname="${nameURI}"
+/usr/bin/openssl req -new -sha256 -key server.key -out server.csr \
+    -subj "/C=$country/ST=$state/L=$locality/O=$organization/OU=$organizationalunit/CN=$commonname/emailAddress=$email/unstructuredName=$companyname/"
+/usr/bin/openssl x509 -req -days 3650 -in server.csr -signkey server.key -out server.crt
+/usr/bin/rm -f server.csr
+
+## Diffie-Helman Group file (larger file for production)
+/usr/bin/rm -f /etc/ssl/server/dhparams.pem
+#/usr/bin/openssl dhparam -out /etc/ssl/server/dhparams.pem 4096
+/usr/bin/openssl dhparam -out /etc/ssl/server/dhparams.pem 2048
+/bin/chmod 600 /etc/ssl/server/dhparams.pem
+cd $OLDPWD || exit 0
+
+# Site name & IP
+serveDIR="$(/usr/bin/pwgen -s -1 6)"
+/bin/sed -i "s/host286/${Hostname}/" /opt/verb/conf/servernameip
+/bin/sed -i "s/tld286/${SERVERTLD}/" /opt/verb/conf/servernameip
+/bin/sed -i "s/tldserve286/${SERVERTLD}/" /opt/verb/conf/servernameip
+/bin/sed -i "s/servedir286/${serveDIR}/" /opt/verb/conf/servernameip
+/bin/sed -i "s/serveuri286/${serveURI}/" /opt/verb/conf/servernameip
+/bin/sed -i "s/ipv4286/${SERVERIPV4}/" /opt/verb/conf/servernameip
+/bin/sed -i "s/ipv6286/${SERVERIPV6}/" /opt/verb/conf/servernameip
+/bin/sed -i "s/expip6286/${SERVERIPV6EXP}/" /opt/verb/conf/servernameip
+
+/bin/sed -i "s/arpaipv4286/${SERVERIPV4ARPA}/" /opt/verb/conf/servernameip
+/bin/sed -i "s/arpaip6286/${SERVERIPV6ARPA}/" /opt/verb/conf/servernameip
+
+/bin/sed -i "s:timecity286:${PHPCITY}:" /opt/verb/conf/servernameip
+/bin/sed -i "s/updaterepo286/${VUPRepo}/" /opt/verb/conf/servernameip
+/bin/sed -i "s/updateorg286/${VUPORG}/" /opt/verb/conf/servernameip
+/bin/sed -i "s/ServerEmailTLD=.*/ServerEmailTLD=\"${SVMAILTLD}\"/" /opt/verb/conf/servermailpath
+/bin/sed -i "s/inkcertemail286/${SSLEMAIL}/" /opt/verb/conf/inkcertstatus
+##DEV Check that this is correct with: SQL[(none)]> SHOW variables like '%pid%';
+/bin/sed -i "s:/var/lib/mysql/localhost.pid:/var/lib/mysql/${Hostname}.pid:" /etc/monit/monitrc.d/mysql
+## Copy other config files with pre-install status
+/usr/bin/mv /opt/verb/conf/servermailpass286 /opt/verb/conf/servermailpass
+
+# LAEMP Reverse Proxy?
+if [ -f "/etc/httpd/conf/rpaf.conf" ]; then
+  /bin/sed -i "s/ipv4286/${SERVERIPV4}/g" /etc/httpd/conf/rpaf.conf
+  /bin/sed -i "s/ipv6286/${SERVERIPV6}/g" /etc/httpd/conf/rpaf.conf
+fi
+
+# PHP ini file
+/bin/sed -i "s/phplimit286/${PHPLIMIT}/g" /opt/verb/conf/php.ini
+/bin/sed -i "s/phpsize286M/${PHPSIZE}M/g" /opt/verb/conf/php.ini
+/bin/sed -i "s:phptimecity286:${PHPCITY}:g" /opt/verb/conf/php.ini
+/bin/sed -i "s/name286/${VNAME}/g" /opt/verb/conf/php.ini
+/bin/sed -i "s/;.*.open_basedir =.*/open_basedir = \/var\/www/" /opt/verb/conf/php.ini
+/bin/sed -i "s/;.*.sys_temp_dir =.*/sys_temp_dir = \/var\/www\/tmp/" /opt/verb/conf/php.ini
+/bin/sed -i "s/;.*.upload_tmp_dir =.*/upload_tmp_dir = \/var\/www\/tmp/" /opt/verb/conf/php.ini
+
+# Get the current PHP version & set php.ini
+/usr/bin/mv /etc/php/php.ini /etc/php/php.original.ini
+/bin/ln -sfn /opt/verb/conf/php.ini /etc/php/php.ini
+/bin/chmod 644 /etc/php/php.ini
+
+# sites-available
+. /opt/verb/conf/servertype
+## Apache
+if [ -d "/opt/verb/conf/webserver/httpd/sites-available" ]; then
+  ### Replace
+  /bin/sed -i "s/emailTLD286/${emailTLD}/g" /opt/verb/conf/webserver/httpd/sites-available/*.conf
+  /bin/sed -i "s/itsqlTLD286/${itsqlTLD}/g" /opt/verb/conf/webserver/httpd/sites-available/*.conf
+  /bin/sed -i "s/itsqlTLDURI286/${itsqlTLDURI}/g" /opt/verb/conf/webserver/httpd/sites-available/*.conf
+  /bin/sed -i "s/emailURI286/${emailURI}/g" /opt/verb/conf/webserver/httpd/sites-available/*.conf
+  /bin/sed -i "s/oneURI286/${oneURI}/g" /opt/verb/conf/webserver/httpd/sites-available/*.conf
+  /bin/sed -i "s/inkURI286/${inkURI}/g" /opt/verb/conf/webserver/httpd/sites-available/*.conf
+  /bin/sed -i "s/blueURI286/${blueURI}/g" /opt/verb/conf/webserver/httpd/sites-available/*.conf
+  /bin/sed -i "s/vipURI286/${vipURI}/g" /opt/verb/conf/webserver/httpd/sites-available/*.conf
+  /bin/sed -i "s/kiwiURI286/${kiwiURI}/g" /opt/verb/conf/webserver/httpd/sites-available/*.conf
+  /bin/sed -i "s/redURI286/${redURI}/g" /opt/verb/conf/webserver/httpd/sites-available/*.conf
+  ### Rename
+  for cfg in /opt/verb/conf/webserver/httpd/sites-available/*itsqlTLDURI286.conf
+  do
+    /usr/bin/mv -- "$cfg" "${cfg/%itsqlTLDURI286.conf/}${itsqlTLDURI}.conf"
+  done
+  for cfg in /opt/verb/conf/webserver/httpd/sites-available/*emailURI286.conf
+  do
+    /usr/bin/mv -- "$cfg" "${cfg/%emailURI286.conf/}${emailURI}.conf"
+  done
+  for cfg in /opt/verb/conf/webserver/httpd/sites-available/*oneURI286.conf
+  do
+    /usr/bin/mv -- "$cfg" "${cfg/%oneURI286.conf/}${oneURI}.conf"
+  done
+  for cfg in /opt/verb/conf/webserver/httpd/sites-available/*inkURI286.conf
+  do
+    /usr/bin/mv -- "$cfg" "${cfg/%inkURI286.conf/}${inkURI}.conf"
+  done
+  for cfg in /opt/verb/conf/webserver/httpd/sites-available/*blueURI286.conf
+  do
+    /usr/bin/mv -- "$cfg" "${cfg/%blueURI286.conf/}${blueURI}.conf"
+  done
+  for cfg in /opt/verb/conf/webserver/httpd/sites-available/*vipURI286.conf
+  do
+    /usr/bin/mv -- "$cfg" "${cfg/%vipURI286.conf/}${vipURI}.conf"
+  done
+  for cfg in /opt/verb/conf/webserver/httpd/sites-available/*kiwiURI286.conf
+  do
+    /usr/bin/mv -- "$cfg" "${cfg/%kiwiURI286.conf/}${kiwiURI}.conf"
+  done
+  for cfg in /opt/verb/conf/webserver/httpd/sites-available/*redURI286.conf
+  do
+    /usr/bin/mv -- "$cfg" "${cfg/%redURI286.conf/}${redURI}.conf"
+  done
+fi
+## Nginx
+if [ -d "/opt/verb/conf/webserver/nginx/sites-available" ]; then
+  ### Replace
+  /bin/sed -i "s/emailTLD286/${emailTLD}/g" /opt/verb/conf/webserver/nginx/sites-available/*.conf
+  /bin/sed -i "s/itsqlTLD286/${itsqlTLD}/g" /opt/verb/conf/webserver/nginx/sites-available/*.conf
+  /bin/sed -i "s/itsqlTLDURI286/${itsqlTLDURI}/g" /opt/verb/conf/webserver/nginx/sites-available/*.conf
+  /bin/sed -i "s/emailURI286/${emailURI}/g" /opt/verb/conf/webserver/nginx/sites-available/*.conf
+  /bin/sed -i "s/oneURI286/${oneURI}/g" /opt/verb/conf/webserver/nginx/sites-available/*.conf
+  /bin/sed -i "s/inkURI286/${inkURI}/g" /opt/verb/conf/webserver/nginx/sites-available/*.conf
+  /bin/sed -i "s/blueURI286/${blueURI}/g" /opt/verb/conf/webserver/nginx/sites-available/*.conf
+  /bin/sed -i "s/vipURI286/${vipURI}/g" /opt/verb/conf/webserver/nginx/sites-available/*.conf
+  /bin/sed -i "s/kiwiURI286/${kiwiURI}/g" /opt/verb/conf/webserver/nginx/sites-available/*.conf
+  /bin/sed -i "s/redURI286/${redURI}/g" /opt/verb/conf/webserver/nginx/sites-available/*.conf
+  ### Rename
+  for cfg in /opt/verb/conf/webserver/nginx/sites-available/*itsqlTLDURI286.conf
+  do
+    /usr/bin/mv -- "$cfg" "${cfg/%itsqlTLDURI286.conf/}${itsqlTLDURI}.conf"
+  done
+  for cfg in /opt/verb/conf/webserver/nginx/sites-available/*emailURI286.conf
+  do
+    /usr/bin/mv -- "$cfg" "${cfg/%emailURI286.conf/}${emailURI}.conf"
+  done
+  for cfg in /opt/verb/conf/webserver/nginx/sites-available/*oneURI286.conf
+  do
+    /usr/bin/mv -- "$cfg" "${cfg/%oneURI286.conf/}${oneURI}.conf"
+  done
+  for cfg in /opt/verb/conf/webserver/nginx/sites-available/*inkURI286.conf
+  do
+    /usr/bin/mv -- "$cfg" "${cfg/%inkURI286.conf/}${inkURI}.conf"
+  done
+  for cfg in /opt/verb/conf/webserver/nginx/sites-available/*blueURI286.conf
+  do
+    /usr/bin/mv -- "$cfg" "${cfg/%blueURI286.conf/}${blueURI}.conf"
+  done
+  for cfg in /opt/verb/conf/webserver/nginx/sites-available/*vipURI286.conf
+  do
+    /usr/bin/mv -- "$cfg" "${cfg/%vipURI286.conf/}${vipURI}.conf"
+  done
+  for cfg in /opt/verb/conf/webserver/nginx/sites-available/*kiwiURI286.conf
+  do
+    /usr/bin/mv -- "$cfg" "${cfg/%kiwiURI286.conf/}${kiwiURI}.conf"
+  done
+  for cfg in /opt/verb/conf/webserver/nginx/sites-available/*redURI286.conf
+  do
+    /usr/bin/mv -- "$cfg" "${cfg/%redURI286.conf/}${redURI}.conf"
+  done
+fi
+
+# New site-files
+## Directories
+/usr/bin/chmod -R 750 /opt/verb/conf/site-files/newdomain.tld
+/usr/bin/chmod -R 750 /opt/verb/conf/site-files/newvipsubdir
+/usr/bin/chmod -R 750 /opt/verb/conf/site-files/newonesubdir
+## Replace
+/usr/bin/sed -i "s/emailTLD286/${emailTLD}/g" /opt/verb/conf/site-files/conf/*
+/usr/bin/sed -i "s/emailTLDURI286/${emailTLDURI}/g" /opt/verb/conf/site-files/conf/*
+/usr/bin/sed -i "s/itsqlTLD286/${itsqlTLD}/g" /opt/verb/conf/site-files/conf/*
+/usr/bin/sed -i "s/itsqlTLDURI286/${itsqlTLDURI}/g" /opt/verb/conf/site-files/conf/*
+/usr/bin/sed -i "s/emailURI286/${emailURI}/g" /opt/verb/conf/site-files/conf/*
+/usr/bin/sed -i "s/oneURI286/${oneURI}/g" /opt/verb/conf/site-files/conf/*
+/usr/bin/sed -i "s/inkURI286/${inkURI}/g" /opt/verb/conf/site-files/conf/*
+/usr/bin/sed -i "s/blueURI286/${blueURI}/g" /opt/verb/conf/site-files/conf/*
+/usr/bin/sed -i "s/vipURI286/${vipURI}/g" /opt/verb/conf/site-files/conf/*
+/usr/bin/sed -i "s/kiwiURI286/${kiwiURI}/g" /opt/verb/conf/site-files/conf/*
+/usr/bin/sed -i "s/redURI286/${redURI}/g" /opt/verb/conf/site-files/conf/*
+
+# inkCert ini and cron files
+## Replace
+/usr/bin/sed -i "s/sslemail286/${SSLEMAIL}/g" /opt/verb/conf/inkcert/cli-ini/*
+/usr/bin/sed -i "s/nameURI286/${nameURI}/g" /opt/verb/conf/inkcert/verber-openssl.cnf
+/usr/bin/sed -i "s/emailURI286/${emailURI}/g" /opt/verb/conf/inkcert/cli-ini/*
+/usr/bin/sed -i "s/oneURI286/${oneURI}/g" /opt/verb/conf/inkcert/cli-ini/*
+/usr/bin/sed -i "s/inkURI286/${inkURI}/g" /opt/verb/conf/inkcert/cli-ini/*
+/usr/bin/sed -i "s/blueURI286/${blueURI}/g" /opt/verb/conf/inkcert/cli-ini/*
+/usr/bin/sed -i "s/vipURI286/${vipURI}/g" /opt/verb/conf/inkcert/cli-ini/*
+/usr/bin/sed -i "s/kiwiURI286/${kiwiURI}/g" /opt/verb/conf/inkcert/cli-ini/*
+/usr/bin/sed -i "s/redURI286/${redURI}/g" /opt/verb/conf/inkcert/cli-ini/*
+## Rename
+/usr/bin/mv /opt/verb/conf/inkcert/cli-ini/cli.emailURI286.ini /opt/verb/conf/inkcert/cli-ini/cli.${emailURI}.ini
+/usr/bin/mv /opt/verb/conf/inkcert/cli-ini/cli.oneURI286.ini /opt/verb/conf/inkcert/cli-ini/cli.${oneURI}.ini
+/usr/bin/mv /opt/verb/conf/inkcert/cli-ini/cli.inkURI286.ini /opt/verb/conf/inkcert/cli-ini/cli.${inkURI}.ini
+/usr/bin/mv /opt/verb/conf/inkcert/cli-ini/cli.blueURI286.ini /opt/verb/conf/inkcert/cli-ini/cli.${blueURI}.ini
+/usr/bin/mv /opt/verb/conf/inkcert/cli-ini/cli.vipURI286.ini /opt/verb/conf/inkcert/cli-ini/cli.${vipURI}.ini
+/usr/bin/mv /opt/verb/conf/inkcert/cli-ini/cli.kiwiURI286.ini /opt/verb/conf/inkcert/cli-ini/cli.${kiwiURI}.ini
+/usr/bin/mv /opt/verb/conf/inkcert/cli-ini/cli.redURI286.ini /opt/verb/conf/inkcert/cli-ini/cli.${redURI}.ini
+/usr/bin/mv /opt/verb/conf/inkcert/cli-ini/siteinkcert.emailURI286 /opt/verb/conf/inkcert/cli-ini/siteinkcert.${emailURI}
+/usr/bin/mv /opt/verb/conf/inkcert/cli-ini/siteinkcert.oneURI286 /opt/verb/conf/inkcert/cli-ini/siteinkcert.${oneURI}
+/usr/bin/mv /opt/verb/conf/inkcert/cli-ini/siteinkcert.inkURI286 /opt/verb/conf/inkcert/cli-ini/siteinkcert.${inkURI}
+/usr/bin/mv /opt/verb/conf/inkcert/cli-ini/siteinkcert.blueURI286 /opt/verb/conf/inkcert/cli-ini/siteinkcert.${blueURI}
+/usr/bin/mv /opt/verb/conf/inkcert/cli-ini/siteinkcert.vipURI286 /opt/verb/conf/inkcert/cli-ini/siteinkcert.${vipURI}
+/usr/bin/mv /opt/verb/conf/inkcert/cli-ini/siteinkcert.kiwiURI286 /opt/verb/conf/inkcert/cli-ini/siteinkcert.${kiwiURI}
+/usr/bin/mv /opt/verb/conf/inkcert/cli-ini/siteinkcert.redURI286 /opt/verb/conf/inkcert/cli-ini/siteinkcert.${redURI}
+
+# www default indexes
+/opt/verb/serfs/updatehtmlverbs; wait
+
+# Link sites
+if [ -d "/opt/verb/conf/webserver/httpd/sites-available" ] && [ -d "/etc/httpd" ]; then
+  /bin/ln -sfn /opt/verb/conf/webserver/httpd/sites-available /etc/httpd/
+  /bin/ln -sfn /opt/verb/conf/webserver/httpd/sites-enabled /etc/httpd/
+fi
+if [ -d "/opt/verb/conf/webserver/nginx/sites-available" ] && [ -d "/etc/nginx" ]; then
+  /bin/ln -sfn /opt/verb/conf/webserver/nginx/sites-available /etc/nginx/
+  /bin/ln -sfn /opt/verb/conf/webserver/nginx/sites-enabled /etc/nginx/
+fi
+
+# inkCert mail subdomains
+/opt/verb/serfs/setinkcertmailsubdomains ${nameURI}
+
+# inkCert email web server subdomains for RoundCube and PostfixAdmin
+/bin/sed -i "s/, po.${emailTLDURI}//g" /opt/verb/conf/inkcert/cli-ini/cli.${emailTLDURI}.ini
+/bin/sed -i "s/, box.${emailTLDURI}//g" /opt/verb/conf/inkcert/cli-ini/cli.${emailTLDURI}.ini
+/bin/sed -i "/^domains =/ s/$/, po.${emailTLDURI}, box.${emailTLDURI}/" /opt/verb/conf/inkcert/cli-ini/cli.${emailTLDURI}.ini
+
+# inkCert SQL subdomain for PHPMyAdmin
+/bin/sed -i "s/, sql.${itsqlTLDURI}//g" /opt/verb/conf/inkcert/cli-ini/cli.${itsqlTLDURI}.ini
+/bin/sed -i "/^domains =/ s/$/, sql.${itsqlTLDURI}/" /opt/verb/conf/inkcert/cli-ini/cli.${itsqlTLDURI}.ini
+
+# Enable sites
+## Note services are initiated in the make-laemp etc because they take so much time with cloud-init
+. /opt/verb/conf/servertldstatus
+# /usr/bin/systemctl enable php-fpm; wait
+# /usr/bin/systemctl start php-fpm; wait
+if [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
+  /opt/verb/serfs/ensitenginx sql.${itsqlTLDURI}
+fi
+if [ ${VERBemail} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
+  /opt/verb/serfs/ensitenginx ${emailURI} e.${emailURI}
+fi
+if [ ${VERBone} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
+  /opt/verb/serfs/ensitenginx ${oneURI} o.${oneURI}
+fi
+if [ ${VERBink} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
+  /opt/verb/serfs/ensitenginx ${inkURI} i.${inkURI}
+fi
+if [ ${VERBblue} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
+  /opt/verb/serfs/ensitenginx ${blueURI} b.${blueURI} cloud.${blueURI}
+fi
+if [ ${VERBvip} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
+  /opt/verb/serfs/ensitenginx ${vipURI} v.${vipURI} files.${vipURI}
+fi
+if [ ${VERBkiwi} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
+  /opt/verb/serfs/ensitenginx ${kiwiURI} k.${kiwiURI}
+fi
+if [ ${VERBred} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
+  /opt/verb/serfs/ensitenginx ${redURI} r.${redURI}
+fi
+if [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
+  # /usr/bin/systemctl enable nginx; wait
+  # /usr/bin/systemctl start nginx; wait
+  /bin/systemctl restart nginx; wait
+fi
+if [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
+  /opt/verb/serfs/ensiteapache sql.${itsqlTLDURI}
+fi
+if [ ${VERBemail} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lamp" ]; then
+  /opt/verb/serfs/ensiteapache ${emailURI} e.${emailURI}
+fi
+if [ ${VERBone} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lamp" ]; then
+  /opt/verb/serfs/ensiteapache ${oneURI} o.${oneURI}
+fi
+if [ ${VERBink} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lamp" ]; then
+  /opt/verb/serfs/ensiteapache ${inkURI} i.${inkURI}
+fi
+if [ ${VERBblue} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lamp" ]; then
+  /opt/verb/serfs/ensiteapache ${blueURI} b.${blueURI} cloud.${blueURI}
+fi
+if [ ${VERBvip} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lamp" ]; then
+  /opt/verb/serfs/ensiteapache ${vipURI} v.${vipURI}
+fi
+if [ ${VERBkiwi} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lamp" ]; then
+  /opt/verb/serfs/ensiteapache ${kiwiURI} k.${kiwiURI}
+fi
+if [ ${VERBred} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lamp" ]; then
+  /opt/verb/serfs/ensiteapache ${redURI} r.${redURI}
+fi
+if [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lamp" ]; then
+  # /usr/bin/systemctl enable httpd; wait
+  # /usr/bin/systemctl start httpd; wait
+  /usr/bin/systemctl restart httpd; wait
+fi
+
+# Serve URI
+/opt/verb/serfs/setserve
+
+# Create the new boss user
+/usr/bin/groupadd ${NEWBoss}
+/usr/bin/useradd -g ${NEWBoss} ${NEWBoss}
+/bin/echo "${NEWBoss}:${NEWBossPASS}" | chpasswd
+/usr/bin/usermod -a -G sudo ${NEWBoss}
+/usr/bin/usermod -a -G www ${NEWBoss}
+/usr/bin/mkdir -p /home/${NEWBoss}
+/usr/bin/ln -sfn /opt/verb/boss /home/${NEWBoss}/
+## User privilege specifi/bin/cation
+/usr/bin/setfacl -R -m user:${NEWBoss}:rwx /home/${NEWBoss} # DEV see if this line works
+/usr/bin/echo '# Added by newboss inkVerb serf' >> /etc/sudoers.d/${NEWBoss}
+/usr/bin/echo "${NEWBoss}  ALL=(ALL:ALL) ALL" >> /etc/sudoers.d/${NEWBoss}
+## Vim preferences
+echo 'nnoremap <C-c> "+y
+vnoremap <C-c> "+y
+nnoremap <C-p> "+p
+vnoremap <C-p> "+p' > /home/${NEWBoss}/.vimrc
+## BASH settings
+/opt/verb/serfs/setbashrc ${NEWBoss}
+## Own
+/usr/bin/chown -R ${NEWBoss}:${NEWBoss} /home/${NEWBoss}
+
+# New Boss MySQL root password
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+CREATE USER ${NEWBoss}@localhost;
+SET PASSWORD FOR ${NEWBoss}@localhost=PASSWORD('${NEWBossPASS}');
+GRANT ALL PRIVILEGES ON *.* TO '${NEWBoss}'@'localhost' IDENTIFIED BY '${NEWBossPASS}' WITH GRANT OPTION;
+FLUSH PRIVILEGES;"
+
+# Host name
+/usr/bin/hostnamectl set-hostname ${hostURI}
+##DEV this restart causes an "is masked" error and may not be necessary with the mandatory reboot after setup
+#/bin/systemctl restart hostname
+## Set /etc/hostname
+/usr/bin/echo "${hostURI}" > /etc/hostname
+## Set /etc/hosts
+### Normally this goes to /etc/hosts, but cloud-init is managing it, so we set the template file instead
+/usr/bin/cp /etc/cloud/templates/hosts.arch.tmpl /etc/cloud/templates/hosts.arch.tmpl.old
+### But, we don't want to rely on cloud-init automatic control, so we will set /etc/hosts also
+## IPv4 & IPv6
+if [ -n "${SERVERIPV4}" ] && [ "${SERVERIPV4}" != "NOIP4" ] && [ -n "${SERVERIPV6}" ] && [ "${SERVERIPV6}" != "NOIP6" ]; then
+  /usr/bin/cat <<EOF > /etc/cloud/templates/hosts.arch.tmpl
+## template:jinja
+# inkVerb is managing this file through cloud-init.
+# Any changes made here will be overwritten at boot.
+# This is set for the server to support both IPv4 and IPv6.
+#
+
+# localhost
+127.0.1.1 ${hostURI} ${Hostname}
+127.0.0.1 localhost.localdomain localhost
+
+# IPv4
+${SERVERIPV4} ${hostURI} ${Hostname}
+
+# IPv6
+${SERVERIPV6} ${hostURI} ${Hostname}
+
+# The following lines are desirable for IPv6 capable hosts
+::1 localhost ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+ff02::3 ip6-allhosts
+EOF
+  /usr/bin/cat <<EOF > /etc/hosts
+# Set by inkVerb
+
+# localhost
+127.0.1.1 ${hostURI} ${Hostname}
+127.0.0.1 localhost.localdomain localhost
+
+# IPv4
+${SERVERIPV4} ${hostURI} ${Hostname}
+
+# IPv6
+${SERVERIPV6} ${hostURI} ${Hostname}
+
+# The following lines are desirable for IPv6 capable hosts
+::1 localhost ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+ff02::3 ip6-allhosts
+EOF
+### No IPv4
+elif [ -n "${SERVERIPV4}" ] && [ "${SERVERIPV4}" = "NOIP4" ]; then
+  /usr/bin/cat <<EOF > /etc/cloud/templates/hosts.arch.tmpl
+## template:jinja
+# inkVerb is managing this file through cloud-init.
+# Any changes made here will be overwritten at boot.
+# This is set for the server to support IPv6 only.
+#
+
+# localhost
+127.0.1.1 ${hostURI} ${Hostname}
+127.0.0.1 localhost.localdomain localhost
+
+# IPv6
+${SERVERIPV6} ${hostURI} ${Hostname}
+
+# The following lines are desirable for IPv6 capable hosts
+::1 localhost ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+ff02::3 ip6-allhosts
+EOF
+  /usr/bin/cat <<EOF > /etc/hosts
+# Set by inkVerb
+
+# localhost
+127.0.1.1 ${hostURI} ${Hostname}
+127.0.0.1 localhost.localdomain localhost
+
+# IPv6
+${SERVERIPV6} ${hostURI} ${Hostname}
+
+# The following lines are desirable for IPv6 capable hosts
+::1 ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+ff02::3 ip6-allhosts
+EOF
+### No IPv6
+elif [ -n "${SERVERIPV6}" ] && [ "${SERVERIPV6}" = "NOIP6" ]; then
+  /usr/bin/cat <<EOF > /etc/cloud/templates/hosts.arch.tmpl
+## template:jinja
+# inkVerb is managing this file through cloud-init.
+# Any changes made here will be overwritten at boot.
+# This is set for the server to support IPv4 only.
+#
+
+# localhost
+127.0.1.1 ${hostURI} ${Hostname}
+127.0.0.1 localhost.localdomain localhost
+
+# IPv4
+${SERVERIPV4} ${hostURI} ${Hostname}
+EOF
+  /usr/bin/cat <<EOF > /etc/hosts
+# Set by inkVerb
+
+# localhost
+127.0.1.1 ${hostURI} ${Hostname}
+127.0.0.1 localhost.localdomain localhost
+
+# IPv4
+${SERVERIPV4} ${hostURI} ${Hostname}
+EOF
+fi
+
+# ARPA & inverse IP
+## IPv4?
+if [ -n "${SERVERIPV4}" ] && [ "${SERVERIPV4}" != "NOIP4" ]; then
+  /opt/verb/serfs/setipv4 "${SERVERIPV4}"
+## IPv6?
+elif [ -n "${SERVERIPV6}" ] && [ "${SERVERIPV6}" != "NOIP6" ]; then
+  /opt/verb/serfs/setipv6 "${SERVERIPV6}"
+fi
+
+# Verber DNS records
+## Include config
+. /opt/verb/conf/servernameip
+
+## Set the FQDN host
+# /bin/echo "
+# ; FQDN Host Records
+# ${hostURI}.	IN  A		hostipv4286
+# ${hostURI}.	IN  AAAA	hostipv6286" >> /opt/verb/conf/inkdns/inkzones/db.${ServerTLD}
+# /bin/echo "
+# ; FQDN PTR Host Records
+# hostarpaipv4286  IN  PTR  ${hostURI}.
+# hostarpaipv6286  IN  PTR  ${hostURI}." >> /opt/verb/conf/inkdns/inkzones/nv.${ServerTLD}
+
+## Set the email TLD URI
+/bin/echo "
+; Email Control Records" >> /opt/verb/conf/inkdns/inkzones/db.${SVMAILTLD}
+/bin/echo "
+; Email Control PTR Records" >> /opt/verb/conf/inkdns/inkzones/nv.${SVMAILTLD}
+
+## Set the itsql TLD URI
+/bin/echo "
+; IT Control Records" >> /opt/verb/conf/inkdns/inkzones/db.${ITSQLTLD}
+/bin/echo "
+; IT Control PTR Records" >> /opt/verb/conf/inkdns/inkzones/nv.${ITSQLTLD}
+### IPv4?
+if [ -n "${SERVERIPV4}" ] && [ "${SERVERIPV4}" != "NOIP4" ]; then
+  /bin/echo "sql.${itsqlTLDURI}.	IN  A		hostipv4286" >> /opt/verb/conf/inkdns/inkzones/db.${ITSQLTLD}
+  /bin/echo "hostarpaipv4286  IN  PTR  sql.${itsqlTLDURI}." >> /opt/verb/conf/inkdns/inkzones/nv.${ITSQLTLD}
+### IPv6?
+elif [ -n "${SERVERIPV6}" ] && [ "${SERVERIPV6}" != "NOIP6" ]; then
+  /bin/echo "sql.${itsqlTLDURI}.	IN  AAAA	hostipv6286" >> /opt/verb/conf/inkdns/inkzones/db.${ITSQLTLD}
+  /bin/echo "hostarpaipv6286  IN  PTR  sql.${itsqlTLDURI}." >> /opt/verb/conf/inkdns/inkzones/nv.${ITSQLTLD}
+fi
+
+## Set the namespace, TLD, and IP values
+/usr/bin/mkdir -p /opt/verb/conf/inkdns/zones
+/bin/sed -i "s/hostipv4286/${SERVERIPV4}/g" /opt/verb/conf/inkdns/inkzones/db.*
+/bin/sed -i "s/hostipv4286/${SERVERIPV4}/g" /opt/verb/conf/inkdns/db.dnsdomain
+/bin/sed -i "s/hostipv6286/${SERVERIPV6}/g" /opt/verb/conf/inkdns/inkzones/db.*
+/bin/sed -i "s/hostipv6286/${SERVERIPV6}/g" /opt/verb/conf/inkdns/db.dnsdomain
+/bin/sed -i "s/hostURI286/${hostURI}/g" /opt/verb/conf/inkdns/inkzones/db.*
+/bin/sed -i "s/hostURI286/${hostURI}/g" /opt/verb/conf/inkdns/db.dnsdomain
+/bin/sed -i "s/sitename286/${ServerName}/g" /opt/verb/conf/inkdns/inkzones/db.*
+/bin/sed -i "s/sitetld286/${ServerTLD}/g" /opt/verb/conf/inkdns/inkzones/db.*
+/bin/sed -i "s/nameURI286/${nameURI}/g" /opt/verb/conf/inkdns/inkzones/db.*
+/bin/sed -i "s/mailURI286/${nameURI}/g" /opt/verb/conf/inkdns/inkzones/db.*
+
+### nv.*
+/bin/sed -i "s/hostarpaipv4286/${ServerARPAIPv4}/g" /opt/verb/conf/inkdns/inkzones/nv.*
+/bin/sed -i "s/hostarpaipv4286/${ServerARPAIPv4}/g" /opt/verb/conf/inkdns/nv.dnsdomain
+/bin/sed -i "s/hostarpaipv6286/${ServerARPAIPv6}/g" /opt/verb/conf/inkdns/inkzones/nv.*
+/bin/sed -i "s/hostarpaipv6286/${ServerARPAIPv6}/g" /opt/verb/conf/inkdns/nv.dnsdomain
+
+## Populate the Verber domains
+/bin/sed -i "s/hostdomain286/${emailURI}/g" /opt/verb/conf/inkdns/inkzones/db.email
+/bin/sed -i "s/hostdomain286/${oneURI}/g" /opt/verb/conf/inkdns/inkzones/db.one
+/bin/sed -i "s/hostdomain286/${inkURI}/g" /opt/verb/conf/inkdns/inkzones/db.ink
+/bin/sed -i "s/hostdomain286/${blueURI}/g" /opt/verb/conf/inkdns/inkzones/db.blue
+/bin/sed -i "s/hostdomain286/${vipURI}/g" /opt/verb/conf/inkdns/inkzones/db.vip
+/bin/sed -i "s/hostdomain286/${kiwiURI}/g" /opt/verb/conf/inkdns/inkzones/db.kiwi
+/bin/sed -i "s/hostdomain286/${redURI}/g" /opt/verb/conf/inkdns/inkzones/db.red
+/bin/sed -i "s/hostdomain286/${emailURI}/g" /opt/verb/conf/inkdns/inkzones/nv.email
+/bin/sed -i "s/hostdomain286/${oneURI}/g" /opt/verb/conf/inkdns/inkzones/nv.one
+/bin/sed -i "s/hostdomain286/${inkURI}/g" /opt/verb/conf/inkdns/inkzones/nv.ink
+/bin/sed -i "s/hostdomain286/${blueURI}/g" /opt/verb/conf/inkdns/inkzones/nv.blue
+/bin/sed -i "s/hostdomain286/${vipURI}/g" /opt/verb/conf/inkdns/inkzones/nv.vip
+/bin/sed -i "s/hostdomain286/${kiwiURI}/g" /opt/verb/conf/inkdns/inkzones/nv.kiwi
+/bin/sed -i "s/hostdomain286/${redURI}/g" /opt/verb/conf/inkdns/inkzones/nv.red
+## Set host FQDN
+#/bin/sed -i "s/;; End Root Site Defaults/${hostURI}\.\t\tIN  A\t\t${SERVERIPV4}\n${hostURI}\.\t\tIN  AAAA\t${SERVERIPV6}\n;; End Root Site Defaults/" /opt/verb/conf/inkdns/inkzones/db.${SERVERTLD}
+## Set the URI names
+/usr/bin/mv /opt/verb/conf/inkdns/inkzones/db.email /opt/verb/conf/inkdns/inkzones/db.${emailURI}
+/usr/bin/mv /opt/verb/conf/inkdns/inkzones/db.one /opt/verb/conf/inkdns/inkzones/db.${oneURI}
+/usr/bin/mv /opt/verb/conf/inkdns/inkzones/db.ink /opt/verb/conf/inkdns/inkzones/db.${inkURI}
+/usr/bin/mv /opt/verb/conf/inkdns/inkzones/db.blue /opt/verb/conf/inkdns/inkzones/db.${blueURI}
+/usr/bin/mv /opt/verb/conf/inkdns/inkzones/db.vip /opt/verb/conf/inkdns/inkzones/db.${vipURI}
+/usr/bin/mv /opt/verb/conf/inkdns/inkzones/db.kiwi /opt/verb/conf/inkdns/inkzones/db.${kiwiURI}
+/usr/bin/mv /opt/verb/conf/inkdns/inkzones/db.red /opt/verb/conf/inkdns/inkzones/db.${redURI}
+/usr/bin/mv /opt/verb/conf/inkdns/inkzones/nv.email /opt/verb/conf/inkdns/inkzones/nv.${emailURI}
+/usr/bin/mv /opt/verb/conf/inkdns/inkzones/nv.one /opt/verb/conf/inkdns/inkzones/nv.${oneURI}
+/usr/bin/mv /opt/verb/conf/inkdns/inkzones/nv.ink /opt/verb/conf/inkdns/inkzones/nv.${inkURI}
+/usr/bin/mv /opt/verb/conf/inkdns/inkzones/nv.blue /opt/verb/conf/inkdns/inkzones/nv.${blueURI}
+/usr/bin/mv /opt/verb/conf/inkdns/inkzones/nv.vip /opt/verb/conf/inkdns/inkzones/nv.${vipURI}
+/usr/bin/mv /opt/verb/conf/inkdns/inkzones/nv.kiwi /opt/verb/conf/inkdns/inkzones/nv.${kiwiURI}
+/usr/bin/mv /opt/verb/conf/inkdns/inkzones/nv.red /opt/verb/conf/inkdns/inkzones/nv.${redURI}
+## Serial Nos
+cd /opt/verb/conf/inkdns/inkzones || exit 0
+for inkZoneDB in db.*; do
+inkZone="$(/bin/echo ${inkZoneDB} | /bin/sed 's/db\.//' )"
+/opt/verb/serfs/inkdnsserial ${inkZone} verber
+done
+cd $OLDPWD || exit 0
+
+# Set NS domain for this verber (will also be used if this is a slave DNS)
+# if [ -f "/opt/verb/conf/inkdns/sdns/dnshost" ] && [ ! -e "/opt/verb/conf/inkdns/zones/db.${hostURI}" ] && [ "${hostURI}" != "${emailURI}" ] && [ "${hostURI}" != "${oneURI}" ] && [ "${hostURI}" != "${inkURI}" ] && [ "${hostURI}" != "${blueURI}" ] && [ "${hostURI}" != "${vipURI}" ] && [ "${hostURI}" != "${kiwiURI}" ] && [ "${hostURI}" != "${redURI}" ]; then
+## DNS zone file
+##DEV no, this is handled automatically by inkdnsrefreshbind when checking for /opt/verb/conf/inkdns/sdns/dnshost
+# /bin/cp /opt/verb/conf/inkdns/db.dnsdomain /opt/verb/conf/inkdns/inkzones/db.${hostURI}
+# /bin/sed -i "s/hostdomain286/${hostURI}/g" /opt/verb/conf/inkdns/inkzones/db.${hostURI}
+# ## rDNS zone file
+# /bin/echo "; PTR Domain
+# ${ServerARPAIPv4}		IN  PTR  ${hostURI}.
+# ${ServerARPAIPv6}		IN  PTR  ${hostURI}." > /opt/verb/conf/inkdns/inkzones/nv.${hostURI}
+# ## Set the Serial No
+# /opt/verb/serfs/inkdnsserial ${hostURI} verber
+
+# Set for IPV6 (should be set already, but just to be sure)
+/bin/sed -i "s/IPV6=.*/IPV6=yes/" /etc/default/ufw
+# Port (set to something to avoid attacks)
+/bin/sed -i "/Port.*/ c\Port ${NEWPORT}" /etc/ssh/sshd_config
+/bin/sed -i "/ServerPort.*/ c\ServerPort=${NEWPORT}" /opt/verb/conf/serverport
+/usr/bin/ufw allow ${NEWPORT}
+/usr/bin/ufw --force enable; wait
+
+# Set NS servers
+#DEV Redundant, handled in inkdnsinstall
+# /opt/verb/serfs/inkdnssetns1
+# /opt/verb/serfs/inkdnssetns2
+#DEV Delete if everything works
+
+# DNS & Certs (require structure and verb/conf settings from setup)
+## Not yet for NS servers
+if [ -f "/opt/verb/inst/make-dns" ] && [ ! -f "/opt/verb/conf/inkdns/sdns/dnshost" ] && [ ! -d "/srv/sns" ]; then
+  /opt/verb/serfs/inkdnsinstall; wait
+  /opt/verb/serfs/inkcertinstall; wait
+fi
+
+# Security check
+/opt/verb/serfs/setsecure; wait
+
+# Web Services
+if [ ${ServerType} = "lemp" ]; then
+  /usr/bin/systemctl enable php-fpm; wait
+  /usr/bin/systemctl enable nginx; wait
+  /usr/bin/systemctl start php-fpm; wait
+  /usr/bin/systemctl start nginx; wait
+elif [ ${ServerType} = "lamp" ]; then
+  /usr/bin/systemctl enable php-fpm; wait
+  /usr/bin/systemctl enable httpd; wait
+  /usr/bin/systemctl start php-fpm; wait
+  /usr/bin/systemctl start httpd; wait
+elif [ ${ServerType} = "laemp" ]; then
+  /usr/bin/systemctl enable php-fpm; wait
+  /usr/bin/systemctl enable nginx; wait
+  /usr/bin/systemctl enable httpd; wait
+  /usr/bin/systemctl start php-fpm; wait
+  /usr/bin/systemctl start nginx; wait
+  /usr/bin/systemctl start httpd; wait
+fi
+
+# Update verber
+/opt/verb/serfs/updateverber
+
+# Controlled verber?
+if [ ${RinkConfigured} = "true" ]; then
+  /usr/bin/echo "I am controlled by the Rink."
+  # Other commands could be put here for verber instantiation as needed in the future
+fi
+
+# Next step instructions
+if [ "${SERVERIPV4}" != "NOIP4" ] && [ "${SERVERIPV6}" != "NOIP6" ]; then
+  IPADDRBLOCKroot="'ssh root@${SERVERIPV4} -p ${NEWPORT} 'or 'ssh root@${SERVERIPV6} -p ${NEWPORT}'"
+  IPADDRBLOCKboss="'ssh ${NEWBoss}@${SERVERIPV4} -p ${NEWPORT} 'or 'ssh root@${SERVERIPV6} -p ${NEWPORT}'"
+## IPv4?
+elif [ "${ServerIPv4}" != "NOIP4" ]; then
+  IPADDRBLOCKroot="'ssh root@${SERVERIPV4} -p ${NEWPORT}'"
+  IPADDRBLOCKboss="'ssh ${NEWBoss}@${SERVERIPV4} -p ${NEWPORT}'"
+## IPv6?
+elif [ "${ServerIPv6}" != "NOIP6" ]; then
+  IPADDRBLOCKroot="'ssh root@${SERVERIPV6} -p ${NEWPORT}'"
+  IPADDRBLOCKboss="'ssh ${NEWBoss}@${SERVERIPV6} -p ${NEWPORT}'"
+fi
+/bin/echo "Setup is finished, this verber is unique
+1. reboot
+2. Then for SSH,
+  - login root: ${IPADDRBLOCKroot}
+  - login boss: ${IPADDRBLOCKboss}
+3. Run:
+  - inkCert for verb domains ('ink cert do -ma' or 'serfs/inkcertdole-all-verbs')
+  - inkVmail ('serfs/installinkvmail')
+"
+
+# Cleanup
+#/usr/bin/ufw --force enable # Delete if everything works
+/usr/bin/rm -f /opt/verb/serfs/setup
+/usr/bin/rm -rf /opt/verb/inst
+/usr/bin/rm -rf /opt/verb/dev
+/bin/systemctl reload sshd; wait

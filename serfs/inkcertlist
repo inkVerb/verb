@@ -1,0 +1,36 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This lists the 'domains =' items in a Letsencrypt cli.ini file managed by inkCert
+
+# How to use:
+## ./inkcertlist [ domain.tld ]
+
+usagenotes="This renews all certificates done via inkCert-Letsencrypt or inkCert-Certbot"
+usageformat="inkcertlist [ domain.tld ]"
+usageexample="inkcertlist inkisaverb.com"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkcertinstall )
+prerequesite=( adddomain 'or' addsubdomain )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )	# List config files of any kind used in this serf, please preserve order of appearance
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkcertlist.replace" ]; then . /opt/verb/mods/inkcertlist.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkcertlist.before" ]; then . /opt/verb/mods/inkcertlist.before; fi # Precedes this script
+
+
+DOMAIN=$1
+
+/usr/bin/grep '^domains = ' /opt/verb/conf/inkcert/cli-ini/cli.${DOMAIN}.ini | /usr/bin/sed 's/domains = //'
+
+
+
+
+if [ -e "/opt/verb/mods/inkcertlist.after" ]; then . /opt/verb/mods/inkcertlist.after; fi # Follows this script

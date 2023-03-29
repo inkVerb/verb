@@ -1,0 +1,46 @@
+#!/bin/bash
+#inkVerbSerf!
+
+# This is a sample serf
+## These are additional notes
+## These are more additional notes
+
+# How to use:
+## ./serfone [ setting 1 ] [ setting 2 ] [ setting 3 - optional ] [ 't' or 'o' choose for one additional option ]
+
+# Eg:
+## ./serfone set1 set2
+## ./serfone set1 set2 opt3
+
+if [ -e "/opt/verb/mods/${0}.replace" ]; then . /opt/verb/mods/${0}.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/${0}.before" ]; then . /opt/verb/mods/${0}.before; fi # Preceeds this script
+usagenotes="This serf is a test serfs. It is useful in developing ink."
+usageformat="./serfone set1 set2 (-t) (-o)"
+usageexample="./serfone John F771771 52 -o"
+hierarchy=( primary ) # Choose: primary (works by itself, may use secondaries or tertiaries); secondary (is often used by itself, but also may be used by other scripts); tertiary (should not run by itself, must be run by a secondary or primary);oversight (uses primaries) # If listing tertiary, second item in the array must be the primary serf that eventually calls this
+vsetnames=( "Name" "Hex Color" ) # "Pretty" names for each setting, must be in order of settings
+vsettypes=( isazAZ isHEX ) # Value type named by function for regex check in ink.functions, must be in order of settings, 'string_match' is checked via if = test not function, 'string_quote' is merely quoted, such as for passwords
+voptnames=( "Height in pixels" ) # "Pretty" names for each optional setting, must be in order of options
+vopttypes=( is09 ) # Value type named by function for regex check in ink.functions, must be in order of settings, 'string_match' is checked via if = test not function, 'string_quote' is merely quoted, such as for passwords
+voptflags=( t o ) # "Flags" for optional settings used as arguments for this serf, must be in order of options
+voptflagpurpose=( "Add time" "Overwrite if file exists" ) # Purpose description for each optional flag
+dependencyinstall=(  ) # What needs to be installed before this can run, empty requires only basic installation
+installedpackages=(  ) # Linux packages this will instal on the system # may be depreciated so all packages are installed before setup
+prerequesite=( before alsobefore ) # List other serfs that must run something before this is ready
+usedby=( serfalso serf worker ) # List other serfs that make use of this serf, no particular order
+useserfs=( anotherserf anotherserfwik ) # List other serfs used in this serf, please preserve order of appearance
+useconfigs=( servernameip siteurilist ) # List config files of any kind used in this serf, please preserve order of appearance
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+
+					# Skip two lines after meta
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+
+SETTING1=$1				# Set inline variables first
+SETTING2=$2
+
+echo "The rest goes here."		# This is where the rest of the working script begins
+					# Leave one blank line at the end for easier editing
+
+if [ -e "/opt/verb/mods/${0}.after" ]; then . /opt/verb/mods/${0}.after; fi # Follows this script

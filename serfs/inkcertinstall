@@ -1,0 +1,82 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This installs the inkCert-Letsencrypt SSL certificate framework
+## Currently, inkCert uses letsencrypt for main websites with options for "inkCert proper", the non-standard inkVerb CA service.
+## To use letsencrypt for websites, run -le variants of inkcert- serfs, such as inkcertdole
+
+# How to use:
+## ./inkcertinstall
+
+usagenotes="This installs the inkCert-Letsencrypt SSL certificate framework"
+usageformat="inkcertinstall"
+usageexample="inkcertinstall"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servernameip servertype inkcertstatus )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkcertinstall.replace" ]; then . /opt/verb/mods/inkcertinstall.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkcertinstall.before" ]; then . /opt/verb/mods/inkcertinstall.before; fi # Precedes this script
+
+
+# Include the configs
+. /opt/verb/conf/inkcertstatus
+. /opt/verb/conf/servertype
+. /opt/verb/conf/servernameip
+
+if [ "${InkCertInstalled}" = "DONE" ] && [ -e '/etc/inkcert/le' ]; then
+/bin/echo "inkCert already installed."
+exit 0; fi
+
+# Already done in make-verber-*
+#DEV Leave this here in the event the roadmap decides to scale this or use an alternative SSL cert service
+# Install
+## Certbot - Currently, inkCert is largely powered by Certbot/Letsencrypt, so it uses links. This may eventually change, but file paths won't.
+#
+#if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
+#  /usr/bin/pacman -S --noconfirm --needed certbot certbot-nginx
+#elif [ ${ServerType} = "lamp" ]; then
+#  /usr/bin/pacman -S --noconfirm --needed certbot certbot-apache
+#fi
+
+## inkCert proper
+/bin/mkdir -p /etc/inkcert
+cd /etc/inkcert || exit 0
+/bin/mkdir -p client live csr req
+/bin/cp -f /opt/verb/conf/inkcert/verber-openssl.cnf /etc/inkcert/client/openssl.cnf
+## Symlinks for Letsencrypt
+/bin/ln -sfn /etc/letsencrypt /etc/inkcert/le
+/bin/ln -sfn /etc/inkcert/req /opt/verb/
+/bin/ln -sfn /etc/inkcert/req /srv/www/vip/
+## Named Letsencrypt/Certbot DNS challenge key config
+inkCertbotKeyOnly="$(grep -F 'key "inkCertbotKey" { algorithm hmac-sha512; secret "' /etc/named.conf | sed 's?key "inkCertbotKey" { algorithm hmac-sha512; secret "??' | sed 's?"; };??')"
+/bin/echo "dns_rfc2136_server = ${ServerIPv4}
+dns_rfc2136_name = inkCertbotKey
+dns_rfc2136_secret = ${inkCertbotKeyOnly}
+dns_rfc2136_algorithm = HMAC-SHA512" > /etc/letsencrypt/rfc2136.ini
+/usr/bin/chown root:named /etc/letsencrypt/rfc2136.ini
+/usr/bin/chmod 640 /etc/letsencrypt/rfc2136.ini
+
+# Set configs
+/bin/sed -i "s/InkCertInstalled=\"NOT_YET\"/InkCertInstalled=\"DONE\"/g" /opt/verb/conf/inkcertstatus
+
+# Finish
+/bin/echo "
+inkCert is now installed and ready to make CSRs for SSL domains and SSH keys.
+
+The CA URLs are set to defaults. If you want a different CA on the inkCert list, run setinkcertsslca and setinkcertsshca before making any CSRs.
+"
+
+
+
+
+if [ -e "/opt/verb/mods/inkcertinstall.after" ]; then . /opt/verb/mods/inkcertinstall.after; fi # Follows this script

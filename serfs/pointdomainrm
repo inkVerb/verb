@@ -1,0 +1,42 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This removes the forwarding for a domain forwarded via pointdomain
+
+# How to use:
+## ./pointdomainrm [forwarded domain]
+
+## The forwarded domain can be any domain or subdomain created with adddomain or addsubdomain (and -cgi)
+
+
+FWDDOM=$1
+
+# Verify it was created by the pointdomain serf
+if [ ! -f /srv/www/forwards/${FWDDOM}/config ]; then
+/bin/echo "This domain's destination is not forwarded by pointdomain. Doing nothing."
+exit 0
+else
+. /srv/www/forwards/${FWDDOM}/config
+fi
+
+# Check for wild forwarding
+if [ "${FORWARD}" = "${OLD_DEST}" ] && [ -f "/srv/www/forwards/${FORWARD}/.htaccess" ] && [ -f "/srv/www/forwards/${FORWARD}/index.php" ]; then
+  /bin/rm -f /srv/www/forwards/${FORWARD}/.htaccess
+  /bin/echo "${FWDDOM} is no longer forwarding wildly to ${OLD_DEST}, back to normal forwarding to ${OLD_DEST}."
+else
+
+# Unset and own
+/bin/rm -f /srv/www/html/${FWDDOM}
+/bin/ln -sfn "${OLD_DEST}" /srv/www/html/${FWDDOM}
+/bin/chown -R www:www "${OLD_DEST}"
+/bin/rm -rf /srv/www/forwards/${FWDDOM}
+
+# Finish
+/bin/echo "${FWDDOM} is no longer forwarding to ${FORWARD}, back to ${OLD_DEST}."
+
+fi
+
+
+
+
+if [ -e "/opt/verb/mods/pointdomainrm.after" ]; then . /opt/verb/mods/pointdomainrm.after; fi # Follows this script

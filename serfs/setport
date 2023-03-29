@@ -1,0 +1,46 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This sets a new SSH login port number and disallows the previous port
+## This could kill the current connection and require the user to logon again using the new port.
+## The default for most servers is 22, this is to be different.
+## Ghost uses 2368 by default, additional Gosts may use 2369 2370 etc. Avoid these.
+## Even if not configured on this server, FTP tends to use 21 and hackers look for it. Avoid 21.
+## Here is a list of common ports to avoid:
+### 21 (FTP)
+### 22 (SSH) - which this script changes
+### 25 (SMTP)
+### 80 (HTTP)
+### 110 (POP3)
+### 143 (IMAP)
+### 443 (HTTPS)
+### 465 (SMTPS)
+### 993 (IMAPS)
+### 995 (POP3S)
+### 2368 (Ghost default) - Extra Ghost installs will incrementally rise above this.
+### 8069 (Odoo default)
+
+## This port will also be used by any FTP users, vips, or filers in an FTP app such as FileZilla.
+
+# How to use:
+## ./setport [port number]
+
+
+# Include the config file
+. /opt/verb/conf/serverport
+
+NEWPORT=$1
+
+/bin/sed -i "s/Port.*/Port ${NEWPORT}/g" /etc/ssh/sshd_config
+/bin/sed -i "s/ServerPort.*/ServerPort=\"${NEWPORT}\"/" /opt/verb/conf/serverport
+/usr/bin/ufw allow ${NEWPORT}
+# Deny the previous port from the config file which has been written, but not yet refreshed
+/usr/bin/ufw deny ${ServerPort}
+
+# Reload the settings
+/bin/systemctl reload ssh
+
+
+
+
+if [ -e "/opt/verb/mods/setport.after" ]; then . /opt/verb/mods/setport.after; fi # Follows this script

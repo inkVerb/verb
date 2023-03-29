@@ -1,0 +1,97 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This downloads and installs the InfiniteWP Server to a new directory to an existing domain in the .../html/ folder
+## For security, this does NOT install to a pre-defined inkVerb subdomain, ie iwp.name.verb.ink. The site has too much control and must be set differently.
+## This does not interfere at all with the contents of the domain.
+## This should be installed AFTER any installations to the domain, such as WordPress
+
+# All options after the email are optional, but are sequential
+
+# How to use:
+## ./installiwpadmin [sub.domain.tld or domain.tld] [email for registration] [directory of domain.tld/directory] [dbase] [dbuser] [dbpassword]
+
+
+CVAPPNAME=iwpadmin
+
+DOMAIN=$1
+REMAIL=$2
+DIRECTORY=$3
+DBASE=$4
+DBUSER=$5
+DBPASSWORD=$6
+CLEANNAME=$(/bin/echo $DOMAIN | sed -e 's/\.//g')
+
+# Check that the directory doesn't already exist
+if [ -d /srv/www/html/${DOMAIN}/${DIRECTORY} ]; then
+/bin/echo "That directory already exists for that domain. Choose a different directory."
+exit 8; fi
+
+# Options
+if [ -z ${1} ]; then
+/bin/echo "You must designate a domain."
+exit 8; fi
+
+# Check email is set
+if [ -z ${2} ]; then
+/bin/echo "You must set an email for the repo package in InfiniteWP-Admin."
+exit 8; fi
+
+
+# Include the config file
+. /opt/verb/conf/servernameip
+
+# Download and establish IWPAdmin in the server to pre-created domain
+cd /srv/www/vapps || exit 0
+/opt/verb/serfs/inkget ${CVAPPNAME} ${REMAIL}; wait
+### Check
+/opt/verb/serfs/inkget ${CVAPPNAME} check
+if [ "$?" = 4 ]; then
+/bin/echo "Repo failed to retrieve the file."
+exit 4; fi
+
+## Auto options
+if [ -z ${3} ]; then
+DIRECTORY=iwp$(/usr/bin/pwgen -s -1 1); fi
+if [ -z ${6} ]; then
+DBPASSWORD=$(/usr/bin/pwgen -s -1 10); fi
+if [ -z ${4} ]; then
+DBASE=iwp$(/bin/echo $CLEANNAME | cut -c1-23)$(/usr/bin/pwgen -s -1 5); fi
+if [ -z ${5} ]; then
+DBUSER=${DBASE}; fi
+
+/bin/mv ${CVAPPNAME} ${DOMAIN}
+/bin/mv ${CVAPPNAME} ${CVAPPNAME}.${DOMAIN}
+/bin/ln -sfn /srv/www/vapps/${CVAPPNAME}.${DOMAIN} /srv/www/html/${DOMAIN}/${DIRECTORY}
+
+# Create the database and credentials
+/usr/bin/mysql --login-path=local -e "
+CREATE DATABASE  ${DBASE};
+GRANT ALL PRIVILEGES ON ${DBASE}.* TO '${DBUSER}'@'localhost' IDENTIFIED BY '${DBPASSWORD}';
+FLUSH PRIVILEGES;"
+
+# Write the config for backup
+/bin/echo "#!/bin/bash
+APPDBASE=${DBASE}
+APPDDBUSR=${DBUSER}
+APPDDBPAS=${DBPASSWORD}
+IWPADMIN_DIRECTORY=\"${DIRECTORY}\"" > /opt/verb/conf/vapp.${CVAPPNAME}.${DOMAIN}
+
+# Reset all permissions
+/bin/chown -R www:www /srv/www/html/${DOMAIN}/${DIRECTORY}; wait
+
+/bin/echo "${DOMAIN} now has the InfiniteWP Admin Panel.
+These are setup:
+
+Database: ${DBASE}
+Database user: ${DBUSER}
+Database password: ${DBPASSWORD}
+Database port / prefix: DO NOT CHANGE
+
+Go to http://${DOMAIN}/${DIRECTORY} to install.
+"
+
+
+
+
+if [ -e "/opt/verb/mods/installiwpadmin.after" ]; then . /opt/verb/mods/installiwpadmin.after; fi # Follows this script

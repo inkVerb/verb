@@ -1,0 +1,142 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This updates settings from setup to a new IPv6 address on the server
+
+# How to use:
+## ./setipv6update [IPv6 number]
+
+
+# Include the config file
+. /opt/verb/conf/servernameip
+
+NEWIP6="$1"
+
+# Expand/Compress
+## THANKS https://stackoverflow.com/a/50208987/10343144
+
+### helper to convert hex to dec (portable version)
+hex2dec(){
+    [ "$1" != "" ] && printf "%d" "$(( 0x$1 ))"
+}
+
+### expand an IPv6 address
+expand_ipv6() {
+    ip=$1
+
+    # prepend 0 if we start with :
+    /bin/echo $ip | /bin/grep -qs "^:" && ip="0${ip}"
+
+    # expand ::
+    if /bin/echo $ip | /bin/grep -qs "::"; then
+        colons=$(/bin/echo $ip | sed 's/[^:]//g')
+        missing=$(/bin/echo ":::::::::" | sed "s/$colons//")
+        expanded=$(/bin/echo $missing | sed 's/:/:0/g')
+        ip=$(/bin/echo $ip | sed "s/::/$expanded/")
+    fi
+
+    blocks=$(/bin/echo $ip | /bin/grep -o "[0-9a-f]\+")
+    set $blocks
+
+    printf "%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x\n" \
+        $(hex2dec $1) \
+        $(hex2dec $2) \
+        $(hex2dec $3) \
+        $(hex2dec $4) \
+        $(hex2dec $5) \
+        $(hex2dec $6) \
+        $(hex2dec $7) \
+        $(hex2dec $8)
+}
+
+### returns a compressed IPv6 address under the form recommended by RFC5952
+compress_ipv6() {
+    ip=$1
+
+    blocks=$(/bin/echo $ip | /bin/grep -o "[0-9a-f]\+")
+    set $blocks
+
+    # compress leading zeros
+    ip=$(printf "%x:%x:%x:%x:%x:%x:%x:%x\n" \
+        $(hex2dec $1) \
+        $(hex2dec $2) \
+        $(hex2dec $3) \
+        $(hex2dec $4) \
+        $(hex2dec $5) \
+        $(hex2dec $6) \
+        $(hex2dec $7) \
+        $(hex2dec $8)
+    )
+
+    # prepend : for easier matching
+    ip=:$ip
+
+    # :: must compress the longest chain
+    for pattern in :0:0:0:0:0:0:0:0 \
+            :0:0:0:0:0:0:0 \
+            :0:0:0:0:0:0 \
+            :0:0:0:0:0 \
+            :0:0:0:0 \
+            :0:0; do
+        if /bin/echo $ip | /bin/grep -qs $pattern; then
+            ip=$(/bin/echo $ip | sed "s/$pattern/::/")
+            # if the substitution occured before the end, we have :::
+            ip=$(/bin/echo $ip | sed 's/:::/::/')
+            break # only one substitution
+        fi
+    done
+
+    # remove prepending : if necessary
+    /bin/echo $ip | /bin/grep -qs "^:[^:]" && ip=$(echo $ip | sed 's/://')
+
+    /bin/echo $ip
+}
+
+### reverse expanded IPv6 for ARPA
+## THANKS https://stackoverflow.com/a/53674816/10343144
+rarpa_ipv6() {
+  local idx s=${1//:}
+  for (( idx=${#s} - 1; idx>=0; idx-- )); do
+    printf '%s.' "${s:$idx:1}"
+  done
+  printf 'ip6.arpa\n'
+}
+
+
+## Our new variables for the rest
+NEWEXPIP6=$(expand_ipv6 ${NEWIP6})
+NEWCMPIP6=$(compress_ipv6 ${NEWIP6})
+NEWRARPA6=$(rarpa_ipv6 ${NEWEXPIP6})
+
+# Normal IP
+/bin/sed -i "s/ServerIPv6=.*/ServerIPv6=\"${NEWCMPIP6}\"/" /opt/verb/conf/servernameip
+/bin/sed -i "s/ServerExpIPv6.*/ServerExpIPv6=\"${NEWEXPIP6}\"/" /opt/verb/conf/servernameip
+/bin/sed -i "s/${ServerIPv6}/${NEWCMPIP6}/" /etc/hosts
+
+# ARPA & inverse IP
+/bin/sed -i "s/ServerARPAIPv6.*/ServerARPAIPv6=\"${NEWRARPA6}\"/" /opt/verb/conf/servernameip
+
+# Update other files
+if [ -f /etc/httpd/conf/rpaf.conf ]; then
+  /bin/sed -i "s/${ServerIPv6}/${NEWCMPIP6}/" /etc/httpd/conf/rpaf.conf; fi
+/bin/sed -i "s/${ServerIPv6}/${NEWCMPIP6}/" /opt/verb/conf/inkdns/inkzones/db.*
+/bin/sed -i "s/${ServerIPv6}/${NEWCMPIP6}/" /opt/verb/conf/inkdns/db.dnsdomain
+/bin/sed -i "s/${ServerARPAIPv6}/${NEWRARPA6}/" /opt/verb/conf/inkdns/inkzones/nv.*
+/bin/sed -i "s/${ServerARPAIPv6}/${NEWRARPA6}/" /opt/verb/conf/inkdns/nv.dnsdomain
+## Any hosted zones
+if [ -e /opt/verb/conf/inkdns/zones/db.* ]; then
+  /bin/sed -i "s/${ServerIPv6}/${NEWCMPIP6}/" /opt/verb/conf/inkdns/zones/db.*; fi
+if [ -e /opt/verb/conf/inkdns/zones/nv.* ]; then
+  /bin/sed -i "s/${ServerARPAIPv6}/${NEWRARPA6}/" /opt/verb/conf/inkdns/zones/nv.*; fi
+
+# ARPA & inverse IP
+/bin/sed -i "s/ServerARPAIPv6.*/ServerARPAIPv6=\"${NEWRARPA6}\"/" /opt/verb/conf/servernameip
+
+# Finish
+/opt/verb/serfs/inkdnsrefreshbind
+/bin/echo "IPv6 now set to: ${NEWCMPIP6}"
+
+
+
+
+if [ -e "/opt/verb/mods/setipv6update.after" ]; then . /opt/verb/mods/setipv6update.after; fi # Follows this script

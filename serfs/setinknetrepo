@@ -1,0 +1,22 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This sets new site-wide inkNet repo for Verber app installs, used primarily or solely by the inkget serf
+## This should generally not be necessary unless new repos have been added and the current repo is distant or has high traffic.
+
+# How to use:
+## ./setinknetrepo [inkNet repo]
+
+# Eg:
+## ./setinknetrepo toronto.verb.ink
+
+
+NEWINKCERTRepo=$1
+
+/bin/sed -i "s/InkNet_Repo=.*/InkNet_Repo=\"${NEWINKCERTRepo}\"/g" /opt/verb/conf/inknet/inknetinfo
+
+
+
+
+
+if [ -e "/opt/verb/mods/setinknetrepo.after" ]; then . /opt/verb/mods/setinknetrepo.after; fi # Follows this script

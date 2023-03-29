@@ -1,0 +1,5 @@
+check process opendkim with pidfile /var/run/opendkim/opendkim.pid
+  group vmail
+  start program = "/etc/init.d/opendkim start"
+  stop  program = "/etc/init.d/opendkim stop"
+  if 5 restarts within 5 cycles then timeout

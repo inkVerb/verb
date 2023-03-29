@@ -1,0 +1,101 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This prepares core framework config files for a domain, with OpenDKIM profiles and keys, inkCert, and inkDNS, WITHOUT including the actual SSL certificates, www/domain folder itself or its Apache/Nginx configs or html www/folder
+## This is intended as a subscript to be used by adddomain
+## This runs automatically from adddomain ONLY IF it has not run already for the domain
+## This does NOT:
+### Add the domain to inkCert for SSL requests
+### Create Apache folders or configs for the domain
+## For inkCert and Apache configs, use adddomain or adddomaincgi
+## This can be run BEFORE AND AGAIN AFTER installinkvmail, it has soft tests to see what hasn't been done yet
+
+# How to use:
+## ./newdomainshell [ newdomain.tld ]
+
+usagenotes="This prepares core framework config files for a domain, with OpenDKIM profiles and keys, inkCert, and inkDNS, WITHOUT including the actual SSL certificates, www/domain folder itself or its Apache/Nginx configs or html www/folder"
+usageformat="newdomainshell [ newdomain.tld ]"
+usageexample="newdomainshell inkisaverb.com"
+hierarchy=( tertiary adddomain )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( newftpvip 'or' newftpfiler )
+usedby=( adddomain addsubdomain )
+useserfs=( setinkcertmail inkdnsadddomain newinkdkim inkvmaildomain inkdnsaddmail inkdnsaddinkdkim )
+useconfigs=( servernameip servermailpath inkcertstatus )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/newdomainshell.replace" ]; then . /opt/verb/mods/newdomainshell.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/newdomainshell.before" ]; then . /opt/verb/mods/newdomainshell.before; fi # Precedes this script
+
+
+# Dependencies
+if ! /bin/grep -q 'InkCertInstalled="DONE"' /opt/verb/conf/inkcertstatus; then
+  /usr/bin/echo "Install inkCert first, I quit."; exit 8
+fi
+if ! /bin/grep -q 'InkDNSStat="INSTALLED"' /opt/verb/conf/inkdnsconf; then
+  /usr/bin/echo "Install inkDNS first, I quit."; exit 8
+fi
+if ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpath; then
+  /usr/bin/echo "Install Postfix Vmail first, I quit."; exit 8
+fi
+
+# Dependencies
+if ! /bin/grep -q 'InkCertInstalled="DONE"' /opt/verb/conf/inkcertstatus; then
+  /usr/bin/echo "Install inkCert first, I quit."; exit 8
+fi
+if ! /bin/grep -q 'InkDNSStat="INSTALLED"' /opt/verb/conf/inkdnsconf; then
+  /usr/bin/echo "Install inkDNS first, I quit."; exit 8
+fi
+if ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpath; then
+  /usr/bin/echo "Install Postfix Vmail first, I quit."; exit 8
+fi
+
+# Include settings
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/servermailpath
+. /opt/verb/conf/inkcertstatus
+
+NEWDOMAIN=$1
+
+# inkCert
+if [ ! -f "/opt/verb/conf/inkcert/cli-ini/siteinkcert.${NEWDOMAIN}" ]; then
+  /bin/cp /opt/verb/conf/lib/inkcert-ini/cli.new.ini /opt/verb/conf/inkcert/cli-ini/cli.${NEWDOMAIN}.ini
+  /bin/sed -i "s/inkcertemail589/${InkCertEmail}/g" /opt/verb/conf/inkcert/cli-ini/cli.${NEWDOMAIN}.ini
+  /bin/sed -i "s/newdomain589/${NEWDOMAIN}/g" /opt/verb/conf/inkcert/cli-ini/cli.${NEWDOMAIN}.ini
+  /bin/echo "InkCerted=NOT_YET" > /opt/verb/conf/inkcert/cli-ini/siteinkcert.${NEWDOMAIN}
+  /opt/verb/serfs/setinkcertmail ${NEWDOMAIN}
+fi
+
+# inkDNS
+if [ ! -f "/opt/verb/conf/inkdns/zones/db.${NEWDOMAIN}" ]; then
+  /opt/verb/serfs/inkdnsadddomain ${NEWDOMAIN}; wait
+fi
+
+# inkDKIM & inkvmail (if installed)
+if [ "${ServerMailStatus}" != "EMAIL_NOT_INSTALLED" ]; then
+  /opt/verb/serfs/newinkdkim ${NEWDOMAIN}; wait
+  /opt/verb/serfs/inkvmaildomain ${NEWDOMAIN}; wait
+
+  # inkDNS for inkvmail
+  if [ -f "/opt/verb/conf/inkdns/zones/db.${NEWDOMAIN}" ]; then
+  /opt/verb/serfs/inkdnsaddmail ${NEWDOMAIN}; wait
+  /opt/verb/serfs/inkdnsaddinkdkim ${NEWDOMAIN}; wait
+  fi
+
+fi
+
+# Notify the NS slave nameservers
+/opt/verb/serfs/rinkadddomain ${NEWDOMAIN}; wait
+
+# Finish
+/bin/echo "Great! With no error messages, ${NEWDOMAIN} is ready on the Verber."
+
+
+
+
+if [ -e "/opt/verb/mods/newdomainshell.after" ]; then . /opt/verb/mods/newdomainshell.after; fi # Follows this script

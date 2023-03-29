@@ -1,0 +1,51 @@
+#!/bin/bash
+#IVapp installer! verb.ink
+
+# This adds an IVapp inkNet Sailor based on the Client Verber profile
+
+# How to use:
+## ./inknetivappnewclientsailor [Client Verber name - optional, only if secondary]
+
+# Eg:
+## ./inknetivappnewclientsailor ink2.ink.inkisaverb.com
+## ./inknetivappnewclientsailor ink2_ink_inkisaverb_com
+
+
+CA2URICFG=$1
+SECONDARYCACFG="$(/bin/echo ${CA2URICFG} | sed 's/\./_/g')"
+
+# Set the Client config
+if [ -z ${1} ]; then
+CLIENTCFG=/opt/verb/conf/inknet/rink.client.cnf
+else
+CLIENTCFG=/opt/verb/conf/inknet/2cav.${SECONDARYCACFG}.cnf
+fi
+
+# Include the Client config
+. ${CLIENTCFG}
+
+# Generate Sailor name
+NEWINIVSAILORNAME=sail$(/usr/bin/pwgen -s -1 -A 14)
+
+# Add the Sailor
+/opt/verb/serfs/inknetivappaddsailor ${NEWINIVSAILORNAME}
+wait
+
+# Set Sailor name in the config
+/bin/sed -i "s/CLIENTSAILOR=.*/CLIENTSAILOR=\"${NEWINIVSAILORNAME}\"/g" ${CLIENTCFG}
+
+# Get the CA Public key for this Client
+## Based on primary or secondary
+if [ -z ${1} ]; then
+/opt/verb/serfs/inknetaddcaverberpubkey
+wait
+else
+/opt/verb/serfs/inknetaddcaverberpubkey ${CA2URICFG}
+wait
+fi
+
+
+
+
+
+if [ -e "/opt/verb/mods/inknetivappnewclientsailor.after" ]; then . /opt/verb/mods/inknetivappnewclientsailor.after; fi # Follows this script

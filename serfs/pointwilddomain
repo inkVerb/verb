@@ -1,0 +1,42 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This "wildly" forwards an already-created domain to another domain
+## All subdomains and paths after the domain will be forwarded, useful for forwarding after WP subdomain Multisite migrations
+## The destination must be only a domain
+
+# How to use:
+## ./pointwilddomain [forwarded domain] [destination]
+
+# Eg:
+## ./pointwilddomain inkisaverb.com poetryiscode.com
+
+
+
+FWDDOM=$1
+DEST=$2
+ORIG_DEST="$(find /srv/www/html/${FWDDOM} -prune -printf "%l\n")"
+
+# Prepare
+/bin/mkdir -p /srv/www/forwards/${FWDDOM}
+/bin/rm -f /srv/www/html/${FWDDOM}
+/bin/ln -sfn /srv/www/forwards/${FWDDOM} /srv/www/html/
+
+# Set and own
+/bin/cat <<EOF | cat > /srv/www/forwards/${FWDDOM}/.htaccess
+RewriteEngine On
+RewriteCond %{HTTP_HOST} ^(.+\.)?${FWDDOM}$ [NC]
+RewriteRule ^ http://%1${DEST}%{REQUEST_URI} [R=301,L]
+EOF
+
+/bin/echo "FORWARD=\"${DEST}\"" > /srv/www/forwards/${FWDDOM}/config
+/bin/echo "OLD_DEST=\"${ORIG_DEST}\"" >> /srv/www/forwards/${FWDDOM}/config
+/bin/chown -R www:www /srv/www/forwards/${FWDDOM}
+
+# Finish
+/bin/echo "${FWDDOM} now wildly forwarding subdomains and paths to *.${DEST}/*"
+
+
+
+
+if [ -e "/opt/verb/mods/pointwilddomain.after" ]; then . /opt/verb/mods/pointwilddomain.after; fi # Follows this script

@@ -1,0 +1,90 @@
+#!/bin/bash
+#inkVerbKnight! verb.ink
+
+# This removes the config for a domain served on this DNS as a slave record based on a given rink user config
+
+# How to use:
+## ./killinkdnsslavedns [ rink user ] [ domain.tld ] [ -n - optional flag for no inkdnsrefreshbind ]
+
+# Eg:
+## ./killinkdnsslavedns inkisaverb.com
+## ./killinkdnsslavedns sub.inkisaverb.com
+## ./killinkdnsslavedns inkisaverb.com -n
+
+usagenotes="This removes the config for a domain served on this DNS as a slave record"
+usageformat="killinkdnsslavedns [ rink user ] [ domain.tld ]"
+usageexample="killinkdnsslavedns john.ink inkisaverb.com
+killinkdnsslavedns vern.blue sub.inkisaverb.com
+killinkdnsslavedns inkisaverb.com -n"
+hierarchy=( primary )
+vsetnames=( "Existing rink user in /srv/sns/" "Domain" )
+vsettypes=( NAME.VTLD isDomain )
+voptnames=( "No refresh Bind" )
+vopttypes=( "string_match" )
+voptflags=( "n" )
+voptflagpurpose=(  )
+dependencyinstall=( inkdnsinstall make-dns )
+prerequesite=( inkdnsaddslave )
+usedby=( killinkdnsslavednsallverbs )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/killinkdnsslavedns.replace" ]; then . /opt/verb/mods/killinkdnsslavedns.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/killinkdnsslavedns.before" ]; then . /opt/verb/mods/killinkdnsslavedns.before; fi # Precedes this script
+
+
+# Config check
+if [ ! -f "/opt/verb/conf/inkdns/sdns/dnshost" ]; then
+  /bin/echo "This server is not a DNS, I quit."; exit 0
+fi
+
+# Argument check
+if [ -z "$1" ]; then
+  /bin/echo "You must specify a domain."; exit 0
+fi
+
+# Rink
+RINK="$1"
+# Domain
+DOMAIN="$2"
+
+# Rink user check
+if [ ! -d "/srv/sns/${RINK}" ]; then
+  /bin/echo "This server does not supply rink user ${RINK}, I quit."; exit 0
+fi
+
+# Rink user settings check
+if [ ! -f "/srv/sns/${RINK}/servertldstatus" ] || [ ! -f "/srv/sns/${RINK}/conf" ] || [ ! -f "/srv/sns/${RINK}/siteurilist" ]; then
+  /bin/echo "Rink user ${RINK} not properly configured, this shouldn't be possible. I quit."; exit 0
+fi
+
+# Does the rink user own the domain?
+if [ ! -f "/srv/sns/${RINK}/domains/${DOMAIN}" ]; then
+  /bin/echo "This rink user ${RINK} does not own domain ${DOMAIN}, I quit."; exit 0
+fi
+
+. /srv/sns/${RINK}/servertldstatus
+. /srv/sns/${RINK}/siteurilist
+. /srv/sns/${RINK}/conf
+
+# Already existing check
+if [ ! -f "/opt/verb/conf/inkdns/sdns/s.${DOMAIN}" ]; then
+  /bin/echo "No SDNS configuration for ${DOMAIN}, I quit."; exit 0
+fi
+
+# Remove the config
+/usr/bin/rm -f /opt/verb/conf/inkdns/sdns/s.${DOMAIN}
+
+# Refresh Bind?
+## When run repeatedly, such as in some rink or "allverb" serfs, this creates systemctl errors "Start request repeated too quickly." & "Failed with result 'start-limit-hit'."
+if [ -z "$3" ] || [ "$3" != "-n" ]; then
+  /opt/verb/serfs/inkdnsrefreshbind
+fi
+
+# Finish
+/bin/echo "${DOMAIN} removed from this DNS server."
+
+
+
+
+if [ -e "/opt/verb/mods/killinkdnsslavedns.after" ]; then . /opt/verb/mods/killinkdnsslavedns.after; fi # Follows this script

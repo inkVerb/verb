@@ -1,0 +1,74 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This Collabora Online to be used with Nextcloud
+## Thanks for the awesome instructions from: https://nextcloud.com/collaboraonline/
+
+# How to use:
+## ./installcollaboraonline [port - optional, if other than 9980]
+
+
+CVAPPNAME=collaboraonline
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+
+## Set the port
+if [ -z ${1} ]; then
+PORT=9980
+else
+PORT=$1
+fi
+
+# Check if already installed
+if [ -f /opt/verb/conf/vapp.${CVAPPNAME} ]; then
+/bin/echo "This is already installed. I quit."
+exit 0; fi
+
+# Make sure Docker is installed
+/opt/verb/serfs/installdocker
+wait
+
+# Install it
+docker pull collabora/code
+docker run -t -d -p 127.0.0.1:${PORT}:${PORT} -e "domain=b.${blueURI}" --restart always --cap-add MKNOD collabora/code
+
+# Firewall
+/usr/bin/ufw allow ${PORT}
+
+# Reset all permissions and restart webserver
+/bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}.${DOMAIN}
+. /opt/verb/conf/servertype
+if [ ${ServerType} = "lemp" ]; then
+  /usr/bin/systemctl restart nginx
+elif [ ${ServerType} = "lamp" ]; then
+  ## Enable mods: 
+  /usr/sbin/a2enmod proxy
+  /usr/sbin/a2enmod proxy_wstunnel
+  /usr/sbin/a2enmod proxy_http
+  /usr/sbin/a2enmod ssl
+  /usr/bin/systemctl restart httpd
+elif [ ${ServerType} = "laemp" ]; then
+  /usr/bin/systemctl restart httpd
+  /usr/bin/systemctl restart nginx
+fi
+
+# Write the config for status
+/bin/echo "#!/bin/bash
+COVAPPSTATUS=\"INSTALLED\"
+COPORT=${PORT}
+COHOST=\"b.${blueURI}\"" > /opt/verb/conf/vapp.${CVAPPNAME}
+
+/bin/echo "Collabora Online is now installed...
+
+Next:
+1. Login as an admin to https://${blueURI} to enable the Collabora Online office app.
+2. Finish the settings: Settings > Administration > Collabora Online > Collabora Online server: https://b.${blueURI}:${PORT}
+"
+
+
+
+
+
+if [ -e "/opt/verb/mods/installcollaboraonline.after" ]; then . /opt/verb/mods/installcollaboraonline.after; fi # Follows this script

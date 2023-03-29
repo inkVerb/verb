@@ -1,0 +1,58 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This removes all inkDKIM (OpenDKIM) records for a specific domain
+
+# How to use:
+## ./killinkdkim [ domain.tld or subdomain.domain.tld etc ]
+
+usagenotes="This removes all inkDKIM (OpenDKIM) records for a specific domain"
+usageformat="killinkdkim [ domain.tld or subdomain.domain.tld etc ]"
+usageexample="killinkdkim inkisaverb.com"
+hierarchy=( tertiary killdomainshell )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( newinkdkim inkdnsaddinkdkim )
+usedby=( killinkcertmail )
+useserfs=(  )
+useconfigs=( inkcertstatus inkdnsconf servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/killinkdkim.replace" ]; then . /opt/verb/mods/killinkdkim.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/killinkdkim.before" ]; then . /opt/verb/mods/killinkdkim.before; fi # Precedes this script
+
+
+# Dependencies
+if ! /bin/grep -q 'InkCertInstalled="DONE"' /opt/verb/conf/inkcertstatus; then
+  /usr/bin/echo "Install inkCert first, I quit."; exit 8
+fi
+if ! /bin/grep -q 'InkDNSStat="INSTALLED"' /opt/verb/conf/inkdnsconf; then
+  /usr/bin/echo "Install inkDNS first, I quit."; exit 8
+fi
+if ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpath; then
+  /usr/bin/echo "Install Postfix Vmail first, I quit."; exit 8
+fi
+
+KILLDKIMDOMAIN=$1
+
+# Delete domain key from the config files
+/bin/sed -i "/inkdkim\._domainkey\.${KILLDKIMDOMAIN} ${KILLDKIMDOMAIN}:inkdkim:\/etc\/opendkim\/keys\/${KILLDKIMDOMAIN}\/inkdkim\.private/d" /etc/opendkim/KeyTable
+/bin/sed -i "/${KILLDKIMDOMAIN} inkdkim\._domainkey\.${KILLDKIMDOMAIN}/d" /etc/opendkim/SigningTable
+/bin/sed -i "/${KILLDKIMDOMAIN}/d" /etc/opendkim/TrustedHosts
+
+# Delete the declared domain key
+/bin/rm -rf /etc/opendkim/keys/${KILLDKIMDOMAIN}
+
+# Restart
+/usr/bin/systemctl restart opendkim
+/usr/bin/systemctl restart postfix
+/usr/bin/systemctl restart dovecot
+
+
+
+
+if [ -e "/opt/verb/mods/killinkdkim.after" ]; then . /opt/verb/mods/killinkdkim.after; fi # Follows this script

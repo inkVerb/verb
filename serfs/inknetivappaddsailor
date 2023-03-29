@@ -1,0 +1,27 @@
+#!/bin/bash
+#IVapp installer! verb.ink
+
+# This adds an IVapp user with settings for an inkNet Sailor
+
+
+# How to use:
+## ./inknetivappaddsailor [user]
+
+
+ADDINIVSAILOR=$1
+
+# Add the user
+/opt/verb/donjon/ivapp/ivappaddsailor ${ADDINIVSAILOR} /opt/verb/conf/inknet/ivinknet-sail.conf
+wait
+
+# Create the inkNet Client tool links
+/bin/rm -rf /opt/ivapp/inknet/sailor/${ADDINIVSAILOR}/tools
+/bin/ln -sfn /opt/verb/tools/sailor /opt/ivapp/inknet/sailor/${ADDINIVSAILOR}/tools
+/bin/mkdir -p /opt/ivapp/inknet/sailor/${ADDINIVSAILOR}/.ssh
+/bin/chown -R ${ADDINIVSAILOR}:${ADDINIVSAILOR} /opt/ivapp/inknet/sailor/${ADDINIVSAILOR}
+
+
+
+
+
+if [ -e "/opt/verb/mods/inknetivappaddsailor.after" ]; then . /opt/verb/mods/inknetivappaddsailor.after; fi # Follows this script

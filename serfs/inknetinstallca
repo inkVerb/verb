@@ -1,0 +1,69 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This installs inkNet onto the Verber and...
+## sets it up as a CA Verber for Vrk Station Clients and
+## sets it up as a CA Inker for Verber Client
+
+# DEV NOTE:
+## There are two CA keys
+### in_ca_${CAVERBERNAME}_key to sign the host key on the same CA Verber itself, which authenticates this server to Clients
+### in_cav_${CAVERBERNAME}_key gets signed
+
+# How to use:
+## ./inknetinstallca
+
+
+# Verify that this CA Verber candidate is already a Client Verber itself
+if [ ! -f /opt/verb/conf/inknet/rink.client.cnf ]; then
+/bin/echo "Not bad, Bucko. But, this must be a Verber Client, even to itself if need be, before it can become a CA to anything else.
+
+First run, according to instructions: inknetmakeverberclient
+"
+exit 0; fi
+
+# inkNet/inkCert prerequisites
+if [ ! -f /opt/verb/conf/inknet/ca.verber.cnf ]; then
+/bin/echo "...installing CA now..."
+/opt/verb/serfs/inknetmakeca
+wait
+fi
+
+# Include the config
+. /opt/verb/conf/inknet/ca.verber.cnf
+
+# Check if already installed or correctly ready
+if [ "${INKNETSTATUS}" = "INSTALLED" ]; then
+/bin/echo "inkNet is already installed, dude. Don't mess."
+exit 0; fi
+if [ "${INKNETSTATUS}" != "MADE_INSTALL_READY" ]; then
+/bin/echo "Catostrophic failure. inkNetStatus should be MADE_INSTALL_READY or INSTALLED, but isn't either one.
+Look at ca.verber.cnf to see what's up.
+"
+exit 0; fi
+
+# Create the first CA Verber/Inker self-signing master keys for the settings added in inknetmakeca
+/opt/verb/serfs/inknetnewcaselfauthpubkey
+wait
+
+# Create the first host key on this CA Verber, for the settings added in inknetmakeca
+/opt/verb/serfs/inknetnewcahostkey
+wait
+
+# Install ivApp
+/opt/verb/serfs/inknetinstallivapp
+wait
+
+# Set the inkNet config
+/bin/sed -i "s/INKNETSTATUS=\"MADE_INSTALL_READY\"/INKNETSTATUS=\"INSTALLED\"/g" /opt/verb/conf/inknet/ca.verber.cnf
+
+# Finish
+/bin/echo "
+inkNet has been installed as a CA Verber and is ready to add Verber and Vrk Clients.
+"
+
+
+
+
+
+if [ -e "/opt/verb/mods/inknetinstallca.after" ]; then . /opt/verb/mods/inknetinstallca.after; fi # Follows this script

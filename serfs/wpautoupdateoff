@@ -1,0 +1,21 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This removes the Auto-Update must-use plugin from inkVerb, leaving its 'mu-plugin' folder for a WordPress site where Auto-Update has already been installed.
+## The plugin has further information embedded
+## You can use this for blog.NAME.verb.ink by using "ink.blog" as the domain
+
+# How to use:
+## ./wpautoupdateoff [full domain of WP site]
+
+
+DOMAIN=$1
+
+/bin/rm -f /srv/www/html/${DOMAIN}/wp-content/mu-plugins/auto-update.php
+
+/bin/echo "inkVerb Auto-Update removed from ${DOMAIN}. No further action is necessary."
+
+
+
+
+if [ -e "/opt/verb/mods/wpautoupdateoff.after" ]; then . /opt/verb/mods/wpautoupdateoff.after; fi # Follows this script

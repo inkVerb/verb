@@ -1,0 +1,85 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+echo "This should not be used unless the cb schema is changed to include wildcards; currently -cb does standalone per-domain and -cbsingle does wildcards for all subdomains"
+exit 0
+# This runs inkcertaddcb for a domain and all of its subdomains
+## Prerequesite: inkcertreqcb
+
+# NOTE: This is intended to be run by inkcertdocb, but can be run separately, such as for updates
+# NOTE: If your domain and subdomains have the same certificate then run this only for the main domain
+
+# How to use:
+## ./inkcertaddallcbsingle [ domain.tld or sub.domain.tld ]
+
+# Eg:
+## ./inkcertaddallcbsingle NAME.verb.ink (will apply to all subdomains of NAME.verb.ink)
+## ./inkcertaddallcbsingle inkisaverb.com (will apply to all subdomains of inkisaverb.com)
+## ./inkcertaddallcbsingle poetryiscode.com inkisaverb.com (if the SSL cert for poetryiscode.com is included in the CN of the certificate for inkisaverb.com)
+
+usagenotes="This runs inkcertaddcb for a domain and all of its subdomains"
+usageformat="inkcertaddallcbsingle [ domain.tld or sub.domain.tld ] [ DOMAIN OF CERTIFICATE IF DIFFERENT, ie: domain.tld ]"
+usageexample="inkcertaddallcbsingle NAME.verb.ink (will apply to all subdomains of NAME.verb.ink)
+inkcertaddallcbsingle inkisaverb.com (will apply to all subdomains of inkisaverb.com)
+inkcertaddallcbsingle poetryiscode.com inkisaverb.com (if the SSL cert for poetryiscode.com is included in the CN of the certificate for inkisaverb.com)"
+hierarchy=( tertiary inkcertdocbsingle )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=( "Domain of cert, if different" )
+vopttypes=( isDomain )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkcertinstall )
+prerequesite=( inkcertinstall inkcertreqcbsingle )
+usedby=( inkcertdocbsingle )
+useserfs=( inkcertaddcbsingle )
+useconfigs=(  )	# List config files of any kind used in this serf, please preserve order of appearance
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkcertaddallcbsingle.replace" ]; then . /opt/verb/mods/inkcertaddallcbsingle.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkcertaddallcbsingle.before" ]; then . /opt/verb/mods/inkcertaddallcbsingle.before; fi # Precedes this script
+
+
+SITEDOMAIN=$1
+
+# Check inkCert installed
+if [ "${InkCertInstalled}" = "NOT_YET" ]; then
+/bin/echo "inkCert not yet installed.
+
+First run inkcertinstall
+"
+exit 0
+fi
+
+# Check variables
+if [ -z ${1} ]; then
+/bin/echo "You need to specify a domain. Read the instructions."; exit 0
+fi
+
+
+# For the main domain first
+/opt/verb/serfs/inkcertaddcbsingle ${SITEDOMAIN}
+wait
+
+# For any/all sub-domains
+if [ ${ServerType} = "lamp" ] || [ ${ServerType} = "laemp" ]; then
+  cd /opt/verb/conf/webserver/httpd/sites-available
+elif [ ${ServerType} = "lemp" ]; then
+  cd /opt/verb/conf/webserver/nginx/sites-available
+fi
+## Get the name of each subdomain .conf file available
+find . -name "*.${SITEDOMAIN}.conf"|while read findsitesubdomain; do
+## Strip the .conf extension
+ sitesubdomain=$(basename ${findsitesubdomain} .conf)
+## Run inkCertAddLE per site config
+ /opt/verb/serfs/inkcertaddcbsingle ${sitesubdomain}
+wait
+done
+
+# Finish
+/bin/echo "
+Done. Certs installed for ${SITEDOMAIN}.
+"
+
+
+
+
+if [ -e "/opt/verb/mods/inkcertaddallcbsingle.after" ]; then . /opt/verb/mods/inkcertaddallcbsingle.after; fi # Follows this script

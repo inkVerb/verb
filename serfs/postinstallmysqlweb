@@ -1,0 +1,30 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This revokes MySQL users' boss permissions for web apps that require boss access upon install
+## Current intended apps include Ampache, SuiteCRM
+
+# How to use:
+## ./postinstallmysqlfix [app namespace]
+
+# Eg:
+## ./postinstallmysqlfix ampache
+
+APPNAME=$1
+
+# Include the config
+. /opt/verb/conf/vapp.${APPNAME}
+
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+REVOKE ALL PRIVILEGES ON *.* FROM '${APPDDBUSR}'@'localhost';
+REVOKE GRANT OPTION ON *.* FROM '${APPDDBUSR}'@'localhost';
+GRANT ALL PRIVILEGES ON ${APPDBASE}.* TO '${APPDDBUSR}'@'localhost' IDENTIFIED BY '${APPDDBPAS}';
+FLUSH PRIVILEGES;"
+
+# Finish
+/bin/echo "Finished. Database user now has normal permissions."
+
+
+
+
+if [ -e "/opt/verb/mods/postinstallmysqlweb.after" ]; then . /opt/verb/mods/postinstallmysqlweb.after; fi # Follows this script

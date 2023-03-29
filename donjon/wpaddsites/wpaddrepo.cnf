@@ -1,0 +1,10 @@
+#!/bin/sh
+##inkVerb! donjon config, verb.ink
+## This keeps track of the settings for the Inker side of the wpadd Serf used to install special WP plugin/theme recipes
+
+# Settings (edit manually)
+## Subdomain suffix (3 at most so names don't become too long)
+WPADDNAMESUFF="333"
+## Domain
+WPADDDOMAIN="inkisaverb.com"
+

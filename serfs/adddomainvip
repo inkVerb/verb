@@ -1,0 +1,35 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+# This adds an existing domain to /srv/vip/_domains/
+
+# How to use:
+## ./adddomainvip [ olddomain.tld ]
+
+usagenotes="This adds an existing domain to /srv/vip/_domains/"
+usageformat="adddomainvip [ olddomain.tld ]"
+usageexample="adddomainvip inkisaverb.com"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( adddomain )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/adddomainvip.replace" ]; then . /opt/verb/mods/adddomainvip.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/adddomainvip.before" ]; then . /opt/verb/mods/adddomainvip.before; fi # Precedes this script
+
+
+OLDDOMAIN=$1
+
+/bin/ln -s /srv/www/domains/${OLDDOMAIN} /srv/vip/_domains/${OLDDOMAIN}
+
+
+
+
+if [ -e "/opt/verb/mods/adddomainvip.after" ]; then . /opt/verb/mods/adddomainvip.after; fi # Follows this script

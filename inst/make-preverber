@@ -1,0 +1,138 @@
+#!/bin/sh
+#inkVerbMaker! verb.ink
+
+# This prepares the early settings for the name286.verb.ink or custom Domain Mod server necessary to make the Verber
+## This currently takes no parameters
+## This is intended as final prep for the "proper" snapshot image Verbers are created from
+### So, it should not be run on "proper" Verber install, but only if from a raw OS image
+### This still needs a fresh run of: cd /opt && git clone https://github.com/inkverb/verb
+## The basic purpose is to:
+### install tools
+### set bashrc style
+### configure locale
+
+# How to use:
+## ./make-preverber
+
+
+# File check
+if [ ! -f "/opt/verb/inst/make-preverber" ]; then
+  /bin/echo "Put the verb directory at /opt/verb first, then try again."
+exit 8; fi
+
+# Locale
+/usr/bin/cp /etc/locale.gen /etc/locale.gen.orig
+/usr/bin/echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
+/usr/bin/localectl set-locale LANG=en_US.UTF-8
+/usr/bin/locale-gen
+
+# Update Keyring
+/usr/bin/pacman -Sy archlinux-keyring --noconfirm
+# Update Packages
+/usr/bin/pacman -Syyu --noconfirm --needed
+
+# Install tools
+/usr/bin/pacman -S --noconfirm --needed ntp pwgen zip unzip htop which vim curl wget make cronie gcc autoconf imagemagick git parted net-tools inetutils man sudo
+if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
+
+# Enable NTP for accurate time (the standard service is commented below)
+#/bin/systemctl enable --now systemd-timesyncd
+/bin/systemctl enable --now ntpd
+
+# Remove unneeded packages
+/usr/bin/pacman -Qdt --noconfirm
+/usr/bin/pacman -Scc --noconfirm
+
+# Set the prompt style
+/opt/verb/serfs/setbashrc
+/opt/verb/serfs/setbashrc root
+
+# Vim preferences for root
+/bin/echo 'nnoremap <C-c> "+y
+vnoremap <C-c> "+y
+nnoremap <C-p> "+p
+vnoremap <C-p> "+p
+syntax on
+set number' > /root/.vimrc
+
+# SSH security
+sed -i "s/#PasswordAuthentication yes/PasswordAuthentication no/" /etc/ssh/sshd_config
+sed -i "s/#PermitRootLogin.*/PermitRootLogin prohibit-password/" /etc/ssh/sshd_config
+
+# Good housekeeping
+/bin/chmod 750 /opt/verb/serfs/*
+
+# Prep for root convenience
+/bin/ln -s /opt/verb /root/
+
+# ink CLI tool
+/usr/bin/mv /opt/verb/inst/ink.set /opt/verb/ink/
+/bin/sed -i 's:vDir=.*:vDir="/opt/verb":' /opt/verb/ink/ink.set
+/usr/bin/mkdir -p /opt/verb/ink/log
+/usr/bin/touch /opt/verb/ink/log/inklog
+/usr/bin/touch /opt/verb/ink/log/outputlog
+/usr/bin/ln -sfn /opt/verb/ink/ink /usr/local/bin/
+chmod 755 /usr/local/bin/ink
+
+# Security check
+/opt/verb/serfs/setsecure; wait
+
+# Woker user (for yay, etc)
+/usr/bin/groupadd www
+/usr/bin/groupadd worker
+/usr/bin/useradd -g worker worker
+/usr/bin/usermod -a -G wheel worker
+/usr/bin/usermod -a -G www worker
+/usr/bin/mkdir -p /opt/verb/worker
+/usr/bin/chown -R worker:worker /opt/verb/worker
+/usr/bin/usermod -d /opt/verb/worker worker
+/bin/echo 'worker ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/worker
+
+# Let's use sudo
+/usr/bin/groupadd sudo
+/usr/bin/sed -i "s?# %sudo\tALL=(ALL) ALL?%sudo\tALL=(ALL) ALL?" /etc/sudoers
+
+# AUR package manager
+/usr/bin/pacman -S --noconfirm --needed base-devel # Dependencies
+if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
+cd /opt/verb/worker || exit 0
+/usr/bin/su worker -c '/usr/bin/git clone https://aur.archlinux.org/yay.git'
+cd yay || exit 0
+/usr/bin/su worker -c '/usr/bin/makepkg -si --noconfirm'
+cd .. || exit 0
+/usr/bin/rm -rf yay
+
+# Update yay
+/usr/bin/su worker -c '/usr/bin/yay -Syyu --noconfirm --needed'
+
+## Now, use this to run non-root commands:
+### /usr/bin/su worker -c '/usr/bin/yay --noconfirm -S some-package'
+### /usr/bin/su worker -c '/path/to/command arg1 arg2 -etc'
+
+# No managed /etc/hosts file
+## Comment any current statement
+if /usr/bin/grep -q "^\s*manage_etc_hosts:" /etc/cloud/cloud.cfg; then
+  /usr/bin/sed -i "s/^\s*manage_etc_hosts:/#manage_etc_hosts:/" /etc/cloud/cloud.cfg
+fi
+## Add our own statement
+/usr/bin/echo "manage_etc_hosts: false" >> /etc/cloud/cloud.cfg
+
+
+# Remove unneeded packages
+/usr/bin/pacman -Qdt --noconfirm
+/usr/bin/pacman -Scc --noconfirm
+/usr/bin/su worker -c '/usr/bin/yay -Scc --noconfirm'
+
+# Restart Server and reconnect at the new port
+/bin/echo "
+Pre-install is finished and is ready to run make-verber-*.
+
+Run: reboot
+
+Then log back onto the server to run make-verber-*."
+
+# Delete this one-time script
+/bin/rm -f /opt/verb/inst/make-preverber
+
+# Restart SSH
+/bin/systemctl restart sshd

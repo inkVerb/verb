@@ -1,0 +1,58 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This adds a verb domain, already created, to the OpenDKIM library so it can be used in email on the DNS
+## This is a selected redundancy from newdomain, excluding all the work already done for verb domains.
+## This is necessary for non- .ink verb domains because installpostfix/installemail only creates OpenDKIM keys for NAMESPACE.verb.ink
+
+# How to use:
+## ./newverbdkim [ verbtld only ]
+
+# Eg:
+## ./newverbdkim kiwi
+
+usagenotes="This adds a verb domain, already created, to the OpenDKIM library so it can be used in email on the DNS"
+usageformat="newverbdkim [ verbtld ]"
+usageexample="newverbdkim kiwi"
+hierarchy=( primary )
+vsetnames=( "Verb TLD" )
+vsettypes=( isVerbTLD )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/newverbdkim.replace" ]; then . /opt/verb/mods/newverbdkim.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/newverbdkim.before" ]; then . /opt/verb/mods/newverbdkim.before; fi # Precedes this script
+
+
+# Include the config
+. /opt/verb/conf/servernameip
+
+VERBDOMAIN=$1
+
+# OpenDKIM
+## This creates the declared domain key
+/bin/mkdir -p /etc/opendkim/keys/${VERBDOMAIN}
+cd /etc/opendkim/keys/${VERBDOMAIN} || exit 0
+/usr/bin/opendkim-genkey -r -d ${VERBDOMAIN}
+/bin/chown -R opendkim:opendkim /etc/opendkim
+## This adds the new domain key to the config files
+/bin/echo "inkdkim._domainkey.${VERBDOMAIN} ${VERBDOMAIN}:inkdkim:/etc/opendkim/keys/${VERBDOMAIN}/inkdkim.private" >> /etc/opendkim/KeyTable
+/bin/echo "${VERBDOMAIN} inkdkim._domainkey.${VERBDOMAIN}" >> /etc/opendkim/SigningTable
+/bin/echo "${VERBDOMAIN}" >> /etc/opendkim/TrustedHosts
+/etc/init.d/opendkim restart
+/etc/init.d/postfix reload
+/etc/init.d/postfix restart
+
+/bin/echo "Great! With no error messages, ${VERBDOMAIN} has an OpenDKIM key. Use showdkim to get it."
+
+
+
+
+if [ -e "/opt/verb/mods/newverbdkim.after" ]; then . /opt/verb/mods/newverbdkim.after; fi # Follows this script

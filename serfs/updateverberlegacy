@@ -1,0 +1,28 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This downloads and updates the Verber™ core files, including serfs and inklists
+## If the verbdomain mod is in effect, it will automatically run again at the end of this update
+## This also runs scripts that make other changes that may affect the Verber
+## This is intended for updates for versions retired from the main updater
+
+# How to use:
+## ./updateverberlegacy
+
+
+# Download and unpack the latest checked version from the Inkver repo
+cd /opt/verb/ || exit 0
+/opt/verb/serfs/inkget verber.update.legacy; wait
+/opt/verb/serfs/vtxzout verber.update.legacy; wait
+
+# Run the update script
+/opt/verb/verber.update.legacy/update; wait
+
+# Remove the entire updater
+/bin/rm -rf /opt/verb/verber.update.legacy
+
+
+
+
+
+if [ -e "/opt/verb/mods/updateverberlegacy.after" ]; then . /opt/verb/mods/updateverberlegacy.after; fi # Follows this script

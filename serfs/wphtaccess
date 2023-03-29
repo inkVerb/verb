@@ -1,0 +1,38 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This sets up a WordPress vapp .htaccess file to be "normal", NOT for multisite
+
+# How to use:
+## ./wphtaccess [domain.tld]
+
+# Eg:
+## ./wphtaccess inkisaverb.com
+## ./wphtaccess mysubsite.inkisaverb.com
+
+
+WPDOMAIN=$1
+
+# Remove the old WordPress declarations
+/bin/sed -i '/^# BEGIN WordPress*/,/^# END WordPress/d' /srv/www/vapps/wp.${WPDOMAIN}/.htaccess
+
+# Put in the new .htaccess settings
+/bin/echo "# BEGIN WordPress ##inkVerb
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+RewriteRule ^index\.php$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.php [L]
+</IfModule>
+# END WordPress" >> /srv/www/vapps/wp.${WPDOMAIN}/.htaccess
+
+# Finish
+/bin/echo ".htaccess file for http://${WPDOMAIN} is set to normal, NOT WP Multisite, use."
+
+
+
+
+
+if [ -e "/opt/verb/mods/wphtaccess.after" ]; then . /opt/verb/mods/wphtaccess.after; fi # Follows this script

@@ -1,0 +1,44 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This displays the inkNet CA info to be used by a Client by inknetmakeverberclient
+
+# How to use:
+## ./showinknetcainfo
+
+
+# Check & include the config
+if [ -f /opt/verb/conf/inknet/ca.verber.cnf ]; then
+. /opt/verb/conf/inknet/ca.verber.cnf
+ if [ -n "${IAMCAHOST}" ]; then
+ /bin/echo "Here's the info for this CA Verber..."
+ else
+ /bin/echo "This is not a CA. No info to show.
+First run: inknetmakeca
+"
+ exit 8
+ fi
+else
+/bin/echo "This is not a CA. No info to show.
+First run: inknetmakeca
+"
+exit 8
+fi
+
+# Include the config
+. /opt/verb/conf/servernameip
+
+# Display info
+/bin/echo "
+Host: ${IAMCAHOST}
+URI:  ${IAMCAURI}
+Name: ${IAMCANAME}
+IPv4: ${ServerIPv4}
+IPv6: ${ServerIPv6}
+"
+
+
+
+
+
+if [ -e "/opt/verb/mods/showinknetcainfo.after" ]; then . /opt/verb/mods/showinknetcainfo.after; fi # Follows this script

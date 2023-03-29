@@ -1,0 +1,168 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This creates one-time ssl certs for inkCertSC (Self-Cert)
+## Prerequesite: inkcertinstallsc
+## DEV: This has not been tested and may still need inkcertdosc, inkcertaddsc, inkcdertaddallsc to be written
+## DEV: This has not been tested and is useful in theory only, such as for private networks
+
+# How to use:
+## ./inkcertsc FULLDOMAIN
+
+# Eg:
+## ./inkcertsc inkisaverb.com
+## ./inkcertsc somesub.inkisaverb.com
+
+
+DOMAIN="${1}"
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/servertldstatus
+. /opt/verb/conf/inkcertstatus
+
+if [ "${INKCERTSCINSTALLED}" != "DONE" ]; then
+/bin/echo "inkCert-SC must be installed first, run: inkcertinstallsc"
+exit 0; fi
+
+# CA #
+
+# Create the CA root key
+## Note: omitting options like "-aes256" or "-des3" because they instruct openssl to encrypt the key with a passphrase, causing a prompt
+cd /etc/inkcert/sc/ca || exit 0
+/usr/bin/openssl genrsa -out priv/ca.${DOMAIN}.key.pem 4096
+/bin/chmod 400 priv/ca.${DOMAIN}.key.pem
+
+# CA Subject details:
+country="US"
+state="Ink"
+locality="Cyberspace City"
+organization="inkVerb Verber @ ${nameURI}"
+organizationalunit="inkCert Self-Cert"
+email="certmaster@${nameURI}"
+companyname="This is an autocert, not from another company."
+commonname="${nameURI}"
+
+# Create the CA root cert
+## Note: "-nodes" means there will be no password prompt
+cd /etc/inkcert/sc/ca || exit 0
+/usr/bin/openssl req -config /opt/verb/conf/inkcert/sc-ca-openssl.cnf \
+	-key priv/ca.${DOMAIN}.key.pem \
+	-new -nodes -x509 -days 3650 -sha256 -extensions v3_ca \
+	-out certs/ca.${DOMAIN}.cert.pem
+	-subj "/C=$country/ST=$state/L=$locality/O=$organization/OU=$organizationalunit/CN=$commonname/emailAddress=$email/unstructuredName=$companyname/"
+/bin/chmod 444 certs/ca.cert.pem
+
+# Intermediate CA #
+
+# Create the intermediate key
+## Note: omitting options like "-aes256" or "-des3" because they instruct openssl to encrypt the key with a passphrase, causing a prompt
+cd /etc/inkcert/sc/intrm || exit 0
+/usr/bin/openssl genrsa -out priv/intrm.${DOMAIN}.key.pem 4096
+/bin/chmod 400 priv/intrm.${DOMAIN}.key.pem
+
+# Intermediate Subject details:
+country="US"
+state="Ink"
+locality="Cyberspace City"
+organization="inkVerb Verber @ ${nameURI}"
+organizationalunit="inkCert Self-Cert"
+email="certmaster@${nameURI}"
+companyname="This is an autocert, not from another company."
+commonname="serve.${nameURI}"
+
+# Create the intermediate cert CSR
+cd /etc/inkcert/sc/intrm || exit 0
+/usr/bin/openssl req -config /opt/verb/conf/inkcert/sc-intrm-openssl.cnf \
+	-key priv/intrm.${DOMAIN}.key.pem \
+	-new -nodes -sha256
+	-out csr/intrm.${DOMAIN}.csr.pem
+	-subj "/C=$country/ST=$state/L=$locality/O=$organization/OU=$organizationalunit/CN=$commonname/emailAddress=$email/unstructuredName=$companyname/"
+
+# Sign the intermediate cert
+## Note: "CA" & "CAkey" override the "certificate" & "private_key" settings in the .cnf file
+cd /etc/inkcert/sc/ca || exit 0
+/usr/bin/openssl ca -config /opt/verb/conf/inkcert/sc-ca-openssl.cnf \
+	-extensions v3_intermediate_ca \
+	-CA /etc/inkcert/sc/ca/certs/ca.${DOMAIN}.cert.pem \
+	-CAkey /etc/inkcert/sc/ca/priv/ca.${DOMAIN}.key.pem \
+	-days 3650 -notext -md sha256 \
+	-in /etc/inkcert/sc/intrm/csr/intrm.${DOMAIN}.csr.pem \
+	-out /etc/inkcert/sc/intrm/certs/intrm.${DOMAIN}.cert.pem
+/bin/chmod 444 /etc/inkcert/sc/intrm/certs/intrm.${DOMAIN}.cert.pem
+
+# Verify the signed intermediate cert
+/usr/bin/openssl verify -CAfile /etc/inkcert/sc/ca/certs/ca.cert.pem /etc/inkcert/sc/intrm/certs/intrm.${DOMAIN}.cert.pem
+
+# Create the intermediate chain
+/bin/cat /etc/inkcert/sc/intrm/certs/intrm.${DOMAIN}.cert.pem /etc/inkcert/sc/ca/certs/ca.${DOMAIN}.cert.pem > /etc/inkcert/sc/intrm/certs/ca-intrm.${DOMAIN}.chain.cert.pem
+/bin/chmod 444 /etc/inkcert/sc/intrm/certs/ca-intrm.${DOMAIN}.chain.cert.pem
+
+# Client #
+
+# Create the client key
+## Note: omitting options like "-aes256" or "-des3" because they instruct openssl to encrypt the key with a passphrase, causing a prompt
+cd /etc/inkcert/sc/cli || exit 0
+/usr/bin/openssl genrsa -out priv/${DOMAIN}.key.pem 2048
+/bin/chmod 400 priv/${DOMAIN}.key.pem
+
+# Client Subject details:
+country="US"
+state="Ink"
+locality="Cyberspace City"
+organization="inkVerb Verber @ ${nameURI}"
+organizationalunit="inkCert Self-Cert"
+email="certmaster@${nameURI}"
+companyname="This is an autocert, not from another company."
+commonname="${DOMAIN}"
+
+# Create the client CSR
+cd /etc/inkcert/sc/cli || exit 0
+/usr/bin/openssl req -config /opt/verb/conf/inkcert/sc-intrm-openssl.cnf \
+	-key priv/cli.${DOMAIN}.key.pem \
+	-new -sha256 \
+	-out csr/cli.${DOMAIN}.csr.pem \
+	-subj "/C=$country/ST=$state/L=$locality/O=$organization/OU=$organizationalunit/CN=$commonname/emailAddress=$email/unstructuredName=$companyname/"
+
+# Sign the client cert
+cd /etc/inkcert/sc/intrm || exit 0
+/usr/bin/openssl ca -config /opt/verb/conf/inkcert/sc-intrm-openssl.cnf \
+	-extensions server_cert \
+	-CA /etc/inkcert/sc/intrm/certs/intrm.${DOMAIN}.cert.pem \
+	-CAkey /etc/inkcert/sc/intrm/priv/intrm.${DOMAIN}.key.pem \
+	-days 3650 -notext -md sha256 \
+	-in /etc/inkcert/sc/cli/csr/cli.${DOMAIN}.csr.pem \
+	-out /etc/inkcert/sc/cli/certs/cli.${DOMAIN}.cert.pem
+/bin/chmod 444 /etc/inkcert/sc/cli/certs/cli.${DOMAIN}.cert.pem
+
+# Verify the signed intermediate cert
+/usr/bin/openssl verify -CAfile /etc/inkcert/sc/intrm/certs/ca-intrm.${DOMAIN}.chain.cert.pem /etc/inkcert/sc/cli/certs/cli.${DOMAIN}.cert.pem
+
+# Create the full chain (CA - Intrm - Cli)
+/bin/cat /etc/inkcert/sc/cli/certs/cli.${DOMAIN}.cert.pem /etc/inkcert/sc/intrm/certs/ca-intrm.${DOMAIN}.chain.cert.pem > /etc/inkcert/sc/cli/certs/full.${DOMAIN}.chain.cert.pem
+/bin/chmod 444 /etc/inkcert/sc/cli/certs/full.${DOMAIN}.chain.cert.pem
+
+# Delete the roots
+/bin/rm /etc/inkcert/sc/ca/priv/ca.${DOMAIN}.key.pem
+/bin/rm /etc/inkcert/sc/intrm/priv/intrm.${DOMAIN}.key.pem
+/bin/rm /etc/inkcert/sc/intrm/certs/intrm.${DOMAIN}.cert.pem
+
+# Publish the root cert
+/bin/mv /etc/inkcert/sc/ca/certs/ca.${DOMAIN}.cert.pem /etc/inkcert/sc/rcinst/${DOMAIN}.rootcert.pem
+
+# Deploy to the server
+/bin/mv /etc/inkcert/sc/intrm/certs/ca-intrm.${DOMAIN}.chain.cert.pem /etc/inkcert/sc/pub/${DOMAIN}.chain.cert.pem
+/bin/mv /etc/inkcert/sc/cli/certs/full.${DOMAIN}.chain.cert.pem /etc/inkcert/sc/pub/${DOMAIN}.fullchain.cert.pem
+/bin/mv /etc/inkcert/sc/cli/certs/cli.${DOMAIN}.cert.pem /etc/inkcert/sc/pub/${DOMAIN}.cert.pem
+/bin/mv /etc/inkcert/sc/cli/priv/cli.${DOMAIN}.key.pem /etc/inkcert/sc/keys/${DOMAIN}.key.pem
+/bin/mkdir -p /etc/inkcert/sc/live/${DOMAIN}
+/bin/ln -sfn /etc/inkcert/sc/pub/${DOMAIN}.fullchain.cert.pem /etc/inkcert/sc/live/${DOMAIN}/fullchain.cert.pem
+/bin/ln -sfn /etc/inkcert/sc/pub/${DOMAIN}.chain.cert.pem /etc/inkcert/sc/live/${DOMAIN}/chain.cert.pem
+/bin/ln -sfn /etc/inkcert/sc/pub/${DOMAIN}.cert.pem /etc/inkcert/sc/live/${DOMAIN}/cert.pem
+/bin/ln -sfn /etc/inkcert/sc/keys/${DOMAIN}.key.pem /etc/inkcert/sc/live/${DOMAIN}/key.pem
+
+
+
+
+if [ -e "/opt/verb/mods/inkcertsc.after" ]; then . /opt/verb/mods/inkcertsc.after; fi # Follows this script

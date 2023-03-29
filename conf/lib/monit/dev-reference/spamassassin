@@ -1,0 +1,5 @@
+check process spamassassin with pidfile /var/run/spamd.pid
+  group mail
+  start program = "/etc/init.d/spamassassin start"
+  stop  program = "/etc/init.d/spamassassin stop"
+  if 5 restarts within 5 cycles then timeout

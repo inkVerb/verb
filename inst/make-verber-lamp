@@ -1,0 +1,305 @@
+#!/bin/bash
+#inkVerbMaker! verb.ink
+
+# This makes the initial inkVerb Verber server with a "boss" sudoer user, new SSH login port, the name286 namespace for setup
+## Prerequisite: Copy the Vubuntu directory contents (verb) to /var/local/
+## Prerequisite: make-preverber
+
+# NOTE on MySQL:
+## The MySQL root password will be saved to a filename in the inst directory for your reference
+## This file is moved to verb/configs by setup
+## On a healthy Verber server, you will never need the MySQL root password except for special maintanence
+## Verber can create other superusers for MySQL with grant privileges for login to PHPMyAdmin
+## Should the MySQL root password become necessary it is a headache if lost. Hence, it is saved in this one lo/bin/cation and you don't need to keep track of it.
+
+# How to use:
+## ./make-verber-lamp [swap-size, choose GB: 1, 2, 4, 8, 16, 32, 64 - optional (2 default, must be set for root password)] [mysql root password - optional]
+
+# Eg:
+## ./make-verber-lamp 1 mysqlrootpass
+## ./make-verber-lamp 4
+## ./make-verber-lamp 2 chewcud62
+
+
+# Setup check
+if [ -f "/opt/verb/inst/make-preverber" ]; then
+  /bin/echo "Run make-preverber first, then try again."
+exit 8; fi
+# File check
+if [ ! -f "/opt/verb/inst/make-verber-lamp" ]; then
+  /bin/echo "I'm not where I'm supposed to be, I quit."
+exit 8; fi
+
+# swap size
+if [ -z "$1" ]; then
+SWAPSIZEMAKE="2"
+else
+SWAPSIZEMAKE="$1"
+fi
+
+# MySQL root password
+if [ -z "$2" ]; then
+MYSQLPASS=$(/usr/bin/pwgen -0 -1 -A -B 11)
+else
+MYSQLPASS="$2"
+fi
+
+# MySQL boss password
+MYSQLBossPASS=$(/usr/bin/pwgen -s -1 10)
+
+# Verify SSH Directory
+cd ~ || exit 0
+if [ ! -d ~/.ssh ]; then
+/bin/mkdir .ssh
+fi
+
+# Update Keyring
+/usr/bin/pacman -Sy archlinux-keyring --noconfirm
+# Update Packages
+/usr/bin/pacman -Syyu --noconfirm --needed
+/usr/bin/su worker -c '/usr/bin/yay -Syyu --noconfirm --needed'
+
+# Swap
+/opt/verb/serfs/setswapsize ${SWAPSIZEMAKE}; wait
+## Enable swap at next startup
+/bin/echo "/var/swap.img    none    swap    sw    0    0" >> /etc/fstab
+
+# Live patch
+## Learn more here https://wiki.archlinux.org/title/Kernel_live_patching
+#/usr/bin/su worker -c '/usr/bin/yay -S --noconfirm --needed kpatch'
+
+# Link serfs & tools to boss box
+/bin/ln -sfn /opt/verb/serfs /opt/verb/boss/
+/bin/ln -sfn /opt/verb/tools /opt/verb/boss/
+
+# Link setup to serfs
+/bin/ln -sfn /opt/verb/inst/setup /opt/verb/serfs/
+
+# Link verb to root home
+/bin/ln -sfn /opt/verb /root/
+
+# Record the MySQL root password
+/bin/echo "${MYSQLPASS}" > /opt/verb/inst/mysqlrootpassword
+
+#  LAMP Server
+## Web directory
+/usr/bin/mkdir -p /srv/www/html
+/usr/bin/useradd -g www www
+/usr/bin/chmod u+w /srv/www/html
+/usr/bin/chown -R www:www /srv/www/html
+
+## Snakeoil install (small file just so the server works)
+/usr/bin/mkdir -p /etc/ssl/server
+cd /etc/ssl/server || exit 0
+/usr/bin/rm -f server.key
+/usr/bin/openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:512 -out server.key
+/usr/bin/chmod 400 server.key
+/usr/bin/rm -f /etc/ssl/server/server.csr
+/usr/bin/openssl req -new -sha256 -key server.key -out server.csr \
+    -subj "/C=/ST=/L=/O=/OU=/CN=/emailAddress=/unstructuredName=/"
+/usr/bin/openssl x509 -req -days 1095 -in server.csr -signkey server.key -out server.crt
+/usr/bin/rm -f /etc/ssl/server/server.csr
+
+## Diffie-Helman Group file (small file just so the server works)
+/bin/rm -f /etc/ssl/server/dhparams.pem
+/usr/bin/openssl dhparam -out /etc/ssl/server/dhparams.pem 512
+/bin/chmod 600 /etc/ssl/server/dhparams.pem
+cd $OLDPWD || exit 0
+
+## Apache
+/usr/bin/pacman -S --noconfirm --needed apache
+if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
+/usr/bin/sed -i "s?#LoadModule proxy_module modules/mod_proxy.so?LoadModule proxy_module modules/mod_proxy.so?" /etc/httpd/conf/httpd.conf
+/usr/bin/sed -i "s?#LoadModule proxy_fcgi_module modules/mod_proxy_fcgi.so?LoadModule proxy_fcgi_module modules/mod_proxy_fcgi.so?" /etc/httpd/conf/httpd.conf
+/usr/bin/sed -i "s?^LoadModule mpm_event_module modules/mod_mpm_event.so?#LoadModule mpm_event_module modules/mod_mpm_event.so?" /etc/httpd/conf/httpd.conf
+/usr/bin/sed -i "s?#LoadModule mpm_prefork_module modules/mod_mpm_prefork.so?LoadModule mpm_prefork_module modules/mod_mpm_prefork.so?" /etc/httpd/conf/httpd.conf
+/usr/bin/sed -i "s?#LoadModule http2_module modules/mod_http2.so?LoadModule http2_module modules/mod_http2.so?" /etc/httpd/conf/httpd.conf
+/usr/bin/sed -i "s?#LoadModule rewrite_module modules/mod_rewrite.so?LoadModule rewrite_module modules/mod_rewrite.so?" /etc/httpd/conf/httpd.conf
+/usr/bin/sed -i "s?User http?User www?" /etc/httpd/conf/httpd.conf
+/usr/bin/sed -i "s?Group http?Group www?" /etc/httpd/conf/httpd.conf
+/usr/bin/cat <<'EOF' > /etc/httpd/conf/extra/php-fpm.conf
+DirectoryIndex index.htm index.html index.php
+<FilesMatch \.php$>
+  SetHandler "proxy:unix:/run/php-fpm/php-fpm.sock|fcgi://localhost/"
+</FilesMatch>
+EOF
+echo "
+# Added by inkVerb Verber #
+Include conf/extra/php-fpm.conf
+Protocols h2 http/1.1
+
+# Include the virtual host configurations:
+IncludeOptional /etc/httpd/sites-enabled/*.conf" >> /etc/httpd/conf/httpd.conf
+/usr/bin/mkdir -p /opt/verb/conf/webserver/httpd/sites-available /opt/verb/conf/webserver/httpd/sites-enabled /etc/httpd
+/bin/cp /opt/verb/inst/webserver/lamp-sites-available/*.conf /opt/verb/conf/webserver/httpd/sites-available/
+/usr/bin/cat <<'EOF' > /srv/http/index.htm
+<!DOCTYPE html>
+<html>
+<head><title>Hey, Boo!</title></head>
+<body><h1 style="text-align:center">Hey, Boo!</h1><hr></body>
+</html>
+EOF
+
+## PHP
+/usr/bin/pacman -S --noconfirm --needed php php-fpm
+if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
+
+## PHP-FPM
+### Security extensions
+echo 'security.limit_extensions = .php .html .htm .shtml' >> /etc/php/php-fpm.d/www.conf
+### Web user
+/usr/bin/sed -i "s?user = http?user = www?" /etc/php/php-fpm.d/www.conf
+/usr/bin/sed -i "s?group = http?group = www?" /etc/php/php-fpm.d/www.conf
+/usr/bin/sed -i "s?listen.owner = http?listen.owner = www?" /etc/php/php-fpm.d/www.conf
+/usr/bin/sed -i "s?listen.group = http?listen.group = www?" /etc/php/php-fpm.d/www.conf
+
+## PHP extras
+/usr/bin/pacman -S --noconfirm --needed pkg-config php-gd php-apcu nginx-mod-headers-more fcgiwrap php-imagick php-intl php-pspell
+if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
+
+## Services
+/usr/bin/systemctl enable php-fpm; wait
+/usr/bin/systemctl start php-fpm; wait
+/usr/bin/systemctl enable httpd; wait
+/usr/bin/systemctl start httpd; wait
+/usr/bin/systemctl enable cronie; wait
+/usr/bin/systemctl start cronie; wait
+
+# MySQL (viz MariaDB)
+/usr/bin/pacman -S --noconfirm --needed mariadb
+if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
+/usr/bin/mysql_install_db --user=mysql --basedir=/usr --datadir=/var/lib/mysql
+## Start it now so it works when we run the secure installation
+/usr/bin/systemctl enable mariadb; wait
+/usr/bin/systemctl start mariadb; wait
+## Set password before securing
+/usr/bin/mysql -e "SET PASSWORD FOR root@localhost = PASSWORD('${MYSQLPASS}');FLUSH PRIVILEGES;"
+## Secure
+/usr/bin/mysql_secure_installation <<EOF
+${MYSQLPASS}
+y
+n
+y
+y
+y
+y
+EOF
+## Alternate method of above Secure
+#/usr/bin/printf "${MYSQLPASS}\n y\n n\n y\n y\n y\n y\n" | /usr/bin/mysql_secure_installation
+
+## MySQL conf for Postfix Admin
+#/bin/echo "##### Added by inkVerb ######
+# This removes NO_ZERO_IN_DATE and NO_ZERO_DATE, which cause problems for
+# Postfix Admin code, from strict mode.
+#sql_mode=ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+##### End inkVerb #####
+#" >> /etc/my.cnf
+/usr/bin/systemctl restart mariadb; wait
+
+# Firewall
+/usr/bin/pacman -S --noconfirm --needed ufw
+if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
+/usr/bin/systemctl enable ufw; wait
+/usr/bin/systemctl start ufw; wait
+/usr/bin/ufw allow 80/tcp
+/usr/bin/ufw allow 443/tcp
+
+## tmp folder for a secure PHP
+/bin/mkdir -p /srv/www/tmp
+/bin/chmod -R 777 /srv/www/tmp
+
+## Create vip & vsftp web mod directories
+/bin/mkdir -p /srv/vip
+/bin/mkdir -p /srv/vip/_domains
+/bin/mkdir -p /srv/vip/_filecabinet
+/bin/mkdir -p /srv/vip/ftpusers
+/bin/mkdir -p /srv/vip/files
+/bin/mkdir -p /srv/vip/sql
+/bin/mkdir -p /srv/vip/repo
+/bin/mkdir -p /srv/vip/_webapps
+/bin/mkdir -p /srv/vip/_subs.vip
+/bin/ln -sfn /srv/vip /srv/www/
+/bin/ln -sfn /srv/vip /opt/verb/boss/
+/bin/ln -sfn /srv/vip /root/
+## And the domains directory for hosted domains
+/bin/mkdir -p /srv/www/verb
+/bin/mkdir -p /srv/www/domains
+/bin/mkdir -p /srv/www/forwards
+## Create inkVerb app directories
+/bin/mkdir -p /srv/www/email
+/bin/mkdir -p /srv/www/one
+/bin/mkdir -p /srv/www/vapps
+## Create directory for Ghost installs
+/bin/mkdir -p /srv/www/ghost
+## Own everything
+/bin/chown -R www:www /srv/www
+/bin/chown -R www:www /srv/vip
+
+# inkGet repo
+/bin/mkdir -p /opt/verb/repo
+
+# MySQL superuser to auto-create databases
+/usr/bin/mysql -uroot -p${MYSQLPASS} -e "
+CREATE USER mysqlboss@localhost;
+SET PASSWORD FOR mysqlboss@localhost=PASSWORD('${MYSQLBossPASS}');
+GRANT ALL PRIVILEGES ON *.* TO 'mysqlboss'@'localhost' IDENTIFIED BY '${MYSQLBossPASS}' WITH GRANT OPTION;
+FLUSH PRIVILEGES;"
+## Set the mysqlboss as the mysqlboss config file so the password is not in the line command
+/bin/echo "[client]
+user = mysqlboss
+password = ${MYSQLBossPASS}
+host = localhost" > /opt/verb/conf/mysqlboss.cnf
+
+# Monit
+/usr/bin/pacman -S --noconfirm --needed monit
+if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
+## Copy configs (These seem to have precedence, files in /etc/monit seem to conflict with them but may be u/bin/sed instead
+/bin/mkdir -p /etc/monit/monitrc.d
+sed -i "s?#  include /etc/monit.d?  include /etc/monit.d?" /etc/monitrc
+/bin/cp /opt/verb/conf/lib/monit/monitrc.d/acpid /etc/monit/monitrc.d/
+/bin/cp /opt/verb/conf/lib/monit/monitrc.d/nginx /etc/monit/monitrc.d/
+/bin/cp /opt/verb/conf/lib/monit/monitrc.d/memcached /etc/monit/monitrc.d/
+/bin/cp /opt/verb/conf/lib/monit/monitrc.d/mysql /etc/monit/monitrc.d/
+/bin/cp /opt/verb/conf/lib/monit/monitrc.d/sshd /etc/monit/monitrc.d/
+/bin/systemctl enable monit; wait
+/bin/systemctl start monit; wait
+
+# Server type
+/bin/echo 'ServerType="lamp"' > /opt/verb/conf/servertype
+
+# Pre-install Go
+/usr/bin/pacman -S --noconfirm --needed go
+if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
+
+# Pre-install Postfix server packages
+/usr/bin/pacman -S --noconfirm --needed postfix postfix-mysql dovecot pigeonhole mailutils cyrus-sasl opendkim msmtp
+if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
+
+# Pre-install inkCert-LE
+/usr/bin/pacman -S --noconfirm --needed certbot certbot-apache
+if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
+
+# Pre-install inkDNS
+/usr/bin/pacman -S --noconfirm --needed bind dnsutils certbot-dns-rfc2136
+if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
+
+# Pre-install vsftpd
+/usr/bin/pacman -S --noconfirm --needed vsftpd
+if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
+
+# Remove unneeded packages
+/usr/bin/pacman -Qdt --noconfirm
+/usr/bin/pacman -Scc --noconfirm
+/usr/bin/su worker -c '/usr/bin/yay -Scc --noconfirm'
+
+# Restart Server and reconnect at the new port
+/bin/echo "
+The Verber™ server has been made and is ready to run setup.
+
+You must first reboot the server using:
+
+reboot
+"
+
+# Delete this one-time script
+/bin/rm -f /opt/verb/inst/make-verber-*

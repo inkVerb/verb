@@ -1,0 +1,55 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This creates a new MySQL/MariaDB database root user with password
+
+# How to use:
+## ./mysqlnewboss [ database username ] [ database user password - optional ]
+
+usagenotes="This creates a new MySQL/MariaDB database root user with password"
+usageformat="mysqlnewboss [ database username ] [ database user password - optional]"
+usageexample="mysqlnewboss myGreatDBuser99
+mysqlnewboss myGreatDBuser99 Secret12345%@"
+hierarchy=( primary )
+vsetnames=( "Database username" )
+vsettypes=( isSQLUserCredential )
+voptnames=( "Database password" )
+vopttypes=( isSQLUserCredential )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( mysqlinstall )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/mysqlnewboss.replace" ]; then . /opt/verb/mods/mysqlnewboss.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/mysqlnewboss.before" ]; then . /opt/verb/mods/mysqlnewboss.before; fi # Precedes this script
+
+
+DBBUSER=$1
+if [ -z ${2} ]; then
+DBBPASSWORD=$(/usr/bin/pwgen -s -1 10)
+serfOUT="New Password: ${DBPASSWORD}"
+else
+DBBPASSWORD=$2
+fi
+
+if [ -f "/opt/verb/conf/mysqlnewboss.${DBBUSER}.cnf" ]; then
+  echo " already exists."; exit 0
+fi
+
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+GRANT ALL PRIVILEGES ON *.* TO '${DBBUSER}'@'localhost' IDENTIFIED BY '${DBBPASSWORD}' WITH GRANT OPTION;
+FLUSH PRIVILEGES;"
+
+/bin/echo "[client]
+user = ${DBBUSER}
+password = ${DBBPASSWORD}
+host = localhost
+" > /opt/verb/conf/mysqlnewboss.${DBBUSER}.cnf
+
+
+
+
+if [ -e "/opt/verb/mods/mysqlnewboss.after" ]; then . /opt/verb/mods/mysqlnewboss.after; fi # Follows this script

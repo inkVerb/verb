@@ -1,0 +1,42 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This deletes an ftp user and his vsftpd folder, home folder, web accessible folder, and all contents
+
+# How to use:
+## ./killftpuser [ user ]
+
+usagenotes="This deletes an ftp user and his vsftpd folder, home folder, web accessible folder, and all contents"
+usageformat="killftpuser [ user ]"
+usageexample="killftpuser johnftp"
+hierarchy=( primary )
+vsetnames=( "Username" )
+vsettypes=( isUsername )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( newftpuser )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/killftpuser.replace" ]; then . /opt/verb/mods/killftpuser.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/killftpuser.before" ]; then . /opt/verb/mods/killftpuser.before; fi # Precedes this script
+
+
+DELFTPUSER=$1
+
+# Delete the user
+/usr/bin/userdel ${DELFTPUSER}
+
+# Remove directories and ftpuers/ symlink
+/bin/rm -rf /srv/vsftpd/${DELFTPUSER}
+/bin/rm -rf /home/${DELFTPUSER}
+/bin/rm -f /srv/www/vip/ftpusers/${NEWFTPUSER}
+
+
+
+
+if [ -e "/opt/verb/mods/killftpuser.after" ]; then . /opt/verb/mods/killftpuser.after; fi # Follows this script

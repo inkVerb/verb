@@ -1,0 +1,16 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This sets the inkGet repo version list so that it will automatically update when the Verber is updated
+
+# How to use:
+## ./setrepoauto
+
+
+/bin/sed -i "s/InkGet_List=.*/InkGet_List=\"AUTO_UPDATE\"/g" /opt/verb/conf/serverinkget
+
+
+
+
+
+if [ -e "/opt/verb/mods/setrepoauto.after" ]; then . /opt/verb/mods/setrepoauto.after; fi # Follows this script

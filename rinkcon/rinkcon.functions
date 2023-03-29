@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# This lists a function for each rinkcon-allowed serf by the same name
+## This is only for DNS servers created using make-dns
+## Files in /srv/sns/VERBUSER.TLD/calls/
+## This basically evaluates the serf's arguments based in the validation functions in ink.functions
+
+
+isVerbUser() {
+	verbuser=${1}
+	if [ ! -d "/srv/sns/${verbuser}" ]; then
+		/usr/bin/echo "Impossible error :--: $(/usr/bin/date) :--: sns/${verbuser} does not exist, but ran this function" >> /opt/verb/rinkcon/log/exec.$(/usr/bin/date +%U)
+		exit 0
+	fi
+}
+
+inkdnsaddslave() {
+  isVerbUser ${1}
+	isDomain ${2} ${2}
+	/opt/verb/serfs/inkdnsaddslave $@
+}
+
+killinkdnsslavedns() {
+  isVerbUser ${1}
+	isDomain ${2} ${2}
+	/opt/verb/serfs/killinkdnsslavedns $@
+}
+
+inkdnsaddslaveallverbs() {
+  isVerbUser ${1}
+	/opt/verb/serfs/inkdnsaddslaveallverbs $@
+}
+
+killinkdnsslavednsallverbs() {
+  isVerbUser ${1}
+	/opt/verb/serfs/killinkdnsslavednsallverbs $@
+}

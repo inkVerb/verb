@@ -1,0 +1,79 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This sets up a WordPress vapp .htaccess file for use with multisite
+## Prerequisites: wpmuseton, install the "Network" from the dashboard
+## This must also be run with wpmusetconfig
+
+# How to use:
+## ./wpmuhtaccess [domain.tld] [optional - "dir"]
+
+# Eg:
+## ./wpmuhtaccess inkisaverb.com                  # will install to inkisaverb.com as the base, using subdomains of inkisaverb.com
+## ./wpmuhtaccess mysubsite.inkisaverb.com        # will install to mysubsite.inkisaverb.com as the base, using subdomains of mysubsite.inkisaverb.com
+## ./wpmuhtaccess inkisaverb.com dir              # will install to inkisaverb.com as the base, using directories of inkisaverb.com
+## ./wpmuhtaccess mysubsite.inkisaverb.com dir    # will install to mysubsite.inkisaverb.com as the base, using directories of mysubsite.inkisaverb.com
+
+
+WPDOMAIN=$1
+INSTTYPE=$2
+
+# Set the default setting
+if [ "${INSTTYPE}" != "dir" ]; then
+INSTTYPE="sub"; fi
+
+# Remove the old WordPress declarations
+/bin/sed -i '/^# BEGIN WordPress*/,/^# END WordPress/d' /srv/www/vapps/wp.${WPDOMAIN}/.htaccess
+
+# Add the settings
+## Subdomain install
+if [ "${INSTTYPE}" = "sub" ]; then
+# Put in the new .htaccess settings
+/bin/echo '# BEGIN WordPress ##inkVerb
+RewriteEngine On
+RewriteBase /
+RewriteRule ^index\.php$ - [L]
+
+# add a trailing slash to /wp-admin
+RewriteRule ^wp-admin$ wp-admin/ [R=301,L]
+
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+RewriteRule ^(wp-(content|admin|includes).*) $1 [L]
+RewriteRule ^(.*\.php)$ $1 [L]
+RewriteRule . index.php [L]
+# END WordPress' >> /srv/www/vapps/wp.${WPDOMAIN}/.htaccess
+
+## Finish
+/bin/echo ".htaccess file is set for http://${WPDOMAIN} multisite."
+fi
+
+## Directory install
+if [ "${INSTTYPE}" = "dir" ]; then
+# Put in the new .htaccess settings
+/bin/echo '# BEGIN WordPress ##inkVerb
+RewriteEngine On
+RewriteBase /
+RewriteRule ^index\.php$ - [L]
+
+# add a trailing slash to /wp-admin
+RewriteRule ^([_0-9a-zA-Z-]+/)?wp-admin$ $1wp-admin/ [R=301,L]
+
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+RewriteRule ^([_0-9a-zA-Z-]+/)?(wp-(content|admin|includes).*) $2 [L]
+RewriteRule ^([_0-9a-zA-Z-]+/)?(.*\.php)$ $2 [L]
+RewriteRule . index.php [L]
+# END WordPress' >> /srv/www/vapps/wp.${WPDOMAIN}/.htaccess
+
+## Finish
+/bin/echo ".htaccess file is set for http://${WPDOMAIN} multisite."
+fi
+
+
+
+
+
+if [ -e "/opt/verb/mods/wpmuhtaccess.after" ]; then . /opt/verb/mods/wpmuhtaccess.after; fi # Follows this script

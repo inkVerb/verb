@@ -1,0 +1,56 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This creates and adds a MySQL/MariaDB database using an existing vapp config
+## NOTE: the .ink should use the isVappConfFile function and complete the path itself, only taking the argument of the actual conf file name
+## The vapp config file must me located in ~/verb/conf
+## The sql database file must be at /srv/vip/sql/thedatabase.sql
+
+# How to use:
+## ./mysqlvappin [ vapp.config.file ]
+
+usagenotes="This creates and adds a MySQL/MariaDB database using an existing vapp config"
+usageformat="mysqlvappin [ path/to/database/vapp.config.file ]"
+usageexample="mysqlvappin /opt/verb/conf/vapp.wp.inkisaverb.com"
+hierarchy=( primary )
+vsetnames=( "Vapp conf file path" )
+vsettypes=( isFile )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( mysqlinstall )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/mysqlvappin.replace" ]; then . /opt/verb/mods/mysqlvappin.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/mysqlvappin.before" ]; then . /opt/verb/mods/mysqlvappin.before; fi # Precedes this script
+
+
+VAPPConf=$1
+
+# Include the vapp.config.file
+. /opt/verb/conf/${VAPPConf}
+
+# Check if the database file exists
+if [ ! -f "/srv/vip/sql/${APPDBASE}.sql" ]; then
+	echo "Database file must be in vip/sql/${APPDBASE}.sql"
+	exit 0
+fi
+
+# Create a dummy database as a frame
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+CREATE DATABASE ${APPDBASE};
+GRANT ALL PRIVILEGES ON ${APPDBASE}.* TO '${APPDDBUSR}'@'localhost' IDENTIFIED BY '${APPDDBPAS}';
+FLUSH PRIVILEGES;"
+
+# Import the database
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${APPDBASE} < /srv/vip/sql/${APPDBASE}.sql
+
+
+
+
+
+if [ -e "/opt/verb/mods/mysqlvappin.after" ]; then . /opt/verb/mods/mysqlvappin.after; fi # Follows this script

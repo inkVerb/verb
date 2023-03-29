@@ -1,0 +1,64 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This completely removes an inkVerb web app, it's database, and it's config file
+## WARNING: This does not backup the app, it just destroys it
+## This is useful if you want to reinstall the app afresh or to remove every trace of it.
+## This does not remove an actual domain, if a webapp was installed to it, but it will break the domain.
+
+# NOTE: If this is a domain app, such as WordPress or Drupal, etc., installed to a domain, after this, run: killdomain
+
+# How to use:
+## ./killvapp [ app namespace ]
+
+usagenotes="This completely removes a 'vapp' (inkVerb web app), it's database, and it's config file"
+usageformat="killvapp [ app namespace ]"
+usageexample="killvapp wp"
+hierarchy=( primary )
+vsetnames=( "Vapp name" )
+vsettypes=( isazAZ09lines )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( installVAPP )
+usedby=(  )
+useserfs=( killinkdnsonesub )
+useconfigs=( siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/killvapp.replace" ]; then . /opt/verb/mods/killvapp.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/killvapp.before" ]; then . /opt/verb/mods/killvapp.before; fi # Precedes this script
+
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/vapp.${APPNAME}
+
+APPNAME=$1
+
+# Kill the database and user
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+DROP DATABASE ${APPDBASE};
+DROP USER ${APPDDBUSR}@localhost;
+FLUSH PRIVILEGES;"
+
+# Kill the config
+/bin/rm -f /opt/verb/conf/vapp.${APPNAME}
+
+# Kill the directories
+/bin/rm -rf /srv/www/vapps/${APPNAME}
+/bin/rm -rf /srv/vip/_webapps/${APPNAME}
+/bin/rm -rf /srv/www/html/*.${APPNAME}
+/opt/verb/serfs/updatehtmlverbs
+
+# Finish
+/bin/echo "Taps...
+
+${APPNAME} is now dead.
+"
+
+
+
+
+if [ -e "/opt/verb/mods/killvapp.after" ]; then . /opt/verb/mods/killvapp.after; fi # Follows this script

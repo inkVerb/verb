@@ -1,0 +1,55 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This batch runs a revoke and uninstall of inkCert-Letsencrypt certs for a domain and replaces the Snakeoil certificate
+## It also applies to all subdomains for that domain
+## Prerequesite: inkcertdole (or both subscripts thereof: inkcertreqle, inkcertaddle)
+
+# How to use:
+## ./inkcertundole [ domain.tld NO SUBDOMAINS ]
+
+#Eg:
+## ./inkcertundole inkisaverb.com
+## ./inkcertundole YOURNAME.verb.blue
+
+usagenotes="This runs inkcertremovele for a domain and all its subdomains"
+usageformat="inkcertremoveallle [ domain.tld NO SUBDOMAINS ]"
+usageexample="inkcertremoveallle inkisaverb.com"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkcertinstall )
+prerequesite=( inkcertdole 'or' inkcertreqle inkcertaddle )
+usedby=(  )
+useserfs=( inkcertrevokele inkcertremoveallle )
+useconfigs=(  )	# List config files of any kind used in this serf, please preserve order of appearance
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkcertundole.replace" ]; then . /opt/verb/mods/inkcertundole.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkcertundole.before" ]; then . /opt/verb/mods/inkcertundole.before; fi # Precedes this script
+
+
+DOMAIN=$1
+
+# Check variables
+if [ -z ${1} ]; then
+/bin/echo "You need to specify a domain. Read the instructions."; exit 0
+fi
+
+# Revoke the certs
+/opt/verb/serfs/inkcertrevokele ${DOMAIN}
+
+# Remove the certs
+/opt/verb/serfs/inkcertremoveallle ${DOMAIN}
+
+# Remove mail certs
+/usr/bin/rm -f /etc/ssl/server/mail/${DOMAIN}.crt
+/usr/bin/rm -f /etc/ssl/server/mail/${DOMAIN}.key
+
+
+
+
+if [ -e "/opt/verb/mods/inkcertundole.after" ]; then . /opt/verb/mods/inkcertundole.after; fi # Follows this script

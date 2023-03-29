@@ -1,0 +1,17 @@
+#!/bin/sh
+#inkVerbSerf! verb.ink
+
+# This turns on a tld of the verb sites if it has been turned on, such as verb.red, but not the other verb.tld sites
+## This only works before running setup
+
+# How to use:
+## ./preverbon [tld]
+
+# Eg:
+## ./preverbon kiwi
+
+
+SITEOFF=$1
+
+/bin/sed -i "s/VERB${SITEOFF}=.*/VERB${SITEOFF}=true/g" /opt/verb/conf/servertldstatus286
+

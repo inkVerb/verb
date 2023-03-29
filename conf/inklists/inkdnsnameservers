@@ -1,0 +1,7 @@
+BaseHostNS="inkisaverb.com"
+DefaultNS1="ns1.inkisaverb.com"
+NameserverNS1IPv4="155.138.144.66"
+NameserverNS1IPv6="2001:19f0:b001:936:5400:4ff:fe5c:c100"
+DefaultNS2="ns2.inkisaverb.com"
+NameserverNS2IPv4="139.180.192.130"
+NameserverNS2IPv6="2001:19f0:7002:6b2:5400:4ff:fe5c:c13f"

@@ -1,0 +1,94 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This restores a back up of the entire email server, including folders and database, that was made using backupinkvmail
+## This only restores the users and their mailpfa as created in PostfixAdmin. Any PostfixAdmin setup will be overwritten.
+
+# Prereq: Postfix and PostfixAdmin installed, but PostfixAdmin setup is irrelevant. postinstallpfa can be run before or after this.
+
+# Instructions:
+## The file can have any name, even if you changed it from the original, as long as it ends in .vbak
+## The file MUST be uploaded to the "vip" folder, which can be done with vsftp installed and an ftpvip
+## This can be run before or after running installemail or installpostfix, etc.
+
+# How to use:
+## ./backupinkvmailrestore [filename]
+
+# Eg:
+## ./backupinkvmailrestore verb.inkvmail.hR21.vbak
+
+
+FILENAME=$1
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/servermailpath
+. /opt/verb/conf/servermailpass
+
+# Set the to-be-replaced ServerMailPassApg
+tbrSMPAPG=${ServerMailPassApg}
+
+# Unpack the file
+cd /srv/www/vip || exit 0
+/bin/mv ${FILENAME} inkvmail.txz
+/opt/verb/serfs/vtxzout inkvmail
+
+# Restore and include BOX settings in the sitemail config
+. /srv/www/vip/inkvmail/servermailpass-old
+/bin/sed -i "s/ServerMailPassApg.*/ServerMailPassApg=\"${ServerMailPassApg}\"/g" /opt/verb/conf/servermailpass
+. /opt/verb/conf/servermailpass
+
+# Restore the database
+/opt/verb/serfs/mysqlkilldb mail; wait
+/opt/verb/serfs/mysqlkilluser mail; wait
+/opt/verb/serfs/mysqlnewdb mail mail mailpass${ServerMailPassApg}; wait
+cd inkvmail || exit 0
+/opt/verb/serfs/mysqlin mail; wait
+/bin/rm -f mail.sql
+/bin/rm -f servermailpass-old
+/bin/rm -f servermailpath-old
+/bin/rm -f servernameip-old
+cd .. || exit 0
+
+# Move the inkvmail directory into place
+/bin/mv /srv/vmail /srv/vmail-backup 2> /dev/null
+/bin/cp -rf inkvmail /srv/vmail
+/bin/chmod -R 770 /srv/vmail
+/bin/chown -R vmail:vmail /srv/vmail
+/bin/rm -rf inkvmail
+
+# Postfix & Dovecot password
+/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${ServerMailPassApg}/" /etc/dovecot/dovecot-sql.conf.ext
+/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${ServerMailPassApg}/" /etc/amavis/conf.d/50-user
+/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${ServerMailPassApg}/" /etc/postfix/mysql_virtual_alias_domainaliases_maps.cf
+/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${ServerMailPassApg}/" /etc/postfix/mysql_virtual_alias_maps.cf
+/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${ServerMailPassApg}/" /etc/postfix/mysql_virtual_domains_maps.cf
+/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${ServerMailPassApg}/" /etc/postfix/mysql_virtual_mailbox_domainaliases_maps.cf
+/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${ServerMailPassApg}/" /etc/postfix/mysql_virtual_mailbox_maps.cf
+/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${ServerMailPassApg}/" /etc/postfix/mysql_virtual_sender_login_maps.cf
+## If PFA is already installed
+if [ -e "/etc/httpd/sites-enabled/po.${emailTLDURI}.conf" ] && [ -f "/srv/www/email/postfixadmin/config.local.php" ] && [ "${ServerPFAPath}" != "PFA_NOT_INSTALLED" ] && [ ${ServerPFAPath} != "PFA_NOT_ALLOWED" ]; then
+/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${ServerMailPassApg}/" /srv/www/email/postfixadmin/config.local.php; fi
+
+# Add/refresh base domains & addresses
+/opt/verb/serfs/inkvmailbaseaddrs
+
+# Setup/refresh PHP to send system mail
+/opt/verb/serfs/inkvmailsysmailbox
+
+# Restart stuff
+/bin/systemctl restart postfix
+/bin/systemctl restart dovecot
+/bin/systemctl restart amavis
+
+# Finish
+/bin/echo "
+The email server data has been restored from the backup and all its backup files removed from this server.
+"
+
+
+
+
+
+if [ -e "/opt/verb/mods/backupinkvmailrestore.after" ]; then . /opt/verb/mods/backupinkvmailrestore.after; fi # Follows this script

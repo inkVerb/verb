@@ -1,0 +1,58 @@
+#!/bin/sh
+#inkVerb! repo donjon dragon, verb.ink
+#set -e
+
+# This updates the OrangeHRM repo package
+
+# How to use:
+## ./orangehrm.updaterepo
+
+
+CVAPPNAME=orangehrm
+# Include the config files
+. /opt/verb/conf/serverinkget
+. /opt/verb/conf/inklists/repoverlist
+DISTVER="${orangehrm}"
+
+if [ $InkGet_Method != "ZJZ" ]; then
+  cd /opt/verb/repo; fi
+
+# Announce
+/bin/echo "Updating the OrangeHRM package to v${DISTVER}..."
+
+# Get the package
+/usr/bin/wget https://sourceforge.net/projects/orangehrm/files/stable/${DISTVER}/orangehrm-${DISTVER}.zip
+if [ ! -f "orangehrm-${DISTVER}.zip" ]; then
+/bin/echo "Failed download."; touch "${CVAPPNAME}.failed"
+exit 4; else
+/bin/rm -f ${CVAPPNAME}.failed; fi
+## Check the hash
+CHECKSHA=$(sha1sum orangehrm-${DISTVER}.zip)
+if [ "${CHECKSHA}" = "${orangehrmsha}  orangehrm-${DISTVER}.zip" ]; then
+/bin/echo "Download checks out."
+else
+/bin/echo "SHA check failed. The downloaded file is not what was expected."
+exit 4
+fi
+
+if [ $InkGet_Method != "ZJZ" ]; then
+  # Set it as the new package
+  /bin/rm -f ${CVAPPNAME}.legacy.txz
+  /usr/bin/touch ${CVAPPNAME}.txz
+  /bin/mv ${CVAPPNAME}.txz ${CVAPPNAME}.legacy.txz
+fi
+/usr/bin/echo "Extracting from vendor..."
+/usr/bin/unzip -q orangehrm-${DISTVER}.zip
+/bin/rm orangehrm-${DISTVER}.zip
+/bin/mv orangehrm-${DISTVER} ${CVAPPNAME}
+/bin/rm orangehrm-quick-start-guide.html
+if [ $InkGet_Method != "ZJZ" ]; then
+  /opt/verb/serfs.txzin ${CVAPPNAME}; wait
+  /bin/rm -rf ${CVAPPNAME}
+
+  # Make a record of current version
+  /bin/echo "${DISTVER}" > ${CVAPPNAME}.ver.${DISTVER}
+fi
+
+# Finish
+/bin/echo "Downloaded OrangeHRM v${DISTVER}."

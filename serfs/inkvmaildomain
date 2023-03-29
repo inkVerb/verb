@@ -1,0 +1,113 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This adds or updates a domain to the inkvmail database
+## quotas must be in MB! 10GB=10480, 5GB=5240, 2GB=2096, 1GB=1048, 0.5GB=524
+
+# How to use:
+## ./inkvmaildomain [ domain ] [ max quota - optional, default 10485760, placeholder: - ] [ box quota - optional, default 2097152 ] [ description - optional ]
+
+# Eg:
+## ./inkvmaildomain inkisaverb.com 10485760 524288 "Ink is a verb"
+## ./inkvmaildomain inkisaverb.com 10485760 524288
+## ./inkvmaildomain inkisaverb.com 10485760
+## ./inkvmaildomain inkisaverb.com - 524288 # set box quota, not max quota
+## ./inkvmaildomain inkisaverb.com
+
+usagenotes="This adds or updates a domain to the inkvmail database"
+usageformat="inkvmaildomain [ domain ] [ max quota - optional, default 10485760, placeholder: - ] [ box quota - optional, default 2097152 ] [ description - optional ]"
+usageexample="inkvmaildomain inkisaverb.com 10485760 524288 \"Ink is a verb\"
+inkvmaildomain inkisaverb.com 10485760 524288
+inkvmaildomain inkisaverb.com 10485760
+inkvmaildomain inkisaverb.com - 524288 # set box quota, not max quota
+inkvmaildomain inkisaverb.com"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=( "Max quota" "Box quota" "Description" )
+vopttypes=( isInt isInt isazAZ09punct )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installinkvmail )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servermailpath siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkvmaildomain.replace" ]; then . /opt/verb/mods/inkvmaildomain.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkvmaildomain.before" ]; then . /opt/verb/mods/inkvmaildomain.before; fi # Precedes this script
+
+
+# Check to see if inkvmail is installed
+. /opt/verb/conf/servermailpath
+if [ "$ServerMailStatus" != "VMAIL_SERVER" ]; then
+  /bin/echo "Vmail not installed, not adding $domain to PFA"
+  exit 0; fi
+
+domain="$1"
+# Domain Quota
+if [ -z "$2" ]; then
+maxquota="10480" # 10GB
+else
+maxquota="$2"
+fi
+# Box Quota
+if [ -z "$3" ]; then
+boxquota="1048" # 2GB
+else
+boxquota="$3"
+fi
+# Description
+if [ -z "$4" ]; then
+description="$1"
+else
+description="$4"
+fi
+
+# Include the config
+. /opt/verb/conf/siteurilist
+
+# Check that the domain hasn't been added
+query="$(/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "SELECT maxquota FROM domain WHERE domain='$domain';")"
+oldmaxquota="$(/bin/echo ${query} | sed "s/maxquota //")"
+# New entry
+if [ -z "${query}" ]; then
+
+  # Make the database entry
+  /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "INSERT INTO domain (domain, description, aliases, mailboxes, maxquota, quota, transport, backupmx, created, modified, active) VALUES ('$domain', '$description', '1000', '1000', '$maxquota', '$boxquota', 'virtual', '0', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);
+  INSERT INTO alias (address, goto, domain, created, modified, active) VALUES ('abuse@$domain', 'abuse@$nameURI', '$domain', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);
+  INSERT INTO alias (address, goto, domain, created, modified, active) VALUES ('hostmaster@$domain', 'hostmaster@$nameURI', '$domain', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);
+  INSERT INTO alias (address, goto, domain, created, modified, active) VALUES ('postmaster@$domain', 'postmaster@$nameURI', '$domain', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);
+  INSERT INTO alias (address, goto, domain, created, modified, active) VALUES ('webmaster@$domain', 'webmaster@$nameURI', '$domain', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);
+  INSERT INTO alias (address, goto, domain, created, modified, active) VALUES ('dmark@$domain', 'dmark@$nameURI', '$domain', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);"
+
+  # Finish
+  /bin/echo "Domain $domain added to inkvmail,
+  Max Quota: $maxquota
+  Box Quota: $boxquota"
+
+# Update old entry
+elif [ -n "$2" ]; then
+  if [ "$2" = "-" ]; then
+    newmaxquota=$oldmaxquota
+  else
+    newmaxquota=$maxquota
+  fi
+  if [ -n "$3" ]; then
+    newboxquota=$boxquota
+  else
+    query="$(/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "SELECT quota FROM domain WHERE domain='$domain';")"
+    newboxquota="$(/bin/echo ${query} | sed "s/quota //")"
+  fi
+  /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "UPDATE domain SET description='$description', maxquota='$newmaxquota', quota='$newboxquota', modified=CURRENT_TIMESTAMP WHERE domain='$domain';"
+
+# Oops, tried to add domain with no changes
+else
+  # Finish
+  /bin/echo "Domain $domain has already been added, doing nothing"
+fi
+
+
+
+
+if [ -e "/opt/verb/mods/inkvmaildomain.after" ]; then . /opt/verb/mods/inkvmaildomain.after; fi # Follows this script

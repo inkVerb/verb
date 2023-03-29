@@ -1,0 +1,81 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This script deletes and revokes the inkCert-Letsencrypt certs for a specified domain
+## It also applies to all subdomains for that domain
+## Prerequesite: inkcertdole (or both subscripts thereof: inkcertreqle, inkcertaddle)
+## This is intended as a subscript of inkcertundole
+
+# How to use:
+## ./inkcertrevokele [ domain.tld NO SUBDOMAINS ]
+
+#Eg:
+## ./inkcertrevokele inkisaverb.com
+## ./inkcertrevokele YOURNAME.verb.blue
+
+usagenotes="This script deletes and revokes the inkCert-Letsencrypt certs for a specified domain"
+usageformat="inkcertrevokele [ domain.tld NO SUBDOMAINS ]"
+usageexample="inkcertrevokele inkisaverb.com"
+hierarchy=( tertiary  )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkcertinstall )
+prerequesite=( inkcertdole 'or' inkcertreqle inkcertaddle )
+usedby=( inkcertundole )
+useserfs=( inkcertdeletecble )
+useconfigs=(  )	# List config files of any kind used in this serf, please preserve order of appearance
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkcertrevokele.replace" ]; then . /opt/verb/mods/inkcertrevokele.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkcertrevokele.before" ]; then . /opt/verb/mods/inkcertrevokele.before; fi # Precedes this script
+
+
+DOMAIN=$1
+
+# Include and check the inkCert domain config
+## Verify that the domain is installed
+if [ ! -f /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN} ]; then
+/bin/echo "Sorry, Bucko. ${DOMAIN} is not even installed.
+
+Why revoke a cert for a domain that isn't even installed here?
+"; exit 0
+fi
+## Domain cert status
+. /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN}
+if [ "${InkCerted}" != "DONE_LE" ]; then
+  if [ "${InkCerted}" = "DONE_CB" ]; then
+    /bin/echo "inkCert used inkCert Certbot for ${DOMAIN}. This is for inkCert-Letsencrypt.
+
+Instead use: inkcertundocb (or, individually: inkcertrevokecb, inkcertremovecb)
+"; exit 0
+  elif [ "${InkCerted}" = "DONE_SC" ]; then
+    /bin/echo "inkCert used inkCert Self-Cert for ${DOMAIN}. This is for inkCert-Letsencrypt.
+
+Instead use: inkcertundosc (or, individually: inkcertrevokesc, inkcertremovesc)
+"; exit 0
+  fi
+  /bin/echo "inkCert is not setup for ${DOMAIN}, it only has Snakeoil.
+
+There is nothing to revoke until you run inkcertdo or inkcertdole... And then, certs are cool. Why would you want to revoke them? Are you just revoking stuff at random?
+"; exit 0
+fi
+
+# Run the LE revoke
+/usr/local/bin/certbot revoke --cert-path /etc/inkcert/le/live/${DOMAIN}/cert.pem
+# Additional options if not doing certonly: --no-redirect --no-hsts --no-uir
+# https://certbot.eff.org/docs/using.html#command-line
+# https://certbot.eff.org/#ubuntuxenial-apache
+
+## Remove the certs
+/opt/verb/serfs/inkcertdeletecble ${DOMAIN}
+
+# Echo alliswell
+/bin/echo "Unless there is an error message above, the certs should have been revoked from the CA, now uninstall them..."
+
+
+
+
+if [ -e "/opt/verb/mods/inkcertrevokele.after" ]; then . /opt/verb/mods/inkcertrevokele.after; fi # Follows this script

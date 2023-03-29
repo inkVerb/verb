@@ -1,0 +1,40 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This deletes a boss and its home folder.
+
+# How to use:
+## ./killboss [ user ]
+
+usagenotes="This deletes a 'boss' sudo user and its home folder"
+usageformat="killboss [ user ]"
+usageexample="killboss inkisaverb.com"
+hierarchy=( primary )
+vsetnames=( "Username" )
+vsettypes=( isUsername )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( newboss )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servermailpath inkdnsconf inkcertstatus )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/killboss.replace" ]; then . /opt/verb/mods/killboss.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/killboss.before" ]; then . /opt/verb/mods/killboss.before; fi # Precedes this script
+
+
+DELBossUSER=$1
+
+# Delete the user
+/usr/bin/userdel ${DELBossUSER}
+
+# Remove directories and web symlink
+/bin/rm -rf /home/${DELBossUSER}
+
+
+
+
+if [ -e "/opt/verb/mods/killboss.after" ]; then . /opt/verb/mods/killboss.after; fi # Follows this script

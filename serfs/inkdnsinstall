@@ -1,0 +1,113 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This installs Bind DNS for managing DNS records in the inkDNS zone file on the server
+## This makes the server itself tha authoritative DNS server with a default/optional backup serfer
+## If the backup server is not specified, the default will be used, which should be used unless this is a domain mod
+
+# How to use:
+## ./inkdnsinstall
+
+usagenotes="This installs the inkDNS Bind package for managing DNS records on the server"
+usageformat="inkdnsinstall"
+usageexample="inkdnsinstall"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkdnsinstall )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servernameip servertype inkcertstatus )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdnsinstall.replace" ]; then . /opt/verb/mods/inkdnsinstall.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdnsinstall.before" ]; then . /opt/verb/mods/inkdnsinstall.before; fi # Precedes this script
+
+
+# Check if installed
+. /opt/verb/conf/inkdnsconf
+if [ "${InkDNSStat}" = "INSTALLED" ]; then
+  /bin/echo "inkDNS already installed."
+  exit 0
+fi
+
+# Set the Inkers to defaults (only if not already set)
+. /opt/verb/conf/servernameip
+if [ "${ServerNS1DNS}" = "NOT_SET" ] || [ "${ServerNS1IPv4}" = "NOT_SET" ] || [ "${ServerNS1IPv6}" = "NOT_SET" ]; then
+  /opt/verb/serfs/inkdnssetns1
+fi
+if [ "${ServerNS2DNS}" = "NOT_SET" ] || [ "${ServerNS2IPv4}" = "NOT_SET" ] || [ "${ServerNS2IPv6}" = "NOT_SET" ]; then
+  /opt/verb/serfs/inkdnssetns2
+fi
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+
+# Already done in make-verber-*
+# Install Bind
+#/usr/bin/pacman -S --noconfirm --needed bind certbot-dns-rfc2136
+
+# Config
+/bin/cp -f /etc/named.conf /etc/named.conf.original
+/bin/cp -f /opt/verb/conf/inkdns/named.conf /etc/
+/usr/bin/chown root:named /etc/named.conf
+/usr/bin/chown 644 /etc/named.conf
+/usr/bin/mkdir -p /opt/verb/conf/inkdns/parked
+## Make sure our included files exist
+/usr/bin/touch /var/named/named.conf.rdns
+/usr/bin/touch /var/named/named.conf.verb
+## Add the Certbot key to the named config
+/usr/bin/echo $(tsig-keygen -a HMAC-SHA512 inkCertbotKey) >> /etc/named.conf
+## Logging (permissions are finicky, so create and own)
+/usr/bin/touch /var/log/named.log
+/usr/bin/chown named:named /var/log/named.log
+
+# Set the NS domains
+## Verber Domains
+/bin/sed -i "s/ns1\.DNsdnsDomainAIN286/${ServerNS1DNS}/g" /opt/verb/conf/inkdns/inkzones/db.*
+/bin/sed -i "s/ns2\.DNsdnsDomainAIN286/${ServerNS2DNS}/g" /opt/verb/conf/inkdns/inkzones/db.*
+## Hosted domain template
+/bin/sed -i "s/ns1\.DNsdnsDomainAIN286/${ServerNS1DNS}/g" /opt/verb/conf/inkdns/db.dnsdomain
+/bin/sed -i "s/ns2\.DNsdnsDomainAIN286/${ServerNS2DNS}/g" /opt/verb/conf/inkdns/db.dnsdomain
+## Any hosted domains
+if [ -f "/opt/verb/conf/inkdns/zones/db.*" ]; then
+  /bin/sed -i "s/ns1\.DNsdnsDomainAIN286/${ServerNS1DNS}/g" /opt/verb/conf/inkdns/zones/db.*
+  /bin/sed -i "s/ns2\.DNsdnsDomainAIN286/${ServerNS2DNS}/g" /opt/verb/conf/inkdns/zones/db.*
+fi
+
+# DNS serial number
+/bin/echo '0 0 * * * root /opt/verb/donjon/rmserial.sh > /dev/null 2>&1' > /etc/cron.d/dnsserial
+/bin/chmod 0644 /etc/cron.d/dnsserial
+/bin/echo '#!/bin/bash
+/bin/rm -f /opt/verb/conf/inkdns/serial' > /opt/verb/donjon/rmserial.sh
+/bin/chmod 750 /opt/verb/donjon/rmserial.sh
+
+# Allow the port
+#/usr/bin/ufw allow 53 # Not that simple
+/usr/bin/ufw allow dns
+/usr/bin/ufw allow 53/tcp
+/usr/bin/ufw allow 53/udp
+
+# Restart
+/bin/systemctl enable named; wait
+/bin/systemctl start named; wait
+
+# Config
+/bin/sed -i "s/InkDNSStat=.*/InkDNSStat=\"INSTALLED\"/" /opt/verb/conf/inkdnsconf
+
+# Refresh all records
+/opt/verb/serfs/inkdnsrefreshbind
+
+# Finish
+/bin/echo "inkDNS installed."
+/opt/verb/serfs/showdns
+
+
+
+
+if [ -e "/opt/verb/mods/inkdnsinstall.after" ]; then . /opt/verb/mods/inkdnsinstall.after; fi # Follows this script

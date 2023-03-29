@@ -1,0 +1,21 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This removes the Roundcube backup generated when updating Roundcube
+# Prereq: Roundcube was updated via updaterc and is functioning properly
+
+# How to use:
+## ./updatercrmvbak
+
+
+/bin/rm -rf /srv/www/email/roundcube.vbak
+
+/bin/echo "
+Roudcube update backup removed.
+"
+
+
+
+
+
+if [ -e "/opt/verb/mods/updatercrmvbak.after" ]; then . /opt/verb/mods/updatercrmvbak.after; fi # Follows this script

@@ -1,0 +1,53 @@
+#!/bin/sh
+#inkVerb! repo donjon dragon, verb.ink
+#set -e
+
+# This updates the NextCloud repo package
+
+# How to use:
+## ./nextcloud.updaterepo
+
+
+CVAPPNAME=nextcloud
+# Include the config files
+. /opt/verb/conf/serverinkget
+
+if [ $InkGet_Method != "ZJZ" ]; then
+  cd /opt/verb/repo; fi
+
+# Announce
+/bin/echo "Updating the NextCloud package to the latest version..."
+
+# Get the package
+/usr/bin/wget https://download.nextcloud.com/server/releases/latest.tar.bz2
+if [ ! -f "latest.tar.bz2" ]; then
+/bin/echo "Failed download."; touch "${CVAPPNAME}.failed"
+exit 4; else
+/bin/rm -f ${CVAPPNAME}.failed; fi
+## Check the hash
+/usr/bin/wget https://download.nextcloud.com/server/releases/latest.tar.bz2.sha256
+CHECKSHA=$(shasum -a 256 -c latest.tar.bz2.sha256 < latest.tar.bz2)
+if [ "${CHECKSHA}" = "latest.tar.bz2: OK" ]; then
+/bin/echo "Download checks out."
+/bin/rm latest.tar.bz2.sha256
+else
+/bin/echo "SHA check failed. Dunno why."
+exit 4
+fi
+
+if [ $InkGet_Method != "ZJZ" ]; then
+  # Set it as the new package
+  /bin/rm -f ${CVAPPNAME}.legacy.txz
+  /usr/bin/touch ${CVAPPNAME}.txz
+  /bin/mv ${CVAPPNAME}.txz ${CVAPPNAME}.legacy.txz
+fi
+/usr/bin/echo "Extracting from vendor..."
+/usr/bin/tar xf latest.tar.bz2
+/bin/rm latest.tar.bz2
+if [ $InkGet_Method != "ZJZ" ]; then
+  /opt/verb/serfs.txzin ${CVAPPNAME}; wait
+  /bin/rm -rf ${CVAPPNAME}
+fi
+
+# Finish
+/bin/echo "Downloaded the latest version of NextCloud."

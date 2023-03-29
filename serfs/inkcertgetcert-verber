@@ -1,0 +1,39 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This communicates with the inkCert CA Inker to send the csr and retrieve the cert package
+## This runs a file remotely on the Inker server
+
+# How to use:
+## ./inkcertgetcert-verber [name of info profile] [domain]
+
+# Eg:
+## ./inkcertgetcert-verber picprofile poetryiscode.com
+## ./inkcertgetcert-verber inkVerbProfile mysub.inkisaverb.com
+
+
+INFPROFILE=$1
+DOMAIN=$2
+
+# Verify that the domain is installed
+if [ ! -f /opt/verb/conf/inkcert/cli-ini/siteinkcert-${DOMAIN} ]; then
+/bin/echo "Sorry, Bucko. ${DOMAIN} is not installed yet.
+
+Do that first, then get back to me.
+"; exit 0
+fi
+
+# Verify that the csr exists
+
+
+# Push the csr to the inkCert server
+
+
+# Tell the inkCert Server to do its job
+# inkNet run on Inker: verber-inkcertreceivecsr
+
+
+
+
+
+if [ -e "/opt/verb/mods/inkcertgetcert-verber.after" ]; then . /opt/verb/mods/inkcertgetcert-verber.after; fi # Follows this script

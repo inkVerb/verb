@@ -1,0 +1,52 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This creates a user with more powers than a normal ftp user, owning a unique ftp folder containing a symlink to the global vip/_filecabinet and the "files.vip" web accessible folder available at files.NAME.verb.vip/FTPFILERUSERNAME
+## Requires installvsftpd
+
+# How to use:
+## ./newftpfiler [ new user ] [ new user password ]
+
+
+usagenotes="This creates a user with more powers than a normal ftp user, owning a unique ftp folder containing a symlink to the global vip/_filecabinet and the files.vip/ web accessible folder available at files.NAME.verb.vip/FTPFILERUSERNAME"
+usageformat="newftpfiler [ new user ] [ new user password ]"
+usageexample="newftpfiler superjohn NotSecure125"
+hierarchy=( primary )
+vsetnames=( "Username" "Password" )
+vsettypes=( isUsername string_quote )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installvsftpd )
+prerequesite=(  )
+usedby=(  )
+useserfs=( newftpuser )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/newftpfiler.replace" ]; then . /opt/verb/mods/newftpfiler.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/newftpfiler.before" ]; then . /opt/verb/mods/newftpfiler.before; fi # Precedes this script
+
+
+NEWFTPFILER=$1
+NEWUSERPASS=$2
+
+# Create the user with vsftpd
+/opt/verb/serfs/newftpuser ${NEWFTPUSER} ${NEWUSERPASS}
+
+# Create a filer _domains directory
+/bin/mkdir -p /srv/vsftpd/${NEWFTPUSER}/_domains
+
+# Let the filer have a vip/_filecabinet link
+/bin/ln -sfn /srv/vip/_filecabinet /srv/vsftpd/${NEWFTPUSER}/
+
+# Let the filer have a vip/sql link
+/bin/ln -sfn /srv/vip/sql /srv/vsftpd/${NEWFTPFILER}/
+
+# Own the user's web accessible symlink folder
+/bin/chown -R www:www /srv/www/vip/files/${NEWFTPFILER}
+
+
+
+
+if [ -e "/opt/verb/mods/newftpfiler.after" ]; then . /opt/verb/mods/newftpfiler.after; fi # Follows this script

@@ -1,0 +1,67 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This backs up the installed Nextcloud webapp data folder by exporting the database, and siteconfig file into one downloadable vbak file in the "vip" folder and symlinked to the main site domain.
+## This is separate from other backups because Nextcloud's developers make exporting difficult by more or less "welding" the app to the server. But, the export file is also smaller.
+## This mainly backs up the user files and database, not the app itself.
+
+# How to use:
+## ./backupnextcloud [securename 0-9, a-z, and A-Z only, optional] [-nl for no link, optional dep]
+
+# Eg:
+## ./backupnextcloud 583
+## ./backupnextcloud 7aJk -nl
+## ./backupnextcloud b
+
+
+if [ -z "$1" ]; then
+SECNAME=$(/usr/bin/pwgen -s -1 12)
+else
+SECNAME=$1
+fi
+
+# Check if installed
+if [ -z "/opt/verb/conf/vapp.nextcloud" ]; then
+/bin/echo "Nextcloud not installed. Nothing to backup."
+exit 0; fi
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/vapp.nextcloud
+
+# Export the database
+cd /srv/www/vapps/nextcloud/data || exit 0
+/opt/verb/serfs/mysqlvappex vapp.nextcloud; wait
+
+# Backup the config
+/bin/cp /opt/verb/conf/vapp.nextcloud /srv/www/vapps/nextcloud/data/
+
+# Pack the data directory
+cd /srv/www/vapps/nextcloud || exit 0
+/opt/verb/serfs/vtxzin data
+/bin/mv data.txz verb.nextcloud.${SECNAME}.vbak
+/bin/mv verb.nextcloud.${SECNAME}.vbak /srv/www/vip/
+
+# Finish
+if [ "$2" = "-nl" ]; then
+/bin/echo "nextcloud has been backed up to the 'vip' folder.
+
+Note that the app remains live.
+"
+exit 0
+fi
+
+/bin/ln -sfn /srv/www/vip/verb.nextcloud.${SECNAME}.vbak /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/
+/bin/chown -R www:www /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/verb.nextcloud.${SECNAME}.vbak
+/bin/echo "Nextcloud has been backed up to the 'vip' folder and can also be downloaded at:
+
+http://${ServerServePath}/verb.nextcloud.${SECNAME}.vbak
+
+Note that the app remains live.
+"
+
+
+
+
+if [ -e "/opt/verb/mods/backupnextcloud.after" ]; then . /opt/verb/mods/backupnextcloud.after; fi # Follows this script

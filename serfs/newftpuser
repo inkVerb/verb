@@ -1,0 +1,67 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This creates a normal ftp user, owning a unique ftp folder accessible at files.NAME.verb.vip/FTPUSERNAME/
+## Requires installvsftpd and activatefiles on
+
+# How to use:
+## ./newftpuser [ new user ] [ new user password ]
+
+usagenotes="This creates a normal ftp user, owning a unique ftp folder accessible at files.NAME.verb.vip/FTPUSERNAME/"
+usageformat="newftpuser [ new user ] [ new user password ]"
+usageexample="newftpuser userjohn NotSecure125"
+hierarchy=( primary )
+vsetnames=( "Username" "Password" )
+vsettypes=( isUsername string_quote )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installvsftpd )
+prerequesite=( activatefiles )
+usedby=( newftpfiler newftpvip  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/newftpuser.replace" ]; then . /opt/verb/mods/newftpuser.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/newftpuser.before" ]; then . /opt/verb/mods/newftpuser.before; fi # Precedes this script
+
+
+NEWFTPUSER=$1
+NEWUSERPASS=$2
+
+# Check if vsftpd is installed
+if [ ! -d "/srv/vsftpd" ]; then
+  echo "Install vsftpd first with installvsftpd"
+  exit 0
+fi
+
+# Check for an existing vsftp dir
+if [ -e "/srv/vsftpd/${NEWFTPUSER}" ]; then
+  echo "That user already esists."
+  exit 0
+fi
+
+# Create the user with password
+/usr/bin/groupadd ${NEWFTPUSER}
+/usr/bin/useradd -g ${NEWFTPUSER} ${NEWFTPUSER}
+/bin/echo "${NEWFTPUSER}:${NEWUSERPASS}" | chpasswd
+
+# Change the user's directory to the vsftpd vips directory
+/bin/mkdir /srv/vsftpd/${NEWFTPUSER}/files.vip
+/usr/bin/usermod -d /srv/vsftpd/${NEWFTPUSER} ${NEWFTPUSER}
+restart vsftpd
+
+# Link to the vip/ftpusers/ folder
+/bin/ln -sfn /srv/vsftpd/${NEWFTPUSER} /srv/www/vip/ftpusers/
+
+# Create the link to access the folder via web
+/bin/ln -sfn /srv/vsftpd/${NEWFTPUSER}/files.vip /srv/www/vip/files/${NEWFTPUSER}
+
+# Own the user's web accessible symlink folder
+/bin/chown -R www:www /srv/www/vip/files/${NEWFTPUSER}
+
+
+
+
+if [ -e "/opt/verb/mods/newftpuser.after" ]; then . /opt/verb/mods/newftpuser.after; fi # Follows this script

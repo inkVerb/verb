@@ -1,0 +1,131 @@
+# Default settings (min version, comments removed)
+compatibility_level = 3.6
+queue_directory = /var/spool/postfix
+command_directory = /usr/bin
+daemon_directory = /usr/lib/postfix/bin
+data_directory = /var/lib/postfix
+mail_owner = postfix
+unknown_local_recipient_reject_code = 550
+alias_maps = hash:/etc/postfix/aliases
+alias_database = $alias_maps
+debug_peer_level = 2
+debugger_command =
+	 PATH=/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin
+	 ddd $daemon_directory/$process_name $process_id & sleep 5
+#sendmail_path = /usr/bin/msmtp -C /etc/msmtprc -t # We don't need this, so sendmail can still do its job; PHP using this is enough
+sendmail_path = /usr/bin/sendmail
+newaliases_path = /usr/bin/newaliases
+mailq_path = /usr/bin/mailq
+setgid_group = postdrop
+html_directory = no
+manpage_directory = /usr/share/man
+sample_directory = /etc/postfix
+readme_directory = /usr/share/doc/postfix
+inet_protocols = ipv4
+meta_directory = /etc/postfix
+shlib_directory = /usr/lib/postfix
+maillog_file = /var/log/maillog
+
+
+# SSL certs (symlinks)
+#smtpd_tls_chain_files = /etc/ssl/server/mail/vmail.key, /etc/ssl/server/mail/vmail.crt
+# Snakeoil Certs
+smtpd_tls_chain_files = /etc/ssl/server/server.key, /etc/ssl/server/server.crt
+# For multiple domains
+#smtp_sender_dependent_authentication = yes
+
+
+# SNI
+tls_server_sni_maps = hash:/etc/postfix/virtual_ssl.map
+
+# TLS
+smtp_use_tls = yes
+smtpd_tls_security_level = may
+smtp_tls_security_level = may
+smtpd_tls_loglevel = 1
+smtp_tls_loglevel = 1
+smtpd_tls_auth_only = no
+##smtpd_tls_auth_only = yes
+smtpd_sasl_security_options = noanonymous
+smtpd_sasl_tls_security_options = $smtpd_sasl_security_options
+smtpd_tls_received_header = yes
+#smtpd_recipient_restrictions = reject_unauth_pipelining, permit_mynetworks, permit_sasl_authenticated, reject_non_fqdn_recipient, reject_unknown_recipient_domain, reject_unauth_destination, permit
+#smtpd_relay_restrictions = reject_unauth_pipelining, permit_mynetworks, permit_sasl_authenticated, reject_non_fqdn_recipient, reject_unknown_recipient_domain, reject_unauth_destination, permit
+smtpd_recipient_restrictions = permit_mynetworks, permit_sasl_authenticated, reject_unauth_destination
+smtpd_relay_restrictions = permit_mynetworks, permit_sasl_authenticated, reject_unauth_destination
+#smtpd_sasl_local_domain = $mydomain
+smtpd_sasl_local_domain =
+smtpd_sasl_auth_enable = yes
+smtpd_sasl_type = dovecot
+smtpd_sasl_path = /var/spool/postfix/private/auth
+smtpd_tls_exclude_ciphers = no
+
+# Outside Arch Wiki
+smtpd_use_tls = yes
+smtpd_tls_mandatory_protocols=!SSLv2,!SSLv3
+smtp_tls_note_starttls_offer = yes
+smtpd_tls_session_cache_timeout = 3600s
+tls_random_source = dev:/dev/urandom
+smtpd_helo_restrictions = permit_mynetworks, reject_invalid_hostname, warn_if_reject reject_non_fqdn_hostname, permit
+smtpd_sender_restrictions = permit_mynetworks, reject_authenticated_sender_login_mismatch, permit_sasl_authenticated, warn_if_reject reject_non_fqdn_sender, reject_unknown_sender_domain, reject_unauth_pipelining, permit
+smtpd_client_restrictions = reject_rbl_client sbl.spamhaus.org, reject_rbl_client blackholes.easynet.nl
+smtpd_data_restrictions = reject_unauth_pipelining
+smtpd_helo_required = yes
+smtpd_delay_reject = yes
+disable_vrfy_command = yes
+
+# Delay
+maximal_queue_lifetime = 7d
+minimal_backoff_time = 1000s
+maximal_backoff_time = 8000s
+smtp_helo_timeout = 60s
+smtpd_recipient_limit = 16
+smtpd_soft_error_limit = 3
+smtpd_hard_error_limit = 12
+smtp_destination_concurrency_limit = 1
+smtp_destination_rate_delay = 2s
+smtp_extra_recipient_limit = 25
+
+# Host and delivery
+myhostname = hostURI286
+myorigin = $myhostname
+mydestination =
+mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
+mailbox_size_limit = 0
+message_size_limit = 100240000
+recipient_delimiter = +
+inet_interfaces = all
+mynetworks_style = host
+
+# Vmail
+relay_domains = $mydestination
+virtual_mailbox_base = /srv/vmail
+virtual_mailbox_maps = proxy:mysql:/etc/postfix/virtual_mailbox_maps.cf, proxy:mysql:/etc/postfix/virtual_mailbox_domainaliases_maps.cf
+virtual_alias_maps = proxy:mysql:/etc/postfix/virtual_alias_maps.cf, proxy:mysql:/etc/postfix/virtual_alias_domains_maps.cf
+virtual_alias_domains = proxy:mysql:/etc/postfix/virtual_alias_domains.cf
+virtual_mailbox_domains = proxy:mysql:/etc/postfix/virtual_mailbox_domains.cf
+smtpd_sender_login_maps = proxy:mysql:/etc/postfix/virtual_sender_login_maps.cf
+virtual_mailbox_limit = 512000000
+virtual_minimum_uid = 5000
+virtual_uid_maps = static:5000
+virtual_gid_maps = static:5000
+local_transport = virtual
+local_recipient_maps = $virtual_mailbox_maps
+#transport_maps = hash:/etc/postfix/transport # This breaks everything and isn't necessary
+# Arch recommended: virtual, failed using legacy "dovecot"
+virtual_transport = virtual
+#virtual_transport = dovecot
+
+# Dovecot
+dovecot_destination_recipient_limit = 1
+
+# Header (remove super-private details)
+smtp_header_checks = regexp:/etc/postfix/smtp_header_checks
+header_checks = regexp:/etc/postfix/header_checks
+enable_original_recipient = no
+
+# DKIM
+milter_default_action = accept
+milter_protocol = 6
+smtpd_milters = inet:localhost:8891
+non_smtpd_milters = inet:localhost:8891

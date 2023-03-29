@@ -1,0 +1,59 @@
+#!/bin/sh
+#inkVerb! repo donjon dragon, verb.ink
+#set -e
+
+# This updates the OrangeHRM repo package
+
+# How to use:
+## ./mediawiki.updaterepo
+
+
+CVAPPNAME=mediawiki
+# Include the config files
+. /opt/verb/conf/serverinkget
+. /opt/verb/conf/inklists/repoverlist
+DISTVER="${mediawiki}"
+
+if [ $InkGet_Method != "ZJZ" ]; then
+  cd /opt/verb/repo; fi
+
+# Announce
+/bin/echo "Updating the MediaWiki package to v${DISTVER}..."
+
+# Get the package
+## Thanks StackOverflow (https://stackoverflow.com/questions/52455153/how-to-remove-after-second-period-in-a-string-using-sed)
+SHRTVER="$(/bin/echo "$DISTVER" | sed 's/\.[^.]\+$//')"
+/usr/bin/wget https://releases.wikimedia.org/mediawiki/${SHRTVER}/mediawiki-${DISTVER}.tar.gz
+if [ ! -f "mediawiki-${DISTVER}_all.tar.gz" ]; then
+/bin/echo "Failed download."; touch "${CVAPPNAME}.failed"
+exit 4; else
+/bin/rm -f ${CVAPPNAME}.failed; fi
+## Check the hash
+CHECKSHA=$(sha1sum mediawiki-${DISTVER}.tar.gz)
+if [ "${CHECKSHA}" = "${mediawikisha}  mediawiki-${DISTVER}.tar.gz" ]; then
+/bin/echo "Download checks out."
+else
+/bin/echo "SHA check failed. The downloaded file is not what was expected."
+exit 4
+fi
+
+if [ $InkGet_Method != "ZJZ" ]; then
+  # Set it as the new package
+  /bin/rm -f ${CVAPPNAME}.legacy.txz
+  /usr/bin/touch ${CVAPPNAME}.txz
+  /bin/mv ${CVAPPNAME}.txz ${CVAPPNAME}.legacy.txz
+fi
+/usr/bin/echo "Extracting from vendor..."
+/usr/bin/tar xf mediawiki-${DISTVER}.tar.gz
+/bin/rm mediawiki-${DISTVER}.tar.gz
+/bin/mv mediawiki-${DISTVER} ${CVAPPNAME}
+if [ $InkGet_Method != "ZJZ" ]; then
+  /opt/verb/serfs.txzin ${CVAPPNAME}; wait
+  /bin/rm -rf ${CVAPPNAME}
+
+  # Make a record of current version
+  /bin/echo "${DISTVER}" > ${CVAPPNAME}.ver.${DISTVER}
+fi
+
+# Finish
+/bin/echo "Downloaded MediaWiki v${DISTVER}."

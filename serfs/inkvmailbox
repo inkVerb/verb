@@ -1,0 +1,140 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This adds or updates a mailbox in the inkvmail database
+## quotas must be in bytes! 10GB=10485760000, 5GB=5242880000, 2GB=2097152000, 1GB=1048576000, 0.5GB=524288000
+##DEV: Consider writing a choice so quota can be entered in MB, juast as in PFA
+
+# How to use:
+## ./inkvmailbox [ emailuser (no domain) ] [ domain ] [ name - optional ] [ quota - optional ]
+
+# Eg:
+## ./inkvmailbox james inkisaverb.com "James Inksmith" 524288000 # 0.5GB
+## ./inkvmailbox james inkisaverb.com "James Inksmith"
+## ./inkvmailbox james inkisaverb.com - 524288000 # 0.5GB, keep old name or use emailUser as name
+## ./inkvmailbox james inkisaverb.com # Show info for existing user, otherwise add new user using defaults and emailUser as name
+
+usagenotes="This adds or updates a mailbox in the inkvmail database"
+usageformat="inkvmailbox [ emailuser (no domain) ] [ domain ] [ name - optional ] [ quota - optional ]"
+usageexample="inkvmailbox james inkisaverb.com \"James Inksmith\" 524288000 # 0.5GB
+inkvmailbox james inkisaverb.com 'James Inksmith'
+inkvmailbox james inkisaverb.com - 524288000 # 0.5GB, keep old name or use emailUser as name
+inkvmailbox james inkisaverb.com # Show info for existing user, otherwise add new user using defaults and emailuser as name"
+hierarchy=( primary )
+vsetnames=( "Email username" "Domain" )
+vsettypes=( isaz09lines isDomian )
+voptnames=( "Name" )
+vopttypes=( isazAZ09punct )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installinkvmail )
+prerequesite=( inkvmaildomain )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkvmailbox.replace" ]; then . /opt/verb/mods/inkvmailbox.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkvmailbox.before" ]; then . /opt/verb/mods/inkvmailbox.before; fi # Precedes this script
+
+
+# Check to see if inkvmail is installed
+. /opt/verb/conf/servermailpath
+if [ "$ServerMailStatus" != "VMAIL_SERVER" ]; then
+  /bin/echo "Vmail not installed. Do that first."
+  exit 0; fi
+
+# Variables
+emailUser="$1"
+domain="$2"
+username="$emailUser@$domain"
+
+# Check that the domain exists and get the default quota
+query="$(/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "SELECT quota FROM domain WHERE domain='$domain';")"
+domquota="$(/bin/echo ${query} | sed "s/quota //")000000"
+# Oops, domain does not exist
+if [ -z "${query}" ]; then
+  /bin/echo "The domain $domain hasn't been added yet, doing nothing"
+  exit 0
+fi
+
+#Check if the email exists
+query="$(/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "SELECT quota FROM mailbox WHERE username='$username';")"
+oldquota="$(/bin/echo ${query} | sed "s/quota //")"
+# User exists
+if [ -n "${query}" ]; then
+  # Get the name
+  query="$(/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "SELECT name FROM mailbox WHERE username='$username';")"
+  oldname="$(/bin/echo ${query} | sed "s/name //")"
+  # Show user info if no changes
+  if [ -z "$3" ]; then
+    # Finish
+    /bin/echo "Existing user: $username
+Name: $oldname
+Inbox size: $oldquota"
+
+  # Update
+  else
+
+    # Determin the quota
+    if [ -n "$4" ] && [ "$4" -le "$domquota" ]; then
+      newquota="$4"
+    elif [ -z "$4" ]; then
+      newquota=$oldquota
+    else
+      newquota=$domquota
+    fi
+
+    # Determin the name
+    if [ "$3" = "-" ]; then
+      newname=$oldname
+    else
+      newname="$3"
+    fi
+
+    # Run the update
+    /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "UPDATE mailbox SET name='$newname', quota='$newquota', modified=CURRENT_TIMESTAMP WHERE username='$username';"
+    # Finish
+    /bin/echo "Updated: $username
+Name: $newname
+Inbox size: $newquota"
+  fi
+
+# Create new user
+else
+
+  # Determin the quota
+  if [ -n "$4" ] && [ "$4" -le "$domquota" ]; then
+    newquota="$4"
+  else
+    newquota=$domquota
+  fi
+
+  # Determin the name
+  if [ -z "$3" ] || [ "$3" = "-" ]; then
+    newname="$1"
+  else
+    newname="$3"
+  fi
+
+  # Hash the password
+  rawPassword=$(/usr/bin/pwgen -s 15)
+  password="$(/bin/echo $rawPassword | /usr/bin/openssl passwd -1 -stdin)"
+  inkvmaildirectory="$domain/$emailUser/"
+
+  # Make the database entry
+  ## We need the alias entry for the mailbox to be active
+  /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "INSERT INTO mailbox (username, password, name, maildir, quota, local_part, domain, created, modified, active) VALUES ('$username', '$password', '$newname', '$inkvmaildirectory', '$newquota', '$emailUser', '$domain', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);
+  INSERT INTO alias (address, goto, domain, created, modified, active) VALUES ('$username', '$username', '$domain', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);"
+
+  # Finish
+  /bin/echo "Created new inbox!
+Name: $newname
+User login: $username
+Password: $rawPassword
+Inbox size: $newquota"
+fi
+
+
+
+
+if [ -e "/opt/verb/mods/inkvmailbox.after" ]; then . /opt/verb/mods/inkvmailbox.after; fi # Follows this script

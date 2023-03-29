@@ -1,0 +1,68 @@
+#!/bin/sh
+#IVapp dragon installer! verb.ink
+set -e
+
+# This installs the IVapp submodule with settings as specified
+
+# IVapp is a medium-security "user jail" framework for login users that manage tasks in various inkVerb modules, such as inkNet, Vallpaper, PinkWrite, et cetera.
+# Generally, file structure is: ivapp/MODULE/USERS, usually with at least two types of users: one for the master-craftsmen and one for the consumers
+
+# How to use:
+## ./installivapp [/path/to/ivapp/settings/file.conf]
+
+
+# Check variables
+## Entered
+if [ -z "$1" ]; then
+echo "Specify a settings file according to instructions."
+exit 5; fi
+## Exists
+if [ ! -f "$1" ]; then
+echo "That settings file does not exist."
+exit 5; fi
+
+Conf=$1
+
+# Include config
+. ${Conf}
+
+
+# Check status
+if [ -f "${StatusFile}" ]; then
+. ${StatusFile}
+ if [ "${IVAPPSTATUS}" = "INSTALLED" ]; then
+echo "${ModuleName} is already installed."; exit 0
+ else
+echo "${IVAPPSTATUS}"
+ fi
+fi
+
+# Verify directory structure
+mkdir -p ${IvappBase}/${IvappDir}
+cd ${IvappBase}/${IvappDir}
+mkdir -p ${IvappGrpDirs}
+
+# Directory ownership
+chmod 750 -R ${IvappBase}
+
+# Create the user groups
+echo "${IVUSERGROUPS}" | xargs -n1 groupadd ${g};
+
+# Write the configs
+## For the module
+echo "#!/bin/sh
+# inkVerb's ${ModuleName} config file, verb.ink
+
+IVAPPSTATUS=\"INSTALLED\"" > ${StatusFile}
+## For IVapp reference
+echo "#!/bin/sh
+# inkVerb's ivApp config for ${ModuleName}
+
+ConfIG_LOCATION=\"${Conf}\"
+" > ${IvappBase}/${IvappDir}/loc.conf
+
+# Finish
+echo "Done.
+${ModuleName} has been setup.
+"
+

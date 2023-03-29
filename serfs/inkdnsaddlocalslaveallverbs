@@ -1,0 +1,73 @@
+#!/bin/bash
+#inkVerbKnight! verb.ink
+
+# This adds the DNS configuration for all verb domains on this verber if running a custom verber, not controlled by the control rink
+
+# How to use:
+## ./inkdnsaddlocalslaveallverbs
+
+# Eg:
+## ./inkdnsaddlocalslaveallverbs
+## ./inkdnsaddlocalslaveallverbs
+
+usagenotes="This adds the DNS configuration for all verb domains on this verber if running a custom verber, not controlled by the control rink"
+usageformat="inkdnsaddlocalslave"
+usageexample="inkdnsaddlocalslaveallverbs
+inkdnsaddlocalslaveallverbs"
+hierarchy=( oversight )
+vsetnames=( "Existing rink user in /srv/sns/" )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkdnsinstall make-dns )
+prerequesite=(  )
+usedby=(  )
+useserfs=( inkdnsaddlocalslave )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdnsaddlocalslaveallverbs.replace" ]; then . /opt/verb/mods/inkdnsaddlocalslaveallverbs.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdnsaddlocalslaveallverbs.before" ]; then . /opt/verb/mods/inkdnsaddlocalslaveallverbs.before; fi # Precedes this script
+
+
+# Config check
+if [ ! -f "/opt/verb/conf/inkdns/sdns/dnshost" ]; then
+  /bin/echo "This server is not a DNS, I quit."; exit 0
+fi
+
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/servertldstatus
+. /opt/verb/conf/siteurilist
+
+# Add the active verb domains, wait so we don't congest the server
+if [ $VERBemail=true ]; then
+/opt/verb/serfs/inkdnsaddlocalslave ${emailURI} ${ServerIPv4} ${ServerIPv6}
+fi
+wait
+if [ $VERBone=true ]; then
+/opt/verb/serfs/inkdnsaddlocalslave ${oneURI} ${ServerIPv4} ${ServerIPv6}
+fi
+wait
+if [ $VERBink=true ]; then
+/opt/verb/serfs/inkdnsaddlocalslave ${inkURI} ${ServerIPv4} ${ServerIPv6}
+fi
+wait
+if [ $VERBblue=true ]; then
+/opt/verb/serfs/inkdnsaddlocalslave ${blueURI} ${ServerIPv4} ${ServerIPv6}
+fi
+wait
+if [ $VERBvip=true ]; then
+/opt/verb/serfs/inkdnsaddlocalslave ${vipURI} ${ServerIPv4} ${ServerIPv6}
+fi
+wait
+if [ $VERBkiwi=true ]; then
+/opt/verb/serfs/inkdnsaddlocalslave ${kiwiURI} ${ServerIPv4} ${ServerIPv6}
+fi
+wait
+if [ $VERBred=true ]; then
+/opt/verb/serfs/inkdnsaddlocalslave ${redURI} ${ServerIPv4} ${ServerIPv6}
+fi
+
+
+if [ -e "/opt/verb/mods/inkdnsaddlocalslaveallverbs.after" ]; then . /opt/verb/mods/inkdnsaddlocalslaveallverbs.after; fi # Follows this script

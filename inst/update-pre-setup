@@ -1,0 +1,80 @@
+#!/bin/bash
+#inkVerbMaker! verb.ink
+
+# This usees the verb repo to get updates scripts in:
+## verb/inst/
+## verb/donjon/
+## verb/donjon/repoupdate/
+## verb/serfs/
+## This is intended for making minor updates to a VPS image and should not be used to replace updateverber
+
+# How to use:
+## ./update-pre-setup [ optional updaterepo organization ]
+
+# Eg:
+## ./update-pre-setup
+## ./update-pre-setup inkverb # Default
+## ./update-pre-setup otherorg
+
+
+if [ -z "$1" ]; then
+  ServerUpdateOrg="inkverb"
+else
+  ServerUpdateOrg="$1"
+fi
+
+# Download
+/usr/bin/mkdir -p /opt/tmp
+cd /opt/tmp/ || exit 0
+/usr/bin/git clone https://github.com/${ServerUpdateOrg}/verb
+
+
+# Check where things are with the installation process. delete what should be deleted
+if [ ! -f "/opt/verb/inst/make-dns" ]; then
+  /usr/bin/rm -f /opt/tmp/verb/inst/make-dns
+fi
+if [ ! -f "/opt/verb/inst/make-dommod" ]; then
+  /usr/bin/rm -f /opt/tmp/verb/inst/make-dommod
+fi
+if [ ! -f "/opt/verb/inst/make-preverber" ]; then
+  /usr/bin/rm -f /opt/tmp/verb/inst/make-preverber
+fi
+if [ ! -f "/opt/verb/inst/make-verber-laemp" ] || [ ! -f "/opt/verb/inst/make-verber-lamp" ] || [ ! -f "/opt/verb/inst/make-verber-lemp" ]; then
+  /usr/bin/rm -f /opt/tmp/verb/inst/make-verber-laemp
+  /usr/bin/rm -f /opt/tmp/verb/inst/make-verber-lamp
+  /usr/bin/rm -f /opt/tmp/verb/inst/make-verber-lemp
+fi
+if [ ! -f "/opt/verb/inst/preverboff" ]; then
+  /usr/bin/rm -f /opt/tmp/verb/inst/preverboff
+fi
+if [ ! -f "/opt/verb/inst/preverbon" ]; then
+  /usr/bin/rm -f /opt/tmp/verb/inst/preverbon
+fi
+if [ -d "/opt/verb/conf/inkdns/sdns/dnshost" ] && [ -d "/srv/sns" ] && [ ! -f "/opt/verb/inst/make-dns" ]; then
+  /usr/bin/cp -rf /opt/verb/conf/inkdns/sdns /opt/tmp/verb/conf/inkdns/
+  /usr/bin/rm -f /opt/tmp/verb/inst/make-dns
+fi
+if [ ! -f "/opt/verb/inst/ink.set" ]; then
+  /usr/bin/rm -f /opt/tmp/verb/inst/ink.set
+fi
+# setup link?
+if [ -e "/opt/verb/serfs/setup" ]; then setuplink="true"; fi
+
+# Move the new verb/ dir into place
+/usr/bin/rm -rf /opt/verb
+/usr/bin/mv /opt/tmp/verb /opt/
+wait
+
+if [ "$setuplink" = "true" ]; then
+  /bin/ln -sfn /opt/verb/inst/setup /opt/verb/serfs/
+fi
+
+# Other permissions and cleanup
+. /opt/verb/conf/inklists/verberverno
+/usr/bin/cat /opt/verb/conf/lib/nib > /etc/motd
+/usr/bin/echo "inkVerb Verber v${VERNO}" >> /etc/motd
+/bin/chmod 750 /opt/verb/serfs/*
+/bin/chmod 750 /opt/verb/donjon/*.sh
+
+# Remove the cloned repo
+/usr/bin/rm -rf /opt/tmp

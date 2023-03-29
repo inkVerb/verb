@@ -1,0 +1,273 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This script allows all of a user's main inkVerb subdomains to point to preferred apps, 
+# This is mainly aesthetic, defining a particular web app to be the king of its color
+
+# How to use:
+## ./pointink [subdomain only]
+
+# Eg: (To point name.verb.red to hrm.your-name.verb.red do:)
+## ./pointink hrm.red
+
+# Type ./pointink -h for help
+
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+
+if [ "$1" = "-h" ]; then
+    /bin/echo "Usage: ./pointink [subdomin only]
+
+Examples:
+ ./pointink crm.red (points ${redURI} to crm.your-name.verb.red)
+ ./pointink red (resets ${redURI} to point to itself)
+
+ allowed arguments:
+ blue
+ chat.blue
+ collabora.blue
+ nc.blue
+ owncloud.blue
+ pydio.blue
+ seafile.blue
+ xmpp.blue
+ vip
+ cgi.vip
+ ftp.vip
+ files.vip
+ fossil.vip
+ net2ftp.vip
+ mysql.vip
+ repo.vip
+ kiwi
+ kiwi.ampache
+ kiwi.art
+ kiwi.ejabberd
+ kiwi.gallery
+ kiwi.media
+ kiwi.podcast
+ kiwi.prosody
+ kiwi.studio
+ kiwi.voip
+ kiwi.webrtc
+ red
+ crm.red
+ erp.red
+ hrm.red
+ odoo.red
+ scm.red
+"
+exit 0
+fi
+
+if [ "$1" = 0 ]; then
+    /bin/echo "No parameters set. Use ./pointink -h for help"
+exit 0
+fi
+
+if [ "$1" = "blue" ]; then
+    cp /srv/www/verb/blue/index-blue.php /srv/www/html/blue/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+if [ "$1" = "chat.blue" ]; then
+    cp /srv/www/verb/blue/index-chat.php /srv/www/html/blue/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+if [ "$1" = "collabora.blue" ]; then
+    cp /srv/www/verb/blue/index-collabora.php /srv/www/html/blue/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+if [ "$1" = "nc.blue" ]; then
+    cp /srv/www/verb/blue/index-nc.php /srv/www/html/blue/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+if [ "$1" = "owncloud.blue" ]; then
+    cp /srv/www/verb/blue/index-owncloud.php /srv/www/html/blue/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+if [ "$1" = "pydio.blue" ]; then
+    cp /srv/www/verb/blue/index-pydio.php /srv/www/html/blue/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+if [ "$1" = "seafile.blue" ]; then
+    cp /srv/www/verb/blue/index-seafile.php /srv/www/html/blue/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+if [ "$1" = "xmpp.blue" ]; then
+    cp /srv/www/verb/blue/index-xmpp.php /srv/www/html/blue/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+
+if [ "$1" = "vip" ]; then
+    cp /srv/www/verb/vip/index-vip.php /srv/www/html/vip/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+if [ "$1" = "cgi.vip" ]; then
+    cp /srv/www/verb/vip/index-ftp.php /srv/www/html/vip/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+if [ "$1" = "ftp.vip" ]; then
+    cp /srv/www/verb/vip/index-ftp.php /srv/www/html/vip/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+if [ "$1" = "files.vip" ]; then
+    cp /srv/www/verb/vip/index-files.php /srv/www/html/vip/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+if [ "$1" = "fossil.vip" ]; then
+    cp /srv/www/verb/vip/index-fossil.php /srv/www/html/vip/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+if [ "$1" = "net2ftp.vip" ]; then
+    cp /srv/www/verb/vip/index-net2ftp.php /srv/www/html/vip/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+if [ "$1" = "repo.vip" ]; then
+    cp /srv/www/verb/vip/index-repo.php /srv/www/html/vip/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+if [ "$1" = "sql.vip" ]; then
+    cp /srv/www/verb/vip/index-sql.php /srv/www/html/vip/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+if [ "$1" = "kiwi" ]; then
+    cp /srv/www/verb/kiwi/index-kiwi.php /srv/www/html/kiwi/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+if [ "$1" = "kiwi.ampache" ]; then
+    cp /srv/www/verb/kiwi/index-ampache.php /srv/www/html/kiwi/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+if [ "$1" = "kiwi.art" ]; then
+    cp /srv/www/verb/kiwi/index-art.php /srv/www/html/kiwi/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+if [ "$1" = "kiwi.ejabberd" ]; then
+    cp /srv/www/verb/kiwi/index-ejabberd.php /srv/www/html/kiwi/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+if [ "$1" = "kiwi.gallery" ]; then
+    cp /srv/www/verb/kiwi/index-gallery.php /srv/www/html/kiwi/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+if [ "$1" = "kiwi.media" ]; then
+    cp /srv/www/verb/kiwi/index-media.php /srv/www/html/kiwi/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+if [ "$1" = "kiwi.podcast" ]; then
+    cp /srv/www/verb/kiwi/index-podcast.php /srv/www/html/kiwi/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+if [ "$1" = "kiwi.prosody" ]; then
+    cp /srv/www/verb/kiwi/index-prosody.php /srv/www/html/kiwi/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+if [ "$1" = "kiwi.studio" ]; then
+    cp /srv/www/verb/kiwi/index-studio.php /srv/www/html/kiwi/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+if [ "$1" = "kiwi.voip" ]; then
+    cp /srv/www/verb/kiwi/index-voip.php /srv/www/html/kiwi/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+if [ "$1" = "kiwi.webrtc" ]; then
+    cp /srv/www/verb/kiwi/index-webrtc.php /srv/www/html/kiwi/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+if [ "$1" = "red" ]; then
+    cp /srv/www/verb/red/index-red.php /srv/www/html/red/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+if [ "$1" = "crm.red" ]; then
+    cp /srv/www/verb/red/index-crm.php /srv/www/html/red/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+if [ "$1" = "erp.red" ]; then
+    cp /srv/www/verb/red/index-hrm.php /srv/www/html/red/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+if [ "$1" = "hrm.red" ]; then
+    cp /srv/www/verb/red/index-hrm.php /srv/www/html/red/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+if [ "$1" = "odoo.red" ]; then
+    cp /srv/www/verb/red/index-odoo.php /srv/www/html/red/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+if [ "$1" = "scm.red" ]; then
+    cp /srv/www/verb/red/index-hrm.php /srv/www/html/red/index.php
+    /bin/echo "Done."
+exit 0
+fi
+
+
+
+
+
+if [ -e "/opt/verb/mods/pointink.after" ]; then . /opt/verb/mods/pointink.after; fi # Follows this script

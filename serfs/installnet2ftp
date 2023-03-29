@@ -1,0 +1,58 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This downloads and installs net2ftp manually from inkisaverb.com/repo and linnks it to net2ftp....verb.vip
+# Prereq: vsftp and an ftpvip or ftpfiler for login
+
+# How to use:
+## ./installvsftpd
+
+
+CVAPPNAME=net2ftp
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+
+# IP4?
+if [ "${ServerIPv4}" = "NOIP4" ]; then
+  /usr/bin/echo "IPv4 is disabled on this server, so net2ftp cannot be installed."
+  exit 0
+fi
+
+# Download and unpack
+cd /srv/www/vapps || exit 0
+/opt/verb/serfs/inkget ${CVAPPNAME} check; wait
+if [ "$?" = 4 ]; then
+/bin/echo "Repo failed to retrieve the file."
+exit 4; fi
+
+/opt/verb/serfs/setvapplinkon ${CVAPPNAME}; wait
+/bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}; wait
+/bin/chown -R www:www /srv/www/verb/vip.net2ftp; wait
+
+# Settings
+cd net2ftp || exit 0
+/bin/cp settings.inc.php settings.inc.php.dist
+/bin/cp settings_authorizations.inc.php settings_authorizations.inc.php.dist
+/bin/cp settings_screens.inc.php settings_screens.inc.php.dist
+/bin/sed -i "s/\$net2ftp_settings\[\"email_feedback\"\] = \"webmaster@enter-your-domain-here.com\";/\$net2ftp_settings\[\"email_feedback\"\] = \"postmaster@${inkURI}\";/g" settings.inc.php
+/bin/sed -i "s/462E16CB7C3F369BD9F4DBEE0A926F8F14FFB3/462E16CB7C3F369HD9F4DAEE0A926FLF14F9B3/g" settings.inc.php
+/bin/sed -i "s/\$net2ftp_settings\[\"max_filesize\"\]  = \"10000000\";/\$net2ftp_settings\[\"max_filesize\"\]  = \"1000000000\";/g" settings.inc.php
+/bin/sed -i "s/\$net2ftp_settings\[\"allowed_ftpservers\"\]\[1\] = \"ALL\";/\/\/\$net2ftp_settings\[\"allowed_ftpservers\"\]\[1\] = \"ALL\";/g" settings_authorizations.inc.php
+/bin/sed -i "s/\/\/\$net2ftp_settings\[\"allowed_ftpservers\"\]\[3\] = \"ftp.mydomain2.org\";/\$net2ftp_settings\[\"allowed_ftpservers\"\]\[1\] = \"${ServerIPv4}\";/g" settings_authorizations.inc.php
+/bin/sed -i "s/\$net2ftp_settings\[\"allowed_ftpserverport\"\] = \"ALL\";/\/\/\$net2ftp_settings\[\"allowed_ftpserverport\"\] = "ALL";/g" settings_authorizations.inc.php
+/bin/sed -i "s/\/\/\$net2ftp_settings\[\"allowed_ftpserverport\"\] = \"21\";/\$net2ftp_settings\[\"allowed_ftpserverport\"\] = "2121";/g" settings_authorizations.inc.php
+
+# Finish
+/bin/echo "net2ftp is enabled and clipping along!
+
+After creating an FTP VIP (or FTP Filer for private file access also)
+
+Login at http://net2ftp.${vipURI}
+"
+
+
+
+
+if [ -e "/opt/verb/mods/installnet2ftp.after" ]; then . /opt/verb/mods/installnet2ftp.after; fi # Follows this script

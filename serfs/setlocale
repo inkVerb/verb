@@ -1,0 +1,30 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This sets the locale after creating the inkVerb server or restoring the VPS from a saved backup
+## This is generally not necessary for fresh inkVerb installs since the "make" scripts also set this
+
+# How to use:
+## ./setlocale
+
+
+/bin/echo "LANG="en_US.UTF-8"
+LANGUAGE="en_US:en"
+LC_ALL="en_US.UTF-8"
+LC_NUMERIC="en_US.UTF-8"
+LC_TIME="en_US.UTF-8"
+LC_MONETARY="en_US.UTF-8"
+LC_PAPER="en_US.UTF-8"
+LC_IDENTIFICATION="en_US.UTF-8"
+LC_NAME="en_US.UTF-8"
+LC_ADDRESS="en_US.UTF-8"
+LC_TELEPHONE="en_US.UTF-8"
+LC_MEASUREMENT="en_US.UTF-8"
+" > /etc/default/locale
+
+sudo reboot
+
+
+
+
+if [ -e "/opt/verb/mods/setlocale.after" ]; then . /opt/verb/mods/setlocale.after; fi # Follows this script

@@ -1,0 +1,41 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This creates the CA Verber/Inker master "authority" keys that this CA Verber/Inker uses to sign the host key on the same CA Verber/Inker itself and that Clients recognize
+## This is used by inknetinstallca (Run by itselt, this only refreshes from when inknetinstallca first used this)
+## Prerequisite: inknetmakeca
+
+# DANGER: Running this after the CA is setup will refresh the CA master keys and thereby make all Clients (Verbers and/or Vrk Stations) distrust signing into this CA Verber until they run: inknetaddcaverberpubkey
+
+# How to use:
+## ./inknetnewcaselfauthpubkey
+
+
+# Check and include the config
+if [ ! -f /opt/verb/conf/inknet/ca.verber.cnf ]; then
+/bin/echo "Out of order. This is not a CA Verber yet.
+
+First run inknetinstallca
+"
+exit 8
+fi
+
+# Include the config
+. /opt/verb/conf/inknet/ca.verber.cnf
+
+# CA Client signing keys
+cd ~/.ssh/inknet/ca/ || exit 0
+/bin/rm -f in_ca_${IAMCANAME}_key
+ssh-keygen -N "" -f in_ca_${IAMCANAME}_key
+## Link to the download web folder
+/bin/cp -f in_ca_${IAMCANAME}_key.pub /srv/www/html/${IAMCAHOST}/inknet/
+/bin/chown -R www:www /srv/www/html/${IAMCAHOST}/inknet/
+
+# Finish
+/bin/echo "Go change the world! New master keys have been created for this CA Verber."
+
+
+
+
+
+if [ -e "/opt/verb/mods/inknetnewcaselfauthpubkey.after" ]; then . /opt/verb/mods/inknetnewcaselfauthpubkey.after; fi # Follows this script

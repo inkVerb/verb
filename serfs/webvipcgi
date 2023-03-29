@@ -1,0 +1,64 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This turns on/off the www/cgi folder and links it to v.verb.vip/cgi
+
+# How to use:
+## ./webvipcgi on
+## ./webvipcgi off
+
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/servertype
+
+if [ ${ServerType} = "lemp" ]; then
+  /bin/echo "CGI not allowed on LEMP servers anyway. Nothing to do."
+
+elif [ ${ServerType} = "lamp" ] || [ ${ServerType} = "laemp" ]; then
+
+  if [ "$1" = "on" ]; then
+
+    # Prepare the directories
+    /bin/mkdir /srv/vip/cgi
+    /bin/rm -rf /srv/www/verb/vip.v/cgi
+    /bin/ln -s /srv/cgi /srv/www/verb/vip.v/cgi
+
+    # Write the first file
+    /bin/cp -f /opt/verb/site-files/cgi-fossil/helloworld.cgi /srv/www/vip.v/cgi/
+    /bin/chmod 750 /srv/www/vip.v/cgi/helloworld.cgi
+
+    # Own
+    /bin/chown -R www:www /srv/www/verb/vip.v/cgi
+    /bin/chown -R www:www /srv/vip/cgi
+
+    # Turn it on in server settings
+    /opt/verb/serfs/webcgi on v.${vipURI}
+    # Finish
+    /bin/echo "
+All done. Access CGI files in the cgi folder via ftp.
+And check out your first script at:
+http://v.${vipURI}/cgi/helloworld.cgi"
+
+  elif [ "$1" = "off" ]; then
+
+    # Prepare the directories
+    /bin/rm -rf /srv/vip/cgi
+    /bin/rm -rf /srv/www/verb/vip.v/cgi
+
+    # Turn it on in server settings
+    /opt/verb/serfs/webcgi off v.${vipURI}
+    # Finish
+    /bin/echo "
+CGI disabled for:
+http://v.${vipURI}/"
+
+  fi
+
+fi
+
+
+
+
+if [ -e "/opt/verb/mods/webvipcgi.after" ]; then . /opt/verb/mods/webvipcgi.after; fi # Follows this script

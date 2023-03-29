@@ -1,0 +1,97 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This installs Ampache from inkisaverb.com/repo and links it to ampache....verb.kiwi
+
+# All options are optional, but must are sequential, omit last options first.
+
+# How to use:
+## ./installampache [dbase] [dbuser] [dbpassword]
+
+
+CVAPPNAME=ampache
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+
+DBASE=$1
+DBUSER=$2
+DBPASSWORD=$3
+
+# Install
+cd /srv/www/vapps || exit 0
+/opt/verb/serfs/inkget ${CVAPPNAME} check; wait
+if [ "$?" = 4 ]; then
+/bin/echo "Repo failed to retrieve the file."
+exit 4; fi
+
+/opt/verb/serfs/setvapplinkon ${CVAPPNAME}; wait
+/bin/chown -R www:www /srv/www/verb/kiwi.ampache; wait
+/bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}; wait
+
+# Auto database
+if [ -z ${3} ]; then
+DBPASSWORD=$(/usr/bin/pwgen -s -1 10); fi
+if [ -z ${1} ]; then
+DBASE=${CVAPPNAME}$(/usr/bin/pwgen -s -1 6); fi
+if [ -z ${2} ]; then
+DBUSER=${DBASE}; fi
+
+# Create the database user and credentials
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+CREATE DATABASE  ${DBASE};
+GRANT ALL PRIVILEGES ON *.* TO '${DBUSER}'@'localhost' IDENTIFIED BY '${DBPASSWORD}' WITH GRANT OPTION;
+FLUSH PRIVILEGES;"
+
+# Ampache config file
+## All of this works, but fools the app into thinking it is fully installed
+#cp /srv/www/vapps/ampache/config/ampache.cfg.php.dist /srv/www/vapps/ampache/config/ampache.cfg.php
+#sed -i "s/database_name = ampache/database_name = ${DBASE}/g" /srv/www/vapps/ampache/config/ampache.cfg.php
+#sed -i "s/database_username = username/database_username = ${DBUSER}/g" /srv/www/vapps/ampache/config/ampache.cfg.php
+#sed -i "s/database_password = password/database_password = ${DBPASSWORD}/g" /srv/www/vapps/ampache/config/ampache.cfg.php
+## Add the tables to the database
+#mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${DBASE} < /srv/www/vapps/ampache/sql/ampache.sql
+
+# Write the config for backup
+/bin/echo "#!/bin/bash
+APPDBASE=${DBASE}
+APPDDBUSR=${DBUSER}
+APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.${CVAPPNAME}
+
+/bin/echo "These are setup:
+
+Database Name: ${DBASE}
+MySQL Hostname: localhost
+MySQL port: (leave blank)
+MySQL Administrative Username: ${DBUSER} (not root)
+MySQL Administrative Password: ${DBPASSWORD}
+
+*UnCheck \"Create Database\"
+*Check \"Create Tables (ampache.sql)\" (no change)
+*Check \"Create Database User\"
+ ...and enter this information:
+
+Ampache Database Username:	${DBUSER}
+Ampache Database User Password:	${DBPASSWORD}
+
+*Click \"Insert Database\"
+
+Next page: All info should be correct already
+
+*DO NOT make any changes for \"Database connection\"
+
+*Players: iTunes, WebDAV, etc. can be enabled now or later in Admin > Server Config > System
+
+*Click \"Create Config\"
+...And go from there.
+
+*Make sure you look through Admin areas for some important options after you complete the installation and login.
+
+Go to http://ampache.${kiwiURI} to install.
+"
+
+
+
+
+if [ -e "/opt/verb/mods/installampache.after" ]; then . /opt/verb/mods/installampache.after; fi # Follows this script

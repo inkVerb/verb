@@ -1,0 +1,57 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This backs up a database for a specific app
+
+# How to use:
+## ./backupappdb [app namespace] [securename 0-9, a-z, and A-Z only, optional] [-nl for no link, optional dep]
+
+## This uses the same app namespace as installAPPNAME and vapp.APPNAME configs
+## This does not work for ghost sites
+## For WordPress installed to a domain, the namespace follows the format: wp-DOMAIN.TLD or wp-SUB.DOMAIN.TLD
+
+# Eg:
+## ./backupappdb orangehrm 5df9
+## ./backupappdb wpinkblog blg2 -nl
+## ./backupappdb wp-inkisaverb.com 555
+
+
+APPNAME=$1
+if [ -z "$2" ] || [ "$2" = "-nl" ]; then
+SECNAME=$(/usr/bin/pwgen -s -1 12)
+else
+SECNAME=$2
+fi
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/vapp.${APPNAME}
+
+# Export the database
+cd /srv/www/vip || exit 0
+/opt/verb/serfs/mysqlex ${APPDBASE}; wait
+/bin/mv /srv/www/vip/sql/${APPDBASE}.sql /srv/www/vip/sql/verb.${APPDBASE}.${SECNAME}.vbak.sql
+
+# Finish
+if [ "$3" = "-nl" ] || [ "$2" = "-nl" ]; then
+/bin/echo "The database for ${APPNAME} has been backed up to the 'vip/sql/' folder.
+
+Note that the app remains live.
+"
+exit 0
+fi
+
+/bin/ln -sfn /srv/www/vip/sql/verb.${APPDBASE}.${SECNAME}.vbak.sql /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/
+/bin/chown -R www:www /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/verb.${APPDBASE}.${SECNAME}.vbak.sql
+/bin/echo "The database for ${APPNAME} has been backed up and can be downloaded at:
+
+https://${ServerServePath}/verb.${APPDBASE}.${SECNAME}.vbak.sql
+
+Note that the app remains live.
+"
+
+
+
+
+if [ -e "/opt/verb/mods/backupappdb.after" ]; then . /opt/verb/mods/backupappdb.after; fi # Follows this script

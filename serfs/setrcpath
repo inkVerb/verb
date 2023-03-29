@@ -1,0 +1,36 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This changes the path of the RoundCube web path
+## This changes the path already set by installrc
+
+# How to use:
+## ./setrcpath [folder]
+
+# Eg:
+## (To use at box.NAME.verb.email/mysecretpath do:)
+## ./setrcpath mysecretpath
+
+
+# Include the config file
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/servermailpath
+
+RCFOLDER=$1
+
+if [ "${ServerBoxPath}" = "${RCFOLDER}" ]; then
+  echo "Folder already taken by box."
+  exit 7
+fi
+
+/bin/rm -rf /srv/www/html/${ServerEmailTLD}.box
+/bin/cp -R /srv/www/html/0ne /srv/www/html/${ServerEmailTLD}.box
+/bin/ln -s /srv/www/email/roundcube /srv/www/html/${ServerEmailTLD}.box/${RCFOLDER}
+/bin/chown -R www:www /srv/www/html/${ServerEmailTLD}.box
+/bin/sed -i "s/ServerRCPath=.*/ServerRCPath=\"${RCFOLDER}\"/g" /opt/verb/conf/servermailpass
+/bin/sed -i "s/\$Conf\['footer_link'\] = 'https:\/\/.*/\$Conf\['footer_link'\] = 'https:\/\/box\.${ServerName}\.verb\.${ServerEmailTLD}\/${RCFOLDER}';/g" /srv/www/email/postfixadmin/config.inc.php
+
+
+
+
+if [ -e "/opt/verb/mods/setrcpath.after" ]; then . /opt/verb/mods/setrcpath.after; fi # Follows this script

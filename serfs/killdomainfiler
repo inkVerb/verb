@@ -1,0 +1,37 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This removes an existing domain link from an existing ftpfiler's home ~/domains/ folder
+
+# How to use:
+## ./killdomainfiler [ olddomain.tld ] [ filer username ]
+
+usagenotes="This removes an existing domain link from an existing ftpfiler's home ~/domains/ folder"
+usageformat="killdomainfiler [ olddomain.tld ] [ filer username ]"
+usageexample="killdomainfiler inkisaverb.com inkmgr"
+hierarchy=( primary )
+vsetnames=( "Domain" "User" )
+vsettypes=( isDomain isaz09 )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( adddomain )
+usedby=(  )
+useserfs=( killdomainshell )
+useconfigs=( servermailpath inkdnsconf inkcertstatus )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/killdomainfiler.replace" ]; then . /opt/verb/mods/killdomainfiler.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/killdomainfiler.before" ]; then . /opt/verb/mods/killdomainfiler.before; fi # Precedes this script
+
+
+OLDDOMAIN=$1
+FILER=$2
+
+/bin/rm -f /srv/vip/filers/${FILER}/domains/${OLDDOMAIN}
+
+
+
+
+if [ -e "/opt/verb/mods/killdomainfiler.after" ]; then . /opt/verb/mods/killdomainfiler.after; fi # Follows this script

@@ -1,0 +1,1382 @@
+#!/bin/bash
+
+# This is the functions file for the ink "Yoeman"
+## Each function can be followed by an "n" for "no exit" so that the function will not break the script if it returns false
+## Each function takes its check argument and its UX description for user error instructions.
+
+
+
+##################################################################################################################################################
+
+
+
+# Regex Validity check functions
+
+## Time zone (+08:00, -05:00, etc)
+isPHPzone() {
+local tZONE="$1"
+local vvar="$2"
+local VALIDregex="[+-][0-9]{2}:[0-9]{2}"
+if [[ "${tZONE}" =~ ${VALIDregex} ]]; then
+isPHPzone="true"; else
+isPHPzone="false"; fi
+
+if [ "$3" != "n" ] && [ "${isPHPzone}" = "false" ]; then
+/bin/echo "${vvar} must follow +HH:MM."
+exit 0; fi
+}
+
+## PHP time city
+### This validates a choice from accepted PHP cities at https://www.php.net/manual/en/timezones.php
+isPHPcity() {
+local tCITY="$1"
+local vvar="$2"
+if grep -qr "\b${tCITY}\b" ${PHPCities}; then
+isPHPcity="true"; else
+  # Backup check, just in case there are new cities allowed in the system
+  if ls "/usr/share/zoneinfo/${tCITY}" > /dev/null 2>&1; then
+    isPHPcity="true"
+    /usr/bin/echo "${tCITY}" > /opt/verb/newphpcityfound
+  else
+    isPHPcity="false"
+  fi
+isPHPcity="false"; fi
+
+if [ "$3" != "n" ] && [ "${isPHPcity}" = "false" ]; then
+/bin/echo "${vvar} must be an accepted city, such as: \"Asia/Hong_Kong\"
+Full list here: https://www.php.net/manual/en/timezones.php"
+exit 0; fi
+}
+
+### Show the accepted PHP cities
+showPHPcities() {
+/usr/bin/cat "${PHPCities}"
+}
+
+## Choice Select
+### THIS TAKES FOUR ARGUMENTS!!!!!!
+### This validates a choice from a set of selected choices (in case an existing choice function is not available)
+### Usage: isChoice CHOICE "CHOICE1 CHOICE2 CHOICE3 etc"
+isChoice() {
+local CHOICE="$1"
+local iCHOICES="$2"
+local vvar="$3"
+local aCHOICES=(${iCHOICES})
+if [[ "${aCHOICES[*]}" =~ "${CHOICE}" ]]; then
+isChoice="true"; else
+isChoice="false"; fi
+
+if [ "$4" != "n" ] && [ "${isChoice}" = "false" ]; then
+/bin/echo "${vvar} are: ${aCHOICES[*]}"
+exit 0; fi
+}
+
+## Length
+### Thanks https://unix.stackexchange.com/a/145159/315069
+### Usage: isXlong NUMBER LENGTH
+### Eg: isXlong 56 2
+isXlong() {
+local XSTRING="$1"
+local XLENGTH="$2"
+local vvar="Length"
+if [[ "${#XSTRING}" == "${XLENGTH}" ]] ; then
+isXlong="true"; else
+isXlong="false"
+exit 0; fi
+
+if [ "$3" != "n" ] && [ "${isXlong}" = "false" ]; then
+/bin/echo "${vvar} must be ${XLENGTH}."
+exit 0; fi
+}
+
+## IP4
+### Thanks http://www.linuxjournal.com/content/validating-ip-address-bash-script
+isIP4() {
+local IP4="$1"
+local vvar="$2"
+local VALIDregex="^([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})"
+if [[ "${IP4}" =~ ${VALIDregex} ]]; then
+isIP4="true"; else
+isIP4="false"; fi
+
+if [ "$3" != "n" ] && [ "${isIP4}" = "false" ]; then
+/bin/echo "${vvar} must be a valid IP4 address."
+exit 0; fi
+}
+
+## IP6
+### Expanded or compressed IPv6 formats both work
+isIP6() {
+local IP6="$1"
+local vvar="$2"
+local VALIDregex="(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))"
+if [[ "${IP6}" =~ ${VALIDregex} ]]; then
+isIP6="true"; else
+isIP6="false"; fi
+
+if [ "$3" != "n" ] && [ "${isIP6}" = "false" ]; then
+/bin/echo "${vvar} must be a valid IP6 address."
+exit 0; fi
+}
+
+## Integer
+isInt() {
+local INT=$1
+local vvar="$2"
+local VALIDregex="^[-?[:digit:]]*$"
+if [[ "${INT}" =~ ${VALIDregex} ]]; then
+isInt="true"; else
+isInt="false"; fi
+
+if [ "$3" != "n" ] && [ "${isInt}" = "false" ]; then
+/bin/echo "${vvar} must be a valid integer."
+exit 0; fi
+}
+
+## Float (floating decimal)
+isFloat() {
+local FLOAT=$1
+local vvar="$2"
+local VALIDregex="^[-?[:digit:]].?[[:digit:]]*$"
+if [[ "${FLOAT}" =~ ${VALIDregex} ]]; then
+isFloat="true"; else
+isFloat="false"; fi
+
+if [ "$3" != "n" ] && [ ${isFloat} = "false" ]; then
+/bin/echo "${vvar} must be a valid integer or decimal."
+exit 0; fi
+}
+
+## HEX
+### Thanks https://stackoverflow.com/questions/7662465/bash-is-there-a-simple-way-to-check-whether-a-string-is-a-valid-sha-1-or-md5
+isHEX() {
+local HEX="$1"
+local vvar="$2"
+local VALIDregex="^[[:xdigit:]]*$"
+if [[ "${HEX}" =~ ${VALIDregex} ]]; then
+isHEX="true"; else
+isHEX="false"; fi
+
+if [ "$3" != "n" ] && [ ${isHEX} = "false" ]; then
+/bin/echo "${vvar} only."
+exit 0; fi
+}
+
+## 09
+is09() {
+local t09="$1"
+local vvar="$2"
+local VALIDregex="^[[:digit:]]*$"
+if [[ "${t09}" =~ ${VALIDregex} ]]; then
+is09="true"; else
+is09="false"; fi
+
+if [ "$3" != "n" ] && [ "${is09}" = "false" ]; then
+/bin/echo "${vvar} only."
+exit 0; fi
+}
+
+## az
+isaz() {
+local az="$1"
+local vvar="$2"
+local VALIDregex="^[[:lower:]]*$"
+if [[ "${az}" =~ ${VALIDregex} ]]; then
+isaz="true"; else
+isaz="false"; fi
+
+if [ "$3" != "n" ] && [ "${isaz}" = "false" ]; then
+/bin/echo "${vvar} only."
+exit 0; fi
+}
+
+## azAZ
+isazAZ() {
+local azAZ="$1"
+local vvar="$2"
+local VALIDregex="^[[:alpha:]]*$"
+if [[ "${azAZ}" =~ ${VALIDregex} ]]; then
+isazAZ="true"; else
+isazAZ="false"; fi
+
+if [ "$3" != "n" ] && [ "${isazAZ}" = "false" ]; then
+/bin/echo "${vvar} only, uppercase and/or lowercase."
+exit 0; fi
+}
+
+## az09
+isaz09() {
+local az09="$1"
+local vvar="$2"
+local VALIDregex="^[[:lower:][:digit:]]*$"
+if [[ "${az09}" =~ ${VALIDregex} ]]; then
+isaz09="true"; else
+isaz09="false"; fi
+
+if [ "$3" != "n" ] && [ ${isaz09} = "false" ]; then
+/bin/echo "${vvar} must only include lowercase letters and/or digits."
+exit 0; fi
+}
+
+## AZ09
+isAZ09() {
+local AZ09="$1"
+local vvar="$2"
+local VALIDregex="^[[:upper:][:digit:]]*$"
+if [[ "${AZ09}" =~ ${VALIDregex} ]]; then
+isAZ09="true"; else
+isAZ09="false"; fi
+
+if [ "$3" != "n" ] && [ "${isAZ09}" = "false" ]; then
+/bin/echo "${vvar} only include upperrcase letters and/or digits 0-9."
+exit 0; fi
+}
+
+## azAZ09
+isazAZ09() {
+local azAZ09="$1"
+local vvar="$2"
+local VALIDregex="^[[:alnum:]]*$"
+if [[ "${azAZ09}" =~ ${VALIDregex} ]]; then
+isazAZ09="true"; else
+isazAZ09="false"; fi
+
+if [ "$3" != "n" ] && [ "${isazAZ09}" = "false" ]; then
+/bin/echo "${vvar} only include uppercase letters, lowercase letters, and/or digits."
+exit 0; fi
+}
+
+## az09lines
+isaz09lines() {
+local az09lines="$1"
+local vvar="$2"
+local VALIDregex="^[[:lower:][:digit:]_-]*$"
+if [[ "${az09lines}" =~ ${VALIDregex} ]]; then
+isaz09lines="true"; else
+isaz09lines="false"; fi
+}
+
+## azAZ09lines
+isazAZ09lines() {
+local azAZ09lines="$1"
+local vvar="$2"
+local VALIDregex="^[[:alnum:]_-]*$"
+if [[ "${azAZ09lines}" =~ ${VALIDregex} ]]; then
+isazAZ09lines="true"; else
+isazAZ09lines="false"; fi
+
+if [ "$3" != "n" ] && [ "${isazAZ09}" = "false" ]; then
+/bin/echo "${vvar} only include uppercase letters, lowercase letters, and/or digits."
+exit 0; fi
+}
+
+## azAZ09underscore
+isazAZ09underscore() {
+local azAZ09underscore="$1"
+local vvar="$2"
+local VALIDregex="^[[:alnum:]_]*$"
+if [[ "${azAZ09underscore}" =~ ${VALIDregex} ]]; then
+isazAZ09underscore="true"; else
+isazAZ09underscore="false"; fi
+}
+
+## azAZ09punct
+isazAZ09punct() {
+local azAZ09punct="$1"
+local vvar="$2"
+local VALIDregex="^([-A-Za-z0-9\+&@#%?=~*_-–—|!:,.;])*$"
+if [[ "${azAZ09punct}" =~ ${VALIDregex} ]]; then
+isazAZ09punct="true"; else
+isazAZ09punct="false"; fi
+
+if [ "$3" != "n" ] && [ "${isazAZ09punct}" = "false" ]; then
+/bin/echo "${vvar} only include uppercase letters, lowercase letters, and/or digits."
+exit 0; fi
+}
+
+## GraphChar (alphanumeric & Punctuation & Certain Symbol Characters)
+isGraphChar() {
+local GRAPHCHAR="$1"
+local vvar="$2"
+local VALIDregex="^[[:graph:]]*$"
+if [[ "${GRAPHCHAR}" =~ ${VALIDregex} ]]; then
+isGraphChar="true"; else
+isGraphChar="false"; fi
+
+if [ "$3" != "n" ] && [ "${isGraphChar}" = "false" ]; then
+/bin/echo "${vvar} must only include uppercase letters, lowercase letters, digits, punctuation, and only certain special characters and smbols."
+exit 0; fi
+}
+
+## User (a valid Linux username)
+isUsername() {
+local USER="$1"
+local vvar="$2"
+local USERregex='^[[:lower:]_][[:lower:][:digit:]_-]{2,31}$'
+
+if [[ "${USER}" =~ ${USERregex} ]] ; then
+isUsername="true"; else
+isUsername="false"; fi
+
+if [ "$3" != "n" ] && [ "${isUsername}" = "false" ]; then
+/bin/echo "${vvar} must be a valid username: alphanumeric, hyphen, underscore, numbers; all lowercase, start with letter or underscore; 16 characters max."
+exit 0; fi
+}
+
+## isPassword (a valid Linux password)
+### This is only a basic, minimum to see if it will be accepted by passwd
+isPassword() {
+local PASSWORD="$1"
+local vvar="$2"
+
+local PASSWORDregex="^[[:alnum:]_-]{2,100}$"
+if [[ "${PASSWORD}" =~ ${PASSWORDregex} ]] ; then
+#if [[ ${#PASSWORD} -ge 6 && "${PASSWORD}" == *[A-Z]* && "${PASSWORD}" == *[a-z]* && "${PASSWORD}" == *[0-9]* ]] ; then
+isPassword="true"; else
+isPassword="false"; fi
+
+if [ "$3" != "n" ] && [ "${isPassword}" = "false" ]; then
+/bin/echo "${vvar} must be a valid password."
+exit 0; fi
+}
+
+## isStrongPassword (a valid and strong Linux password)
+### This will work for a Linux user, but also has additional requirements
+isStrongPassword() {
+local PASSWORD="$1"
+local vvar="$2"
+
+if [[ ${#PASSWORD} -ge 6 && ${#PASSWORD} -lt 41 && "${GRAPHCHAR}" =~ ^[[:graph:]]*$ && "${PASSWORD}" == *[A-Z]* && "${PASSWORD}" == *[a-z]* && "${PASSWORD}" == *[0-9]* ]] ; then
+isStrongPassword="true"; else
+isStrongPassword="false"; fi
+
+if [ "$3" != "n" ] && [ "${isPassword}" = "false" ]; then
+/bin/echo "${vvar} must be a valid password: 6-40 characters, alphanumeric plus digits, special charactrs allowed; using at least one digit and one uppercase letter and one lowrcase letter."
+exit 0; fi
+}
+
+## isSQLUserCredential (a valid SQL username or password)
+### This is not necessarily the username/password validator for all SQL engines, but accaptable for use on this server
+isSQLUserCredential() {
+local CRED="$1"
+local vvar="$2"
+
+local CREDregex="^[[:alnum:]]{8,32}$"
+if [[ "${CRED}" =~ ${CREDregex} ]] ; then
+isSQLUserCredential="true"; else
+isSQLUserCredential="false"; fi
+
+if [ "$3" != "n" ] && [ "${isSQLUserCredential}" = "false" ]; then
+/bin/echo "${vvar} must be a valid SQL login credential."
+exit 0; fi
+}
+
+## isSQLDatabasename (a valid SQL database name)
+### This is not necessarily the database name validator for all SQL engines, but accaptable for use on this server
+isSQLDatabasename() {
+local NAME="$1"
+local vvar="$2"
+
+local NAMEregex="^[[:alnum:]]{1,64}$"
+if [[ "${NAME}" =~ ${NAMEregex} ]] ; then
+isSQLDatabasename="true"; else
+isSQLDatabasename="false"; fi
+
+if [ "$3" != "n" ] && [ "${isSQLDatabasename}" = "false" ]; then
+/bin/echo "${vvar} must be a valid SQL database."
+exit 0; fi
+}
+
+
+## File (a valid filename)
+isFilename() {
+local FILE="$1"
+local vvar="$2"
+local FILEregex='^[]0-9a-zA-Z,!#^`@{}=() %.;&/~:_|[-]*$'
+if [[ "${FILE}" =~ ${FILEregex} ]] ; then
+isFilename="true"; else
+isFilename="false"; fi
+
+if [ "$3" != "n" ] && [ "${isFilename}" = "false" ]; then
+/bin/echo "${vvar} must be a \"normal\" filename: alphanumeric; CAPS, hyphen, and underscore allowed; but no other special characters or spaces."
+exit 0; fi
+}
+
+## Path (a valid path)
+isPathname() {
+local PATH="$1"
+local vvar="$2"
+local PATHregex="(/[^/ ]*)+/?$"
+if [[ "${PATH}" =~ ${PATHregex} ]] ; then
+isPathname="true"; else
+isPathname="false"; fi
+
+if [ "$3" != "n" ] && [ "${isPathname}" = "false" ]; then
+/bin/echo "${vvar} must be a \"normal\" filename: alphanumeric; CAPS, hyphen, and underscore allowed; but no other special characters or spaces."
+exit 0; fi
+}
+
+## URL ({s}ftp itpc file http{s} ://[az09.].az)
+isSpecialURL() {
+local URL="$1"
+local vvar="$2"
+local SURLregex="^(https?|file|s?ftp|itpc):///?([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z0-9]([a-z0-9-]*[a-z0-9])/[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]$"
+if [[ "${URL}" =~ ${SURLregex} ]]; then
+isSpecialURL="true"; else
+isSpecialURL="false"; fi
+
+if [ "$3" != "n" ] && [ "${isSpecialURL}" = "false" ]; then
+/bin/echo "${vvar} must be a \"functional\" URL: preceeded by (s)ftp:// or file:// or iptc:// or http(s):// followed by domain, including alphanumeric characters, underscore, and hyphen, subdomains allowed"
+exit 0; fi
+}
+
+## URL (http{s}://[az09.].az/...)
+isURL() {
+local URL="$1"
+local vvar="$2"
+local URLregex="^(https?|file|s?ftp|itpc)://([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z0-9]([a-z0-9-]*[a-z0-9])/[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]$"
+if [[ "${URL}" =~ ${URLregex} ]]; then
+isURL="true"; else
+isURL="false"; fi
+
+if [ "$3" != "n" ] && [ "${isURL}" = "false" ]; then
+/bin/echo "${vvar} must be a \"normal\" URL: domain, including alphanumeric characters, underscore, and hyphen, subdomains allowed, preceeded by either http(s):// or (s)ftp://"
+exit 0; fi
+}
+
+## Domain (azAZ09_-.az)
+isDomain() {
+local domain="$1"
+local vvar="$2"
+#local domainRegex="([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z0-9]([a-z0-9-]*[a-z0-9])?\$" # Below is a more expanded regex
+#local domainRegex="^(([a-zA-Z]{1})|([a-zA-Z]{1}[a-zA-Z]{1})|([a-zA-Z]{1}[0-9]{1})|([0-9]{1}[a-zA-Z]{1})|([a-zA-Z0-9][-_\.a-zA-Z0-9]{1,61}[a-zA-Z0-9]))\.([a-zA-Z]{2,13}|[a-zA-Z0-9-]{2,30}\.[a-zA-Z]{2,3})$" # Below is a mod to allow hyphens
+local domainRegex="^(([a-zA-Z]{1})|([a-zA-Z]{1}[a-zA-Z]{1})|([a-zA-Z]{1}[0-9]{1})|([0-9]{1}[a-zA-Z-]{1})|([a-zA-Z0-9-][-_\.a-zA-Z0-9]{1,61}[a-zA-Z0-9]))\.([a-zA-Z-]{2,13}|[a-zA-Z0-9-]{2,30}\.[a-zA-Z-]{2,3})$"
+
+if [[ "${domain}" =~ ${domainRegex} ]] && [[ "${domain}" != *- ]]; then
+isDomain="true"; else
+isDomain="false"; fi
+
+if [ "$3" != "n" ] && [ "${isDomain}" = "false" ]; then
+/bin/echo "${vvar} must be a \"normal\" domain, including alphanumeric characters, underscore, and hyphen, subdomains allowed if included, ie:  inksaverb.com  sub.inkisaverb.com  etc.sub.inkisaverb.com"
+exit 0; fi
+}
+
+## Domain part (azAZ09-)
+isDomainPart() {
+local DOMAINPT="$1"
+local vvar="$2"
+local DOMAINPTregex="[-A-Za-z0-9_]"
+
+if [[ "${DOMAINPT}" =~ ${DOMAINPTregex} ]] && [[ "${DOMAINPT}" != *- ]] && [[ "${DOMAINPT}" != -* ]] ; then
+isDomainPart="true"; else
+isDomainPart="false"; fi
+
+if [ "$3" != "n" ] && [ "${isDomainPart}" = "false" ]; then
+/bin/echo "${vvar} must be a valid subdomain part, including alphanumeric characters, underscore, and hyphen"
+exit 0; fi
+}
+
+## Email
+### Thanks https://stackoverflow.com/a/2138832/10343144
+isEmail() {
+local EMAIL="$1"
+local vvar="$2"
+local EMAILregex="^[a-z0-9!#\$%&'*+/=?^_\`{|}~-]+(\.[a-z0-9!#$%&'*+/=?^_\`{|}~-]+)*@([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z0-9]([a-z0-9-]*[a-z0-9])?\$"
+
+if [[ "${EMAIL}" =~ ${EMAILregex} ]] ; then
+isEmail="true"; else
+isEmail="false"; fi
+
+if [ "$3" != "n" ] && [ "${isEmail}" = "false" ]; then
+/bin/echo "${vvar} must be a valid email address."
+exit 0; fi
+}
+
+
+##################################################################################################################################################
+
+
+
+##################################################################################################################################################
+
+
+# Settings on Verber
+
+## isVerbTLD (valid, accepted verb TLD; not full, proper verbURI)
+isVerbTLD() {
+local verbTLD="$1"
+local vvar="$2"
+if [[ "${VerbTLDs[*]}" =~ "${verbTLD}" ]]; then
+isVerbTLD="true"; else
+isVerbTLD="false"; fi
+
+if [ "$3" != "n" ] && [ "${isVerbTLD}" = "false" ]; then
+/bin/echo "${vvar} must a valid verb TLD: ${VerbTLDs[*]}"
+exit 0; fi
+}
+
+## isSiteInstalled
+isSiteInstalled() {
+local installedVAPP="$1"
+local vvar="$2"
+. /opt/verb/conf/inkinksiteinstallstatus
+if [ "${installedVAPP}" = "NOT_YET" ]; then
+    isSiteInstalled="false"; else
+    isSiteInstalled="true"; fi
+
+if [ "$3" != "n" ] && [ "${isSiteInstalled}" = "false" ]; then
+/bin/echo "${vvar} must be installed, currently it isn't."
+exit 0; fi
+}
+
+## isVappConfig (a valid vapp config at /opt/verb/conf/vapp.NAMETOCHECK)
+isVappConfig() {
+local Vapp="$1"
+local vvar="$2"
+local listLoc="${Conf}"
+if [ -d "${listLoc}/vapp.${Vapp}" ]; then
+    isVappConfig="true"; else
+    isVappConfig="false"; fi
+
+if [ "$3" != "n" ] && [ "${isInstalledVapp}" = "false" ]; then
+/bin/echo "${vvar} must be a valid Vapp with a vapp.* config, currently it isn't."
+exit 0; fi
+}
+
+## isInstalledVapp (a valid, installed vapp in /srv/www/vapps)
+isInstalledVapp() {
+local Vapp="$1"
+local vvar="$2"
+local listLoc="${VappsDir}"
+if [ -d "${listLoc}/${Vapp}" ]; then
+    isInstalledVapp="true"; else
+    isInstalledVapp="false"; fi
+
+if [ "$3" != "n" ] && [ "${isInstalledVapp}" = "false" ]; then
+/bin/echo "${vvar} must be installed, currently it isn't."
+exit 0; fi
+}
+
+## notInstalledVapp (a valid, installed vapp in /srv/www/vapps)
+notInstalledVapp() {
+local Vapp="$1"
+local vvar="$2"
+local listLoc="${VappsDir}"
+if [ ! -d "${listLoc}/${Vapp}" ]; then
+    notInstalledVapp="true"; else
+    notInstalledVapp="false"; fi
+
+if [ "$3" != "n" ] && [ "${notInstalledVapp}" = "false" ]; then
+/bin/echo "${vvar} must not be installed, currently it is."
+exit 0; fi
+}
+
+## isLiveVapp (a valid, installed vapp in /srv/www/vapps and linked to a stated directory in www/html)
+### isLiveVapp wp.inkisaverb.com inkisaverb.com
+### isLiveVapp nextcloud blue.nc
+### isLiveVapp phpmyadmin vip.sql/WHEREINSTALLED
+isLiveVapp() {
+local Vapp="$1"
+local domain="$2"
+local vvar="$3"
+local vappLocation="${VappsDir}/${Vapp}"
+if [ -d "${vappLocation}" ] && [ "$(readlink -- "${WWWhtml}/$domain")" = "$vappLocation" ]; then
+    isLiveVapp="true"; else
+    isLiveVapp="false"; fi
+
+if [ "$4" != "n" ] && [ "${isLiveVapp}" = "false" ]; then
+/bin/echo "${vvar} must be installed and live, currently it isn't."
+exit 0; fi
+}
+
+## isWWWdomain (a valid, installed domain in /srv/www/domains)
+isWWWdomain() {
+local wwwDomain="$1"
+local vvar="$2"
+local listLoc="${WWWDomains}"
+if [ -d "${listLoc}/${wwwDomain}" ]; then
+    isWWWdomain="true"; else
+    isWWWdomain="false"; fi
+
+if [ "$3" != "n" ] && [ "${isWWWdomain}" = "false" ]; then
+/bin/echo "${vvar} must be hosted, currently it isn't."
+exit 0; fi
+}
+
+## notWWWdomain (a valid, NOT installed domain in /srv/www/domains)
+notWWWdomain() {
+local wwwDomain="$1"
+local vvar="$2"
+local listLoc="${WWWDomains}"
+if [ ! -d "${listLoc}/${wwwDomain}" ]; then
+    notWWWdomain="true"; else
+    notWWWdomain="false"; fi
+
+if [ "$3" != "n" ] && [ "${notWWWdomain}" = "false" ]; then
+/bin/echo "${vvar} must not be hosted, currently it is."
+exit 0; fi
+}
+
+## isLiveDomain (a valid, installed vapp in /srv/www/vapps and linked to a stated domain/directory in www/html)
+### isLiveDomain inkisaverb.com
+isLiveDomain() {
+local domain="$1"
+local vvar="$2"
+local domainLocation="${WWWDomains}/${domain}"
+if [ -d "${domainLocation}" ] && [ "$(readlink -- "${WWWhtml}/$domain")" = "$domainLocation" ]; then
+    isLiveDomain="true"; else
+    isLiveDomain="false"; fi
+
+if [ "$3" != "n" ] && [ "${isLiveDomain}" = "false" ]; then
+/bin/echo "${vvar} must be installed and live, currently it isn't."
+exit 0; fi
+}
+
+## isWWWforward (a valid, forwarded domain in /srv/www/forwards)
+isWWWforward() {
+local wwwForward="$1"
+local vvar="$2"
+local listLoc="${WWWForwards}"
+if [ -d "${listLoc}/${wwwForward}" ]; then
+    isWWWforward="true"; else
+    isWWWforward="false"; fi
+
+if [ "$3" != "n" ] && [ "${isWWWforward}" = "false" ]; then
+/bin/echo "${vvar} must exist, currently it doesn't."
+exit 0; fi
+}
+
+## isLiveForward (a valid, installed vapp in /srv/www/vapps and linked to a stated directory in www/html)
+### isLiveForward inkisaverb.com
+isLiveForward() {
+local domain="$1"
+local vvar="$2"
+local domainLocation="${WWWForwards}/${domain}"
+if [ -d "${domainLocation}" ] && [ "$(readlink -- "${WWWhtml}/$domain")" = "$domainLocation" ]; then
+    isLiveForward="true"; else
+    isLiveForward="false"; fi
+
+if [ "$3" != "n" ] && [ "${isLiveForward}" = "false" ]; then
+/bin/echo "${vvar} must be forwarding, currently it isn't."
+exit 0; fi
+}
+
+## FTPfiler (a valid, installed ftpfiler with a home in /srv/vip/filers)
+isFTPfiler() {
+local FTPfiler="$1"
+local vvar="$2"
+local listLoc="${FPTFilers}"
+if [ -d "${listLoc}/${FTPfiler}" ]; then
+    isFTPfiler="true"; else
+    isFTPfiler="false"; fi
+
+if [ "$3" != "n" ] && [ "${isFTPfiler}" = "false" ]; then
+/bin/echo "${vvar} must exist, currently it doesn't."
+exit 0; fi
+}
+
+
+##################################################################################################################################################
+
+
+
+##################################################################################################################################################
+
+
+# Webserver management
+
+## webServerType
+### =lamp; =laemp; =lemp
+webServerType() {
+if [ -f "${Conf}/servertype" ]; then
+  . "${Conf}/servertype"
+  webServerType="${ServerType}"
+else
+  /bin/echo "inkVerb webserver configuration is broken."
+  exit 0
+fi
+}
+
+## webServerCAPStype
+### =LAMP; =LAEMP; =LEMP
+webServerCAPStype() {
+if [ -f "${Conf}/servertype" ]; then
+  . "${Conf}/servertype"
+  if [ ${ServerType} = "lamp" ]; then
+    webServerCAPStype="LAMP"
+  elif [ ${ServerType} = "lemp" ]; then
+    webServerCAPStype="LEMP"
+  elif [ ${ServerType} = "laemp" ]; then
+    webServerCAPStype="LAEMP"
+  fi
+else
+  /bin/echo "inkVerb webserver configuration is broken."
+  exit 0
+fi
+}
+
+## isInkDNSset
+### Checks for inkdns/zones file status & inclusion
+### This is NOT for verb domains! For verb domains use isInkVerbDNSset
+isInkDNSset() {
+local domain="$1"
+if [ -n "$2" ]; then
+  local checkdomain="$2"
+  local atdomain="$2"
+else
+  local checkdomain="$1"
+  local atdomain="\*.$1"
+fi
+
+if [ -f "${Conf}/inkdns/zones/db.${domain}" ] && [ -f "${Conf}/inkdns/zones/nv.${domain}" ]; then
+  if /bin/grep -Eq "(\s|\t)+IN(\s|\t)+PTR(\s|\t)+${atdomain}" ${Conf}/inkdns/zones/nv.badad.one; then
+    if /bin/grep -Eq "(^\s|^\t|^)+${atdomain}(\s|\t)+IN(\s|\t)+A" ${Conf}/inkdns/zones/db.${domain}; then
+      isInkDNSset="true";
+    else
+      isInkDNSset="false";
+    fi
+  else
+    isInkDNSset="false";
+  fi
+else
+  /bin/echo "inkDKIM is broken or not installed."
+  exit 0
+fi
+}
+
+## isInkVerbDNSset
+### Checks for inkdns/zones file status & inclusion
+### This is ONLY for verb domains! For NON-verb domains use isInkDNSset
+isInkVerbDNSset() {
+local domain="$1"
+if [ -n "$2" ]; then
+  local checkdomain="$2"
+  local atdomain="$2"
+else
+  local checkdomain="$1"
+  local atdomain="\*.$1"
+fi
+
+if [ -f "${Conf}/inkdns/inkzones/db.${domain}" ] && [ -f "${Conf}/inkdns/inkzones/nv.${domain}" ]; then
+  if /bin/grep -Eq "(\s|\t)+IN(\s|\t)+PTR(\s|\t)+${atdomain}" ${Conf}/inkdns/inkzones/nv.badad.one; then
+    if /bin/grep -Eq "(^\s|^\t|^)+${atdomain}(\s|\t)+IN(\s|\t)+A" ${Conf}/inkdns/inkzones/db.${domain}; then
+      isInkVerbDNSset="true";
+    else
+      isInkVerbDNSset="false";
+    fi
+  else
+    isInkVerbDNSset="false";
+  fi
+else
+  /bin/echo "inkDKIM is broken or not installed."
+  exit 0
+fi
+}
+
+## isInkDKIMset
+### Checks for keys installed for inkDKIM in /etc/opendkim/
+isInkDKIMset() {
+local domain="$1"
+local vvar="$2"
+if [ -f "/etc/opendkim/SigningTable" ] && [ -f "/etc/opendkim/KeyTable" ] && [ -f "/etc/opendkim/keys/${domain}/inkdkim.private" ] && [ -f "/etc/opendkim/keys/${domain}/inkdkim.txt" ]; then
+  if /bin/grep -Eq "(^\s|^\t|^)+inkdkim._domainkey.${domain}(\s|\t)+${domain}:inkdkim:/etc/opendkim/keys/${domain}/inkdkim.private" /etc/opendkim/KeyTable; then
+    if /bin/grep -Eq "(^\s|^\t|^)+${domain}(\s|\t)+inkdkim._domainkey.${domain}" /etc/opendkim/SigningTable; then
+      if /bin/grep -Eq "(^\s|^\t|^)+${domain}" /etc/opendkim/TrustedHosts; then
+        isInkDKIMset="true";
+      else
+        isInkDKIMset="false";
+      fi
+    else
+      isInkDKIMset="false";
+    fi
+  else
+    isInkDKIMset="false";
+  fi
+else
+  /bin/echo "inkDKIM is broken or not installed."
+  exit 0
+fi
+if [ "$3" != "n" ] && [ "${isInkDKIMset}" = "false" ]; then
+/bin/echo "${vvar} inkDKIM keys not installed."
+exit 0; fi
+}
+
+## Nginx available
+isNginxAvail() {
+local domain="$1"
+local vvar="$2"
+if [ -f "/etc/nginx/sites-available/${domain}.conf" ]; then
+    isNginxAvail="true"; else
+    isNginxAvail="false"; fi
+
+if [ "$3" != "n" ] && [ "${isNginxAvail}" = "false" ]; then
+/bin/echo "${vvar} Nginx config must be available, currently it isn't."
+exit 0; fi
+}
+
+## Nginx enabled
+isNginxEnabled() {
+local domain="$1"
+local vvar="$2"
+if [ "$(readlink -- "/etc/nginx/sites-enabled/${domain}")" = "/etc/nginx/sites-available/${domain}" ] && [ -f "/etc/nginx/sites-available/${domain}.conf" ]; then
+    isNginxEnabled="true"; else
+    isNginxEnabled="false"; fi
+
+if [ "$3" != "n" ] && [ "${isNginxEnabled}" = "false" ]; then
+/bin/echo "${vvar} Nginx config must be enabled, currently it isn't."
+exit 0; fi
+}
+
+## Apache available
+isApacheAvail() {
+local domain="$1"
+local vvar="$2"
+if [ -f "/etc/httpd/sites-available/${domain}.conf" ]; then
+    isApacheAvail="true"; else
+    isApacheAvail="false"; fi
+
+if [ "$3" != "n" ] && [ "${isApacheAvail}" = "false" ]; then
+/bin/echo "${vvar} Apache config must be available, currently it isn't."
+exit 0; fi
+}
+
+## Apache enabled
+isApacheEnabled() {
+local domain="$1"
+local vvar="$2"
+if [ "$(readlink -- "/etc/httpd/sites-enabled/${domain}")" = "/etc/httpd/sites-available/${domain}" ] && [ -f "/etc/httpd/sites-available/${domain}.conf" ]; then
+    isApacheEnabled="true"; else
+    isApacheEnabled="false"; fi
+
+if [ "$3" != "n" ] && [ "${isApacheEnabled}" = "false" ]; then
+/bin/echo "${vvar} Apache config must be enabled, currently it isn't."
+exit 0; fi
+}
+
+## isInkCertLELive
+### Works for CertBot and Letsencrypt certs from inkCert alike
+isInkCertLELive() {
+local domain="$1"
+local vvar="$2"
+if [ -d "/etc/inkcert/le/live/${domain}" ] && [ -f "$(readlink -- "/etc/inkcert/le/live/$DOMAIN/cert.pem")" ] && [ -f "$(readlink -- "/etc/inkcert/le/live/$DOMAIN/chain.pem")" ] && [ -f "$(readlink -- "/etc/inkcert/le/live/$DOMAIN/fullchain.pem")" ] && [ -f "$(readlink -- "/etc/inkcert/le/live/$DOMAIN/privkey.pem")" ]; then
+    isInkCertLELive="true"; else
+    isInkCertLELive="false"; fi
+
+if [ "$3" != "n" ] && [ "${isInkCertLELive}" = "false" ]; then
+/bin/echo "${vvar} inkCert certificate is either broken or not installed."
+exit 0; fi
+}
+
+## notInkCertLELive
+### Works for CertBot and Letsencrypt certs from inkCert alike
+notInkCertLELive() {
+local domain="$1"
+local vvar="$2"
+if [ ! -d "/etc/inkcert/le/live/${domain}" ] && [ -f "$(readlink -- "/etc/inkcert/le/live/$DOMAIN/cert.pem")" ] && [ -f "$(readlink -- "/etc/inkcert/le/live/$DOMAIN/chain.pem")" ] && [ -f "$(readlink -- "/etc/inkcert/le/live/$DOMAIN/fullchain.pem")" ] && [ -f "$(readlink -- "/etc/inkcert/le/live/$DOMAIN/privkey.pem")" ]; then
+    notInkCertLELive="true"; else
+    notInkCertLELive="false"; fi
+
+if [ "$3" != "n" ] && [ "${notInkCertLELive}" = "false" ]; then
+/bin/echo "${vvar} inkCert certificate is already installed."
+exit 0; fi
+}
+
+## isInkCerted
+### Checks for inkcert/cli-ini file status & inclusion
+isInkCerted() {
+local domain="$1"
+local vvar="$2"
+if [ -f "/opt/verb/conf/inkcert/cli-ini/cli.${domain}.ini" ] && [ -f "/opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}" ]; then
+  if /bin/grep -Fq "InkCerted=DONE" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
+    isInkCerted="true";
+  elif /bin/grep -Fq "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
+    isInkCerted="false";
+  else
+    /bin/echo "${vvar} inkCert certificate installation is broken."
+    exit 0;
+  fi
+
+fi
+if [ "$3" != "n" ] && [ "${isInkCerted}" = "false" ]; then
+/bin/echo "${vvar} inkCert certificate is not installed."
+exit 0; fi
+}
+
+## notInkCerted
+### Checks for inkcert/cli-ini file status & inclusion
+notInkCerted() {
+local domain="$1"
+local vvar="$2"
+if [ -f "/opt/verb/conf/inkcert/cli-ini/cli.${domain}.ini" ] && [ -f "/opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}" ]; then
+  if /bin/grep -Fq "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
+    notInkCerted="true";
+  elif /bin/grep -Fq "InkCerted=DONE" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
+    notInkCerted="false";
+  else
+    /bin/echo "${vvar} inkCert certificate installation is broken."
+    exit 0;
+  fi
+
+fi
+if [ "$3" != "n" ] && [ "${notInkCerted}" = "false" ]; then
+/bin/echo "${vvar} inkCert certificate is already installed."
+exit 0; fi
+}
+
+## isInkCertDoneNginx
+### Checks for inkcert declarations
+isInkCertDoneNginx() {
+local domain="$1"
+local vvar="$2"
+if [ -f "/opt/verb/conf/webserver/nginx/sites-available/${domain}.conf" ]; then
+  if /bin/grep -Fq "#INKVERB-INKCERT=DONE" /opt/verb/conf/webserver/nginx/sites-available/${domain}.conf; then
+    isInkCertDoneNginx="true";
+  elif /bin/grep -Fq "#INKVERB-INKCERT=NO" /opt/verb/conf/webserver/nginx/sites-available/${domain}.conf; then
+    isInkCertDoneNginx="false";
+  else
+    /bin/echo "${vvar} inkCert Nginx server installation is broken."
+    exit 0;
+  fi
+else
+  /bin/echo "${vvar} Nginx server not configured."
+  exit 0;
+fi
+if [ "$3" != "n" ] && [ "${isInkCertDoneNginx}" = "false" ]; then
+/bin/echo "${vvar} inkCert is not installed on the Nginx server."
+exit 0; fi
+}
+
+## notInkCertDoneNginx
+### Checks for inkcert declarations
+notInkCertDoneNginx() {
+local domain="$1"
+local vvar="$2"
+if [ -f "/opt/verb/conf/webserver/nginx/sites-available/${domain}.conf" ]; then
+  if /bin/grep -Fq "#INKVERB-INKCERT=NO" /opt/verb/conf/webserver/nginx/sites-available/${domain}.conf; then
+    notInkCertDoneNginx="true";
+  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE" /opt/verb/conf/webserver/nginx/sites-available/${domain}.conf; then
+    notInkCertDoneNginx="false";
+  else
+    /bin/echo "${vvar} inkCert Nginx server installation is broken."
+    exit 0;
+  fi
+else
+  /bin/echo "${vvar} Nginx server not configured."
+  exit 0;
+fi
+if [ "$3" != "n" ] && [ "${notInkCertDoneNginx}" = "false" ]; then
+/bin/echo "${vvar} inkCert is already installed on the Nginx server."
+exit 0; fi
+}
+
+## isInkCertDoneApache
+### Checks for inkcert declarations
+isInkCertDoneApache() {
+local domain="$1"
+local vvar="$2"
+if [ -f "/opt/verb/conf/webserver/nginx/sites-available/${domain}.conf" ]; then
+  if /bin/grep -Fq "#INKVERB-INKCERT=DONE" /opt/verb/conf/webserver/nginx/sites-available/${domain}.conf; then
+    isInkCertDoneApache="true";
+  elif /bin/grep -Fq "#INKVERB-INKCERT=NO" /opt/verb/conf/webserver/nginx/sites-available/${domain}.conf; then
+    isInkCertDoneApache="false";
+  else
+    /bin/echo "${vvar} inkCert Apache server installation is broken."
+    exit 0;
+  fi
+else
+  /bin/echo "${vvar} Apache server not configured."
+  exit 0;
+fi
+if [ "$3" != "n" ] && [ "${isInkCertDoneApache}" = "false" ]; then
+/bin/echo "${vvar} inkCert is not installed on the Apache Server."
+exit 0; fi
+}
+
+## notInkCertDoneApache
+### Checks for inkcert declarations
+notInkCertDoneApache() {
+local domain="$1"
+local vvar="$2"
+if [ -f "/opt/verb/conf/webserver/nginx/sites-available/${domain}.conf" ]; then
+  if /bin/grep -Fq "#INKVERB-INKCERT=NO" /opt/verb/conf/webserver/nginx/sites-available/${domain}.conf; then
+    notInkCertDoneApache="true";
+  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE" /opt/verb/conf/webserver/nginx/sites-available/${domain}.conf; then
+    notInkCertDoneApache="false";
+  else
+    /bin/echo "${vvar} inkCert Apache server installation is broken."
+    exit 0;
+  fi
+else
+  /bin/echo "${vvar} Apache server not configured."
+  exit 0;
+fi
+if [ "$3" != "n" ] && [ "${notInkCertDoneApache}" = "false" ]; then
+/bin/echo "${vvar} inkCert is already installed on the Apache Server."
+exit 0; fi
+}
+
+## isInkCertSetNginx
+### Checks for SSL file settings inside the webserver config file
+isInkCertSetNginx() {
+local domain="$1"
+local vvar="$2"
+if [ -f "/etc/nginx/sites-available/${domain}.conf" ]; then
+  if /bin/grep -Eq "(^\s|^\t|^)+ssl_certificate\s/etc/inkcert/le/live/${domain}/fullchain.pem;" /etc/nginx/sites-available/${domain}.conf && /bin/grep -Eq "(^\s|^\t|^)+ssl_certificate_key\s/etc/inkcert/le/live/${domain}/privkey.pem;" /etc/nginx/sites-available/${domain}.conf; then
+    isInkCertSetNginx="true"; else
+    isInkCertSetNginx="false"; fi
+else
+  /bin/echo "${vvar} Nginx server not configured."
+  exit 0;
+fi
+if [ "$3" != "n" ] && [ "${isInkCertSetNginx}" = "false" ]; then
+/bin/echo "${vvar} inkCert certificates not configured on the Nginx server."
+exit 0; fi
+}
+
+## notInkCertSetNginx
+### Checks for SSL file settings inside the webserver config file
+notInkCertSetNginx() {
+local domain="$1"
+local vvar="$2"
+if [ -f "/etc/nginx/sites-available/${domain}.conf" ]; then
+  if ! /bin/grep -Eq "(^\s|^\t|^)+ssl_certificate\s/etc/inkcert/le/live/${domain}/fullchain.pem;" /etc/nginx/sites-available/${domain}.conf && /bin/grep -Eq "(^\s|^\t|^)+ssl_certificate_key\s/etc/inkcert/le/live/${domain}/privkey.pem;" /etc/nginx/sites-available/${domain}.conf; then
+    notInkCertSetNginx="true"; else
+    notInkCertSetNginx="false"; fi
+else
+  /bin/echo "${vvar} Nginx server not configured."
+  exit 0;
+fi
+if [ "$3" != "n" ] && [ "${notInkCertSetNginx}" = "false" ]; then
+/bin/echo "${vvar} inkCert certificates already configured on the Nginx server."
+exit 0; fi
+}
+
+## isInkCertSetApache
+### Checks for SSL file settings inside the webserver config file
+isInkCertSetApache() {
+local domain="$1"
+local vvar="$2"
+if [ -f "/etc/httpd/sites-available/${domain}.conf" ]; then
+  if /bin/grep -Eq "(^\s|^\t|^)+ssl_certificate\s/etc/inkcert/le/live/${domain}/fullchain.pem;" /etc/httpd/sites-available/${domain}.conf && /bin/grep -Eq "(^\s|^\t|^)+ssl_certificate_key\s/etc/inkcert/le/live/${domain}/privkey.pem;" /etc/httpd/sites-available/${domain}.conf; then
+    isInkCertSetApache="true"; else
+    isInkCertSetApache="false"; fi
+else
+  /bin/echo "${vvar} Apache server not configured."
+  exit 0;
+fi
+if [ "$3" != "n" ] && [ "${isInkCertSetApache}" = "false" ]; then
+/bin/echo "${vvar} inkCert certificates not configured on the Apache server."
+exit 0; fi
+}
+
+## notInkCertSetApache
+### Checks for SSL file settings inside the webserver config file
+notInkCertSetApache() {
+local domain="$1"
+local vvar="$2"
+if [ -f "/etc/httpd/sites-available/${domain}.conf" ]; then
+  if ! /bin/grep -Eq "(^\s|^\t|^)+ssl_certificate\s/etc/inkcert/le/live/${domain}/fullchain.pem;" /etc/httpd/sites-available/${domain}.conf && /bin/grep -Eq "(^\s|^\t|^)+ssl_certificate_key\s/etc/inkcert/le/live/${domain}/privkey.pem;" /etc/httpd/sites-available/${domain}.conf; then
+    notInkCertSetApache="true"; else
+    notInkCertSetApache="false"; fi
+else
+  /bin/echo "${vvar} Apache server not configured."
+  exit 0;
+fi
+if [ "$3" != "n" ] && [ "${notInkCertSetApache}" = "false" ]; then
+/bin/echo "${vvar} inkCert certificates already configured on the Apache server."
+exit 0; fi
+}
+
+## inkCertServerConfStatus
+### Checks for SSL install status in server config
+inkCertServerConfStatus() {
+local domain="$1"
+. ${Conf}/servertype
+
+if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
+  ## Check Apache config status
+  if /bin/grep -Fq "#INKVERB-INKCERT=INK_NO_REMOVED" /opt/verb/conf/webserver/httpd/sites-available/${domain}.conf ; then
+    inkCertServerConfStatus="Removed"
+  elif /bin/grep -Fq "#INKVERB-INKCERT=INK_NOT_YET" /opt/verb/conf/webserver/httpd/sites-available/${domain}.conf ; then
+    inkCertServerConfStatus="Not yet"
+  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_CBSINGLE" /opt/verb/conf/webserver/nginx/sites-available/${domain}.conf ; then
+    inkCertServerConfStatus="Letsencrypt single"
+  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_CB" /opt/verb/conf/webserver/nginx/sites-available/${domain}.conf ; then
+    inkCertServerConfStatus="Letsencrypt wildcard"
+  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_LE" /opt/verb/conf/webserver/nginx/sites-available/${domain}.conf ; then
+    inkCertServerConfStatus="Letsencrypt combined"
+  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_SC" /opt/verb/conf/webserver/nginx/sites-available/${domain}.conf ; then
+    inkCertServerConfStatus="Self-Cert"
+  elif /bin/grep -Fq "#INKVERB-INKCERT=NA" /opt/verb/conf/webserver/nginx/sites-available/${domain}.conf ; then
+    inkCertServerConfStatus="NA"
+  else
+    inkCertServerConfStatus="Broken"
+  fi
+
+elif [ ${ServerType} = "lamp" ]; then
+  ## Check Apache config status
+  if /bin/grep -Fq "#INKVERB-INKCERT=INK_NO_REMOVED" /opt/verb/conf/webserver/httpd/sites-available/${domain}.conf ; then
+    inkCertServerConfStatus="Removed"
+  elif /bin/grep -Fq "#INKVERB-INKCERT=INK_NOT_YET" /opt/verb/conf/webserver/httpd/sites-available/${domain}.conf ; then
+    inkCertServerConfStatus="Not yet"
+  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_CBSINGLE" /opt/verb/conf/webserver/httpd/sites-available/${domain}.conf ; then
+    inkCertServerConfStatus="Letsencrypt single"
+  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_CB" /opt/verb/conf/webserver/httpd/sites-available/${domain}.conf ; then
+    inkCertServerConfStatus="Letsencrypt wildcard"
+  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_LE" /opt/verb/conf/webserver/httpd/sites-available/${domain}.conf ; then
+    inkCertServerConfStatus="Letsencrypt combined"
+  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_SC" /opt/verb/conf/webserver/httpd/sites-available/${domain}.conf ; then
+    inkCertServerConfStatus="Self-Cert"
+  elif /bin/grep -Fq "#INKVERB-INKCERT=NA" /opt/verb/conf/webserver/httpd/sites-available/${domain}.conf ; then
+    inkCertServerConfStatus="NA"
+  else
+    inkCertServerConfStatus="Broken"
+  fi
+fi
+}
+
+## inkCertSiteStatus
+### Checks for SSL install status in inkCert sitestatus.domain.tld file
+inkCertSiteStatus() {
+local domain="$1"
+. ${Conf}/servertype
+# Check the site config
+if /bin/grep -Fq "InkCerted=NO_REMOVED" ${Conf}/inkcert/cli-ini/siteinkcert.${domain} ; then
+  inkCertSiteStatus="Removed"
+elif /bin/grep -Fq "InkCerted=NOT_YET" ${Conf}/inkcert/cli-ini/siteinkcert.${domain} ; then
+  inkCertSiteStatus="Not yet"
+elif /bin/grep -Fq "InkCerted=DONE_CBSINGLE" ${Conf}/inkcert/cli-ini/siteinkcert.${domain} ; then
+  inkCertSiteStatus="Letsencrypt single"
+elif /bin/grep -Fq "InkCerted=DONE_CB" ${Conf}/inkcert/cli-ini/siteinkcert.${domain} ; then
+  inkCertSiteStatus="Letsencrypt wildcard"
+elif /bin/grep -Fq "InkCerted=DONE_LE" ${Conf}/inkcert/cli-ini/siteinkcert.${domain} ; then
+  inkCertSiteStatus="Letsencrypt combined"
+elif /bin/grep -Fq "InkCerted=DONE_SC" ${Conf}/inkcert/cli-ini/siteinkcert.${domain} ; then
+  inkCertSiteStatus="Self-Cert"
+elif /bin/grep -Fq "InkCerted=NA" ${Conf}/inkcert/cli-ini/siteinkcert.${domain} ; then
+  inkCertSiteStatus="NA"
+else
+  inkCertSiteStatus="Broken"
+fi
+}
+
+## inkCertInstallStatus
+### Checks for SSL install status in inkCert sitestatus.domain.tld file
+inkCertInstallStatus() {
+. ${Conf}/inkcertstatus
+# Check the site config
+if [ "${InkCertInstalled}" = "DONE" ] && [ -e "/etc/inkcert/le" ]; then
+  inkCertInstallStatus="Installed"
+else
+  inkCertInstallStatus="Not yet installed"
+fi
+}
+
+
+
+##################################################################################################################################################
+
+
+
+##################################################################################################################################################
+
+
+# File management
+
+## isDir (a valid, existing directory in a location)
+### argument must be full path to directory: isDir /path/to/dir
+isDir() {
+local LDIR="$1"
+local vvar="$2"
+if [ -d "${LDIR}" ]; then
+    isDir="true"; else
+    isDir="false"; fi
+
+if [ "$3" != "n" ] && [ "${isDir}" = "false" ]; then
+/bin/echo "${vvar} directory must exist, currently it doesn't."
+exit 0; fi
+}
+
+## notDir (a valid, existing directory in a location)
+### argument must be full path to directory: notDir /path/to/dir
+notDir() {
+local LDIR="$1"
+local vvar="$2"
+if [ ! -d "${LDIR}" ]; then
+    notDir="true"; else
+    notDir="false"; fi
+
+if [ "$3" != "n" ] && [ "${notDir}" = "false" ]; then
+/bin/echo "${vvar} directory must exist, currently it doesn't."
+exit 0; fi
+}
+
+## isFile (a valid, existing file in a location)
+### argument must be full path: isFile /path/to/file
+isFile() {
+local LFILE="$1"
+local vvar="$2"
+if [ -f "${LFILE}" ]; then
+    isFile="true"; else
+    isFile="false"; fi
+
+if [ "$3" != "n" ] && [ "${isFile}" = "false" ]; then
+/bin/echo "${vvar} file must exist, currently it doesn't."
+exit 0; fi
+}
+
+## notFile (a valid, existing file in a location)
+### argument must be full path: notFile /path/to/file
+notFile() {
+local LFILE="$1"
+local vvar="$2"
+if [ ! -f "${LFILE}" ]; then
+    notFile="true"; else
+    notFile="false"; fi
+
+if [ "$3" != "n" ] && [ "${notFile}" = "false" ]; then
+/bin/echo "${vvar} file must not exist, currently it does."
+exit 0; fi
+}
+
+## isExists (a valid, existing file/dir/link/something in a location)
+### argument must be full path: isExists /path/to/exists
+isExists() {
+local LEXIST="$1"
+local vvar="$2"
+if [ -e "${LEXIST}" ]; then
+    isExists="true"; else
+    isExists="false"; fi
+
+if [ "$3" != "n" ] && [ "${isExists}" = "false" ]; then
+/bin/echo "${vvar} must be exist, currently it doesn't."
+exit 0; fi
+}
+
+## notExists (a valid, existing file/dir/link/something in a location)
+### argument must be full path: notExists /path/to/exists
+notExists() {
+local LEXIST="$1"
+local vvar="$2"
+if [ ! -e "${LEXIST}" ]; then
+    notExists="true"; else
+    notExists="false"; fi
+
+if [ "$3" != "n" ] && [ "${notExists}" = "false" ]; then
+/bin/echo "${vvar} must not exist, currently it does."
+exit 0; fi
+}
+
+## isLink (a valid, existing link to a specific destination)
+### arguments must be full path: isLink /path/to/exists
+isLink() {
+local link="$1"
+local target="$2"
+local vvar="$3"
+if [ "$(readlink -- "$link")" = "$target" ] && [ -e "${target}" ]; then
+    isLink="true"; else
+    isLink="false"; fi
+
+if [ "$4" != "n" ] && [ "${isLink}" = "false" ]; then
+/bin/echo "${vvar} is either a broken link or doesn't."
+exit 0; fi
+}
+
+## isVappConfFile (a valid, existing file in a location)
+### argument must be vapp.somename ONLY: isVappConfFile vapp.wp.inkisaverb.com
+isVappConfFile() {
+local LFILE="$1"
+local vvar="$2"
+if [ -f "${Conf}/${LFILE}" ] && [[ "$LFILE" =~ ^vapp.* ]]; then
+    isVappConfFile="true"; else
+    isVappConfFile="false"; fi
+
+if [ "$3" != "n" ] && [ "${isVappConfFile}" = "false" ]; then
+/bin/echo "${vvar} file must exist, currently it doesn't."
+exit 0; fi
+}
+
+## isVappConfFile (a valid, existing file in a location)
+### argument must be vapp.somename ONLY: isVappConfFile vapp.wp.inkisaverb.com
+isBackupFile() {
+local LFILE="$1"
+local vvar="$2"
+if [ -f "/srv/www/vip/${LFILE}" ] && [[ "$LFILE" =~ ^verb.vmail.*\.vbak$ ]]; then
+    isBackupFile="true"; else
+    isBackupFile="false"; fi
+
+if [ "$3" != "n" ] && [ "${isBackupFile}" = "false" ]; then
+/bin/echo "${vvar} file must exist, currently it doesn't."
+exit 0; fi
+}
+
+
+##################################################################################################################################################
+
+
+
+##################################################################################################################################################
+
+
+# Serf management
+
+## Get all actions
+getActions() {
+/usr/bin/cat ${InkPB}
+}
+
+## Get all schemas for the action
+getSchemas() {
+ACTION="$1"
+if grep -q "${ACTION}" ${InkPB}; then
+  for SUBNAME in ${Felt}/${ACTION}*.ink; do
+  listSubName=$(/bin/echo "${SUBNAME}" | sed s:${Felt}/:: | sed "s/${ACTION}//" | sed "s/\.ink//")
+  /bin/echo "${listSubName}"
+  done
+fi
+}
+
+## Usage messages
+usageInk() {
+/bin/echo "
+-h Help: ink -h
+This will display this message.
+
+-a Actions: ink -a
+This will display available actions.
+
+-h Help: ink [ action ] -h
+This will display help for the action.
+
+-s Schemas: ink [ action ] -s
+This will display available schemas for the action.
+
+-h Help: ink [ action ] [ schema ] -h
+This will display help for the action and schema.
+"
+}
+
+usageSur() {
+local  HELPNAME="${1}"
+/usr/bin/cat ${InkHelpDir}/${HELPNAME}.md
+}
+
+inkFail() {
+  /bin/echo "Learn more with: ink ${ACTION} ${SCHEMA} -h"
+  exit 0
+}
+
+forbiddenServerType() {
+  prettytype=$1
+  if [ ${prettytype} = "LAMP" ]; then
+    servertype="lamp"
+  elif [ ${prettytype} = "LAEMP" ]; then
+    servertype="laemp"
+  elif [ ${prettytype} = "LEMP" ]; then
+    servertype="lemp"
+  fi
+  . ${Conf}/servertype
+  if [ ${ServerType} = "${servertype}" ]; then
+    /bin/echo "This is not allowed for $prettytype servers"
+    exit 0; fi
+}

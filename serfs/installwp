@@ -1,0 +1,160 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This downloads and installs WordPress as a vapp with www/html/DOMAIN.TLD link from adddomain
+## WordPress actually resides in www/vapps/wp.DOMAIN.TLD
+## This progression is necessary to: 1. keep track of domain contents in www/domains and 2. use standard structure for backups
+## This does not remove any files an ftpvip may have uploaded to the domain's folder
+## Any files conflicting with WordPress will be replaced by the new WordPress installation created by this script
+## The domain will automatically be added with DKIM credentials if it has not been already
+## This will NOT run inkCert for the domain, but inkCert will be prepped at least and used if inkCert certs already exist.
+
+# All options after the domain are optional, but are sequential
+
+# How to use:
+## ./installwp [domain.tld] [dbase] [dbuser] [dbpassword]
+## ./installwp [domain.tld]  # This will use default usernames and passwords
+
+
+usagenotes="This downloads and installs WordPress to a specified domain"
+usageformat="installwp [ domain.tld ] [ dbase - optional ] [ dbuser - optional ] [ dbpassword - optional ]"
+usageexample="installwp inkisaverb.com
+installwp sub.inkisaverb.com
+installwp inkisaverb.com somedatabase somedbuser somedbpassword"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=( "Database" "Database user" "Database password" )
+vopttypes=( isSQLDatabasename isSQLDatabasename isSQLDatabasename )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( inkdriveapp )
+useconfigs=( servertype inkdrive/inkdriveinfo )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/installwp.replace" ]; then . /opt/verb/mods/installwp.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installwp.before" ]; then . /opt/verb/mods/installwp.before; fi # Precedes this script
+
+
+CVAPPNAME=wp
+
+DOMAIN=$1
+DBASE=$2
+DBUSER=$3
+DBPASSWORD=$4
+CLEANNAME=$(/bin/echo $DOMAIN | sed -e 's/\.//g')
+
+# Basic credential check
+if [ -z ${1} ]; then
+/bin/echo "You must designate a domain. Read the How to use. Can't continue."
+exit 8; fi
+# Check if already installed
+## Config
+if [ -f /opt/verb/conf/vapp.${CVAPPNAME}.${DOMAIN} ]; then
+/bin/echo "This is already installed."
+exit 0; fi
+## Directory
+if [ -d /srv/www/vapps/${CVAPPNAME}.${DOMAIN} ]; then
+/bin/echo "That WordPress site already exists in the system. If it isn't working, look deeper on the server. For now, doing nothing."
+exit 0; fi
+
+# Domain presence check
+if [ ! -d "/srv/www/domains/${DOMAIN}" ]; then
+/opt/verb/serfs/adddomain ${DOMAIN}
+wait
+fi
+
+# Download and establish wordpress in the server to pre-created domain
+cd /srv/www/vapps || exit 0
+/opt/verb/serfs/inkget ${CVAPPNAME} check; wait
+if [ "$?" = 4 ]; then
+/bin/echo "Repo failed to retrieve the file."
+exit 4; fi
+
+# Auto database
+if [ -z ${4} ]; then
+DBPASSWORD=$(/usr/bin/pwgen -s -1 10); fi
+if [ -z ${2} ]; then
+DBASE=wp$(/bin/echo $CLEANNAME | cut -c1-24)$(/usr/bin/pwgen -s -1 6); fi
+if [ -z ${3} ]; then
+DBUSER=${DBASE}; fi
+
+/bin/mv ${CVAPPNAME} ${CVAPPNAME}.${DOMAIN}
+/bin/rm -f /srv/www/html/${DOMAIN}
+/bin/ln -sfn /srv/www/vapps/${CVAPPNAME}.${DOMAIN} /srv/www/html/${DOMAIN}
+/bin/ln -sfn /srv/www/vapps/${CVAPPNAME}.${DOMAIN} /srv/vip/_webapps/; wait
+/bin/chown -R www:www /srv/www/html/${DOMAIN}; wait
+/bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}.${DOMAIN}; wait
+
+# Create the database and credentials
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+CREATE DATABASE  ${DBASE};
+GRANT ALL PRIVILEGES ON ${DBASE}.* TO '${DBUSER}'@'localhost' IDENTIFIED BY '${DBPASSWORD}';
+FLUSH PRIVILEGES;"
+
+# Write the config for backup
+/bin/echo "#!/bin/bash
+APPDBASE=${DBASE}
+APPDDBUSR=${DBUSER}
+APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.${CVAPPNAME}.${DOMAIN}
+
+# Put the settings in the WordPress config file
+cd wp.${DOMAIN} || exit 0
+/bin/cp wp-config-sample.php wp-config.php
+/bin/sed -i "s/database_name_here/${DBASE}/g" wp-config.php
+/bin/sed -i "s/username_here/${DBUSER}/g" wp-config.php
+/bin/sed -i "s/password_here/${DBPASSWORD}/g" wp-config.php
+/bin/echo "
+/** inkVerb Sets the URL */
+define( 'WP_SITEURL', 'https://${DOMAIN}' );
+define( 'WP_HOME', 'https://${DOMAIN}' );" >> wp-config.php
+
+# Add the secure salt and key strings
+/opt/verb/serfs/setsecurewp ${DOMAIN}
+
+#### fixhttps already done?
+if /bin/grep -q '##INKHTTPSFIX=fixed' /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf; then
+/bin/sed -i "/WP_SITEURL/d" /srv/www/vapps/wp.${DOMAIN}/wp-config.php
+/bin/sed -i "/WP_HOME/d" /srv/www/vapps/wp.${DOMAIN}/wp-config.php
+/bin/echo "define( 'WP_SITEURL', 'https://${DOMAIN}' );
+define( 'WP_HOME', 'https://${DOMAIN}' );" >> /srv/www/vapps/wp.${DOMAIN}/wp-config.php
+fi
+
+# Reset all permissions and restart webserver
+/bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}.${DOMAIN}
+. /opt/verb/conf/servertype
+if [ ${ServerType} = "lemp" ]; then
+  /usr/bin/systemctl restart nginx
+elif [ ${ServerType} = "lamp" ]; then
+  /usr/bin/systemctl restart httpd
+elif [ ${ServerType} = "laemp" ]; then
+  /usr/bin/systemctl restart httpd
+  /usr/bin/systemctl restart nginx
+fi
+
+# inkDrive?
+if [ -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
+  . /opt/verb/conf/inkdrive/inkdriveinfo
+fi
+if [ "${InkDriveWP}" != "off" ]; then
+  /usr/bin/echo "Mounting 'wp-content' to a drive..."
+  /opt/verb/serfs/inkdriveapp "${CVAPPNAME}.${DOMAIN}" "${InkDriveWP}"
+  if [ "$?" = 0 ]; then
+    /usr/bin/echo "InkDrive=\"${InkDriveWP}\"" >> /opt/verb/conf/vapp.${CVAPPNAME}.${DOMAIN}
+  fi
+fi
+
+# Finish
+/usr/bin/echo "These are setup:
+
+Database: ${DBASE}
+Database user: ${DBUSER}
+Database password: ${DBPASSWORD}
+
+Go to http://${DOMAIN}/wp-admin/index.php to install.
+"
+
+
+if [ -e "/opt/verb/mods/installwp.after" ]; then . /opt/verb/mods/installwp.after; fi # Follows this script

@@ -1,0 +1,77 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This downloads and installs MediaWiki from the inkisaverb.com repository and links it to wiki.your-name.verb.ink
+
+# All options are optional, but must are sequential, omit last options first.
+
+# How to use:
+## ./installmediawiki [dbase] [dbuser] [dbpassword]
+
+
+CVAPPNAME=mediawiki
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+
+DBASE=$1
+DBUSER=$2
+DBPASSWORD=$3
+CLEANNAME=$(/bin/echo $CVAPPNAME | sed -e 's/\.//g')
+
+# Check if already installed
+if [-f /opt/verb/conf/vapp.${CVAPPNAME} ]; then
+/bin/echo "This is already installed. I quit."
+exit 0; fi
+
+# Download and establish mediawiki from the inkVerb repo
+cd /srv/www/vapps || exit 0
+/opt/verb/serfs/inkget ${CVAPPNAME} check; wait
+if [ "$?" = 4 ]; then
+/bin/echo "Repo failed to retrieve the file."
+exit 4; fi
+
+/opt/verb/serfs/setvapplinkon ${CVAPPNAME}; wait
+/bin/chown -R www:www /srv/www/verb/ink.wiki; wait
+/bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}; wait
+
+# Auto database
+if [ -z ${3} ]; then
+DBPASSWORD=$(/usr/bin/pwgen -s -1 10); fi
+if [ -z ${1} ]; then
+DBASE=${CLEANNAME}$(/usr/bin/pwgen -s -1 6); fi
+if [ -z ${2} ]; then
+DBUSER=${DBASE}; fi
+
+# Create the database and credentials
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+CREATE DATABASE  ${DBASE};
+GRANT ALL PRIVILEGES ON ${DBASE}.* TO '${DBUSER}'@'localhost' IDENTIFIED BY '${DBPASSWORD}';
+FLUSH PRIVILEGES;"
+
+# Write the config for backup
+/bin/echo "#!/bin/bash
+APPDBASE=${DBASE}
+APPDDBUSR=${DBUSER}
+APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.${CVAPPNAME}
+
+/bin/echo "These are setup:
+
+Host: localhost
+Database name: ${DBASE}
+Database username: ${DBUSER} (NOT root)
+Database password: ${DBPASSWORD}
+Storage engine: InnoDB
+Character Set: UTF-8
+Return email address: use anything real, maybe yourname@${inkURI}, NOT something@wiki.${inkURI}
+
+Go to http://wiki.${inkURI} to install.
+
+After installing, download the LocalSettings.php file, then upload it to the \"vip\" web folder, then run postinstallmediawiki to complete in installation.
+"
+
+
+
+
+if [ -e "/opt/verb/mods/installmediawiki.after" ]; then . /opt/verb/mods/installmediawiki.after; fi # Follows this script

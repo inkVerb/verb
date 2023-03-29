@@ -1,0 +1,47 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This activates and deactivates the podcast feature in Ampache
+
+# How to use:
+## ./setampachepodcast [on/off]
+
+# Eg:
+## ./setampachepodcast on
+## ./setampachepodcast off
+
+
+if [ "$1" = "-h" ]
+then
+    /bin/echo "Usage: ./activatepodcast [on/off]
+
+Examples:
+ ./activatepodcast on
+ ./activatepodcast off"
+
+exit 0
+fi
+
+if [ "$1" = "on" ]
+then
+    sed -i "s/;podcast = \"false\"/podcast = \"true\"/g" /srv/www/vapps/ampache/config/ampache.cfg.php
+    /bin/echo "Ampcache podcast on.
+
+1. Configure Podcast settings in: Admin > Server Config > System.
+2. Add a new Podcast local Catalog in: Admin > Catalogs > Add Catalog.
+3. Add your podcast url in: Home > Browse Music > Podcasts.
+"
+exit 0
+fi
+
+if [ "$1" = "off" ]
+then
+    sed -i "s/podcast = \"true\"/;podcast = \"false\"/g" /srv/www/vapps/ampache/config/ampache.cfg.php
+    /bin/echo "Ampcache podcast off."
+exit 0
+fi
+
+
+
+
+if [ -e "/opt/verb/mods/setampachepodcast.after" ]; then . /opt/verb/mods/setampachepodcast.after; fi # Follows this script

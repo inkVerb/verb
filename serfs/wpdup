@@ -1,0 +1,120 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This duplicates a domain-based WordPress site at another domain
+## The new domain/subdomain does NOT need to already exist, this will add it if it doesn't
+##DEV See #DEV notes in the script below; to use with a subdomain, run addsubdomain before running this
+
+# How to use:
+## ./wpdup [original domain.tld or subdomain.domain.tld] [to-be-duped domain.tld or subdomain.domain.tld]
+
+# Eg:
+## ./wpdup inkisaverb.com new.inkisaverb.com
+## ./wpdup inkisaverb.com poetryiscode.com
+
+
+oDOMAIN="$1"
+nDOMAIN="$2"
+
+# Check if the new WP site already exists
+if [ -e "/srv/www/vapps/wp.${nDOMAIN}" ]; then
+	/bin/echo "The to-be-created WordPress site already exists, doing nothing."
+exit 0; fi
+
+# Check if the old WP site exists
+if [ -z "/srv/www/vapps/wp.${oDOMAIN}" ]; then
+	/bin/echo "That original WordPress site does not exist, doing nothing."
+exit 0; fi
+
+# Create the new domain if it doesn't exist already
+##DEV This needs to be expanded to check whether it includes a subdomain of an existing domain.
+##DEV Currently, the way to do subdomains is to add the subdomain before running this
+if [ -z "/srv/www/domains/${nDOMAIN}" ]; then
+	/bin/echo "${nDOMAIN} does not yet exist, creating it..."
+/opt/verb/serfs/adddomain ${nDOMAIN}
+fi
+
+# Dump the database
+## Include the vapp.config.file
+. /opt/verb/conf/vapp.wp.${oDOMAIN}
+
+## Export the database
+/usr/bin/mysqldump --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${APPDBASE} > ${APPDBASE}.sql
+
+# Setup the new WP site
+## Set the vapp in its directory
+/bin/cp -r /srv/www/vapps/wp.${oDOMAIN} /srv/www/vapps/wp.${nDOMAIN}
+/bin/rm -f /srv/www/html/${nDOMAIN}
+/bin/ln -sfn /srv/www/vapps/wp.${nDOMAIN} /srv/www/html/${nDOMAIN}
+/bin/ln -sfn /srv/www/vapps/wp.${nDOMAIN} /srv/vip/_webapps/; wait
+/bin/chown -R www:www /srv/www/html/${nDOMAIN}; wait
+/bin/chown -R www:www /srv/www/vapps/wp.${nDOMAIN}; wait
+
+## Auto database
+DBPASSWORD=$(/usr/bin/pwgen -s -1 10)
+DBASE=wp$(/bin/echo "wp" | cut -c1-24)$(/usr/bin/pwgen -s -1 6)
+DBUSER=${DBASE}
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+CREATE DATABASE  ${DBASE};
+GRANT ALL PRIVILEGES ON ${DBASE}.* TO '${DBUSER}'@'localhost' IDENTIFIED BY '${DBPASSWORD}';
+FLUSH PRIVILEGES;"
+
+## Move & import the old database to the new one
+/bin/mv ${APPDBASE}.sql ${DBASE}.sql
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${DBASE} < ${DBASE}.sql
+/bin/rm ${DBASE}.sql
+
+## Write the config for backup
+/bin/echo "#!/bin/bash
+APPDBASE=${DBASE}
+APPDDBUSR=${DBUSER}
+APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.wp.${nDOMAIN}
+
+## Put the settings in the WordPress config file
+cd /srv/www/vapps/wp.${nDOMAIN} || exit 0
+/bin/cp wp-config-sample.php wp-config.php
+/bin/sed -i "s/database_name_here/${DBASE}/g" wp-config.php
+/bin/sed -i "s/username_here/${DBUSER}/g" wp-config.php
+/bin/sed -i "s/password_here/${DBPASSWORD}/g" wp-config.php
+/bin/echo "
+/** inkVerb Sets the URL */
+define( 'WP_SITEURL', 'http://${nDOMAIN}' );
+define( 'WP_HOME', 'http://${nDOMAIN}' );" >> wp-config.php
+
+## Add the secure salt and key strings
+AUTH_KEY=$(/usr/bin/pwgen -s -1 27)
+SECURE_AUTH_KEY=$(/usr/bin/pwgen -s -1 27)
+LOGGED_IN_KEY=$(/usr/bin/pwgen -s -1 27)
+NONCE_KEY=$(/usr/bin/pwgen -s -1 27)
+AUTH_SALT=$(/usr/bin/pwgen -s -1 27)
+SECURE_AUTH_SALT=$(/usr/bin/pwgen -s -1 27)
+LOGGED_IN_SALT=$(/usr/bin/pwgen -s -1 27)
+NONCE_SALT=$(/usr/bin/pwgen -s -1 27)
+/bin/sed -i "s/define('AUTH_KEY',         'put your unique phrase here');/define('AUTH_KEY',         '${AUTH_KEY}');/g" wp-config.php
+/bin/sed -i "s/define('SECURE_AUTH_KEY',  'put your unique phrase here');/define('SECURE_AUTH_KEY',  '${SECURE_AUTH_KEY}');/g" wp-config.php
+/bin/sed -i "s/define('LOGGED_IN_KEY',    'put your unique phrase here');/define('LOGGED_IN_KEY',    '${LOGGED_IN_KEY}');/g" wp-config.php
+/bin/sed -i "s/define('NONCE_KEY',        'put your unique phrase here');/define('NONCE_KEY',        '${NONCE_KEY}');/g" wp-config.php
+/bin/sed -i "s/define('AUTH_SALT',        'put your unique phrase here');/define('AUTH_SALT',        '${AUTH_SALT}');/g" wp-config.php
+/bin/sed -i "s/define('SECURE_AUTH_SALT', 'put your unique phrase here');/define('SECURE_AUTH_SALT', '${SECURE_AUTH_SALT}');/g" wp-config.php
+/bin/sed -i "s/define('LOGGED_IN_SALT',   'put your unique phrase here');/define('LOGGED_IN_SALT',   '${LOGGED_IN_SALT}');/g" wp-config.php
+/bin/sed -i "s/define('NONCE_SALT',       'put your unique phrase here');/define('NONCE_SALT',       '${NONCE_SALT}');/g" wp-config.php
+
+# Reset all permissions and restart server
+/bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}.${DOMAIN}
+. /opt/verb/conf/servertype
+if [ ${ServerType} = "lemp" ]; then
+  /usr/bin/systemctl restart nginx
+elif [ ${ServerType} = "lamp" ]; then
+  /usr/bin/systemctl restart httpd
+elif [ ${ServerType} = "laemp" ]; then
+  /usr/bin/systemctl restart httpd
+  /usr/bin/systemctl restart nginx
+fi
+
+# Finish
+/bin/echo "The WordPress site duplicated from ${oDOMAIN} is now live and ready for login at: http://${nDOMAIN}/wp-admin/"
+
+
+
+
+if [ -e "/opt/verb/mods/wpdup.after" ]; then . /opt/verb/mods/wpdup.after; fi # Follows this script

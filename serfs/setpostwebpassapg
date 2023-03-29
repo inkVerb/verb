@@ -1,0 +1,57 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This sets a new Postfix SQL database password appendage and installs it where it is needed
+
+# How to use:
+## ./setpostfixpassapg
+
+# Include the configs
+. /opt/verb/conf/servermailpath
+. /opt/verb/conf/servermailpass
+
+# Check prerequesites
+if [ ${ServerMailStatus} = "VMAIL_SERVER" ] || [ ${ServerMailStatus} = "EMAIL_BACKUP_MX" ] || [ ${ServerMailStatus} = "PMAIL_SERVER" ]; then
+/bin/echo "
+Email server is installed, proceeding...
+"
+else
+/bin/echo "
+Email server not installed, nothing to change.
+"
+exit 0; fi
+
+# Set the variables
+tbrSMPAPG="${ServerMailPassApg}"
+NEWMAILPASSAPG="$(/usr/bin/pwgen -s -1 5)"
+
+# MySQL password
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+GRANT ALL PRIVILEGES ON mail.* TO 'mail'@'localhost' IDENTIFIED BY 'mailpass${NEWMAILPASSAPG}';
+FLUSH PRIVILEGES;"
+
+# Postfix & Dovecot password
+/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${NEWMAILPASSAPG}/" /etc/dovecot/dovecot-sql.conf.ext
+/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${NEWMAILPASSAPG}/" /etc/postfix/virtual_alias_domains.cf
+/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${NEWMAILPASSAPG}/" /etc/postfix/virtual_alias_domains_maps.cf
+/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${NEWMAILPASSAPG}/" /etc/postfix/virtual_alias_maps.cf
+/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${NEWMAILPASSAPG}/" /etc/postfix/virtual_mailbox_domains.cf
+/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${NEWMAILPASSAPG}/" /etc/postfix/virtual_mailbox_domainaliases_maps.cf
+/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${NEWMAILPASSAPG}/" /etc/postfix/virtual_mailbox_maps.cf
+/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${NEWMAILPASSAPG}/" /etc/postfix/virtual_sender_login_maps.cf
+
+# PFA
+if [ ${ServerPFAPath} != "PFA_NOT_ALLOWED" ] && [ ${ServerPFAPath} != "PFA_NOT_INSTALLED" ]; then
+/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${NEWMAILPASSAPG}/" /srv/www/email/postfixadmin/config.local.php; fi
+
+# The site-wide config
+/bin/sed -i "s/ServerMailPassApg.*/ServerMailPassApg=\"${NEWMAILPASSAPG}\"/g" /opt/verb/conf/servermailpass
+
+# Finish
+/bin/echo "Postfix and friends are now using a new database password."
+
+
+
+
+
+if [ -e "/opt/verb/mods/setpostwebpassapg.after" ]; then . /opt/verb/mods/setpostwebpassapg.after; fi # Follows this script

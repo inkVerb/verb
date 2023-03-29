@@ -1,0 +1,28 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This sets the PostfixAdmin password hash for installation
+## The hash is retrieved from the setup.php page
+
+# How to use:
+## ./setpfapass [rawpassword]
+
+
+PFAPASS=$1
+
+# Replace whatever current hash settings with the hash
+INSTHASH="$(php -r "echo password_hash('${PFAPASS}', PASSWORD_DEFAULT);")"
+/bin/sed -i "s/\$Conf\['configured'\] = .*/\$Conf\['configured'\] = true;/g" /srv/www/email/postfixadmin/config.local.php
+/bin/sed -i "/setup_password/d" /srv/www/email/postfixadmin/config.local.php
+/bin/sed -i "/setup_password/d" /srv/www/email/postfixadmin/config.inc.php
+/usr/bin/cat <<EOF >> /srv/www/email/postfixadmin/config.local.php
+\$Conf['setup_password'] = '${INSTHASH}';
+EOF
+
+# Make a record so it can be called
+/usr/bin/echo "PFASETUPTPASS=\"${PFAPASS}\"" > /opt/verb/conf/pfasetuppass
+
+
+
+
+if [ -e "/opt/verb/mods/setpfapass.after" ]; then . /opt/verb/mods/setpfapass.after; fi # Follows this script

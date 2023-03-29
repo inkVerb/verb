@@ -1,0 +1,20 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This delets all backups from the server and their web-accessible symlinks
+
+# How to use:
+## ./backupdel
+
+
+# Include the configs
+. /opt/verb/conf/servernameip
+
+/bin/rm -f /srv/www/vip/*.vbak
+/bin/rm -f /srv/www/html/${ServerTLD}/*.vbak -f
+
+
+
+
+
+if [ -e "/opt/verb/mods/backupdel.after" ]; then . /opt/verb/mods/backupdel.after; fi # Follows this script

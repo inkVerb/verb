@@ -1,0 +1,88 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This adds a subdomain A & AAAA records to an existing DNS record in the inkDNS zone file on the server
+
+# How to use:
+## ./inkdnsaddsub [ subdomain ] [ domain.tld ]
+
+usagenotes="This adds a subdomain A & AAAA records to an existing ONE DNS record in the inkDNS zone file on the server"
+usageformat="inkdnsaddsub [ subdomain ] [ domain.tld ]"
+usageexample="inkdnsaddsub subdomain"
+hierarchy=( tertiary addsubdomain )
+vsetnames=( "Subdomain" "Domain" )
+vsettypes=( isDomainPart isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkdnsinstall )
+prerequesite=(  )
+usedby=( addsubdomain )
+useserfs=( inkdnsserial inkdnsrefreshbind )
+useconfigs=( inkcertstatus inkdnsconf servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdnsaddsub.replace" ]; then . /opt/verb/mods/inkdnsaddsub.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdnsaddsub.before" ]; then . /opt/verb/mods/inkdnsaddsub.before; fi # Precedes this script
+
+
+# Dependencies
+if ! /bin/grep -q 'InkCertInstalled="DONE"' /opt/verb/conf/inkcertstatus; then
+  /usr/bin/echo "Install inkCert first, I quit."; exit 8
+fi
+if ! /bin/grep -q 'InkDNSStat="INSTALLED"' /opt/verb/conf/inkdnsconf; then
+  /usr/bin/echo "Install inkDNS first, I quit."; exit 8
+fi
+if ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpath; then
+  /usr/bin/echo "Install Postfix Vmail first, I quit."; exit 8
+fi
+
+DNSSUBDOM="$1"
+DNsdnsDomainAIN="$2"
+
+# Include the configs
+. /opt/verb/conf/servernameip
+
+# Check if already added
+if /bin/grep -Fq "${DNSSUBDOM}.${DNsdnsDomainAIN}" /opt/verb/conf/inkdns/zones/db.${DNsdnsDomainAIN}; then
+/bin/echo "The subdomain ${DNSSUBDOM} has already been added to ${DNsdnsDomainAIN}. Use killinkdnssub to remove it."
+exit 0; fi
+
+# Echo the records
+## db.DOM
+/bin/echo "; Subdomain Records Added by inkDNS ${DNSSUBDOM}.${DNsdnsDomainAIN}" >> /opt/verb/conf/inkdns/zones/db.${DNsdnsDomainAIN}
+### IP4?
+if [ "${ServerIPv4}" != "NOIP4" ]; then
+  /bin/echo "${DNSSUBDOM}.${DNsdnsDomainAIN}.   IN  A    ${ServerIPv4}" >> /opt/verb/conf/inkdns/zones/db.${DNsdnsDomainAIN}
+fi
+### IP6?
+if [ "${ServerIPv6}" != "NOIP6" ]; then
+  /bin/echo "${DNSSUBDOM}.${DNsdnsDomainAIN}.   IN  AAAA   ${ServerIPv6}" >> /opt/verb/conf/inkdns/zones/db.${DNsdnsDomainAIN}
+fi
+## nv.DOM
+/bin/echo "; PTR Subdomain Records Added by inkDNS ${DNSSUBDOM}.${DNsdnsDomainAIN}" >> /opt/verb/conf/inkdns/zones/nv.${DNsdnsDomainAIN}
+### IP4?
+if [ "${ServerIPv4}" != "NOIP4" ]; then
+  /bin/echo "${ServerARPAIPv4}		IN  PTR  ${DNSSUBDOM}.${DNsdnsDomainAIN}." >> /opt/verb/conf/inkdns/zones/nv.${DNsdnsDomainAIN}
+fi
+### IP6?
+if [ "${ServerIPv6}" != "NOIP6" ]; then
+  /bin/echo "${ServerARPAIPv6}		IN  PTR  ${DNSSUBDOM}.${DNsdnsDomainAIN}." >> /opt/verb/conf/inkdns/zones/nv.${DNsdnsDomainAIN}
+fi
+
+# Set the Serial No
+/opt/verb/serfs/inkdnsserial ${DNsdnsDomainAIN}
+
+# Refresh zones
+if [ -f "/opt/verb/conf/inkdnsconf" ]; then
+  . /opt/verb/conf/inkdnsconf
+  if [ "${InkDNSStat}" = "INSTALLED" ]; then
+/opt/verb/serfs/inkdnsrefreshbind; fi; fi
+
+# Finish
+/bin/echo "The subdomain ${DNSSUBDOM} has been added to the ${DNsdnsDomainAIN} DNS zone file."
+
+
+
+
+if [ -e "/opt/verb/mods/inkdnsaddsub.after" ]; then . /opt/verb/mods/inkdnsaddsub.after; fi # Follows this script

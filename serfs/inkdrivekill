@@ -1,0 +1,79 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+# This removes a block storage drive to the /mnt/ directory and removes the entry in /etc/fstab
+## All credentials must be entered correctly for accurate confirmation
+
+# How to use:
+## ./inkdrivekill [ dev ] [ drive name ] [ disk type: hdd/ssd ] [ 'ignore' - optional to unmount the drive even if not empty ]
+
+# Eg:
+## ./inkdrivekill vdb mydrive ssd
+## ./inkdrivekill vdc harddrive hdd
+## ./inkdrivekill vdc harddrive hdd ignore
+
+
+usagenotes="This removes a block storage drive to the /mnt/ directory and removes the entry in /etc/fstab; the drive must be empty first"
+usageformat="inkdrivekill [ drive name ] [ disk type: hdd/ssd ][ 'ignore' - optional to unmount the drive even if not empty ]"
+usageexample="inkdrivekill vdb mydrive ssd
+inkdrivekill dc harddrive hdd
+inkdrivekill dc harddrive hdd ignore"
+hierarchy=( primary )
+vsetnames=( "Device" "Drive name" "Disk type" )
+vsettypes=( isExists isFilename isChoice )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( inkdriveadd )
+usedby=(  )
+useserfs=(  )
+useconfigs=( inkdrive/inkdriveinfo )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdrivekill.replace" ]; then . /opt/verb/mods/inkdrivekill.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdrivekill.before" ]; then . /opt/verb/mods/inkdrivekill.before; fi # Precedes this script
+
+# Check if installed
+if [ ! -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
+  /usr/bin/echo "inkDrive not installed. Nothing to show."
+fi
+
+Dev="$1"
+Mnt="$2"
+Typ="$3"
+if [ -n "$4" ] && [ "$4" = "ignore" ]; then
+  Ignore="true"
+fi
+
+# Check the config
+if [ -f "/opt/verb/conf/inkdrive/${Typ}.${Mnt}" ]; then
+  . /opt/verb/conf/inkdrive/${Typ}.${Mnt}
+else
+  /usr/bin/echo "That drive configuration does not exist. Check your credentials, then try again."
+  exit 5
+fi
+if [ "Device" != "${Dev}" ] && [ "Mount" != "${Mnt}" ] && [ "Type" != "${Typ}" ]; then
+  /usr/bin/echo "A mounted drive with that configuration does not exist. Check your credentials, then try again."
+  exit 5
+fi
+
+# Check that the mounted drive is empty
+if [ -n "$(/usr/bin/ls -A /mnt/${Mnt})" ] && [ -z "$Ignore" ]; then
+   /usr/bin/echo "That mounted drive is not empty. Move its contents first using inkdrivemove, or use the \"ignore\" fourth argument to remove it anyway."
+   exit 5
+fi
+
+# Unmount the drive
+/usr/bin/sed "/${Dev}1\s*\/mnt\/${Mnt}/d" /etc/fstab
+/usr/bin/rm -rf "/mnt/${Mnt}"
+
+# Delete configs
+/usr/bin/rm -f "/opt/verb/conf/inkdrive/${Typ}.${Mnt}"
+
+# Finish
+if [ ! -d "/mnt/${Mnt}" ] && ! /bin/grep -q "${Dev}" /etc/fstab && ! /bin/grep -q "/mnt/${Mnt}" /etc/fstab; then
+  /usr/bin/echo "${TypDescr} drive ${Dev} successfully unmounted from /mnt/${Mnt}."
+fi
+
+
+if [ -e "/opt/verb/mods/inkdrivekill.after" ]; then . /opt/verb/mods/inkdrivekill.after; fi # Follows this script

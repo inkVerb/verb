@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# This sets the proper names in each script per mod name from the serf-header raw format
+
+for file in *; do
+  if [ "$file" = "0setmodnames" ]; then continue; fi
+  sed -i "s:mods/\${0}:mods/$file:g" $file
+done
+

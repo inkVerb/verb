@@ -1,0 +1,181 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This resets a complete list of local inkDNS domains in the Bind config file: /var/named/named.conf.verb after copying inkDNS db. files to /var/named/zones/db.*
+
+# How to use:
+## ./inkdnsrefreshbind
+
+usagenotes="This installs the inkDNS Bind package for managing DNS records on the server"
+usageformat="inkdnsrefreshbind"
+usageexample="inkdnsrefreshbind"
+hierarchy=( secondary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkdnsinstall )
+prerequesite=(  )
+usedby=( inkdnsadddomain inkdnsaddinkdkim inkdnsaddmail inkdnsaddonesub inkdnsaddslave inkdnsaddsub inkdnsaddvipsub inkdnsinstall inkdnssetns1 inkdnssetns2 killinkdnsdomain killinkdnsinkdkim killinkdnsmail killinkdnsonesub killinkdnsslavedns killinkdnssub killinkdnsvipsub setipv4update setipv6update )
+useserfs=(  )
+useconfigs=( servernameip siteurilist inkdnsconf )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdnsrefreshbind.replace" ]; then . /opt/verb/mods/inkdnsrefreshbind.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdnsrefreshbind.before" ]; then . /opt/verb/mods/inkdnsrefreshbind.before; fi # Precedes this script
+
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/inkdnsconf
+
+if [ "${InkDNSStat}" = "INSTALLED" ]; then
+
+  # Stop Bind
+  /bin/systemctl stop named
+
+  # Create the directories and configs
+  /usr/bin/rm -rf /var/named/zones
+  /usr/bin/cp -rf /opt/verb/conf/inkdns/zones /var/named/
+  /usr/bin/cp -f /opt/verb/conf/inkdns/inkzones/db.* /var/named/zones/
+  /usr/bin/cp -f /opt/verb/conf/inkdns/inkzones/nv.* /var/named/zones/
+  /bin/chown -R root:named /var/named/zones
+  /bin/chmod -R 755 /var/named/zones
+
+  # inkDNS domain list file
+  /usr/bin/rm -f /var/named/named.conf.verb
+  /bin/echo '// inkVerb-inkDNS domain list file, managed automatically, edits will likely be deleted' > /var/named/named.conf.verb
+  /bin/chown root:named /var/named/named.conf.verb
+  /bin/chmod 644 /var/named/named.conf.verb
+  ## TSGI key (for Letsencrypt's' certbot --preferred-challenges=dns)
+  /usr/bin/tsig-keygen inkcert >> /var/named/named.conf.verb
+  # Refresh global inkDNS rDNS config & zone files
+  ## rDNS config
+  /usr/bin/rm -f /var/named/named.conf.rdns
+  /bin/echo "// Created by inkDNS, managed automatically, edits will likely be deleted
+zone \"${ServerARPAIPv6}\" { type master; allow-transfer { ${ServerNS1IPv6}; ${ServerNS1IPv4}; ${ServerNS2IPv6}; ${ServerNS2IPv4}; }; file \"nv.verber\"; allow-query { any; }; };
+zone \"${ServerARPAIPv4}\" { type master; allow-transfer { ${ServerNS1IPv6}; ${ServerNS1IPv4}; ${ServerNS2IPv6}; ${ServerNS2IPv4}; }; file \"nv.verber\"; allow-query { any; }; };
+" > /var/named/named.conf.rdns
+  ### Permissions
+  /bin/chown root:named /var/named/named.conf.rdns
+  /bin/chmod 644 /var/named/named.conf.rdns
+  ## rDNS zone file
+  /usr/bin/rm -f /var/named/nv.verber
+  /usr/bin/cat <<EOF > /var/named/nv.verber
+\$TTL    86400
+@		IN  SOA		${hostURI}. dns.inkisaverb.com. (
+0000000001		; Serial No
+10800			; Refresh
+3600			; Retry
+604800			; Expire
+1800 )			; Minimum TTL
+
+; Nameserver Defaults
+@		IN  NS		${ServerNS1DNS}.
+@		IN  NS		${ServerNS2DNS}.
+
+; Hosted Domains
+EOF
+  /bin/chown root:named /var/named/nv.verber
+  /bin/chmod 644 /var/named/nv.verber
+  ## rDNS zone file entries
+  cd /var/named/zones/
+  for inkZoneDB in db.*; do
+    inkZone="$(/bin/echo ${inkZoneDB} | sed 's/db\.//' )"
+    if [ "${inkZone}" = '*' ]; then continue; fi
+      # We don't use 'allow-update { none; };' because 'update-policy' will ignore 'allow-update'
+      /bin/echo "zone \"${inkZone}\" { type master; allow-transfer { ${ServerNS1IPv6}; ${ServerNS1IPv4}; ${ServerNS2IPv6}; ${ServerNS2IPv4}; }; file \"zones/db.${inkZone}\"; update-policy { grant inkcert. name _acme-challenge.${inkZone}. TXT; grant inkcert. name _acme-challenge.*.${inkZone}. TXT; }; };" >> /var/named/named.conf.verb
+      /bin/echo "\$INCLUDE \"/var/named/zones/nv.${inkZone}\";" >> /var/named/nv.verber
+  done
+
+  ## Slave DNS server?
+  if [ -f "/opt/verb/conf/inkdns/sdns/dnshost" ]; then
+    . /opt/verb/conf/inkdns/sdns/dnshost
+    ### Create the zone files
+    SDNSDATESTAMP="$(date '+%Y%m%d')"
+    SDNSSERNO="${SDNSDATESTAMP}00"
+    #### DNS
+    /usr/bin/rm -f /var/named/db.slavedns
+    /usr/bin/cat <<EOF > /var/named/db.slavedns
+\$TTL    86400
+@		IN  SOA		${DNSSlave}. dns.inkisaverb.com. (
+${SDNSSERNO}		; Serial No
+10800			; Refresh
+3600			; Retry
+604800			; Expire
+1800 )			; Minimum TTL
+
+; Nameserver Defaults
+@		IN  NS		${ServerNS1DNS}.
+@		IN  NS		${ServerNS2DNS}.
+
+; Hosted Domains
+EOF
+    /bin/chown root:named /var/named/db.slavedns
+    /bin/chmod 644 /var/named/db.slavedns
+    #### rDNS
+    /usr/bin/rm -f /var/named/nv.slavedns
+    /usr/bin/cat <<EOF > /var/named/nv.slavedns
+; PTR Domain
+${ServerARPAIPv4}		IN  PTR  ${DNSSlave}.
+${ServerARPAIPv6}		IN  PTR  ${DNSSlave}.
+EOF
+    /bin/chown root:named /var/named/nv.slavedns
+    /bin/chmod 644 /var/named/nv.slavedns
+    ### If this is set as the tertiary DNS server
+    if [ "${DNSSlave}" = "${ServerNS2DNS}" ]; then
+      /bin/echo "zone \"${DNSSlave}\" { type master; allow-transfer { ${ServerNS1IPv6}; ${ServerNS1IPv4}; }; file \"db.slavedns\"; };" >> /var/named/named.conf.verb
+    ### If this is set as the secondary DNS server
+    elif [ "${DNSSlave}" = "${ServerNS1DNS}" ]; then
+      /bin/echo "zone \"${DNSSlave}\" { type master; allow-transfer { ${ServerNS2IPv6}; ${ServerNS2IPv4}; }; file \"db.slavedns\"; };" >> /var/named/named.conf.verb
+    ### If this is not set as the secondary or tertiary DNS server
+    else
+      /bin/echo "zone \"${DNSSlave}\" { type master; allow-transfer { ${ServerNS1IPv6}; ${ServerNS1IPv4}; ${ServerNS2IPv6}; ${ServerNS2IPv4}; }; update-policy { grant inkcert. name _acme-challenge.${inkZone}. TXT; grant inkcert. name _acme-challenge.*.${inkZone}. TXT; }; file \"db.slavedns\"; };" >> /var/named/named.conf.verb
+    fi
+    /bin/echo "\$INCLUDE \"/var/named/nv.slavedns\";" >> /var/named/nv.verber
+    ### Served slave records
+    if [ -d "/opt/verb/conf/inkdns/sdns" ]; then
+      for slv in /opt/verb/conf/inkdns/sdns/s.*; do
+        . ${slv}
+        /bin/echo "zone \"${sdnsDomain}\" { type slave; masters { ${sdnsIPv6Cmp}; ${sdnsIPv4}; }; allow-transfer { none; }; file \"db.${sdnsDomain}\"; };" >> /var/named/named.conf.verb
+        /bin/echo "zone \"${sdnsIPv4ARPA}\" { type slave; masters { ${sdnsIPv6Cmp}; ${sdnsIPv4}; }; allow-transfer { none; }; file \"nv4.${sdnsDomain}\"; };" >> /var/named/nv.verber
+        /bin/echo "zone \"${sdnsIPv6ARPA}\" { type slave; masters { ${sdnsIPv6Cmp}; ${sdnsIPv4}; }; allow-transfer { none; }; file \"nv6.${sdnsDomain}\"; };" >> /var/named/nv.verber
+      done
+    fi
+  fi # End Slave DNS
+
+  ## Set the new serial (code imported from inkdnsserial)
+  ### Create the datestamp
+  DATESTAMP="$(date '+%Y%m%d')"
+  ### Set the increment for today
+  if [ ! -f "/opt/verb/conf/inkdns/serial" ]; then
+    OLDSERIAL="0"
+  else
+    OLDSERIAL="$(/bin/cat /opt/verb/conf/inkdns/serial)"
+  fi
+  #### Keep it to two digits
+  if [ -z "${OLDSERIAL}" ] || [ "${OLDSERIAL}" = "" ] || [ "${OLDSERIAL}" -gt "98" ]; then
+  OLDSERIAL="0"; fi
+  #### Keep the digits double
+  NEWSERIAL=$(expr ${OLDSERIAL} + 1)
+  if [ "${NEWSERIAL}" -le "9" ]; then
+  NEWSERIAL="0${NEWSERIAL}"; fi
+  #### Record the serial
+  /bin/echo "${NEWSERIAL}" > /opt/verb/conf/inkdns/serial
+  ### Create a datestamp-based serial number to the second (how inkVerb does it)
+  SERNO="${DATESTAMP}${NEWSERIAL}\t\t; Serial No"
+  ### Set it in the file
+  /usr/bin/sed -i "/; Serial No/c ${SERNO}" /var/named/nv.verber
+
+  # Restart Bind
+  /bin/systemctl start named || /bin/systemctl restart named
+
+else /bin/echo "inkDNS not installed, run inkdnsinstall first."; exit 0
+fi
+
+
+
+
+if [ -e "/opt/verb/mods/inkdnsrefreshbind.after" ]; then . /opt/verb/mods/inkdnsrefreshbind.after; fi # Follows this script

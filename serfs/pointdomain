@@ -1,0 +1,35 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This forwards an already-created domain to another URI
+
+# How to use:
+## ./pointdomain [forwarded domain] [destination]
+
+## The destination may include 'http://' or 'https://'
+
+## The forwarded domain can be any domain or subdomain created with adddomain or addsubdomain (and -cgi)
+
+
+FWDDOM=$1
+DEST=$2
+ORIG_DEST="$(find /srv/www/html/${FWDDOM} -prune -printf "%l\n")"
+
+# Prepare
+/bin/mkdir -p /srv/www/forwards/${FWDDOM}
+/bin/rm -f /srv/www/html/${FWDDOM}
+/bin/ln -sfn /srv/www/forwards/${FWDDOM} /srv/www/html/
+
+# Set and own
+/bin/echo "<?php header(\"Location: ${DEST}\"); die(); ?>" > /srv/www/forwards/${FWDDOM}/index.php
+/bin/echo "FORWARD=\"${DEST}\"" > /srv/www/forwards/${FWDDOM}/config
+/bin/echo "OLD_DEST=\"${ORIG_DEST}\"" >> /srv/www/forwards/${FWDDOM}/config
+/bin/chown -R www:www /srv/www/forwards/${FWDDOM}
+
+# Finish
+/bin/echo "${FWDDOM} now forwarding to ${DEST}"
+
+
+
+
+if [ -e "/opt/verb/mods/pointdomain.after" ]; then . /opt/verb/mods/pointdomain.after; fi # Follows this script

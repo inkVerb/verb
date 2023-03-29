@@ -1,0 +1,27 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This deletes the config files for a secondary CA Verber
+
+# How to use:
+## ./inknetkillsecondarycaverber [CA verber name]
+
+# Eg: (almost certainly exactly this, but verify from inkVerb instructions at registration and available Inkers, probably region-specific)
+## ./inknetkillsecondarycaverber ink_ink_verb_ink (for ink namespace - the master Inker site)
+## ./inknetaddsecondarycaverber john_john_verb_ink (for john namespace - if you want your own Verber to act as your keys)
+## ./inknetaddsecondarycaverber ink2_ink_inkisaverb_com (for Domain Verber mod)
+
+
+FULLKILLNAME=$1
+KILLCAVERBERNAME=$(/bin/echo $FULLKILLNAME | cut -c1-18)
+
+/bin/rm /opt/verb/conf/inknet/2cav.${KILLCAVERBERNAME}.cnf
+
+# Finish
+/bin/echo "The secondary CA Verber credentials for ${KILLCAVERBERNAME} have been deleted."
+
+
+
+
+
+if [ -e "/opt/verb/mods/inknetkillsecondarycaverber.after" ]; then . /opt/verb/mods/inknetkillsecondarycaverber.after; fi # Follows this script

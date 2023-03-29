@@ -1,0 +1,59 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This batch runs a revoke and uninstall of inkCert-Certbot certs for a domain and replaces the Snakeoil certificate
+## It applies only to one domain/subdomain at a time
+## Prerequesite: inkcertdocb (or both subscripts thereof: inkcertreqcb, inkcertaddcb)
+
+# Dev NOTE:
+## The portion of this script that calls the CA to revoke the cert has not been written yet.
+
+# How to use:
+## ./inkcertundocb [ domain.tld NO SUBDOMAINS ]
+
+#Eg:
+## ./inkcertundocb inkisaverb.com
+## ./inkcertundocb YOURNAME.verb.blue
+
+usagenotes="This batch runs a revoke and uninstall of inkCert-Certbot certs for a domain and replaces the Snakeoil certificate"
+usageformat="inkcertundocb [ domain.tld NO SUBDOMAINS ]"
+usageexample="inkcertundocb inkisaverb.com
+inkcertundocb YOURNAME.verb.blue"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkcertinstall )
+prerequesite=( inkcertdocb 'or' inkcertreqcb inkcertaddcb )
+usedby=(  )
+useserfs=( inkcertrevokecb inkcertremoveallcb )
+useconfigs=(  )	# List config files of any kind used in this serf, please preserve order of appearance
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkcertundocb.replace" ]; then . /opt/verb/mods/inkcertundocb.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkcertundocb.before" ]; then . /opt/verb/mods/inkcertundocb.before; fi # Precedes this script
+
+
+DOMAIN=$1
+
+# Check variables
+if [ -z ${1} ]; then
+/bin/echo "You need to specify a domain. Read the instructions."; exit 0
+fi
+
+# Request and get the certs
+/opt/verb/serfs/inkcertrevokecb ${DOMAIN}
+
+# Install the certs
+/opt/verb/serfs/inkcertremoveallcb ${DOMAIN}
+
+# Remove mail certs
+/usr/bin/rm -f /etc/ssl/server/mail/${DOMAIN}.crt
+/usr/bin/rm -f /etc/ssl/server/mail/${DOMAIN}.key
+
+
+
+
+if [ -e "/opt/verb/mods/inkcertundocb.after" ]; then . /opt/verb/mods/inkcertundocb.after; fi # Follows this script

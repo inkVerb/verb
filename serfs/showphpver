@@ -1,0 +1,18 @@
+#! /bin/bash
+#inkVerbSerf! verb.ink
+
+# This displays the PHP vrsion
+# Dependencies: vsftpd and ftpvip or ftpfiler, run: installvsftpd, and newftpvip and/or newftpfiler
+
+# How to use:
+## ./showphpver [ subdomain ]
+
+phpDir=$(ls /etc/php)
+phpVers=(${phpDir})
+IFS=$'\n'
+/bin/echo "${phpVers[*]}" | sort -nr | head -n1
+
+
+
+
+if [ -e "/opt/verb/mods/showphpver.after" ]; then . /opt/verb/mods/showphpver.after; fi # Follows this script

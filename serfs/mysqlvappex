@@ -1,0 +1,46 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This exports a MySQL/MariaDB database using an existing vapp config
+## The vapp config file must me located in ~/verb/conf
+## The sql database file will be output to /srv/vip/sql/thedatabase.sql
+
+# How to use:
+## ./mysqlvappex [ vapp.config.file ]
+
+# Eg:
+## ./mysqlvappex vapp.wp.inkisaverb.com
+
+usagenotes="This exports a MySQL/MariaDB database using an existing vapp config"
+usageformat="mysqlvappex [ vapp.config.file ]"
+usageexample="mysqlvappex vapp.wp.inkisaverb.com"
+hierarchy=( primary )
+vsetnames=( "Vapp conf file name only" )
+vsettypes=( isVappConfFile )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( mysqlinstall )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/mysqlvappex.replace" ]; then . /opt/verb/mods/mysqlvappex.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/mysqlvappex.before" ]; then . /opt/verb/mods/mysqlvappex.before; fi # Precedes this script
+
+
+VAPPConf=$1
+
+# Include the vapp.config.file
+. /opt/verb/conf/${VAPPConf}
+
+# Export the database
+/usr/bin/mysqldump --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${APPDBASE} > /srv/vip/sql/${APPDBASE}.sql
+
+
+
+
+
+if [ -e "/opt/verb/mods/mysqlvappex.after" ]; then . /opt/verb/mods/mysqlvappex.after; fi # Follows this script

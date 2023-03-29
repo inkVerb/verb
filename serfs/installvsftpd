@@ -1,0 +1,82 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This installs vsftpd and prepares it for use according to newftpvip, delftpvip, newftpfiler, and delftpfiler scripts
+# This is a prereqisite for ftpvips and ftpfilers and net2ftp
+
+## THIS HAS EXPIRIMENTAL LINES. Remove commented lines if it works.
+
+# How to use:
+## ./installvsftpd
+
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+
+# Install
+/usr/bin/pacman -S --noconfirm --needed vsftpd
+if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
+/usr/bin/systemctl enable vsftpd.service
+# Learn more https://wiki.archlinux.org/title/Very_Secure_FTP_Daemon#Installation
+
+# Allow users to upload
+sed -i 's/^#write_enable=.*/write_enable=YES/' /etc/vsftpd.conf
+sed -i 's/^write_enable=.*/write_enable=YES/' /etc/vsftpd.conf # Be certain
+
+# Limit users to their respective directories
+/bin/sed -i "s/#chroot_local_user=YES/chroot_local_user=YES/g" /etc/vsftpd.conf
+
+/bin/echo "# Added by inkVerb with respect to above chroot_local_user=YES also uncommented" >> /etc/vsftpd.conf
+/bin/echo "chroot_list_enable=NO" >> /etc/vsftpd.conf
+
+# Set the umask to the normal 022
+/bin/sed -i "s/#local_umask=022/local_umask=022/g" /etc/vsftpd.conf
+
+# Set the listening port to 2121
+## Commented, may not be necessary given ufw config
+#/bin/echo "listen_port=2121" >> /etc/vsftpd.conf
+
+# Set the branding
+/bin/sed -i "s/#ftpd_banner=Welcome to blah FTP service\./ftpd_banner=ink FTP/g" /etc/vsftpd.conf
+
+# Enable SSL
+## Comment the snakeoil settings
+/bin/sed -i "s/rsa_cert_file=\/etc\/ssl\/certs\/ssl-cert-snakeoil\.pem/#rsa_cert_file=\/etc\/ssl\/certs\/ssl-cert-snakeoil\.pem/g" /etc/vsftpd.conf
+/bin/sed -i "s/rsa_private_key_file=\/etc\/ssl\/private\/ssl-cert-snakeoil\.key/#rsa_private_key_file=\/etc\/ssl\/private\/ssl-cert-snakeoil\.key/g" /etc/vsftpd.conf
+## Allow the inkCert certs
+/bin/echo "ssl_enable=Yes" >> /etc/vsftpd.conf
+/bin/echo "rsa_cert_file=/etc/inkcert/le/live/${nameURI}/cert.pem" >> /etc/vsftpd.conf
+/bin/echo "rsa_private_key_file=/etc/inkcert/le/live/${nameURI}/privkey.pem" >> /etc/vsftpd.conf
+## The line below is expirimental based on info from http://vsftpd.beasts.org/vsftpd_conf.html
+/bin/echo "ca_certs_file=/etc/inkcert/le/live/${nameURI}/chain.pem" >> /etc/vsftpd.conf
+
+# Put the default ftp user to another directory
+/bin/mkdir /srv/vsftpd
+/bin/mkdir /srv/vsftpd/ftp
+/usr/bin/usermod -d /srv/vsftpd/ftp ftp
+
+# Files web folder link
+rm -rf /srv/www/verb/vip.files
+/bin/ln -sfn /srv/vip/files /srv/www/verb/vip.files
+/bin/chown -R www:www /srv/www/verb/vip.files
+/bin/chmod -R 750 /srv/www/verb/vip.files
+
+# Start the service
+## This is expirimental
+/bin/systemctl start vsftpd
+
+# Restart
+## Former is commented, new is expirimental and may be redundant
+/bin/systemctl reload vsftpd
+#restart vsftpd
+
+# Set the firewall to allow the site port
+. /opt/verb/conf/serverport
+/usr/bin/ufw allow from any to any port ${ServerPort}
+
+
+
+
+
+if [ -e "/opt/verb/mods/installvsftpd.after" ]; then . /opt/verb/mods/installvsftpd.after; fi # Follows this script

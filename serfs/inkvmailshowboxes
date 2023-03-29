@@ -1,0 +1,55 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This shows all inkvmail boxes
+
+# How to use:
+## ./inkvmailshowboxes
+
+usagenotes="This shows all inkvmail boxes"
+usageformat="inkvmailshowboxes"
+usageexample="inkvmailshowboxes"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installinkvmail )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkvmailshowboxes.replace" ]; then . /opt/verb/mods/inkvmailshowboxes.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkvmailshowboxes.before" ]; then . /opt/verb/mods/inkvmailshowboxes.before; fi # Precedes this script
+
+
+# Check to see if inkvmail is installed
+. /opt/verb/conf/servermailpath
+if [ "$ServerMailStatus" != "VMAIL_SERVER" ]; then
+  /bin/echo "Vmail not installed, not adding $domain to PFA"
+  exit 0; fi
+
+domain="$1"
+
+# All domains
+if [ -z "$1" ]; then
+  query=$(/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "SELECT username FROM mailbox;")
+# Specified domain
+else
+  domain="$1"
+  query=$(/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "SELECT username FROM mailbox WHERE domain='$domain';")
+fi
+
+# Show the results
+boxlist="$(/bin/echo ${query} | sed "s/username //")"
+for box in $boxlist; do
+  echo $box
+done
+
+
+
+
+if [ -e "/opt/verb/mods/inkvmailshowboxes.after" ]; then . /opt/verb/mods/inkvmailshowboxes.after; fi # Follows this script

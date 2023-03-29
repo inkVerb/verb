@@ -1,0 +1,58 @@
+#!/bin/sh
+#inkVerbSerf! verb.ink
+set -e
+
+# This creates an IVapp user with a controlled password based on settings, but does not add any credentials of the module
+## Prerequisite: installivapp (a dragon in the donjon)
+
+# How to use:
+## ./ivappadduser [user name] [password] [/path/to/ivapp/user/group-profile.conf]
+
+
+# Check variables
+## Entered
+if [ -z $3 ]; then
+echo "You must enter a username, password, and config profile like this:
+./inknetaddivappuser [user name] [password] [/path/to/ivapp/user/group-profile.conf]"
+exit 5; fi
+## Exists
+if [ ! -f "$3" ]; then
+echo "That settings file does not exist."
+exit 5; fi
+
+Conf=$3
+
+# Include configs
+. ${Conf}
+. ${IvappConfLoc}
+
+# Check status
+if [ -f "${StatusFile}" ]; then
+. ${StatusFile}
+ if [ "${IVAPPSTATUS}" != "INSTALLED" ]; then
+echo "${ModuleName} is not installed. Do that first."; exit 8
+ fi
+else
+echo "${ModuleName} is not installed. Do that first."; exit 8
+fi
+
+INPUTUSERNAME=$1
+INPUTUSERPASS=$2
+ADDIVAPPUSERNAME=$(echo $INPUTUSERNAME | cut -c1-18)
+ADDIVAPPPASSWORD=$(echo $INPUTUSERPASS | cut -c1-32)
+
+# Add the user
+adduser ${ADDIVAPPUSERNAME} --gecos ",,," --disabled-password --home ${IvappBase}/${IvappDir}/${IvappGroupDir}/${ADDIVAPPUSERNAME}
+echo "${ADDIVAPPUSERNAME}:${ADDIVAPPPASSWORD}" | chpasswd
+## Add him to the IVapp group
+usermod -a -G ${IvappUserGroup} ${ADDIVAPPUSERNAME}
+## Give him necessary permissions limits
+echo "Setting permissions, this may take a moment..."
+/opt/verb/donjon/ivapp/ivappsetpermissions.sh ${Conf} ${ADDIVAPPUSERNAME}
+## Own his home
+#### FOR SOME STUPID REASON THIS DOES NOT WORK, ONLY A SERF CAN CHOWN THE FOLDER, SO IT IS OWNED BY inknetivappadduser, WHICH RUNS THIS
+chown -R ${ADDIVAPPUSERNAME}:${ADDIVAPPUSERNAME} ${IvappBase}/${IvappDir}/${IvappGroupDir}/${ADDIVAPPUSERNAME}
+
+# Finish
+echo "The ${ModuleName} user ${ADDIVAPPUSERNAME} has been added."
+

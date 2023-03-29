@@ -1,0 +1,110 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This adds the www subdomain prefix to a domain's Apache config.
+## This could be set to run automatically at some point, so may not be necessary independently.
+## This may eventually be depreciated altogether
+## This serf is kept in service because the www fix may not be necessary, especially on secure-based domains or subdomains and an untested possibility remains of breaking other serfs if it is not run deliberately. Besides, needing "www" in front of domains ended in the year 2000. It could also be fixed via a DNS cname.
+
+# How to use:
+## ./webwww on [domain.tld or subdomain.domain.tld]
+## ./webwww off [domain.tld or subdomain.domain.tld]
+
+
+DOMAIN=$2
+
+. /opt/verb/conf/servertype
+
+if [ "$1" = "on" ]; then
+
+	if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
+		# Nginx
+		## Check to see if "fixwww" has already been added
+		if /bin/grep -q "##INKWWWFIX=fixed" /opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf; then
+			/bin/systemctl restart nginx; wait
+			/bin/echo "${DOMAIN} already has the www subdomain fix. The server was just reloaded so the site should work."
+		else
+
+			## Then add the config lines if it doesn't.
+			/bin/echo "##INKWWWFIX=fixed
+	# Fixes www
+	server {
+	  server_name www.${DOMAIN};
+	  return 301 \$scheme://${DOMAIN}\$request_uri;
+	}
+	##verbFIXwww" >> /opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf
+			/bin/systemctl restart nginx; wait
+
+			/bin/echo "${DOMAIN} now has the www subdomain fix and is ready to go."
+		fi
+
+	elif [ ${ServerType} = "lamp" ]; then
+		# Check to see if "fixwww" has already been added
+		if /bin/grep -q "##INKWWWFIX=fixed" /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf; then
+			/usr/bin/systemctl restart httpd
+			/bin/echo "${DOMAIN} already has the www subdomain fix. The server was just reloaded so the site should work."
+		else
+
+			## Then add the config lines if it doesn't.
+			/bin/echo "##INKWWWFIX=fixed
+	# Fixes www
+	<VirtualHost *:80>
+	  ServerName www.${DOMAIN}
+	  Redirect permanent / http://${DOMAIN}/
+	</VirtualHost>
+	<IfModule mod_ssl.c>
+	  <VirtualHost _default_:443>
+	    ServerName www.${DOMAIN}
+	    Redirect permanent / https://${DOMAIN}/
+	  </VirtualHost>
+	</IfModule>
+	##verbFIXwww" >> /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf
+			/usr/bin/systemctl restart httpd
+
+			/bin/echo "${DOMAIN} now has the www subdomain fix and is ready to go."
+		fi
+
+	fi
+
+elif [ "$1" = "off" ]; then
+
+	if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
+		# Nginx
+		## Verify that the "fixwww" has been added
+		if ! /bin/grep -q "##INKWWWFIX=fixed" /opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf; then
+			/bin/echo "${DOMAIN} doesn't have the www subdomain fix. Nothing to do."
+		fi
+
+		## Remove the old settings
+		/bin/sed -i '/^##INKWWWFIX=fixed/,/^##verbFIXwww/{/^##INKWWWFIX=fixed/!{/^##verbFIXwww/!d}}' /opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf
+		/bin/sed -i '/##INKWWWFIX=fixed/d' /opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf
+		/bin/sed -i '/##verbFIXwww/d' /opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf
+		/bin/systemctl restart nginx; wait
+
+		# Finish
+		/bin/echo "${DOMAIN} the www subdomain fix has been removed."
+
+
+	elif [ ${ServerType} = "lamp" ]; then
+		# Verify that the "fixwww" has been added
+		if ! /bin/grep -q "##INKWWWFIX=fixed" /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf; then
+			/bin/echo "${DOMAIN} doesn't have the www subdomain fix. Nothing to do."
+		fi
+
+		## Remove the old settings
+		/bin/sed -i '/^##INKWWWFIX=fixed/,/^##verbFIXwww/{/^##INKWWWFIX=fixed/!{/^##verbFIXwww/!d}}' /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf
+		/bin/sed -i '/##INKWWWFIX=fixed/d' /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf
+		/bin/sed -i '/##verbFIXwww/d' /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf
+		/usr/bin/systemctl restart httpd
+
+		# Finish
+		/bin/echo "${DOMAIN} the www subdomain fix has been removed."
+
+	fi
+
+fi
+
+
+
+
+if [ -e "/opt/verb/mods/webwww.after" ]; then . /opt/verb/mods/webwww.after; fi # Follows this script

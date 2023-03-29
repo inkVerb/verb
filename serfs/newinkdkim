@@ -1,0 +1,61 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This adds inkDKIM (OpenDKIM) records for a specific domain in the inkDKIM records
+## This DOES NOT add the records to inkDNS zone files
+## This is used by newdomain
+## This is not used by addsubdomain or addsubdomaincgi
+## This is not used by any serfs that create new verb subdomains
+
+# How to use:
+## ./newinkdkim [ domain.tld or subdomain.domain.tld ]
+
+usagenotes="This adds inkDKIM (OpenDKIM) records for a specific domain in the inkDKIM records"
+usageformat="newinkdkim [ domain.tld or subdomain.domain.tld ]"
+usageexample="newinkdkim inkisaverb.com"
+hierarchy=( tertiary adddomain )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( newdomainshell )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/newinkdkim.replace" ]; then . /opt/verb/mods/newinkdkim.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/newinkdkim.before" ]; then . /opt/verb/mods/newinkdkim.before; fi # Precedes this script
+
+
+DKIMDOMAIN=$1
+
+# See if already added
+if [ -d "/etc/opendkim/keys/${DKIMDOMAIN}" ]; then
+/bin/echo "Those DKIM keys already exist, doing nothing."
+exit 0; fi
+
+# Create the declared domain key
+/bin/mkdir -p /etc/opendkim/keys/${DKIMDOMAIN}
+cd /etc/opendkim/keys/${DKIMDOMAIN} || exit 0
+/usr/bin/opendkim-genkey -r -S -s inkdkim -d ${DKIMDOMAIN}
+/bin/chmod 660 inkdkim.private
+/bin/chown -R opendkim:opendkim /etc/opendkim
+
+# Add the new domain key to the config files, if it doesn't exist already
+if ! /bin/grep -q "inkdkim._domainkey.${DKIMDOMAIN} ${DKIMDOMAIN}:inkdkim:/etc/opendkim/keys/${DKIMDOMAIN}/inkdkim.private" /etc/opendkim/KeyTable; then
+  /bin/echo "inkdkim._domainkey.${DKIMDOMAIN} ${DKIMDOMAIN}:inkdkim:/etc/opendkim/keys/${DKIMDOMAIN}/inkdkim.private" >> /etc/opendkim/KeyTable; fi
+if ! /bin/grep -q "${DKIMDOMAIN} inkdkim._domainkey.${DKIMDOMAIN}" /etc/opendkim/SigningTable; then
+  /bin/echo "${DKIMDOMAIN} inkdkim._domainkey.${DKIMDOMAIN}" >> /etc/opendkim/SigningTable; fi
+if ! /bin/grep -q "${DKIMDOMAIN}" /etc/opendkim/TrustedHosts; then
+  /bin/echo "${DKIMDOMAIN}" >> /etc/opendkim/TrustedHosts; fi
+
+/bin/systemctl restart opendkim
+/bin/systemctl restart postfix
+
+
+
+
+if [ -e "/opt/verb/mods/newinkdkim.after" ]; then . /opt/verb/mods/newinkdkim.after; fi # Follows this script

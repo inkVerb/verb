@@ -1,0 +1,11 @@
+#!/bin/sh
+## This is a config file for the status of inkVPN installations
+
+InkVPNInstalled="NOT_YET"
+INKVPNCountr="US"
+InkVPNProvin="CA"
+InkVPNCity="SanFrancisco"
+InkVPNOrg="inkVerb"
+InkVPNClientEmail="NOT_SET"
+InkVPNOU="Internal-VPN"
+InkVPNPort="1194"

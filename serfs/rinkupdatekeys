@@ -1,0 +1,49 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This approves the remote keys for the NS nameservers
+## #DEV note: if any other SSH tools are added in the future, this should keyscan for those also
+
+# How to use:
+## ./rinkupdatekeys
+
+usagenotes="This approves the remote keys for the NS nameservers"
+usageformat="rinkupdatekeys"
+usageexample="rinkupdatekeys"
+hierarchy=( tertiary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( "Controlled by Rink" )
+prerequesite=(  )
+usedby=( rink::addvps )
+useserfs=(  )
+useconfigs=( serverport servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/rinkupdatekeys.replace" ]; then . /opt/verb/mods/rinkupdatekeys.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/rinkupdatekeys.before" ]; then . /opt/verb/mods/rinkupdatekeys.before; fi # Precedes this script
+
+
+# Configs
+. /opt/verb/conf/serverport
+. /opt/verb/conf/servernameip
+
+# Already configured?
+if [ "$RinkConfigured" != "true" ]; then
+	echo "Rink NS server keys not configured, run rinklocalsetup first for a custom verber"
+	exit 0
+fi
+
+# Cleanup
+/usr/bin/rm -f /root/.ssh/known_hosts
+/usr/bin/touch /root/.ssh/known_hosts
+/usr/bin/chmod 600 /root/.ssh/known_hosts
+
+# Run the command
+/usr/bin/ssh-keyscan -H -p ${ServerPort} ${ServerNS1IPv4} >> /root/.ssh/known_hosts
+/usr/bin/ssh-keyscan -H -p ${ServerPort} ${ServerNS2IPv4} >> /root/.ssh/known_hosts
+
+if [ -e "/opt/verb/mods/rinkadddomain.after" ]; then . /opt/verb/mods/rinkupdatekeys.after; fi # Follows this script

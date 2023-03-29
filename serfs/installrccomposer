@@ -1,0 +1,52 @@
+#!/bin/sh
+#inkVerbSerf! verb.ink
+
+# This runs the actual Composer installation command for RoundCube
+## This is used inside installrccomposer and should only be used independently if Composer failed during the installation of installrccomposer
+## If composer failed, then this file should be updated to satisfy Composer via updateverber
+
+# How to use:
+## ./installrccomposer
+
+
+usagenotes="Runs the actual Composer command when installing Roundcube with installrc"
+usageformat="installrccomposer"
+usageexample="installrccomposer"
+hierarchy=( secondary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( "Only run independently if 1. Composer failed when running installrc and 2. this file has been updated to solve the problem, probably using updateverber" )
+usedby=( installrc )
+useserfs=(  )
+useconfigs=(  )	# List config files of any kind used in this serf, please preserve order of appearance
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/installrccomposer.replace" ]; then . /opt/verb/mods/installrccomposer.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installrccomposer.before" ]; then . /opt/verb/mods/installrccomposer.before; fi # Precedes this script
+
+
+# Dir
+cd /srv/www/email/roundcube
+
+# Run the Composer installation
+## Ignore requirements that trip false warnings: --ignore-platform-req=
+## Use the www user so changes can be made to the web directory
+/usr/bin/su www -c 'php composer.phar install -n --ignore-platform-req=php --ignore-platform-req=ext-gd --ignore-platform-req=ext-ldap --ignore-platform-req=ext-iconv'
+
+# Confirm success status
+if [ "$?" != "0" ]; then
+  echo "Composer failed! RoundCube may not work properly. An update is needed! Run updateverber then installrccomposer."
+  composersuccess="false"
+  exit 4
+else
+  composersuccess="true"
+fi
+
+
+
+
+if [ -e "/opt/verb/mods/installrccomposer.after" ]; then . /opt/verb/mods/installrccomposer.after; fi # Follows this script

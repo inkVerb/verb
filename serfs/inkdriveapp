@@ -1,0 +1,135 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+# This relocates an vapp's media folder to an inkDrive mounted with inkdriveadd
+## This does not relocate the entire vapp's folder
+## This is designed on a per-vapp basis
+
+# How to use:
+## ./inkdriveapp [ vapp ] [ drive name - optional ]
+
+# Eg:
+## ./inkdriveapp wp.inkisaverb.com mydrive 
+## ./inkdriveapp nextcloud
+
+
+usagenotes="This relocates an vapp's media folder to an inkDrive mounted with inkdriveadd"
+usageformat="inkdriveapp [ vapp ] [ drive name - optional ]"
+usageexample="inkdriveapp wp.inkisaverb.com mydrive
+inkdriveapp nextcloud"
+hierarchy=( primary )
+vsetnames=( "Vapp name" )
+vsettypes=( isInstalledVapp )
+voptnames=( "Drive name" )
+vopttypes=( isExists )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( inkdriveadd )
+usedby=( installwp )
+useserfs=(  )
+useconfigs=( inkdrive/inkdriveinfo )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdriveapp.replace" ]; then . /opt/verb/mods/inkdriveapp.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdriveapp.before" ]; then . /opt/verb/mods/inkdriveapp.before; fi # Precedes this script
+
+# Config check
+if [ ! -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
+  /usr/bin/echo "No drives installed; do that first."
+  exit 8
+else
+  . /opt/verb/conf/inkdrive/inkdriveinfo
+fi
+
+# Defaults (prefer HDD)
+Vapp="$1"
+if [ -n "$2" ]; then
+  Mnt="$2"
+elif [ -n "${HDDdefault}" ]; then
+  Mnt=${HDDdefault}
+elif [ -n "${SSDdefault}" ]; then
+  Mnt=${SSDdefault}
+else
+  /usr/bin/echo "There is no default drive. Something is very wrong."
+  exit 6
+fi
+
+# Check mount
+if [ ! -d "/mnt/${Mnt}" ] && [ -n "$2" ]; then
+  /usr/bin/echo "That drive is not mounted on the system. Choose a drive that exists."
+  echo 8
+elif [ ! -d "/mnt/${Mnt}" ]; then
+  /usr/bin/echo "Default drive is not mounted. Something is very wrong."
+  echo 6
+fi
+
+# Check vapp
+if [ ! -f "/opt/verb/conf/vapp.${Vapp}" ]; then
+  /usr/bin/echo "That vapp is not installed; nothing to do."
+  exit 8
+fi
+if [ ! -d "/srv/www/vapps/${Vapp}" ]; then
+  /usr/bin/echo "That vapp has a config, but is not installed. Something is very wrong."
+  exit 6
+fi
+if [[ "${Vapp}" =~ ^wp.* ]] && [ -e "/srv/www/vapps/${Vapp}/wp-content" ]; then
+  VappType="WordPress"
+  VappData="/srv/www/vapps/${Vapp}/wp-content"
+  DataName="wp-content"
+elif [ "${Vapp}" = "nextcloud" ] && [ -e "/srv/www/vapps/nextcloud/data" ]; then
+  VappType="Nextcloud"
+  VappData="/srv/www/vapps/nextcloud/data"
+  DataName="data"
+else
+  /usr/bin/echo "${Vapp} is not a vapp that can be mounted to a drive."
+  exit 5
+fi
+. "/opt/verb/conf/vapp.${Vapp}"
+if [ -d "/mnt/${Mnt}/${Vapp}" ] && [ -n "${VappDrive}" ] && [ "${VappDrive}" = "${Mnt}" ]; then
+  /usr/bin/echo "That vapp is already mounted to that drive."
+  exit 0
+elif [ -d "/mnt/${VappDrive}/${Vapp}" ] && [ -n "${VappDrive}" ]; then
+  /usr/bin/echo "That vapp is already mounted to another drive."
+  exit 7
+elif [ -e "/mnt/${Mnt}/${Vapp}" ];
+  /usr/bin/echo "A vapp by that name is already on that drive, but shouldn't be. Something is very wrong."
+  exit 6
+elif [ -n "${VappDrive}" ];
+  /usr/bin/echo "The vapp indicates that it is mounted, but is not."
+  exit 6
+fi
+
+# Space
+SpaceAvail="$(/usr/bin/df -k "/mnt/${Mnt}" | /usr/bin/awk 'NR==2 { print $4 }')"
+SpaceNeed="$(/usr/bin/du -s "${VappData}" | /usr/bin/awk '{ print $1 }')"
+if [ "${SpaceNeed}" -gt "${SpaceAvail}" ]; then
+  SpaceAvailH="$(/usr/bin/df -h "/mnt/${Mnt}" | /usr/bin/awk 'NR==2 { print $4 }')"
+  SpaceNeedH="$(/usr/bin/du -sh "${VappData}" | /usr/bin/awk '{ print $1 }')"
+  echo "Not enough space. ${SpaceNeedH} needed, but only ${SpaceAvailH} available."
+  exit 4
+fi
+
+# Move & link
+if [ ! -d "${VappData}" ]; then
+  /usr/bin/echo "That vapp is already linked somewhere it shouldn't be: $(/usr/bin/ls -l "${VappData}")"
+  exit 6
+else
+  /usr/bin/mkdir -p "/mnt/${Mnt}/${Vapp}"
+  /usr/bin/mv "${VappData}" "/mnt/${Mnt}/${Vapp}/"
+  /usr/bin/ln -sfn "/mnt/${Mnt}/${Vapp}/${DataName}" "${VappData}"
+  /usr/bin/chown -R www:www "${VappData}"
+  /usr/bin/chown -R www:www "/mnt/${Mnt}/${Vapp}/${DataName}"
+fi
+if [ "$?" != 0 ]; then
+  /usr/bin/echo "Vapp's data folder could not be mounted. Something is very wrong."
+  exit 6
+fi
+
+# Finish
+if [ -d "/mnt/${Mnt}/${Vapp}" ] [ -e "${VappData}" ]; then
+  /usr/bin/sed -i '/VappDrive=/d' "/opt/verb/conf/vapp.${Vapp}"
+  /usr/bin/echo "VappDrive=\"${Mnt}\"" >> "/opt/verb/conf/vapp.${Vapp}"
+  /usr/bin/echo "${VappType} successfully mounted to '${Mnt}'."
+fi
+
+
+if [ -e "/opt/verb/mods/inkdriveapp.after" ]; then . /opt/verb/mods/inkdriveapp.after; fi # Follows this script

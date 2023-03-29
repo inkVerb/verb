@@ -1,0 +1,78 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This adds a subdomain A & AAAA records to an existing ONE DNS record in the inkDNS zone file on the server
+
+# How to use:
+## ./inkdnsaddonesub [ subdomain ]
+
+usagenotes="This adds a subdomain A & AAAA records to an existing ONE DNS record in the inkDNS zone file on the server"
+usageformat="inkdnsaddonesub [ subdomain ]"
+usageexample="inkdnsaddonesub subdomain"
+hierarchy=( tertiary newonesub )
+vsetnames=( "Subdomain" )
+vsettypes=( isDomainPart )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkdnsinstall )
+prerequesite=(  )
+usedby=( newonesub )
+useserfs=( inkdnsserial inkdnsrefreshbind )
+useconfigs=( servernameip siteurilist inkdnsconf )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdnsaddonesub.replace" ]; then . /opt/verb/mods/inkdnsaddonesub.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdnsaddonesub.before" ]; then . /opt/verb/mods/inkdnsaddonesub.before; fi # Precedes this script
+
+
+DNSSUBDOM="$1"
+ZONEDIR="inkzones"
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+
+# Check if already added
+if /bin/grep -Fq "${DNSSUBDOM}.${oneURI}" /opt/verb/conf/inkdns/${ZONEDIR}/db.${oneURI}; then
+/bin/echo "The subdomain ${DNSSUBDOM} has already been added to ${oneURI}. Use killinkdnssub to remove it."
+exit 0; fi
+
+# Echo the record
+## db.DOM
+/bin/echo "; Subdomain Records Added by inkDNS ${DNSSUBDOM}.${oneURI}" >> /opt/verb/conf/inkdns/${ZONEDIR}/db.${oneURI}
+### IP4?
+if [ "${ServerIPv4}" != "NOIP4" ]; then
+  /bin/echo "${DNSSUBDOM}.${oneURI}   IN  A   ${ServerIPv4}" >> /opt/verb/conf/inkdns/${ZONEDIR}/db.${oneURI}
+fi
+### IP6?
+if [ "${ServerIPv6}" != "NOIP6" ]; then
+  /bin/echo "${DNSSUBDOM}.${oneURI}   IN  AAAA   ${ServerIPv6}" >> /opt/verb/conf/inkdns/${ZONEDIR}/db.${oneURI}
+fi
+## nv.DOM
+/bin/echo "; PTR Subdomain Records Added by inkDNS ${DNSSUBDOM}.${oneURI}" >> /opt/verb/conf/inkdns/${ZONEDIR}/nv.${oneURI}
+### IP4?
+if [ "${ServerIPv4}" != "NOIP4" ]; then
+  /bin/echo "${ServerARPAIPv4}		IN  PTR  ${DNSSUBDOM}.${oneURI}" >> /opt/verb/conf/inkdns/${ZONEDIR}/nv.${oneURI}
+fi
+### IP6?
+if [ "${ServerIPv6}" != "NOIP6" ]; then
+  /bin/echo "${ServerARPAIPv6}		IN  PTR  ${DNSSUBDOM}.${oneURI}" >> /opt/verb/conf/inkdns/${ZONEDIR}/nv.${oneURI}
+fi
+
+# Set the Serial No
+/opt/verb/serfs/inkdnsserial ${oneURI} verber
+
+# Refresh zones
+if [ -f "/opt/verb/conf/inkdnsconf" ]; then
+  . /opt/verb/conf/inkdnsconf
+  if [ "${InkDNSStat}" = "INSTALLED" ]; then
+/opt/verb/serfs/inkdnsrefreshbind; fi; fi
+
+# Finish
+/bin/echo "The ONE subdomain ${DNSSUBDOM} has been added to the DNS zone file."
+
+
+
+
+if [ -e "/opt/verb/mods/inkdnsaddonesub.after" ]; then . /opt/verb/mods/inkdnsaddonesub.after; fi # Follows this script

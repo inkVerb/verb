@@ -1,0 +1,119 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This sets up basic mail certificates and subdomain dummy sites for inkCert-LE
+## This is run automatically by setup, installpostfixvmail, and newdomainshell, and normally should not be run independently
+
+# How to use:
+## ./setinkcertmail [ domain.tld ] [ switch 'verber', optional skip inkCert cli.ini, used by installpostfixvmail ]
+
+# Eg:
+## ./setinkcertmail somedomain.tld
+## ./setinkcertmail name.verb.ink verber
+
+
+# Dependencies
+if ! /bin/grep -q 'InkCertInstalled="DONE"' /opt/verb/conf/inkcertstatus; then
+  /usr/bin/echo "Install inkCert first, I quit."; exit 8
+fi
+if ! /bin/grep -q 'InkDNSStat="INSTALLED"' /opt/verb/conf/inkdnsconf; then
+  /usr/bin/echo "Install inkDNS first, I quit."; exit 8
+fi
+if ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpath; then
+  /usr/bin/echo "Install Postfix Vmail first, I quit."; exit 8
+fi
+
+DOMAIN="$1"
+
+# Include the config
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/servertype
+
+# inkCert
+if [ "$2" != "verber" ]; then
+  /opt/verb/serfs/setinkcertmailsubdomains ${DOMAIN}
+fi
+
+# Webserver directory (remake it everytime)
+/usr/bin/mkdir -p /srv/www/mailcatch
+/usr/bin/cat <<'EOF' > /srv/www/mailcatch/index.htm
+<!DOCTYPE html>
+<html>
+<head><title>Hey, Boo!</title></head>
+<body><h1 style="text-align:center">Hey, Boo!</h1><hr></body>
+</html>
+EOF
+/usr/bin/chown -R www:www /srv/www/mailcatch
+
+# Mail cert links
+/opt/verb/serfs/setinkcertmailcerts ${DOMAIN}
+
+# Dovecot
+/usr/bin/cat <<EOF > /etc/dovecot/crt.d/${DOMAIN}.conf
+local_name imap.${DOMAIN} {
+  ssl_cert = </etc/ssl/server/mail/${DOMAIN}.crt
+  ssl_key = </etc/ssl/server/mail/${DOMAIN}.key
+}
+
+local_name pop3.${DOMAIN} {
+  ssl_cert = </etc/ssl/server/mail/${DOMAIN}.crt
+  ssl_key = </etc/ssl/server/mail/${DOMAIN}.key
+}
+
+local_name mail.${DOMAIN} {
+  ssl_cert = </etc/ssl/server/mail/${DOMAIN}.crt
+  ssl_key = </etc/ssl/server/mail/${DOMAIN}.key
+}
+EOF
+## Own
+/bin/chown vmail:dovecot /etc/dovecot/crt.d/${DOMAIN}.conf
+/bin/chmod o-rwx /etc/dovecot/crt.d/${DOMAIN}.conf
+
+# Postfix
+if ! /bin/grep -q "mail.${DOMAIN} /etc/ssl/server/mail/${DOMAIN}.key /etc/ssl/server/mail/${DOMAIN}.crt" /etc/postfix/virtual_ssl.map; then
+  /usr/bin/cat <<EOF >> /etc/postfix/virtual_ssl.map
+mail.${DOMAIN} /etc/ssl/server/mail/${DOMAIN}.key /etc/ssl/server/mail/${DOMAIN}.crt
+smtp.${DOMAIN} /etc/ssl/server/mail/${DOMAIN}.key /etc/ssl/server/mail/${DOMAIN}.crt
+EOF
+fi
+/usr/bin/postmap -F hash:/etc/postfix/virtual_ssl.map # Because we made an entry in this file and this is the only way to refresh that
+
+# Webserver files so inkCert-LE checks work
+if [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
+
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxmailcatch.conf /opt/verb/conf/webserver/nginx/sites-available/mail.${DOMAIN}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxmailcatch.conf /opt/verb/conf/webserver/nginx/sites-available/smtp.${DOMAIN}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxmailcatch.conf /opt/verb/conf/webserver/nginx/sites-available/imap.${DOMAIN}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxmailcatch.conf /opt/verb/conf/webserver/nginx/sites-available/pop3.${DOMAIN}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxmailcatch.conf /opt/verb/conf/webserver/nginx/sites-available/pop2.${DOMAIN}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxmailcatch.conf /opt/verb/conf/webserver/nginx/sites-available/pop.${DOMAIN}.conf
+  /bin/sed -i "s/mailcatchdomain/mail.${DOMAIN}/g" /opt/verb/conf/webserver/nginx/sites-available/mail.${DOMAIN}.conf
+  /bin/sed -i "s/mailcatchdomain/smtp.${DOMAIN}/g" /opt/verb/conf/webserver/nginx/sites-available/smtp.${DOMAIN}.conf
+  /bin/sed -i "s/mailcatchdomain/imap.${DOMAIN}/g" /opt/verb/conf/webserver/nginx/sites-available/imap.${DOMAIN}.conf
+  /bin/sed -i "s/mailcatchdomain/pop3.${DOMAIN}/g" /opt/verb/conf/webserver/nginx/sites-available/pop3.${DOMAIN}.conf
+  /bin/sed -i "s/mailcatchdomain/pop2.${DOMAIN}/g" /opt/verb/conf/webserver/nginx/sites-available/pop2.${DOMAIN}.conf
+  /bin/sed -i "s/mailcatchdomain/pop.${DOMAIN}/g" /opt/verb/conf/webserver/nginx/sites-available/pop.${DOMAIN}.conf
+  /opt/verb/serfs/ensitenginx mail.${DOMAIN} smtp.${DOMAIN} imap.${DOMAIN} pop3.${DOMAIN} pop2.${DOMAIN} pop.${DOMAIN}
+
+elif [ ${ServerType} = "lamp" ]; then
+
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newnapachemailcatch.conf /opt/verb/conf/webserver/httpd/sites-available/mail.${DOMAIN}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newnapachemailcatch.conf /opt/verb/conf/webserver/httpd/sites-available/smtp.${DOMAIN}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newnapachemailcatch.conf /opt/verb/conf/webserver/httpd/sites-available/imap.${DOMAIN}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newnapachemailcatch.conf /opt/verb/conf/webserver/httpd/sites-available/pop3.${DOMAIN}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newnapachemailcatch.conf /opt/verb/conf/webserver/httpd/sites-available/pop2.${DOMAIN}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newnapachemailcatch.conf /opt/verb/conf/webserver/httpd/sites-available/pop.${DOMAIN}.conf
+  /bin/sed -i "s/mailcatchdomain/mail.${DOMAIN}/g" /opt/verb/conf/webserver/httpd/sites-available/mail.${DOMAIN}.conf
+  /bin/sed -i "s/mailcatchdomain/smtp.${DOMAIN}/g" /opt/verb/conf/webserver/httpd/sites-available/smtp.${DOMAIN}.conf
+  /bin/sed -i "s/mailcatchdomain/imap.${DOMAIN}/g" /opt/verb/conf/webserver/httpd/sites-available/imap.${DOMAIN}.conf
+  /bin/sed -i "s/mailcatchdomain/pop3.${DOMAIN}/g" /opt/verb/conf/webserver/httpd/sites-available/pop3.${DOMAIN}.conf
+  /bin/sed -i "s/mailcatchdomain/pop2.${DOMAIN}/g" /opt/verb/conf/webserver/httpd/sites-available/pop2.${DOMAIN}.conf
+  /bin/sed -i "s/mailcatchdomain/pop.${DOMAIN}/g" /opt/verb/conf/webserver/httpd/sites-available/pop.${DOMAIN}.conf
+  /opt/verb/serfs/ensiteapache mail.${DOMAIN} smtp.${DOMAIN} imap.${DOMAIN} pop3.${DOMAIN} pop2.${DOMAIN} pop.${DOMAIN}
+
+fi
+
+
+
+
+if [ -e "/opt/verb/mods/setinkcertmail.after" ]; then . /opt/verb/mods/setinkcertmail.after; fi # Follows this script

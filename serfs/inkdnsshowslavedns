@@ -1,0 +1,64 @@
+#!/bin/bash
+#inkVerbKnight! verb.ink
+
+# This displays information for a domain served on this DNS as a slave record
+
+# How to use:
+## ./inkdnsshowslavedns [ domain.tld ]
+
+# Eg:
+## ./inkdnsshowslavedns inkisaverb.com
+## ./inkdnsshowslavedns sub.inkisaverb.com
+
+usagenotes="This displays information for a domain served on this DNS as a slave record"
+usageformat="inkdnsshowslavedns [ domain.tld ] verber"
+usageexample="inkdnsshowslavedns inkisaverb.com
+inkdnsshowslavedns sub.inkisaverb.com "
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkdnsinstall )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdnsshowslavedns.replace" ]; then . /opt/verb/mods/inkdnsshowslavedns.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdnsshowslavedns.before" ]; then . /opt/verb/mods/inkdnsshowslavedns.before; fi # Precedes this script
+
+
+# Config check
+if [ ! -f "/opt/verb/conf/inkdns/sdns/dnshost" ]; then
+  /bin/echo "This server is not a DNS, I quit."; exit 0
+fi
+
+# Argument check
+if [ -z "$1" ]; then
+  /bin/echo "You must specify a domain."; exit 0
+fi
+
+# Domain
+DOMAIN="$1"
+
+# Already existing check
+if [ ! -f "/opt/verb/conf/inkdns/sdns/s.${DOMAIN}" ]; then
+  /bin/echo "No SDNS configuration for ${DOMAIN}, I quit."; exit 0
+fi
+
+# Display the info
+. /opt/verb/conf/inkdns/sdns/s.${DOMAIN}
+
+echo "Domain: ${sdnsDomain}
+IPv4: ${sdnsIPv4}
+IPv6: ${sdnsIPv6Cmp}
+IPv4 ARPA: ${sdnsIPv4ARPA}
+IPv6 ARPA: ${sdnsIPv6ARPA}"
+
+
+
+
+if [ -e "/opt/verb/mods/inkdnsshowslavedns.after" ]; then . /opt/verb/mods/inkdnsshowslavedns.after; fi # Follows this script

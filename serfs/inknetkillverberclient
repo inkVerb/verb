@@ -1,0 +1,38 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This deletes a Verber Client's profile and kills the inkNet JailKit user
+
+# How to use:
+## ./inknetkillverberclient [verb host]
+
+
+KILLHOST=$1
+KILLVERBCLIENT="$(/bin/echo ${KILLHOST} | sed 's/\./_/g')"
+
+# Chek if it exists
+if [ ! -e "/opt/verb/conf/inknet/verber/client.verber.${KILLVERBCLIENT}.cnf" ]; then
+/bin/echo "That Verber Client doesn't exist here."
+exit 8; fi
+
+# Include the Client's config
+. /opt/verb/conf/inknet/verber/client.verber.${KILLVERBCLIENT}.cnf
+
+# Kill the inkNet ivApp user
+userdel -r ${CLIENTUSERNAME}
+/bin/rm -rf /opt/ivapp/inknet/verber/${CLIENTUSERNAME}
+
+# Remove directories
+/bin/rm -f /opt/verb/conf/inknet/verber/client.verber.${KILLVERBCLIENT}.cnf
+
+# Remove the SSH authorized_key file
+/bin/rm -f /etc/ssh/authorized_keys/${CLIENTUSERNAME}
+
+# Finish
+/bin/echo "Done. ${KILLHOST} pushed overboard and fed to the sharks."
+
+
+
+
+
+if [ -e "/opt/verb/mods/inknetkillverberclient.after" ]; then . /opt/verb/mods/inknetkillverberclient.after; fi # Follows this script

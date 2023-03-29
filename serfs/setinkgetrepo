@@ -1,0 +1,22 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This sets new site-wide repo for Verber app installs, used primarily or solely by the inkget serf
+## This should generally not be necessary unless new repos have been added and the current repo is distant or has high traffic.
+
+# How to use:
+## ./setinkgetrepo [inkget repo]
+
+# Eg:
+## ./setinkgetrepo toronto.verb.ink
+
+
+NEWINKRepo=$1
+
+/bin/sed -i "s/InkGet_Repo=.*/InkGet_Repo=\"${NEWINKRepo}\"/g" /opt/verb/conf/serverinkget
+
+
+
+
+
+if [ -e "/opt/verb/mods/setinkgetrepo.after" ]; then . /opt/verb/mods/setinkgetrepo.after; fi # Follows this script

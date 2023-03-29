@@ -1,0 +1,25 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This displays the inkCert status for a specified domain
+
+# How to use:
+## ./showinkcertstatus [domain]
+
+# Eg:
+## ./showinkcertstatus inkisaverb.com
+
+
+DOMAIN=$1
+
+# Include the config
+. /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN}
+
+# Display info
+/bin/echo "${DOMAIN} inkCert SSL status: ${InkCerted}"
+
+
+
+
+
+if [ -e "/opt/verb/mods/showinkcertstatus.after" ]; then . /opt/verb/mods/showinkcertstatus.after; fi # Follows this script

@@ -1,0 +1,15 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This displays a list of all installed Vapps on the server
+
+# How to use:
+## ./showvapps
+
+
+ls -1 /srv/www/vapps/
+
+
+
+
+if [ -e "/opt/verb/mods/showvapps.after" ]; then . /opt/verb/mods/showvapps.after; fi # Follows this script

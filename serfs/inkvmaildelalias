@@ -1,0 +1,46 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This delets an email alias in the inkvmail database
+
+# How to use:
+## ./inkvmaildelalias [ emal alias ]
+
+usagenotes="This delets an email alias in the inkvmail database"
+usageformat="inkvmaildelalias [ emal alias ]"
+usageexample="inkvmaildelalias james@inkisaverb.com"
+hierarchy=( primary )
+vsetnames=( "Email" )
+vsettypes=( isEmail )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installinkvmail )
+prerequesite=( inkvmailalias )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkvmaildelalias.replace" ]; then . /opt/verb/mods/inkvmaildelalias.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkvmaildelalias.before" ]; then . /opt/verb/mods/inkvmaildelalias.before; fi # Precedes this script
+
+
+# Check to see if inkvmail is installed
+. /opt/verb/conf/servermailpath
+if [ "$ServerMailStatus" != "VMAIL_SERVER" ]; then
+  /bin/echo "Vmail not installed, not adding $domain to PFA"
+  exit 0; fi
+
+address="$1"
+
+# Run the update
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "DELETE FROM alias WHERE address='$address';"
+
+# Finish
+/bin/echo "Email alias $address gone"
+
+
+
+
+if [ -e "/opt/verb/mods/inkvmaildelalias.after" ]; then . /opt/verb/mods/inkvmaildelalias.after; fi # Follows this script

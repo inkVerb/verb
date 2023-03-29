@@ -1,0 +1,31 @@
+#!/bin/sh
+#inkVerb repo donjon dragon, verb.ink
+set -e
+
+# This links the repo directory to the domain used as the "repo" in a Verber's setup serf
+## Prerequisite: a domain directory must be added via the newdomain or newdomaincgi serf
+
+# How to use:
+## ./wpaddkillsite [namespace]
+
+
+KILLNAME=$1
+
+# Include the config
+. /opt/verb/donjon/wpaddsites/wpaddrepo.cnf
+
+
+# Remove the site from Apache
+/opt/verb/serfs/killdomain ${KILLNAME}${WPADDNAMESUFF}.${WPADDDOMAIN}
+
+# Remove the wpadd credentials
+/bin/sed -i "s/${KILLNAME}.*//g" /opt/verb/donjon/wpaddsites/wpadd.list
+/bin/sed -i "s/${KILLNAME}.*//g" /opt/verb/donjon/wpaddsites/wpadd.human.list
+/bin/sed -i "s/*.${KILLNAME}//g" /opt/verb/donjon/wpaddsites/updatewpaddrepo.sh
+
+# Finish
+/bin/echo "The ${KILLNAME} wpadd archive has been removed from this Inker repo.
+
+NOTE: The actual WordPress app is still in www/vapps.
+"
+

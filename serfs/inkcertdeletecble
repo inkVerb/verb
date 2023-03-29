@@ -1,0 +1,88 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This deletes the inkCert LE or CB certs for a specified domain
+## It applies to an entire domain
+## Prerequesite: inkcertdole or inkcertdocb (or both subscripts thereof: inkcertreq*, inkcertadd*)
+
+## This is meant to be run as a subscript for inkcertremovecb or inkcertremovele
+
+# How to use:
+## ./inkcertdeletecble [ domain.tld or sub.domain.tld ]
+
+#Eg:
+## ./inkcertdeletecble inkisaverb.com
+## ./inkcertdeletecble YOURNAME.verb.one
+## ./inkcertdeletecble owncloud.YOURNAME.verb.blue (if the subdomain is managed like a full domain on the Verber)
+
+usagenotes="This deletes the inkCert LE or CB certs for a specified domain"
+usageformat="inkcertdeletecble [ domain.tld or sub.domain.tld ]"
+usageexample="inkcertdeletecble inkisaverb.com
+inkcertdeletecble YOURNAME.verb.one
+inkcertdeletecble owncloud.YOURNAME.verb.blue (if the subdomain is managed like a full domain on the Verber)"
+hierarchy=( tertiary inkcertundo* )	# Choose: primary (works by itself, may use secondaries or tertiaries); secondary (can work by itself, but not normally, may use other secondaries or tertiaries); tertiary (cannot run by itself, must be run by a secondary or primary);oversight (uses primaries)
+vsetnames=( "Domain" )	# "Pretty" names for each setting, must be in order of settings
+vsettypes=( isDomain )
+voptnames=( domain )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkcertinstall )
+prerequesite=( inkcertdole 'or' inkcertdocb 'or' inkcertreqle inkcertaddle 'or' inkcertreqcb inkcertaddcb )
+usedby=( inkcertrevokele inkcertrevokecb inkcertdeletecble )
+useserfs=(  )
+useconfigs=(  )	# List config files of any kind used in this serf, please preserve order of appearance
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkcertdeletecble.replace" ]; then . /opt/verb/mods/inkcertdeletecble.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkcertdeletecble.before" ]; then . /opt/verb/mods/inkcertdeletecble.before; fi # Precedes this script
+
+
+DOMAIN=$1
+
+# Include and check the inkCert domain config
+## Verify that the domain is installed
+if [ ! -f /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN} ]; then
+/bin/echo "Sorry, Bucko. ${DOMAIN} is not even installed.
+
+Why revoke a cert for a domain that isn't even installed here?
+"; exit 0
+fi
+## Domain cert status
+. /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN}
+if [ "${InkCerted}" = "DONE_LE" ] || [ "${InkCerted}" = "DONE_CB" ] || [ "${InkCerted}" = "DONE_CBSINGLE" ]; then
+/bin/echo "Certs present for ${DOMAIN}, removing them..."
+else
+/bin/echo "This only removes SSL certificates set up using Letsencrypt or Certbot.
+
+Such certs aren't set up using those. You'll need a different tool for this job.
+"; exit 0
+fi
+
+# Remove archive on the server
+if [ -d /etc/inkcert/le/archive/${DOMAIN}/ ]; then
+/bin/echo "Removing the archive for ${DOMAIN}..."
+shred -f -x /etc/inkcert/le/archive/${DOMAIN}/*
+/bin/rm -rf /etc/inkcert/le/archive/${DOMAIN}/
+else
+/bin/echo "Archive for ${DOMAIN} not found. Nothing here to remove. All set."
+fi
+
+# Remove live keys on the server
+if [ -d /etc/inkcert/le/live/${DOMAIN}/ ]; then
+/bin/echo "Removing the live keys for ${DOMAIN}..."
+/bin/rm -rf /etc/inkcert/le/live/${DOMAIN}/
+else
+/bin/echo "Live keys for ${DOMAIN} not found. Nothing here to remove. All set."
+fi
+
+# Remove renewal config on the server
+/bin/echo "Removing the renewal config for ${DOMAIN}..."
+/bin/rm -f /etc/inkcert/le/renewal/${DOMAIN}.conf
+
+# Echo alliswell
+/bin/echo "Unless there is an error message above, the certs should have been revoked from the CA, now uninstall them..."
+
+
+
+
+if [ -e "/opt/verb/mods/inkcertdeletecble.after" ]; then . /opt/verb/mods/inkcertdeletecble.after; fi # Follows this script

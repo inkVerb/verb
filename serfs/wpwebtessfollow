@@ -1,0 +1,21 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This changes the Tesseract theme's "Follow Us On" social icon Title prefix to what you set. It can be left null for simple social media titles
+## This only applies to a specific domain
+
+# How to use:
+## ./wpfixtessfollow [wordpress domain] [replaced contend]
+
+
+WPSITE=$1
+CONTENT=$2
+
+/bin/sed -i "s/Follow Us on/${CONTENT}/g" /srv/www/html/${WPSITE}/wp-content/themes/tesseract-free-theme/inc/customizer-frontend-functions.php
+/bin/sed -i "s/Follow Us on/${CONTENT}/g" /srv/www/html/${WPSITE}/wp-content/themes/tesseract-free-theme/languages/tesseract.pot
+
+
+
+
+
+if [ -e "/opt/verb/mods/wpwebtessfollow.after" ]; then . /opt/verb/mods/wpwebtessfollow.after; fi # Follows this script

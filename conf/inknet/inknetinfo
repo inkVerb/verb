@@ -1,0 +1,7 @@
+#!/bin/sh
+## This is a config file for inkNet information
+
+InkNet_Repo=NOT_SET
+InkNetSSLCA=NOT_SET
+InkNetSSHCA=NOT_SET
+

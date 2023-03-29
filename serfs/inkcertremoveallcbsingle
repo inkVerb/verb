@@ -1,0 +1,48 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This runs inkcertremovecb for a domain and all its subdomains
+## Prerequesite: inkcertrevokecb
+
+# NOTE: This is intended to be run by inkcertundole
+
+# How to use:
+## ./inkcertremoveallcbsingle [ domain.tld NO SUBDOMAINS ]
+
+usagenotes="This runs inkcertremovecb for a domain and all its subdomains"
+usageformat="inkcertremoveallcbsingle [ domain.tld NO SUBDOMAINS ]"
+usageexample="inkcertremoveallcbsingle inkisaverb.com"
+hierarchy=( tertiary  )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkcertinstall )
+prerequesite=( inkcertrevokele )
+usedby=( inkcertundocb )
+useserfs=( inkcertremovecbsingle )
+useconfigs=(  )	# List config files of any kind used in this serf, please preserve order of appearance
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkcertremoveallcbsingle.replace" ]; then . /opt/verb/mods/inkcertremoveallcbsingle.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkcertremoveallcbsingle.before" ]; then . /opt/verb/mods/inkcertremoveallcbsingle.before; fi # Precedes this script
+
+
+# For the domain
+/opt/verb/serfs/inkcertremovecbsingle ${DOMAIN}
+
+# For any/all sub-domains
+## Get the name of each subdomain .conf file available
+find . -name "*.${DOMAIN}.conf" | while read findsitesubdomain; do
+  ## Strip the .conf extension
+  sitesubdomain=$(basename ${findsitesubdomain} .conf)
+  ## Run inkCertAddLE per site config
+  /opt/verb/serfs/inkcertremovecbsingle ${sitesubdomain}
+wait
+done
+
+
+
+
+if [ -e "/opt/verb/mods/inkcertremoveallcbsingle.after" ]; then . /opt/verb/mods/inkcertremoveallcbsingle.after; fi # Follows this script

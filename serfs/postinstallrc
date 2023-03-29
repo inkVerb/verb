@@ -1,0 +1,21 @@
+#!/bin/sh
+#inkVerbSerf! verb.ink
+
+# This should be run after roundcube has been setup through the web interface at box.your-name.verb.email/boxpath
+
+# How to use:
+## ./postinstallrc
+
+
+# Set installer to false
+/bin/sed -i "s/\$config\['enable_installer'\].*/\$config\['enable_installer'\] = false;/g" /srv/www/email/roundcube/config/config.inc.php
+
+# Tar & remove the installer directory
+cd /srv/www/email/roundcube
+/usr/bin/rm -f installer.txz
+/usr/bin/tar c installer | xz > installer.txz
+/usr/bin/rm -rf installer
+cd $OLDPWD
+
+# Finish
+/bin/echo "Finished. Roudcube installer disabled."

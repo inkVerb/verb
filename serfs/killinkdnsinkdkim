@@ -1,0 +1,79 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This removes the inkDKIM key from an existing DNS TXT record in the inkDNS zone file on the server
+
+# How to use:
+## ./killinkdnsinkdkim [ domain.tld ]
+## ./killinkdnsinkdkim [ domain.tld ] verber
+
+usagenotes="This removes the inkDKIM key from an existing DNS TXT record in the inkDNS zone file on the server"
+usageformat="killinkdnsdomain [ domain.tld or subdomain.domain.tld etc ] [ verber - only if addressing a verb domain ]"
+usageexample="killinkdnsinkdkim inkisaverb.com
+killinkdnsinkdkim NAME.verb.email verber"
+hierarchy=( tertiary killdomainshell )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=( "verber" )
+vopttypes=( string_match )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( inkdnsaddinkdkim )
+usedby=( killinkcertmail )
+useserfs=( inkdnsserial inkdnsrefreshbind )
+useconfigs=( servernameip inkcertstatus inkdnsconf servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/killinkdnsinkdkim.replace" ]; then . /opt/verb/mods/killinkdnsinkdkim.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/killinkdnsinkdkim.before" ]; then . /opt/verb/mods/killinkdnsinkdkim.before; fi # Precedes this script
+
+
+# Dependencies
+if ! /bin/grep -q 'InkCertInstalled="DONE"' /opt/verb/conf/inkcertstatus; then
+  /usr/bin/echo "Install inkCert first, I quit."; exit 8
+fi
+if ! /bin/grep -q 'InkDNSStat="INSTALLED"' /opt/verb/conf/inkdnsconf; then
+  /usr/bin/echo "Install inkDNS first, I quit."; exit 8
+fi
+if ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpath; then
+  /usr/bin/echo "Install Postfix Vmail first, I quit."; exit 8
+fi
+
+DNsdnsDomainAIN="$1"
+if [ -n $2 ] && [ "$2" = "verber" ]; then
+  ZONEDIR="inkzones"
+else
+  ZONEDIR="zones"
+fi
+
+# Include the configs
+. /opt/verb/conf/servernameip
+
+# Check if already added
+if /bin/grep -Fq "; inkDKIM key" /opt/verb/conf/inkdns/${ZONEDIR}/db.${DNsdnsDomainAIN}; then
+/bin/echo "The inkDKIM key for ${DNsdnsDomainAIN} has not been added. Use inkdnsaddinkdkim to add it."
+exit 0; fi
+
+# Remove the key
+/bin/sed -i "/; inkDKIM key ${DNsdnsDomainAIN}/,/;; End inkDKIM key ${DNsdnsDomainAIN}/d" /opt/verb/conf/inkdns/${ZONEDIR}/db.${DNsdnsDomainAIN}
+
+# Set the Serial No
+if [ "${ZONEDIR}" = "inkzones" ]; then
+  /opt/verb/serfs/inkdnsserial ${DNsdnsDomainAIN} verber
+elif [ "${ZONEDIR}" = "zones" ]; then
+  /opt/verb/serfs/inkdnsserial ${DNsdnsDomainAIN}
+fi
+
+# Refresh zones
+if [ -f "/opt/verb/conf/inkdnsconf" ]; then
+  . /opt/verb/conf/inkdnsconf
+  if [ "${InkDNSStat}" = "INSTALLED" ]; then
+/opt/verb/serfs/inkdnsrefreshbind; fi; fi
+
+# Finish
+/bin/echo "The inkDKIM key has been removed from the ${DNsdnsDomainAIN} DNS zone file."
+
+
+
+
+if [ -e "/opt/verb/mods/killinkdnsinkdkim.after" ]; then . /opt/verb/mods/killinkdnsinkdkim.after; fi # Follows this script

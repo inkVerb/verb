@@ -1,0 +1,59 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This batch runs a revoke and uninstall of inkCert Certbot certs for a domain and replaces the Snakeoil certificate
+## It applies only to one domain/subdomain at a time
+## Prerequesite: inkcertdocbsingle (or both subscripts thereof: inkcertreqcbsingle, inkcertaddcbsingle)
+
+# Dev NOTE:
+## The portion of this script that calls the CA to revoke the cert has not been written yet.
+
+# How to use:
+## ./inkcertundocbsingle [ domain.tld NO SUBDOMAINS ]
+
+#Eg:
+## ./inkcertundocbsingle inkisaverb.com
+## ./inkcertundocbsingle YOURNAME.verb.one
+
+usagenotes="This batch runs a revoke and uninstall of inkCert-Certbot certs for a domain and replaces the Snakeoil certificate"
+usageformat="inkcertundocbsingle [ domain.tld NO SUBDOMAINS ]"
+usageexample="inkcertundocbsingle inkisaverb.com
+inkcertundocbsingle YOURNAME.verb.one"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkcertinstall )
+prerequesite=( inkcertdocbsingle 'or' inkcertreqcbsingle inkcertaddcbsingle )
+usedby=(  )
+useserfs=( inkcertrevokecbsingle inkcertremovecbsingle )
+useconfigs=(  )	# List config files of any kind used in this serf, please preserve order of appearance
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkcertundocbsingle.replace" ]; then . /opt/verb/mods/inkcertundocbsingle.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkcertundocbsingle.before" ]; then . /opt/verb/mods/inkcertundocbsingle.before; fi # Precedes this script
+
+
+DOMAIN=$1
+
+# Check variables
+if [ -z ${1} ]; then
+/bin/echo "You need to specify a domain. Read the instructions."; exit 0
+fi
+
+# Request and get the certs
+/opt/verb/serfs/inkcertrevokecbsingle ${DOMAIN}
+
+# Install the certs
+/opt/verb/serfs/inkcertremovecbsingle ${DOMAIN}
+
+# Remove mail certs
+/usr/bin/rm -f /etc/ssl/server/mail/${DOMAIN}.crt
+/usr/bin/rm -f /etc/ssl/server/mail/${DOMAIN}.key
+
+
+
+
+if [ -e "/opt/verb/mods/inkcertundocbsingle.after" ]; then . /opt/verb/mods/inkcertundocbsingle.after; fi # Follows this script

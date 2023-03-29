@@ -1,0 +1,44 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This creates and signs the host key for this CA Verber
+## This is used by inknetinstallca (Run by itselt, this only refreshes from when inknetinstallca first used this)
+## Dependent: inknetnewcahostkey
+## Prerequisite: inknetmakeca
+
+# This can be run any time without clients needing to re-authenticate the server
+
+# How to use:
+## ./inknetnewcahostkey
+
+
+# Check if CA
+if [ ! -f /opt/verb/conf/inknet/ca.verber.cnf ]; then
+/bin/echo "Out of order. This is not a CA Verber yet.
+
+First run inknetinstallca
+"
+exit 8; fi
+
+# Include the config
+. /opt/verb/conf/inknet/ca.verber.cnf
+
+# Verber Keys (on the same CA server)
+## Create the inkNet host keys for Verber
+ssh-keygen -t rsa -N "" -f /etc/ssh/inknet/in_cav_${IAMCANAME}_key
+## CA signs the Verber host key
+ssh-keygen -s ~/.ssh/inknet/ca/in_ca_${IAMCANAME}_key -N "" -I in_cav_${IAMCANAME} -h -n ${IAMCAHOST} -V +170w /etc/ssh/inknet/in_cav_${IAMCANAME}_key.pub
+### Now exists: /etc/ssh/inknet/in_cav_${CAVERBERNAME}_key-cert.pub
+
+# Restart
+/bin/systemctl reload ssh
+/bin/systemctl reload sshd
+
+# Finish
+/bin/echo "A new hostkey has been created and signed for this CA Verber."
+
+
+
+
+
+if [ -e "/opt/verb/mods/inknetnewcahostkey.after" ]; then . /opt/verb/mods/inknetnewcahostkey.after; fi # Follows this script

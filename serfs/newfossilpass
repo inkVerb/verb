@@ -1,0 +1,49 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This changes the password for an existing fossil user
+
+# How to use:
+## ./newfossilpass [ existing-fossil-name ] [ username ] [ new password ]
+
+# Example:
+## ./newfossilpass dinosaur adam AdamNuup4$$w0RD
+
+usagenotes="This changes the password for an existing fossil user"
+usageformat="newfossilpass [ existing-fossil-name ] [ username ] [ new password ]"
+usageexample="newfossilpass dinosaur adam NotSecure125"
+hierarchy=( primary )
+vsetnames=( "Fossil name" "Username" "Password" )
+vsettypes=( isPathname isUsername string_quote )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( newfossil )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servernameip siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/newfossilpass.replace" ]; then . /opt/verb/mods/newfossilpass.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/newfossilpass.before" ]; then . /opt/verb/mods/newfossilpass.before; fi # Precedes this script
+
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+
+OLDFOSSIL=$1
+OLDUSER=$2
+NEWPASS=$3
+
+# Change the password
+/srv/www/vip/fossil user password ${OLDUSER} ${NEWPASS} --repository ${OLDFOSSIL}.fossil
+
+/bin/echo "New ${OLDFOSSIL}.fossil password set for ${OLDUSER}.
+Available on web at fossil.${vipURI}/${OLDFOSSIL}.cgi"
+
+
+
+
+if [ -e "/opt/verb/mods/newfossilpass.after" ]; then . /opt/verb/mods/newfossilpass.after; fi # Follows this script

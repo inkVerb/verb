@@ -1,0 +1,66 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This adds or appends forwarding addresses to an alias for an existing domain  in inkvmail
+
+# How to use:
+## ./inkvmailalias [ emailuser (no domain) ] [ domain ] [ forward email ] [ forward email ] [ forward email ] [ forward email ] ...
+
+# Eg:
+## ./inkvmailalias james inkisaverb.com tommy@inkisaverb.com
+
+usagenotes="This adds or appends forwarding addresses to an alias for an existing domain in inkvmail"
+usageformat="inkvmailalias [ emailuser (no domain) ] [ domain ] [ forward email ] [ forward email ] [ forward email ] [ forward email ] ..."
+usageexample="inkvmailalias james inkisaverb.com tommy@inkisaverb.com
+inkvmailalias james inkisaverb.com tommy@inkisaverb.com alex@inkisaverb.com bill@poetryiscode.com mel@verb.ink"
+hierarchy=( primary )
+vsetnames=( "Email username" "Domain" "Email" )
+vsettypes=( isaz09lines isDomian isEmail )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installinkvmail )
+prerequesite=( inkvmaildomain )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkvmailalias.replace" ]; then . /opt/verb/mods/inkvmailalias.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkvmailalias.before" ]; then . /opt/verb/mods/inkvmailalias.before; fi # Precedes this script
+
+
+# Check to see if inkvmail is installed
+. /opt/verb/conf/servermailpath
+if [ "$ServerMailStatus" != "VMAIL_SERVER" ]; then
+  /bin/echo "Vmail not installed. Do that first."
+  exit 0; fi
+
+emailUser="${1}"
+domain="${2}"
+address="$emailUser@$domain"
+shift 2
+goto="$(echo "$@" | sed "s/ /,/g")"
+
+# Check for an existing entry
+email="${1}"
+query="$(/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "SELECT goto FROM alias WHERE address='$email' AND domain='$domain';")"
+if [ -n "${query}" ]; then
+  oldgoto="$(echo ${query} | sed "s/goto //")"
+  newgoto="${oldgoto},${goto}"
+  /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "UPDATE alias SET goto='$newgoto', modified=CURRENT_TIMESTAMP WHERE address='$email' AND domain='$domain';"
+else
+  newgoto=${goto}
+  # Make the database entry
+  /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "INSERT INTO alias (address, goto, domain, created, modified, active) VALUES ('$email', '$newgoto', '$domain', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);"
+fi
+
+# Finish
+/bin/echo "Updated:
+Alias: ${email}
+Forarding to: ${newgoto}"
+
+
+
+
+if [ -e "/opt/verb/mods/inkvmailalias.after" ]; then . /opt/verb/mods/inkvmailalias.after; fi # Follows this script

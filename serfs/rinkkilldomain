@@ -1,0 +1,49 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This remote runs killinkdnsslavedns on both NS rink slave servers
+## This is run automatically by killdomainshell and normally should not be run independently
+
+# How to use:
+## ./rinkkilldomain [ domain.tld ]
+
+usagenotes="This remote runs killinkdnsslavedns on both NS rink slave servers"
+usageformat="rinkkilldomain [ domain.tld ]"
+usageexample="rinkkilldomain inkisaverb.com"
+hierarchy=( tertiary killdomainshell )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( "Controlled by Rink" )
+prerequesite=( rinkadddomain )
+usedby=( killdomainshell )
+useserfs=(  )
+useconfigs=( servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/rinkkilldomain.replace" ]; then . /opt/verb/mods/rinkkilldomain.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/rinkkilldomain.before" ]; then . /opt/verb/mods/rinkkilldomain.before; fi # Precedes this script
+
+
+servedomain=$1
+
+# Configs
+. /opt/verb/conf/servernameip
+
+# Already configured?
+if [ "$RinkConfigured" != "true" ]; then
+	echo "Rink NS server keys not configured, DNS nameserver zone files will need to be updated manually"
+	exit 0
+fi
+
+# Check for conflicts
+/opt/verb/serfs/rinkcheck inkdnsaddslave
+/opt/verb/serfs/rinkcheck killinkdnsslavedns
+
+# Insert the function statements
+/usr/bin/ssh ns1 "/usr/bin/echo 'killinkdnsslavedns ${ServerName}-${ServerTLD} ${servedomain} -n' > /srv/sns/${ServerName}-${ServerTLD}/calls/killinkdnsslavedns"
+/usr/bin/ssh ns2 "/usr/bin/echo 'killinkdnsslavedns ${ServerName}-${ServerTLD} ${servedomain} -n' > /srv/sns/${ServerName}-${ServerTLD}/calls/killinkdnsslavedns"
+
+if [ -e "/opt/verb/mods/rinkkilldomain.after" ]; then . /opt/verb/mods/rinkkilldomain.after; fi # Follows this script

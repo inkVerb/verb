@@ -1,0 +1,5 @@
+#!/bin/sh
+## This is a config file for only for the port
+
+ServerPort="NOT_CHANGED"
+

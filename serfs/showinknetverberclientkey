@@ -1,0 +1,28 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This displays the inkNet Client key
+## This is useful for getting the key to have it signed by the rink
+
+# How to use:
+## ./showinknetverberclientkey
+
+
+# Check the config
+if [ ! -f /opt/verb/conf/inknet/rink.client.cnf ]; then
+/bin/echo "This is not yet connected to an Inker via inkNet."
+exit 8; fi
+
+# Include the config
+. /opt/verb/conf/inknet/rink.client.cnf
+
+# Display info
+/bin/echo "Copy and paste the ENTIRE long key below, as is, into the \"Activate Client key\" area on the inkNet CA Inker:
+"
+/bin/cat /opt/ivapp/inknet/sailor/${CLIENTSAILOR}/.ssh/in_cli_${CLIENTNAME}_key.pub
+
+
+
+
+
+if [ -e "/opt/verb/mods/showinknetverberclientkey.after" ]; then . /opt/verb/mods/showinknetverberclientkey.after; fi # Follows this script

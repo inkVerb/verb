@@ -1,0 +1,15 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This sets the vapp MySQL vbak cron job
+
+# How to use:
+## ./setvappmysqlvbakon
+
+/bin/echo '15 1 * * * root /opt/verb/donjon/vapp.mysql.vbak.sh' > /etc/cron.d/vappmysql-vbak
+/bin/chmod 0644 /etc/cron.d/vappmysql-vbak
+
+
+
+
+if [ -e "/opt/verb/mods/setvappmysqlvbakon.after" ]; then . /opt/verb/mods/setvappmysqlvbakon.after; fi # Follows this script

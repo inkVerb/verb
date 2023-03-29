@@ -1,0 +1,71 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This script runs inkcertdole for all native Verber domains... verb.ink, verb.blue, etc.
+
+# How to use:
+## ./inkcertdole-all-verbs
+
+usagenotes="This script runs inkcertdole for all native Verber domains... verb.ink, verb.blue, et cetera"
+usageformat="inkcertdole-all-verbs"
+usageexample=""
+hierarchy=( oversight )	# Choose: primary (works by itself, may use secondaries or tertiaries); secondary (can work by itself, but not normally, may use other secondaries or tertiaries); tertiary (cannot run by itself, must be run by a secondary or primary);oversight (uses primaries)
+vsetnames=(  )	# "Pretty" names for each setting, must be in order of settings
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkcertinstall )
+prerequesite=( inkcertinstall )
+usedby=(  )
+useserfs=( inkcertdole )
+useconfigs=( servernameip siteurilist servertldstatus )	# List config files of any kind used in this serf, please preserve order of appearance
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkcertdole-all-verbs.replace" ]; then . /opt/verb/mods/inkcertdole-all-verbs.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkcertdole-all-verbs.before" ]; then . /opt/verb/mods/inkcertdole-all-verbs.before; fi # Precedes this script
+
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/servertldstatus
+
+# Verify that it's not a domain Dod Verber
+if /bin/grep -Fq "ServerName=DOMAIN_MOD-" /opt/verb/conf/servernameip; then
+/bin/echo "Domain.MOD Verber NOTICE:
+This is a Domain Mod Verber. Letsencrypt won't run for so many domains in too short of a time.
+
+You must run inkcertdole one at a time for each uri, once you reach quota, wait a few days to continue.
+
+Eg: ./inkcertdole ${inkURI}
+"
+exit 0; fi
+
+# Let each run wait 1 second to avoid congesting the server
+if [ $VERBemail = "true" ]; then
+/opt/verb/serfs/inkcertdole ${emailURI}; fi
+wait
+if [ $VERBone = "true" ]; then
+/opt/verb/serfs/inkcertdole ${oneURI}; fi
+wait
+if [ $VERBink = "true" ]; then
+/opt/verb/serfs/inkcertdole ${inkURI}; fi
+wait
+if [ $VERBblue = "true" ]; then
+/opt/verb/serfs/inkcertdole ${blueURI}; fi
+wait
+if [ $VERBvip = "true" ]; then
+/opt/verb/serfs/inkcertdole ${vipURI}; fi
+wait
+if [ $VERBkiwi = "true" ]; then
+/opt/verb/serfs/inkcertdole ${kiwiURI}; fi
+wait
+if [ $VERBred = "true" ]; then
+/opt/verb/serfs/inkcertdole ${redURI}; fi
+wait
+
+
+
+
+if [ -e "/opt/verb/mods/inkcertdole-all-verbs.after" ]; then . /opt/verb/mods/inkcertdole-all-verbs.after; fi # Follows this script

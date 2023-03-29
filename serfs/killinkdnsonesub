@@ -1,0 +1,60 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This removes a subdomain A & AAAA records from an existing ONE DNS record in the inkDNS zone file on the server
+
+# How to use:
+## ./killinkdnsonesub [ subdomain ]
+
+usagenotes="This removes the mail subdomain A & AAAA records in the inkDNS zone file added by inkdnsaddmail"
+usageformat="killinkdnsonesub [ subdomain ]"
+usageexample="killinkdnsonesub me"
+hierarchy=( tertiary killonesub )
+vsetnames=( "Subdomain" )
+vsettypes=( isDomainPart )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( inkdnsaddonesub )
+usedby=( killonesub )
+useserfs=( inkdnsserial inkdnsrefreshbind )
+useconfigs=( servernameip siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/killinkdnsonesub.replace" ]; then . /opt/verb/mods/killinkdnsonesub.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/killinkdnsonesub.before" ]; then . /opt/verb/mods/killinkdnsonesub.before; fi # Precedes this script
+
+
+DNSSUBDOM="$1"
+ZONEDIR="inkzones"
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+
+# Check if already added
+if ! /bin/grep -Fq "${DNSSUBDOM}.${oneURI}" /opt/verb/conf/inkdns/${ZONEDIR}/db.${oneURI}; then
+/bin/echo "The subdomain ${DNSSUBDOM} has not been added to ${oneURI}. Use inkdnsaddsub to add it."
+exit 0; fi
+
+# Remove the records
+/bin/sed -i "/; Subdomain Records Added by inkDNS ${DNSSUBDOM}\.${oneURI}/,+2d" /opt/verb/conf/inkdns/${ZONEDIR}/db.${oneURI}
+/bin/sed -i "/; PTR Subdomain Records Added by inkDNS ${DNSSUBDOM}\.${oneURI}/,+2d" /opt/verb/conf/inkdns/${ZONEDIR}/nv.${oneURI}
+
+# Set the Serial No
+/opt/verb/serfs/inkdnsserial ${oneURI} verber
+
+# Refresh zones
+if [ -f "/opt/verb/conf/inkdnsconf" ]; then
+  . /opt/verb/conf/inkdnsconf
+  if [ "${InkDNSStat}" = "INSTALLED" ]; then
+/opt/verb/serfs/inkdnsrefreshbind; fi; fi
+
+# Finish
+/bin/echo "The ONE subdomain ${DNSSUBDOM} has been removed from the DNS zone file."
+
+
+
+
+if [ -e "/opt/verb/mods/killinkdnsonesub.after" ]; then . /opt/verb/mods/killinkdnsonesub.after; fi # Follows this script

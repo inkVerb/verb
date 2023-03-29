@@ -1,0 +1,22 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This sets new site-wide SSL CA for inkNet
+## Theoretically, this should not be necessary unless inkVerb makes changes to their own domain.
+
+# How to use:
+## ./setinknetsslca [inkNet SSL CA]
+
+# Eg:
+## ./setinknetsslca sslca.inkisaverb.com
+
+
+INKSSLCA=$1
+
+/bin/sed -i "s/InkNetSSLCA=.*/InkNetSSLCA=\"${INKSSLCA}\"/g" /opt/verb/conf/inknet/inknetinfo
+
+
+
+
+
+if [ -e "/opt/verb/mods/setinknetsslca.after" ]; then . /opt/verb/mods/setinknetsslca.after; fi # Follows this script

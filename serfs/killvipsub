@@ -1,0 +1,77 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This kills a subdomain Apache/Nginx .conf file, Letsencrypt cli-ini entry, and DNS Zone entry after it has been added with addsubdomain
+
+## This DOES NOT:
+### Removes the SSL certificate for the domain and all subdomains thereof.
+### Remove files formerly in the domain from the server, which are retained in the domains folder that an ftpvip can access
+### Remove files for subdomains in the domains folder, just the same.
+### Remove any subdomain folders belonging to the domain.
+### Remove OpekDKIM/inkDKIM keys.
+
+# How to use:
+## ./killvipsub [ subdomain ]
+
+usagenotes="This removes a subdomain Apache/Nginx .conf file, Letsencrypt cli-ini entry, and DNS Zone entry for a subdomain at SUBDOMAIN.NAME.verb.vip"
+usageformat="killvipsub [ subdomain ]"
+usageexample="killvipsub subdom"
+hierarchy=( primary )
+vsetnames=( "Subdomain" )
+vsettypes=( isDomainPart )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( newvipsub )
+usedby=(  )
+useserfs=( killinkdnsvipsub )
+useconfigs=( siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/killvipsub.replace" ]; then . /opt/verb/mods/killvipsub.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/killvipsub.before" ]; then . /opt/verb/mods/killvipsub.before; fi # Precedes this script
+
+
+KILLSUB=$1
+
+# Include the configs
+. /opt/verb/conf/siteurilist
+
+KILLSUBDOMAIN=${KILLSUB}.${vipURI}
+
+# Remove server configs and restart
+. /opt/verb/conf/servertype
+if [ ${ServerType} = "lemp" ]; then
+  /bin/rm -f /opt/verb/conf/webserver/nginx/sites-available/${KILLSUBDOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/nginx/sites-enabled/${KILLSUBDOMAIN}.conf
+  /usr/bin/systemctl restart nginx
+elif [ ${ServerType} = "lamp" ]; then
+  /bin/rm -f /opt/verb/conf/webserver/httpd/sites-available/${KILLSUBDOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/httpd/sites-enabled/${KILLSUBDOMAIN}.conf
+  /usr/bin/systemctl restart httpd
+elif [ ${ServerType} = "laemp" ]; then
+  /bin/rm -f /opt/verb/conf/webserver/httpd/sites-available/${KILLSUBDOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/httpd/sites-enabled/${KILLSUBDOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/nginx/sites-available/${KILLSUBDOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/nginx/sites-enabled/${KILLSUBDOMAIN}.conf
+  /usr/bin/systemctl restart httpd
+  /usr/bin/systemctl restart nginx
+fi
+
+# Remove from inkCert
+/bin/sed -i "s/, ${KILLSUBDOMAIN}//g" /opt/verb/conf/inkcert/cli-ini/cli.${vipURI}.ini
+
+# Remove http folder symlinks
+/bin/rm -f /srv/www/html/${KILLSUBDOMAIN}
+
+# inkDNS entry
+/opt/verb/serfs/killinkdnsvipsub ${KILLSUB}
+
+# Finish
+/bin/echo "${KILLSUBDOMAIN} has been removed. But, the folder in www/vip/_subs.vip/ still exists for a VIP to access."
+
+
+
+
+if [ -e "/opt/verb/mods/killvipsub.after" ]; then . /opt/verb/mods/killvipsub.after; fi # Follows this script

@@ -1,0 +1,51 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This script runs inkcertdosc for all native Verber domains... verb.ink, verb.blue, etc.
+
+# How to use:
+## ./inkcertdosc-all-verbs
+
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/servertldstatus
+
+# Verify that it's not a domain Dod Verber
+if /bin/grep -Fq "ServerName=DOMAIN_MOD-" /opt/verb/conf/servernameip; then
+/bin/echo "Domain.MOD Verber NOTICE:
+This is a Domain Mod Verber. Certbot won't run for so many domains in too short of a time.
+
+You must run inkcertdocb one at a time for each uri, once you reach quota, wait a few days to continue.
+
+Eg: ./inkcertdocb ${inkURI}
+"
+exit 0; fi
+
+# Let each run wait 1 second to avoid congesting the server
+if [ $VERBemail = "true" ]; then
+/opt/verb/serfs/inkcertdosc ${emailURI}; fi
+wait
+if [ $VERBone = "true" ]; then
+/opt/verb/serfs/inkcertdosc ${oneURI}; fi
+wait
+if [ $VERBink = "true" ]; then
+/opt/verb/serfs/inkcertdosc ${inkURI}; fi
+wait
+if [ $VERBblue = "true" ]; then
+/opt/verb/serfs/inkcertdosc ${blueURI}; fi
+wait
+if [ $VERBvip = "true" ]; then
+/opt/verb/serfs/inkcertdosc ${vipURI}; fi
+wait
+if [ $VERBkiwi = "true" ]; then
+/opt/verb/serfs/inkcertdosc ${kiwiURI}; fi
+wait
+if [ $VERBred = "true" ]; then
+/opt/verb/serfs/inkcertdosc ${redURI}; fi
+
+
+
+
+if [ -e "/opt/verb/mods/inkcertdosc-all-verbs.after" ]; then . /opt/verb/mods/inkcertdosc-all-verbs.after; fi # Follows this script

@@ -1,0 +1,72 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This removes the mail subdomain A & AAAA records in the inkDNS zone file added by inkdnsaddmail
+## This is used by killinkcertmail and should not be run independently
+
+# How to use:
+## ./killinkdnsmail [ domain.tld ]
+
+usagenotes="This removes the mail subdomain A & AAAA records in the inkDNS zone file added by inkdnsaddmail"
+usageformat="killinkdnsmail [ domain.tld ]"
+usageexample="killinkdnsmail inkisaverb.com"
+hierarchy=( tertiary killdomainshell )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( inkdnsaddinkdkim )
+usedby=( killinkcertmail )
+useserfs=( inkdnsserial inkdnsrefreshbind )
+useconfigs=( servernameip inkcertstatus inkdnsconf servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/killinkdnsmail.replace" ]; then . /opt/verb/mods/killinkdnsmail.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/killinkdnsmail.before" ]; then . /opt/verb/mods/killinkdnsmail.before; fi # Precedes this script
+
+
+# Dependencies
+if ! /bin/grep -q 'InkCertInstalled="DONE"' /opt/verb/conf/inkcertstatus; then
+  /usr/bin/echo "Install inkCert first, I quit."; exit 8
+fi
+if ! /bin/grep -q 'InkDNSStat="INSTALLED"' /opt/verb/conf/inkdnsconf; then
+  /usr/bin/echo "Install inkDNS first, I quit."; exit 8
+fi
+if ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpath; then
+  /usr/bin/echo "Install Postfix Vmail first, I quit."; exit 8
+fi
+
+DNsdnsDomainAIN="$1"
+
+# Make sure we don't kill a verb domain
+if /bin/grep -q "${DOMAIN}" /opt/verb/conf/siteurilist; then
+  /usr/bin/echo "Can't kill a verber domain, I quit."; exit 9
+fi
+
+# Include the configs
+. /opt/verb/conf/servernameip
+
+# Check if already added
+if ! /bin/grep -Fq "; Hostname Mail Record Defaults" /opt/verb/conf/inkdns/zones/db.${DNsdnsDomainAIN}; then
+/bin/echo "Mail Record Defaults don't exist for ${DNsdnsDomainAIN}. Use inkdnsaddmail to add them."
+exit 0; fi
+
+# Remove the records
+/bin/sed -i "/; Hostname Mail Record Defaults/,/;; End Mail Defaults/d" /opt/verb/conf/inkdns/zones/db.${DNsdnsDomainAIN}
+/bin/sed -i "/; PTR Hostname Mail Record Defaults/,/;; End Mail Defaults/d" /opt/verb/conf/inkdns/zones/nv.${DNsdnsDomainAIN}
+
+# Set the Serial No
+/opt/verb/serfs/inkdnsserial ${DNsdnsDomainAIN}
+
+# Refresh zones
+/opt/verb/serfs/inkdnsrefreshbind; fi; fi
+
+# Finish
+/bin/echo "The Mail Record Defaults have been removed from the ${DNsdnsDomainAIN} DNS zone file."
+
+
+
+
+if [ -e "/opt/verb/mods/killinkdnsmail.after" ]; then . /opt/verb/mods/killinkdnsmail.after; fi # Follows this script

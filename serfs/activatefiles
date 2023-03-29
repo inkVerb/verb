@@ -1,0 +1,57 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This activates the files....verb.vip folder so the web will provide an index
+## Prerequisite: installvsftpd
+
+# How to use:
+## ./activatefiles [on/off]
+
+# Eg:
+## ./activatefiles on
+## ./activatefiles off
+
+usagenotes="This activates the files....verb.vip folder so the web will provide an index"
+usageformat="activatefiles [on/off]"
+usageexample="activatefiles on
+activatefiles off"
+hierarchy=( primary )
+vsetnames=( "On/Off" )
+vsettypes=( string_match )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/activatefiles.replace" ]; then . /opt/verb/mods/activatefiles.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/activatefiles.before" ]; then . /opt/verb/mods/activatefiles.before; fi # Precedes this script
+
+
+# Include the config
+. /opt/verb/conf/siteurilist
+
+if [ "$1" = "on" ]
+then
+    rm -rf /srv/www/verb/vip.files
+    /bin/ln -sfn /srv/www/vip/files /srv/www/verb/vip.files
+    /bin/echo "files on."
+exit 0
+fi
+
+if [ "$1" = "off" ]
+then
+    rm -f /srv/www/verb/vip.files
+    cp -R /srv/www/html/0ne /srv/www/verb/vip.files
+    /bin/echo "files off."
+exit 0
+fi
+
+
+
+
+if [ -e "/opt/verb/mods/activatefiles.after" ]; then . /opt/verb/mods/activatefiles.after; fi # Follows this script

@@ -1,0 +1,48 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This runs inkcertremovele for a domain and all its subdomains
+## Prerequesite: inkcertrevokele
+
+# NOTE: This is intended to be run by inkcertundole
+
+# How to use:
+## ./inkcertremoveallle [ domain.tld or sub.domain.tld ]
+
+usagenotes="This runs inkcertremovele for a domain and all its subdomains"
+usageformat="inkcertremoveallle [ domain.tld or sub.domain.tld ]"
+usageexample="inkcertremoveallle inkisaverb.com"
+hierarchy=( tertiary  )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkcertinstall )
+prerequesite=( inkcertrevokele )
+usedby=( inkcertundole )
+useserfs=( inkcertremovele )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkcertremoveallle.replace" ]; then . /opt/verb/mods/inkcertremoveallle.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkcertremoveallle.before" ]; then . /opt/verb/mods/inkcertremoveallle.before; fi # Precedes this script
+
+
+# For the domain
+/opt/verb/serfs/inkcertremovele ${DOMAIN}
+
+# For any/all sub-domains
+## Get the name of each subdomain .conf file available
+find . -name "*.${DOMAIN}.conf" | while read findsitesubdomain; do
+  ## Strip the .conf extension
+  sitesubdomain=$(basename ${findsitesubdomain} .conf)
+  ## Run inkCertAddLE per site config
+  /opt/verb/serfs/inkcertremovele ${sitesubdomain}
+wait
+done
+
+
+
+
+if [ -e "/opt/verb/mods/inkcertremoveallle.after" ]; then . /opt/verb/mods/inkcertremoveallle.after; fi # Follows this script

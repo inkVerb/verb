@@ -1,0 +1,96 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This sets up a WordPress vapp for multisite
+## Specifically, this adds the multisite declarations in wp-config.php necessary for multisite to function
+## Prerequesite: wpmuseton, install the "Network" from the dashboard
+## This must also be run with wpmuhtaccess
+
+# How to use:
+## ./wpmusetconfig [domain.tld] [optional - "dir"]
+
+# Eg:
+## ./wpmusetconfig inkisaverb.com                  # will install to inkisaverb.com as the base, using subdomains of inkisaverb.com
+## ./wpmusetconfig mysubsite.inkisaverb.com        # will install to mysubsite.inkisaverb.com as the base, using subdomains of mysubsite.inkisaverb.com
+## ./wpmusetconfig inkisaverb.com dir              # will install to inkisaverb.com as the base, using directories of inkisaverb.com
+## ./wpmusetconfig mysubsite.inkisaverb.com dir    # will install to mysubsite.inkisaverb.com as the base, using directories of mysubsite.inkisaverb.com
+
+
+WPDOMAIN=$1
+INSTTYPE=$2
+
+# Set the default setting
+if [ "${INSTTYPE}" != "dir" ]; then
+INSTTYPE="sub"; fi
+
+# Check the configs are ready
+if /bin/grep -Fq "define( 'WP_ALLOW_MULTISITE', true );" /srv/www/html/${WPDOMAIN}/wp-config.php; then
+/bin/echo "Proceeding..."; else
+/bin/echo "Multisite must be allowed first. Run: wpmuseton"
+exit 8; fi
+
+# Check if already set
+if /bin/grep -Fq "define('MULTISITE', true);" /srv/www/html/${WPDOMAIN}/wp-config.php; then
+/bin/echo "Multisite is already set. To change or set it again, first unset it with: wpmuunsetconfig"
+exit 8; fi
+
+# We've got to fenagle this around in order to make the code readable while also doing this properly
+## Cleanup the initial install
+/opt/verb/serfs/wpmusetoff ${WPDOMAIN}
+## Make a content file to work with
+/bin/cp /srv/www/html/${WPDOMAIN}/wp-config.php /srv/www/html/${WPDOMAIN}/wp-config.php.Vmu
+## Sanitize the content file
+/bin/sed -i "/<?php/d" /srv/www/html/${WPDOMAIN}/wp-config.php.Vmu
+## Start stacking the new file
+/bin/echo "<?php
+/* Multisite via inkVerb */
+define( 'WP_ALLOW_MULTISITE', true );" > /srv/www/html/${WPDOMAIN}/wp-config.php.NEW
+
+## Add the settings
+
+### Subdomain install
+if [ "${INSTTYPE}" = "sub" ]; then
+/bin/echo "Using subdomains for the WP Multisite..."
+/bin/echo "
+/* Multisite Settings via inkVerb */
+define('MULTISITE', true);
+define('SUBDOMAIN_INSTALL', true);
+define('DOMAIN_CURRENT_SITE', '${WPDOMAIN}');
+define('PATH_CURRENT_SITE', '/');
+define('SITE_ID_CURRENT_SITE', 1);
+define('BLOG_ID_CURRENT_SITE', 1);
+/* Multisite inkVerb End */" >> /srv/www/html/${WPDOMAIN}/wp-config.php.NEW
+fi
+
+### Directory install
+if [ "${INSTTYPE}" = "dir" ]; then
+/bin/echo "Using directories for the WP Multisite..."
+/bin/echo "
+/* Multisite Settings via inkVerb */
+define('MULTISITE', true);
+define('SUBDOMAIN_INSTALL', false);
+define('DOMAIN_CURRENT_SITE', '${WPDOMAIN}');
+define('PATH_CURRENT_SITE', '/');
+define('SITE_ID_CURRENT_SITE', 1);
+define('BLOG_ID_CURRENT_SITE', 1);
+/* Multisite inkVerb End */" >> /srv/www/html/${WPDOMAIN}/wp-config.php.NEW
+fi
+
+## Add the original content
+/bin/cat /srv/www/html/${WPDOMAIN}/wp-config.php.Vmu >> /srv/www/html/${WPDOMAIN}/wp-config.php.NEW
+## Check that the universe is in working order
+if [ ! -e "/srv/www/html/${WPDOMAIN}/wp-config.php.Vmu" ]; then
+/bin/echo "Something is very not right."
+exit 6; fi
+## Remove & replace the original
+/bin/rm -f /srv/www/html/${WPDOMAIN}/wp-config.php
+/bin/mv /srv/www/html/${WPDOMAIN}/wp-config.php.NEW /srv/www/html/${WPDOMAIN}/wp-config.php
+## Cleanup
+/bin/rm -f /srv/www/html/${WPDOMAIN}/wp-config.php.Vmu
+## Finish
+/bin/echo "http://${WPDOMAIN} now ready for WP Multisite. Log in again."
+
+
+
+
+if [ -e "/opt/verb/mods/wpmusetconfig.after" ]; then . /opt/verb/mods/wpmusetconfig.after; fi # Follows this script

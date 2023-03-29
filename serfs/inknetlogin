@@ -1,0 +1,44 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This logs into a CA Verber
+## You can use the name or the URI, host.namespace.verb.ink or host_namespace_verb_ink
+
+# How to use:
+## ./inknetlogin [secondary CA Verber - optional || otherwise enter CA1 ] ["Command to execute in quotes"]
+
+# Eg:
+## ./inknetlogin CA1 "senddns txt newtxtrecord"
+## ./inknetlogin mail3.jesse.verb.email "getverbmail"
+
+
+# Check & include the config
+if [ ! -f /opt/verb/conf/inknet/rink.client.cnf ]; then
+/bin/echo "This is not yet connected to a CA Verber via inkNet."
+exit 8; fi
+
+# Include the correct configs
+. /opt/verb/conf/inknet/rink.client.cnf
+## Add secondary CA Verber credentials if present
+if [ "$1" = "CA1" ]; then
+. /opt/verb/conf/inknet/client.${CAVERBERNAME}.rink.login.cnf
+else
+CAV2HOST=$1
+CAV2NAME="$(/bin/echo ${CAV2HOST} | sed 's/\./_/g')"
+. /opt/verb/conf/inknet/2cav.${CAV2NAME}.cnf
+fi
+
+# Set variable
+SAILCOMMAND=$2
+
+# Login
+##DEV: Done by the user ${CLIENTSAILOR} with no password. This may not be executed correctly. Delete this DEV note if this script works.
+## Follow these instructions https://www.cyberciti.biz/open-source/command-line-hacks/linux-run-command-as-different-user/
+runuser -l ${CLIENTSAILOR} -c "ssh -o HostName=${CAVERBERHOST} -p ${CLIENTPORT} ${CLIENTUSERNAME}@${CAVERBERIP}"
+/bin/echo "Done."
+
+
+
+
+
+if [ -e "/opt/verb/mods/inknetlogin.after" ]; then . /opt/verb/mods/inknetlogin.after; fi # Follows this script

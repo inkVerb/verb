@@ -1,0 +1,68 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This creates a new admin for PostfixAdmin
+## Currently, this will not work until PFA has already been installed, but commented SQL code is in place to add the needed tables in installinkvmail, but that code may need to be updated
+
+# How to use:
+## ./inkvmailpfanewadmin [ username (an email address) ] [ name - optional ]
+
+# Eg:
+## ./inkvmailpfanewadmin james@inkisaverb.com 'James Inksmith'
+
+usagenotes="This creates a new admin for PostfixAdmin"
+usageformat="inkvmailpfanewadmin [ username (an email address) ] [ name - optional ]"
+usageexample="inkvmailpfanewadmin james@inkisaverb.com 'James Inksmith'"
+hierarchy=( primary )
+vsetnames=( "Email" )
+vsettypes=( isEmail )
+voptnames=( "Name" )
+vopttypes=( isazAZ09punct )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installinkvmail )
+prerequesite=( installpfa )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkvmailpfanewadmin.replace" ]; then . /opt/verb/mods/inkvmailpfanewadmin.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkvmailpfanewadmin.before" ]; then . /opt/verb/mods/inkvmailpfanewadmin.before; fi # Precedes this script
+
+
+USERNAME="$1"
+if [ -z "$2" ]; then
+NAME="$1"
+else
+NAME="$2"
+fi
+
+# Check to see if inkvmail is installed
+. /opt/verb/conf/servermailpath
+if [ "$ServerMailStatus" != "VMAIL_SERVER" ]; then
+  /bin/echo "Vmail not installed. Do that first."
+  exit 0; fi
+
+# Prep the variables
+
+# Defaults # can be changed for domain-specific admins
+issuperadmin="1"
+adminsdomains="ALL"
+
+# Hash the password
+PASSWORD=$(/usr/bin/pwgen -s -1 15)
+password="$(/bin/echo $PASSWORD | /usr/bin/openssl passwd -1 -stdin)"
+
+# Make the database entry
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "INSERT INTO admin (username, password, superadmin, created, modified, active) VALUES ('$USERNAME', '$password', '$issuperadmin', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);
+INSERT INTO domain_admins (username, domain, created, active) VALUES ('$USERNAME', '$adminsdomains', CURRENT_TIMESTAMP, 1);"
+
+# Finish
+/bin/echo "Created:
+User login: $USERNAME
+Password: $PASSWORD"
+
+
+
+
+if [ -e "/opt/verb/mods/inkvmailpfanewadmin.after" ]; then . /opt/verb/mods/inkvmailpfanewadmin.after; fi # Follows this script

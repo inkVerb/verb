@@ -1,0 +1,127 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This creates or resets the system smtp user for inkvmail, such as is used by PHP for php to send emails
+## This uses msmtp specifically, which requires the msmtp package, not installed by default
+## This is an alternative to inkvmailsysmailbox should there be any reason postfix/sendmail can't be used for PHP mails
+
+# How to use:
+## ./inkvmailsysmailboxmsmtp
+
+usagenotes="This creates or resets the system smtp user for inkvmail, such as is used by PHP for php to send emails"
+usageformat="inkvmailsysmailboxmsmtp"
+usageexample="inkvmailsysmailboxmsmtp"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installinkvmail )
+prerequesite=(  )
+usedby=(  )
+useserfs=( setsecure )
+useconfigs=( servermailpath servernameip siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkvmailsysmailboxmsmtp.replace" ]; then . /opt/verb/mods/inkvmailsysmailboxmsmtp.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkvmailsysmailboxmsmtp.before" ]; then . /opt/verb/mods/inkvmailsysmailboxmsmtp.before; fi # Precedes this script
+
+
+# Check to see if inkvmail is installed
+. /opt/verb/conf/servermailpath
+if [ "$ServerMailStatus" != "VMAIL_SERVER" ]; then
+  /bin/echo "Vmail not installed. Do that first."
+  exit 0; fi
+
+# Include the config
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+
+# Cleanup previous entries
+if [ -f "/opt/verb/conf/vsysmail.msmtp" ]; then
+  . /opt/verb/conf/vsysmail.msmtp
+  # Don't remove the entire vmail directory if the folder doesn't exist
+  if [ -e "/srv/vmail/${inkvmaildirectory}" ]; then
+    /usr/bin/rm -rf /srv/vmail/${inkvmaildirectory}
+  fi
+  oldusername="${username}"
+fi
+
+# Prep all vairables
+PASSWORD=$(/usr/bin/pwgen -s1 24)
+randomuser=$(/usr/bin/pwgen -s1A 5)
+/usr/bin/cat <<EOF > /opt/verb/conf/vsysmail.msmtp
+PASSWORD="${PASSWORD}"
+user="sys_${randomuser}"
+username="sys_${randomuser}@${nameURI}"
+maildomain="${nameURI}"
+name="System"
+inkvmaildirectory="${nameURI}/sys_${randomuser}/"
+mailboxsize="1048576" # 1MB, 2GB=2097152000, 1GB=1048576000, 5GB=5242880000
+EOF
+
+# Security check
+/opt/verb/serfs/setsecure; wait
+
+# Disable the old entry in the database
+if [ -n "${oldusername}" ]; then
+  password="$(/bin/echo $PASSWORD | /usr/bin/openssl passwd -1 -stdin)"
+  /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "UPDATE mailbox
+  SET username = 'sys_${randomuser}@${nameURI}', password = '${password}', name = 'System', maildir = '${nameURI}/sys_${randomuser}', domain = '${nameURI}', modified = CURRENT_TIMESTAMP, active = 1
+  WHERE username = '${oldusername}';
+  UPDATE alias
+  SET address = 'sys_${randomuser}@${nameURI}', goto = 'sys_${randomuser}@${nameURI}', domain = '${nameURI}', modified = CURRENT_TIMESTAMP, active = 1
+  WHERE address = '${oldusername}';
+  INSERT INTO alias
+  (address, goto, domain, created, modified, active)
+  VALUES ('noreply@${nameURI}', 'sys_${randomuser}@${nameURI}', '${nameURI}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1)
+  ON DUPLICATE KEY
+  UPDATE goto = 'sys_${randomuser}@${nameURI}', domain = '${nameURI}', modified = CURRENT_TIMESTAMP, active = 1;"
+fi
+
+# Run it quick to create the account
+/opt/verb/donjon/sysmails.sh msmtp; wait
+if [ "$?" != 0 ]; then
+  echo "Error updating new System mail user in databse"
+  exit 6;
+fi
+
+# Set up cron
+## MSMTP background jobs (manage the crontab files directly)
+/bin/echo '22 * * * * root /opt/verb/donjon/sysmails.sh msmtp' > /etc/cron.d/sysmailphp
+## Permissions
+/bin/chmod 0644 /etc/cron.d/sysmailphp
+
+# DEV Legacy, remove after new servers test right
+# Create & set the msmpt config
+/usr/bin/cat <<EOF >  /etc/msmtprc
+defaults
+auth           on
+tls            on
+#tls_trust_file /etc/ssl/certs/ca-certificates.crt
+logfile        /var/log/msmtp.log
+account default
+#port 587
+#host localhost
+host smtp.${nameURI}
+from noreply@${nameURI}
+user sys_${randomuser}@${nameURI}
+password ${PASSWORD}
+EOF
+/bin/chmod 0600 /etc/msmtprc
+/bin/chown www:www /etc/msmtprc
+/usr/bin/ln -sfn /etc/msmtprc /opt/verb/conf/
+
+# Confirm the php.ini entry
+/bin/sed -i 's?^;sendmail_path = "/usr/bin/msmtp -C /etc/msmtprc -t"?sendmail_path = "/usr/bin/msmtp -C /etc/msmtprc -t"?' /opt/verb/conf/php.ini
+/bin/sed -i 's?^sendmail_path = "/usr/sbin/sendmail -ti"?;sendmail_path = "/usr/sbin/sendmail -ti"?' /opt/verb/conf/php.ini
+
+#DEV we don't need this because we want sendmail to work from the cli; PHP using this statement is enough for our purposes
+# # Update settings in postfix/main.cf
+# /bin/sed -i 's?^#sendmail_path = /usr/bin/msmtp -C /etc/msmtprc -t?sendmail_path = /usr/bin/msmtp -C /etc/msmtprc -t?' /etc/postfix/main.cf
+# /bin/sed -i 's?^sendmail_path = /usr/bin/sendmail?#sendmail_path = /usr/bin/sendmail?' /etc/postfix/main.cf
+
+
+
+if [ -e "/opt/verb/mods/inkvmailsysmailboxmsmtp.after" ]; then . /opt/verb/mods/inkvmailsysmailboxmsmtp.after; fi # Follows this script

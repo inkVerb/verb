@@ -1,0 +1,97 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This makes keys and a .csr file based on an inkCert profile made via inkcertsetcsr
+## Also use this to renew an inkCert certificate
+## For another csr, revoke this cert first with inkcertrevoke
+## Prereq: inkcertsetcsr - with a profile
+## NOTE: The profile does not include any domain information. Domain info is entered here.
+## This is intended to be run as a subscript of inkcertdo
+## Run this independently (without inkcertdo) to create a csr for a non-inkCert CA
+
+# Dev info:
+## They key waits in /etc/inkcert/req until inkcertaddkeypair
+## The csr will remain in /etc/inkcert/csr by the name DOMAINNAME.csr.pem
+
+# More Dev for writing a web GUI
+## The csr profile should be via a slectable list
+## The domain and common name should be constructed by a form with multiple options, including "wildcard" checkbox/radio option, "domain" text box, and "user-based app" checkbox with an auto "user" text field that drops down when checked.
+
+# NOTE: This is still testing since the .pem extention was added to .key and .csr files
+
+# How to use:
+## ./inkcertmakecsr [full domain with subdomain] [Common Name embedded in the cert] [profile name - for csr extra info]
+
+# Common Name formats:
+## *.mydomain.com/CN=mydomain.com	# Wildcard
+## mydomain.com				# Normal Domain
+## user@mydomain.com			# For a specific user in a non-website app
+
+# Eg:
+## ./inkcertmakecsr jesse.verb.ink jesse.verb.ink jesseinkinfo				# For a normal site cert
+## ./inkcertmakecsr mail.jesse.verb.ink mail.jesse.verb.ink jesseinkinfo			# For a mail cert
+## ./inkcertmakecsr inkisaverb.com *.inkisaverb.com/CN=inkisaverb.com inkverbinfo	# For a wildcard domain, including main domain
+## ./inkcertmakecsr repo.inkisaverb.com repo.inkisaverb.com inkverbinfo			# For a specific subdomain
+## ./inkcertmakecsr jimmy-inkisaverb.com jimmy@inkisaverb.com inkverbinfo		# For a user domain, note hyphen to replace @ in the domain field
+
+
+# Include config
+. /opt/verb/conf/inkcert/csr-inf/csr.${INFPROFILE}.inf
+
+DOMAIN=$1
+COMMONNAME=$2
+INFPROFILE=$3
+PASSPHRASE=$(/usr/bin/pwgen -s -1 105)
+
+# Verify that the domain is installed
+if [ ! -f /opt/verb/conf/inkcert/cli-ini/siteinkcert-${DOMAIN} ]; then
+/bin/echo "Sorry, Bucko. ${DOMAIN} is not installed yet.
+
+Do that first, then get back to me.
+"; exit 0
+fi
+
+# Make the SSL key & CSR (if they don't exist already)
+cd /etc/inkcert || exit 0
+## Key
+if [ ! -d /etc/inkcert/csr/${DOMAIN} ]; then
+/bin/mkdir csr/${DOMAIN}
+fi
+if [ ! -f /etc/inkcert/csr/${DOMAIN}/${DOMAIN}.key.pem ]; then
+/bin/rm -rf /etc/inkcert/csr/${DOMAIN}/*
+/bin/echo "${PASSPHRASE}" > /etc/inkcert/csr/${DOMAIN}/pemfraez
+/bin/chmod 600 pemfraez
+/bin/echo "Generating keys for ${DOMAIN}"
+/usr/bin/openssl genrsa -des3 -out csr/${DOMAIN}/${DOMAIN}.key.pem -passout pass:/etc/inkcert/csr/${DOMAIN}/pemfraez 2048
+/bin/chmod 600 csr/${DOMAIN}/${DOMAIN}.key.pem
+else
+/bin/echo "This key already exists. So, renewing the cert and creating links to the verb/req and vip/req folders for renewal...
+(To remove it and have a new cert, use you must revoke the old key and cert with inkcertrevoke or inkcertundo)
+"
+fi
+## CSR
+if [ -f /etc/inkcert/csr/${DOMAIN}/${DOMAIN}.csr.pem ]; then
+/bin/rm -f csr/${DOMAIN}/${DOMAIN}.key.pem
+fi
+/bin/echo "Creating CSR..."
+/usr/bin/openssl req -config client/openssl.cnf \
+	-key csr/${DOMAIN}/${DOMAIN}.key.pem \
+	-new -sha256 -out csr/${DOMAIN}/${DOMAIN}.csr.pem \
+	-passin pass:/etc/inkcert/csr/${DOMAIN}/pemfraez \
+	-subj "/C=${COUNTRY}/ST=${STATE}/L=${LOCALITY}/O=${ORGANIZATION}/OU=${ORGANIZATIONALUNIT}/CN=${COMMONNAME}/emailAddress=${EMAIL}/unstructuredName=${COMPANYNAME}/"
+
+# Link to accessible folder at verb/req and vip/req
+/bin/ln -s /etc/inkcert/csr/${DOMAIN}/${DOMAIN}.key.pem /etc/inkcert/req/
+/bin/ln -s /etc/inkcert/csr/${DOMAIN}/${DOMAIN}.csr.pem /etc/inkcert/req/
+
+# Finish
+/bin/echo "
+All wrapped-up, key and csr for ${DOMAIN} be waitin' in verb/req/ and vip/req/ fer ye with ${INFPROFILE} info, cap'n.
+
+If you plan to give your csr to another Authority than inkCert, you will need: 1. their Root CA & Intermediate CA certificate chain file, 2. your domain's CA-signed certificate named \"${DOMAIN}.cert.pem\", and 3. all three of these PEM encoded files!
+"
+
+
+
+
+if [ -e "/opt/verb/mods/inkcertmakecsr.after" ]; then . /opt/verb/mods/inkcertmakecsr.after; fi # Follows this script

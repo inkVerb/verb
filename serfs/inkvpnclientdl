@@ -1,0 +1,33 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This creates a temporary link for downloading the inkVPN client profile file
+## This is run automatically by inkvpninstall and inkvpnclientkey, but can be run separately
+
+# How to use:
+## ./inkvpnclientdl
+
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+
+# Set the link names
+cDIR="$(/usr/bin/pwgen -s -1 128)"
+/bin/mkdir -p /srv/www/verb/ink.serve/${ServerServeDir}/${cDIR}
+
+# Link it to the Serve folder
+/bin/ln -sfn /opt/openvpn/certificates/clients/client.ovpn /srv/www/verb/ink.serve/${ServerServeDir}/${cDIR}/${ServerName}-${ServerTLD}-client.ovpn
+
+# Permissions
+/bin/chown -R www:www /srv/www/verb/ink.serve
+
+# Finish
+/bin/echo "The client OVPN profile is ready for download.
+Get it here: https://${serveURI}/${ServerServeDir}/${cDIR}/${ServerName}-${ServerTLD}-client.ovpn
+This download link will expire in at least 30 minutes."
+
+
+
+
+if [ -e "/opt/verb/mods/inkvpnclientdl.after" ]; then . /opt/verb/mods/inkvpnclientdl.after; fi # Follows this script

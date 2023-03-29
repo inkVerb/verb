@@ -1,0 +1,82 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This installs fossil to be available at fossil.your-name.verb.vip/...
+
+# How to use:
+## ./installfossil [username] [user-email] [userpassword]
+
+# Example:
+## ./installfossil adam adam@verb.ink Adamp4$$w0RD
+
+
+CVAPPNAME=fossil
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+
+NEWUSER=$1
+NEWEMAIL=$2
+NEWPASS=$3
+
+
+cd /srv/www/vapps || exit 0
+/opt/verb/serfs/inkget ${CVAPPNAME}; wait
+### Check
+/opt/verb/serfs/inkget ${CVAPPNAME} check
+if [ "$?" = 4 ]; then
+/bin/echo "Repo failed to retrieve the file."
+exit 4; fi
+
+/bin/rm -f /usr/bin/fossil
+/bin/mv /srv/www/vapps/fossil /usr/bin
+fossil all rebuild
+
+# Install and set up directories
+/bin/mkdir -p /srv/www/vip/fossil
+/opt/verb/serfs/setvapplinkon ${CVAPPNAME}
+/bin/chown -R www:www  /srv/www/verb/vip.fossil
+/bin/chown -R www:www /srv/www/vip
+
+# Create the first default fossil
+cd /srv/www/vip/fossil || exit 0
+fossil new index.fossil; wait
+/bin/chown www:www index.fossil; wait
+/bin/echo "#!/usr/bin/fossil
+repository: /fossil/index.fossil
+
+# If you didn't figure it out, your first fossil is called index.fossil.
+# Change the .fossil file name on line 2 of this file to have the default url point to any .fossil file you want.
+# dinosaur.fossil is an example of another .fossil file." > index.cgi
+/bin/chmod 750 index.cgi
+
+# Create a second demo fossil, dinosaur
+cd /srv/www/vip/fossil || exit 0
+fossil new dinosaur.fossil
+/bin/echo "#!/usr/bin/fossil
+repository: /fossil/dinosaur.fossil" > dinosaur.cgi
+/bin/chmod 750 dinosaur.cgi
+
+# Final /bin/chown to allow database to be writable
+/bin/chown -R www:www /srv/www/vip/fossil; wait
+
+# Add the user
+fossil user new ${NEWUSER} ${NEWEMAIL} ${NEWPASS} --repository index.fossil
+fossil user new ${NEWUSER} ${NEWEMAIL} ${NEWPASS} --repository dinosaur.fossil
+
+# Ending message
+/bin/echo "
+Fossil installed. The first, default fossil will be available at:
+fossil.${vipURI}
+
+The another demo fossil, dinosaur.fossil, is available at:
+fossil.${vipURI}/dinosaur.cgi
+
+All relevant files appear via ftp in the \"vip/fossil\" folder.
+"
+
+
+
+
+if [ -e "/opt/verb/mods/installfossil.after" ]; then . /opt/verb/mods/installfossil.after; fi # Follows this script

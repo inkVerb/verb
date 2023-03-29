@@ -1,0 +1,61 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This script revokes the inkCert Self-Cert certs for a specified domain
+## It also applies to all subdomains for that domain
+## Prerequesite: inkcertdosc (or both subscripts thereof: inkcertreqsc, inkcertaddsc)
+## This is intended as a subscript of inkcertundosc
+
+# How to use:
+## ./inkcertrevokesc [domain.tld NO SUBDOMAINS]
+
+#Eg:
+## ./inkcertrevokesc inkisaverb.com
+## ./inkcertrevokesc YOURNAME.verb.blue
+
+
+DOMAIN=$1
+
+# Include and check the inkCert domain config
+## Verify that the domain is installed
+if [ ! -f /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN} ]; then
+/bin/echo "Sorry, Bucko. ${DOMAIN} is not even installed.
+
+Why revoke a cert for a domain that isn't even installed here?
+"; exit 0
+fi
+## Domain cert status
+. /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN}
+if [ "${InkCerted}" != "DONE_SC" ]; then
+  if [ "${InkCerted}" = "DONE_CB" ]; then
+    /bin/echo "inkCert used inkCert Certbot for ${DOMAIN}. This is for inkCert Self-Cert.
+
+Instead use: inkcertundocb (or, individually: inkcertrevokecb, inkcertremovecb)
+"; exit 0
+  elif [ "${InkCerted}" = "DONE_LE" ]; then
+    /bin/echo "inkCert used inkCert-Letsencrypt for ${DOMAIN}. This is for inkCert Self-Cert.
+
+Instead use: inkcertundole (or, individually: inkcertrevokele, inkcertremovele)
+"; exit 0
+  fi
+  /bin/echo "inkCert is not setup for ${DOMAIN}, it only has Snakeoil.
+
+There is nothing to revoke until you run inkcertdo or inkcertdole... And then, certs are cool. Why would you want to revoke them? Are you just revoking stuff at random?
+"; exit 0
+fi
+
+# Remove any CSR or Keys on the server
+if [ -d /etc/inkcert/csr/${DOMAIN}/ ]; then
+/bin/echo "Removing these keys for ${DOMAIN}..."
+/usr/bin/shred -f -x /etc/inkcert/csr/${DOMAIN}/pemfraez
+/bin/rm -rf /etc/inkcert/csr/${DOMAIN}/
+else
+/bin/echo "Keys for ${DOMAIN} not found. Nothing here to remove. All set."
+
+# Echo alliswell
+/bin/echo "Unless there is an error message above, the certs should have been revoked from the CA, now uninstall them..."
+
+
+
+
+if [ -e "/opt/verb/mods/inkcertrevokesc.after" ]; then . /opt/verb/mods/inkcertrevokesc.after; fi # Follows this script

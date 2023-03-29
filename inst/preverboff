@@ -1,0 +1,17 @@
+#!/bin/sh
+#inkVerbSerf! verb.ink
+
+# This turns off a tld of the verb sites, such as verb.red, but not the other verb.tld sites
+## This only works before running setup
+
+# How to use:
+## ./preverboff [tld]
+
+# Eg:
+## ./preverboff kiwi
+
+
+SITEOFF=$1
+
+/bin/sed -i "s/VERB${SITEOFF}=.*/VERB${SITEOFF}=false/g" /opt/verb/conf/servertldstatus286
+

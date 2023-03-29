@@ -1,0 +1,221 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This requests and gets Letsencrypt-Certbot certs via inkCert-Certbot for a given domain
+## This only applies to the requested domain, no others
+## Prerequesite: inkcertinstall, domains added via newdomain/newdomaincgi or an existing and active verb domain on the server
+## This is intended as a subscript of inkcertdocbsingle
+### BUT...
+###
+### DEV: Currently, this script is INTERACTIVE because it requires making an entry in the DNS records!!
+###
+
+# How to use:
+## ./inkcertreqcbsingle [domain.tld NO SUBDOMAINS]
+
+#Eg:
+## ./inkcertreqcbsingle inkisaverb.com
+## ./inkcertreqcbsingle YOURNAME.verb.blue
+
+usagenotes="This requests and gets Letsencrypt-Certbot certs via inkCert-Certbot for a given domain"
+usageformat="inkcertreqcb [ domain.tld NO SUBDOMAINS ]"
+usageexample="inkcertreqcb inkisaverb.com
+inkcertreqcb YOURNAME.verb.blue"
+hierarchy=( tertiary  )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=( r )
+voptflagpurpose=( "Refresh if already done (required for domains with certs already installed)" )
+dependencyinstall=( inkcertinstall )
+prerequesite=( inkcertinstall adddomain 'Certbot DNS Keys installed or CLI interaction' )
+usedby=( inkcertdocbsingle )
+useserfs=(  )
+useconfigs=( servernameip siteurilist servertype inkcertstatus )	# List config files of any kind used in this serf, please preserve order of appearance
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkcertreqcbsingle.replace" ]; then . /opt/verb/mods/inkcertreqcbsingle.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkcertreqcbsingle.before" ]; then . /opt/verb/mods/inkcertreqcbsingle.before; fi # Precedes this script
+
+
+DOMAIN=$1
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/servertype
+. /opt/verb/conf/inkcertstatus
+
+# Check inkCert installed
+if [ "${InkCertInstalled}" = "NOT_YET" ]; then
+/bin/echo "inkCert not yet installed.
+
+First run inkcertinstall
+"
+exit 0
+fi
+
+# Verify that the domain is installed
+if [ ! -f /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN} ]; then
+/bin/echo "Sorry, Bucko. ${DOMAIN} is not installed yet.
+
+Do that first, then get back to me.
+"; exit 0
+fi
+
+# Include and check the inkCert domain config
+. /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN}
+inkcertmsg="This sets up certs for inkCert via Certbot."
+case ${InkCerted} in
+  DONE_SC)
+  /bin/echo $inkcertmsg
+  /bin/echo "inkCert self-cert is already setup for ${DOMAIN}.
+
+  To set up certs differently, first run: inkcertrevokesc ${DOMAIN}, then run this again.
+  "
+  exit 0
+  ;;
+  DONE_LE)
+  /bin/echo $inkcertmsg
+  /bin/echo "inkCert Letsencrypt is already setup for ${DOMAIN}.
+
+  To set up certs differently, first run: inkcertrevokele ${DOMAIN}, then run this again.
+  "
+  exit 0
+  ;;
+  DONE_CBSINGLE)
+  /bin/echo $inkcertmsg
+  /bin/echo "inkCert cert-bot single is already setup for ${DOMAIN}.
+
+  To set up certs differently, first run: inkcertrevokecbsingle ${DOMAIN}, then run this again.
+  "
+  exit 0
+  ;;
+  DONE_CB)
+  /bin/echo $inkcertmsg
+  /bin/echo "inkCert cert-bot is already setup for ${DOMAIN}.
+
+  To set up certs differently, first run: inkcertrevokecbsingle ${DOMAIN}, then run this again.
+  "
+  exit 0
+  ;;
+  NO|NOT_YET)
+    /bin/echo "Ready to go..."
+  ;;
+  *)
+    if ! /bin/grep -q "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN}; then
+      /bin/echo "Something's wrong with the inkCert siteinkcert configs! Aborting"
+      exit 6
+    else
+      /bin/echo "Ready to go..."
+    fi
+  ;;
+esac
+
+# Check for verb domain and status
+## If verb domain was spelled correctly
+if [[ "${DOMAIN}" =~ ".verb.email" ]] || [[ "${DOMAIN}" =~ ".verb.one" ]] || [[ "${DOMAIN}" =~ ".verb.ink" ]] || [[ "${DOMAIN}" =~ ".verb.blue" ]] || [[ "${DOMAIN}" =~ ".verb.vip" ]] || [[ "${DOMAIN}" =~ ".verb.kiwi" ]] || [[ "${DOMAIN}" =~ ".verb.red" ]] || [[ "${DOMAIN}" =~ ".verb.rocks" ]]; then
+ if [[ "${DOMAIN}" != *"${ServerName}"* ]]; then
+/bin/echo "
+Problem: You might have spelled ${DOMAIN} wrong.
+  - Did you mean to include "${ServerName}"?
+  - Are you an awesome person with multiple inkVerb namespaces, but you somehow have the wrong server?
+"
+exit 0
+ fi
+fi
+## Check specific verb domain tlds
+### Create the error message function
+verbtld_is_off() {
+/bin/echo "
+Problem: ${DOMAIN} is not active on this server...
+  1. It could be running on a different Verber server. If so, run inkCert on that server.
+  2. You could have planned it for this Verber server, but it's not on. Activate on this server with verbon
+  3. It's possible you haven't purchased an inkVerb namespace from inkisaverb.com. It's not that expensive.
+"; exit 0;
+}
+### Do the checks per each verb tld
+. /opt/verb/conf/servertldstatus
+if [ "${DOMAIN}" = "${emailURI}" ]; then
+ if [[ "${VERBemail}" != true ]]; then
+  verbtld_is_off
+ fi
+fi
+if [ "${DOMAIN}" = "${oneURI}" ]; then
+ if [[ "${VERBone}" != true ]]; then
+  verbtld_is_off
+ fi
+fi
+if [ "${DOMAIN}" = "${inkURI}" ]; then
+ if [[ "${VERBink}" != true ]]; then
+  verbtld_is_off
+ fi
+fi
+if [ "${DOMAIN}" = "${blueURI}" ]; then
+ if [[ "${VERBblue}" != true ]]; then
+  verbtld_is_off
+ fi
+fi
+if [ "${DOMAIN}" = "${vipURI}" ]; then
+ if [[ "${VERBvip}" != true ]]; then
+  verbtld_is_off
+ fi
+fi
+if [ "${DOMAIN}" = "${kiwiURI}" ]; then
+ if [[ "${VERBkiwi}" != true ]]; then
+  verbtld_is_off
+ fi
+fi
+if [ "${DOMAIN}" = "${redURI}" ]; then
+ if [[ "${VERBred}" != true ]]; then
+  verbtld_is_off
+ fi
+fi
+
+# Stop Apache
+/bin/systemctl stop httpd; wait
+
+# Get the certs
+##NOTE make the system wait before and after Certbot because sometimes CB can stumble over it's own feet.
+sleep 1
+#DEV: This currently does only the domain and wildcard domains interactively, not according to cli.ini files; this needs to be automated to modify inkDNS zone files with --preferred-challenges=dns
+#/usr/bin/certbot certonly --dns-rfc2136 --dns-rfc2136-credentials /etc/letsencrypt/rfc2136.ini --email ${InkCertEmail} --server https://acme-v02.api.letsencrypt.org/directory --agree-tos --no-eff-email --force-renewal -d "${DOMAIN}"
+#DEV: The above shell command should work, once the on-server Named zones are synced with other nameservers, such as ns1.inkisaverb.com
+if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
+  /usr/bin/certbot --nginx certonly --expand --server https://acme-v02.api.letsencrypt.org/directory --agree-tos --no-eff-email --renew-by-default -d "${DOMAIN}"
+  #DEV Replaced by aboe line until dns keys can start working
+  #/usr/bin/certbot --nginx certonly --preferred-challenges=dns --email ${InkCertEmail} --server https://acme-v02.api.letsencrypt.org/directory --agree-tos --no-eff-email --renew-by-default -d "${DOMAIN}" -d *.${DOMAIN}
+  if [ "$?" != "0" ]; then
+    /bin/echo "inkCert certbot on-zero exit status for ${DOMAIN}: $?"
+  fi
+  /bin/systemctl restart nginx; wait
+elif [ ${ServerType} = "lamp" ]; then
+  /usr/bin/certbot --apache certonly --expand --server https://acme-v02.api.letsencrypt.org/directory --agree-tos --no-eff-email --renew-by-default -d "${DOMAIN}"
+  #DEV Replaced by aboe line until dns keys can start working
+  #/usr/bin/certbot --apache certonly --preferred-challenges=dns --email ${InkCertEmail} --server https://acme-v02.api.letsencrypt.org/directory --agree-tos --no-eff-email --renew-by-default -d "${DOMAIN}" -d "*.${DOMAIN}"
+  if [ "$?" != "0" ]; then
+    /bin/echo "inkCert certbot on-zero exit status for ${DOMAIN}: $?"
+  fi
+  /bin/systemctl start httpd; wait
+fi
+wait
+sleep 1
+# the --quiet / -q option doesn't seem to work
+# Additional options if not doing certonly: --no-redirect --no-hsts --no-uir
+# https://certbot.eff.org/docs/using.html#command-line
+# https://certbot.eff.org/#ubuntuxenial-apache
+
+# Finish
+if [ -e "/etc/inkcert/le/live/${DOMAIN}/cert.pem" ] && [ -e "/etc/inkcert/le/live/${DOMAIN}/chain.pem" ] && [ -e "/etc/inkcert/le/live/${DOMAIN}/fullchain.pem" ] && [ -e "/etc/inkcert/le/live/${DOMAIN}/privkey.pem" ]; then
+  /bin/echo "
+  Finished getting certs. Now to install them with inkcertaddcb...
+  "
+else
+  /bin/echo "Certs not installed, cannot proceed."
+  exit 4
+fi
+
+
+
+
+if [ -e "/opt/verb/mods/inkcertreqcbsingle.after" ]; then . /opt/verb/mods/inkcertreqcbsingle.after; fi # Follows this script

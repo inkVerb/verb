@@ -1,0 +1,47 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This shows all inkvmail domains
+
+# How to use:
+## ./inkvmailshowdomains
+
+usagenotes="This shows all inkvmail domains"
+usageformat="inkvmailshowdomains"
+usageexample="inkvmailshowdomains"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installinkvmail )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkvmailshowdomains.replace" ]; then . /opt/verb/mods/inkvmailshowdomains.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkvmailshowdomains.before" ]; then . /opt/verb/mods/inkvmailshowdomains.before; fi # Precedes this script
+
+
+# Check to see if inkvmail is installed
+. /opt/verb/conf/servermailpath
+if [ "$ServerMailStatus" != "VMAIL_SERVER" ]; then
+  /bin/echo "Vmail not installed, not adding $domain to PFA"
+  exit 0; fi
+
+# Run the query
+query=$(/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "SELECT domain FROM domain;")
+domainlist="$(/bin/echo ${query} | sed "s/domain ALL //")"
+
+# Show the results
+for dom in $domainlist; do
+  echo $dom
+done
+
+
+
+
+if [ -e "/opt/verb/mods/inkvmailshowdomains.after" ]; then . /opt/verb/mods/inkvmailshowdomains.after; fi # Follows this script

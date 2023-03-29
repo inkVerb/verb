@@ -1,0 +1,59 @@
+#!/bin/sh
+#inkVerbSerf! verb.ink
+set -e
+
+# This creates an IVapp spoof user, mainly to login to other machines with no password, based on settings, but does not add any credentials of the module
+## Prerequisite: installivapp (a dragon in the donjon)
+
+# How to use:
+## ./ivappaddsailor [user name] [/path/to/ivapp/user/group-profile.conf]
+
+## DEV:
+## Add a section with this:
+### Follow these instructions https://www.cyberciti.biz/open-source/command-line-hacks/linux-run-command-as-different-user/ or probably not these instructions https://stackoverflow.com/questions/40668512/how-to-switch-to-different-user-inside-a-shell-script-and-execute-some-command-w
+
+
+# Check variables
+## Entered
+if [ -z $2 ]; then
+echo "You must enter a username, and config profile like this:
+./inknetaddivappuser [user name] [/path/to/ivapp/user/group-profile.conf]"
+exit 5; fi
+## Exists
+if [ ! -f "$2" ]; then
+echo "That settings file does not exist."
+exit 8; fi
+
+Conf=$2
+
+# Include configs
+. ${Conf}
+. ${IvappConfLoc}
+
+# Check status
+if [ -f "${StatusFile}" ]; then
+. ${StatusFile}
+ if [ "${IVAPPSTATUS}" != "INSTALLED" ]; then
+echo "${ModuleName} is not installed. Do that first."; exit 8
+ fi
+else
+echo "${ModuleName} is not installed. Do that first."; exit 8
+fi
+
+INPUTUSERNAME=$1
+ADDIVAPPUSERNAME=$(echo $INPUTUSERNAME | cut -c1-18)
+
+# Add the user
+adduser ${ADDIVAPPUSERNAME} --gecos ",,," --disabled-password --home ${IvappBase}/${IvappDir}/${IvappGroupDir}/${ADDIVAPPUSERNAME}
+## Add him to the IVapp group
+usermod -a -G ${IvappUserGroup} ${ADDIVAPPUSERNAME}
+## Give him necessary permissions limits
+echo "Setting permissions, this may take a moment..."
+/opt/verb/donjon/ivapp/ivappsetpermissions.sh ${Conf} ${ADDIVAPPUSERNAME}
+## Own his home
+#### FOR SOME STUPID REASON THIS DOES NOT WORK, ONLY A SERF CAN CHOWN THE FOLDER, SO IT IS OWNED BY inknetivappaddsailor, WHICH RUNS THIS
+chown -R ${ADDIVAPPUSERNAME}:${ADDIVAPPUSERNAME} ${IvappBase}/${IvappDir}/${IvappGroupDir}/${ADDIVAPPUSERNAME}
+
+# Finish
+echo "The ${ModuleName} user ${ADDIVAPPUSERNAME} has been added."
+

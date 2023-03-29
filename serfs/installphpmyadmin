@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+#inkVerbSerf! verb.ink
+
+# This installs phpMyAdmin to a defiend directory, to become available at mysql.your-name.verb.vip/DEFINED-DIRECTORY
+
+# How to use:
+## ./installphpmyadmin [directory] [dbuser] [dbpassword]
+
+
+CVAPPNAME=phpmyadmin
+
+# Options
+if [ -z ${1} ]; then
+/bin/echo "You must designate a folder."
+exit 8; fi
+
+DIRECTRY=${1}
+
+# Auto database
+if [ -z ${3} ]; then
+DBPASSWORD=$(/usr/bin/pwgen -c -1 20); fi
+if [ -z ${2} ]; then
+DBUSER=phpmy$(/usr/bin/pwgen -s -1 15); fi
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+
+# Check if already installed
+## Config
+if [ -f /opt/verb/conf/vapp.${CVAPPNAME} ]; then
+/bin/echo "This is already installed."
+exit 0; fi
+## Directory
+if [ -d /srv/www/vapps/${CVAPPNAME} ]; then
+/bin/echo "phpMyAdmin already exists in the system. If it isn't working, look deeper on the server. For now, doing nothing."
+exit 8; fi
+
+# Download and establish Drupal in the server to pre-created domain
+cd /srv/www/vapps || exit 0
+/opt/verb/serfs/inkget ${CVAPPNAME} check; wait
+if [ "$?" = 4 ]; then
+/bin/echo "Repo failed to retrieve the file."
+exit 4; fi
+
+# Create the boss user
+/opt/verb/serfs/mysqlnewboss "${DBUSER}" "${DBPASSWORD}"
+
+# Write the config for backup
+/bin/echo "SUBDIR=${DIRECTRY}
+APPDDBUSR=${DBUSER}
+APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.${CVAPPNAME}
+
+# Prepare the config and web directory
+/bin/cp /srv/www/vapps/${CVAPPNAME}/config.sample.inc.php /srv/www/vapps/${CVAPPNAME}/config.inc.php
+BLOWFISH=$(/usr/bin/pwgen -c -1 32)
+/bin/sed -i "s/cfg\['blowfish_secret'\] = '';/cfg\['blowfish_secret'\] = '$BLOWFISH';/" /srv/www/vapps/${CVAPPNAME}/config.inc.php
+/bin/ln -sfn /srv/www/vapps/${CVAPPNAME} /srv/www/verb/${itsqlTLD}.sql/${DIRECTRY}; wait
+/bin/chown -R www:www /srv/www/verb/${itsqlTLD}.sql; wait
+/bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}; wait
+
+# Restart server
+. /opt/verb/conf/servertype
+if [ ${ServerType} = "lemp" ]; then
+  /usr/bin/systemctl restart nginx
+elif [ ${ServerType} = "lamp" ]; then
+  /usr/bin/systemctl restart httpd
+elif [ ${ServerType} = "laemp" ]; then
+  /usr/bin/systemctl restart httpd
+  /usr/bin/systemctl restart nginx
+fi
+
+/bin/echo "
+PHP My Admin now active & this MySQL admin is setup:
+
+Username: ${DBUSER}
+Password: ${DBPASSWORD}
+
+Use these credentials to log in at https://sql.${vipURI}/${DIRECTRY}
+"
+
+
+
+
+if [ -e "/opt/verb/mods/installphpmyadmin.after" ]; then . /opt/verb/mods/installphpmyadmin.after; fi # Follows this script

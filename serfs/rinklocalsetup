@@ -1,0 +1,77 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This sets up local keys if running a custom verber, not controlled by the control rink
+## Normally, this would be setup by rink::newverbrinkkeys
+## After running this, the keys must be added to both NS rinks manually, with instructions echoed at the end of this script
+
+# How to use:
+## ./rinklocalsetup
+
+usagenotes="This sets up local keys if running a custom verber, not controlled by the control rink"
+usageformat="rinklocalsetup"
+usageexample="rinklocalsetup"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( "Controlled by Rink" )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( serverport servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/rinklocalsetup.replace" ]; then . /opt/verb/mods/rinklocalsetup.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/rinklocalsetup.before" ]; then . /opt/verb/mods/rinklocalsetup.before; fi # Precedes this script
+
+
+# Configs
+. /opt/verb/conf/serverport
+. /opt/verb/conf/servernameip
+
+# Already configured?
+if [ "$RinkConfigured" = "true" ]; then
+	echo "Rink NS server keys already configured"
+	exit 0
+fi
+
+# Setup the keys
+/usr/bin/ssh-keygen -t rsa -N "" -f /root/.ssh/Rink_${ServerTLD}_${ServerName} -C Rink_${ServerTLD}_${ServerName}
+
+## NS 1
+/usr/bin/sed -i '/ssh.ns1.conf/d' /root/.ssh/config
+/usr/bin/rm /opt/rink/conf/ssh.ns1.conf
+/usr/bin/echo "Include /opt/rink/conf/ssh.ns1.conf" >> /root/.ssh/config
+/usr/bin/cat <<EOF > /opt/rink/conf/ssh.ns1.conf
+Host ns1
+Hostname ${ServerNS1IPv4}
+User root
+Port ${ServerPort}
+IdentityFile /root/.ssh/Rink_${ServerTLD}_${ServerName}
+EOF
+## NS 2
+/usr/bin/sed -i '/ssh.ns2.conf/d' /root/.ssh/config
+/usr/bin/rm /opt/rink/conf/ssh.ns2.conf
+/usr/bin/echo "Include /opt/rink/conf/ssh.ns2.conf" >> /root/.ssh/config
+/usr/bin/cat <<EOF > /opt/rink/conf/ssh.ns2.conf
+Host ns2
+Hostname ${ServerNS2IPv4}
+User root
+Port ${ServerPort}
+IdentityFile /root/.ssh/Rink_${ServerTLD}_${ServerName}
+EOF
+## Config entry, rink* serfs will exit 0 without this
+/usr/bin/sed -i '/RinkConfigured=.*/d' /opt/verb/conf/servernameip # No dup entries
+/usr/bin/echo 'RinkConfigured="true"' >> /opt/verb/conf/servernameip
+
+# Finish
+echo "Now, you will need to add the SSH keys to the NS servers
+see the key with: cat /root/.ssh/Rink_${ServerTLD}_${ServerName}
+On each NS server, append that output to
+/root/.ssh/authorized_keys"
+
+
+if [ -e "/opt/verb/mods/rinklocalsetup.after" ]; then . /opt/verb/mods/rinklocalsetup.after; fi # Follows this script

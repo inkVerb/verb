@@ -1,0 +1,111 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This sets or activates swap to a set size
+## Options are 1, 2, 4, 8, 16, 32, 64 GB
+
+# How to use:
+## ./setswapsize [swap-size, choose 1, 2, 4, 8, 16, 32, 64]
+
+
+SWAPSIZENO=$1
+
+# Prepare
+## Make sure it's off, quietly
+swapoff /var/swap.img 2>/dev/null
+cd /var || exit 0
+/usr/bin/touch swap.img
+/bin/chmod 600 swap.img
+
+# Options from command parameters
+if [ "${SWAPSIZENO}" = "1" ]; then
+## 1GB
+dd if=/dev/zero of=/var/swap.img bs=1024k count=1000
+### Should display something like:
+#. 1000+0 records in
+#. 1000+0 records out
+#. 1048576000 bytes (1.0 GB) copied, 4.0868896 s, 253 MB/s
+###
+fi
+
+if [ "${SWAPSIZENO}" = "2" ]; then
+## 2GB
+dd if=/dev/zero of=/var/swap.img bs=2048k count=1000
+### Should display something like:
+#. 1000+0 records in
+#. 1000+0 records out
+#. 2097152000 bytes (2.1 GB) copied, 31.6348 s, 66.3 MB/s
+###
+fi
+
+if [ "${SWAPSIZENO}" = "4" ]; then
+## 4GB
+dd if=/dev/zero of=/var/swap.img bs=4096k count=1000
+### Should display something like:
+#. 1000+0 records in
+#. 1000+0 records out
+#. 4097152000 bytes (4.1 GB) copied, 62.6348 s, 33.3 MB/s
+###
+fi
+
+if [ "${SWAPSIZENO}" = "8" ]; then
+## 8GB
+dd if=/dev/zero of=/var/swap.img bs=8192k count=1000
+### Should display something like:
+#. 1000+0 records in
+#. 1000+0 records out
+#. 8194304000 bytes (8.1 GB) copied, 124.6348 s, 16.3 MB/s
+###
+fi
+
+if [ "${SWAPSIZENO}" = "16" ]; then
+## 16GB
+dd if=/dev/zero of=/var/swap.img bs=16384k count=1000
+### Should display something like:
+#. 1000+0 records in
+#. 1000+0 records out
+#. 16388608000 bytes (16.1 GB) copied, 248.6348 s, 16.3 MB/s
+###
+fi
+
+if [ "${SWAPSIZENO}" = "32" ]; then
+## 32GB
+dd if=/dev/zero of=/var/swap.img bs=32768k count=1000
+### Should display something like:
+#. 1000+0 records in
+#. 1000+0 records out
+#. 32777216000 bytes (32.2 GB) copied, 496.6348 s, 16.3 MB/s
+###
+fi
+
+if [ "${SWAPSIZENO}" = "64" ]; then
+## 64GB
+dd if=/dev/zero of=/var/swap.img bs=65536k count=1000
+### Should display something like:
+#. 1000+0 records in
+#. 1000+0 records out
+#. 65554432000 bytes (64.4 GB) copied, 992.6348 s, 16.3 MB/s
+###
+fi
+
+## Initialize
+mkswap /var/swap.img
+### Should display something like:
+#. no label, UUID=d35552b3-4bbe-42a0-b129-5483a2211cde
+
+# Enable current session
+swapon /var/swap.img
+
+# Check that it is running
+free
+### Should display something like:
+#..
+#. Swap:      4094996          0    4094996
+
+# Set to enable it at next startup
+/bin/echo "/var/swap.img    none    swap    sw    0    0" >> /etc/fstab
+
+
+
+
+if [ -e "/opt/verb/mods/setswapsize.after" ]; then . /opt/verb/mods/setswapsize.after; fi # Follows this script

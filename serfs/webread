@@ -1,0 +1,83 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This adds the necessary minimal .htaccess file to a web folder so all its files can be read
+## The "URI web path" is relative to the www/html/ folder; it must already exist.
+
+# How to use:
+## ./webread on/off [URI web path] [ -o optional overwrite existing .htaccess ]
+
+# Eg:
+## ./webread on inkisaverb.com/myfiles
+## ./webread on ink.verb.vip -o
+## ./webread off inkisaverb.com/myfiles -o
+## ./webread off ink.verb.vip
+
+
+WEBPATH=$1
+
+. /opt/verb/conf/servertype
+
+if [ ${ServerType} = "lemp" ]; then
+  /bin/echo ".htaccess web folder settings not available on LEMP servers anyway. Nothing to do."
+
+elif [ ${ServerType} = "lamp" ] || [ ${ServerType} = "laemp" ]; then
+
+  if [ "$1" = "on" ]; then
+
+    # If it doesn't exist
+    if [ ! -d "/srv/www/html/${WEBPATH}" ]; then
+    /bin/echo "This web folder does not exist. Doing nothing."
+    exit 0
+    fi
+
+    # If another .htaccess already exists
+    if [ -f "/srv/www/html/${WEBPATH}/.htaccess" ] && [ $3 != "-o" ]; then
+      /bin/echo "A .htaccess file already exists for this web path. Use -o at the end of command to override."
+      exit 0
+    fi
+
+    # Do it
+    /usr/bin/sed -i '/deny from all/d'  /srv/www/html/${WEBPATH}/.htaccess
+    /bin/echo "allow from all
+Options +Indexes
+IndexOptions +FancyIndexing" > /srv/www/html/${WEBPATH}/.htaccess
+
+    /bin/chown -R www:www /srv/www/html/${WEBPATH}
+
+    # Finish
+    /bin/echo "The contents of ${WEBPATH} are now available to the public!"
+
+  elif [ "$1" = "off" ]; then
+
+    # If it doesn't exist
+    if [ ! -d "/srv/www/html/${WEBPATH}" ]; then
+    /bin/echo "This web folder does not exist. Doing nothing."
+    exit 0
+    fi
+
+    # If another .htaccess already exists
+    if [ -f "/srv/www/html/${WEBPATH}/.htaccess" ] && [ $3 != "-o" ]; then
+      /bin/echo "A .htaccess file already exists for this web path. Use -o at the end of command to override."
+      exit 0
+    fi
+
+    # Do it
+    /usr/bin/sed -i '/+Indexes/d'  /srv/www/html/${WEBPATH}/.htaccess
+    /usr/bin/sed -i '/IndexOptions +FancyIndexing/d'  /srv/www/html/${WEBPATH}/.htaccess
+    /usr/bin/sed -i '/allow from all/d'  /srv/www/html/${WEBPATH}/.htaccess
+    /bin/echo "deny from all" > /srv/www/html/${WEBPATH}/.htaccess
+
+    /bin/chown -R www:www /srv/www/html/${WEBPATH}
+
+    # Finish
+    /bin/echo "The contents of ${WEBPATH} are now available to the public!"
+
+  fi
+
+fi
+
+
+
+
+if [ -e "/opt/verb/mods/webread.after" ]; then . /opt/verb/mods/webread.after; fi # Follows this script

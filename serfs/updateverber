@@ -1,0 +1,37 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This downloads and updates the Verber™ core files, including serfs and inklists
+## This also runs scripts that make other changes that may affect the Verber
+
+# How to use:
+## ./updateverber
+
+
+# Include the config
+if [ -f "/opt/verb/conf/servernameip" ]; then
+  ## This is for updates on a setup verber
+  . /opt/verb/conf/servernameip
+else
+  ## This allows updates on a -premade or -made verber
+  ServerUpdateOrg="inkverb"
+  ServerUpdateRepo="verb-update"
+fi
+
+# Download the latest checked version from GitHub
+cd /opt/verb/ || exit 0
+/usr/bin/git clone https://github.com/${ServerUpdateOrg}/${ServerUpdateRepo}
+
+# Run the update script
+/bin/chmod 750 /opt/verb/${ServerUpdateRepo}/update
+/opt/verb/${ServerUpdateRepo}/update
+wait
+
+# Remove the entire updater
+/bin/rm -rf /opt/verb/${ServerUpdateRepo}
+
+
+
+
+
+if [ -e "/opt/verb/mods/updateverber.after" ]; then . /opt/verb/mods/updateverber.after; fi # Follows this script

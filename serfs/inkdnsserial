@@ -1,0 +1,68 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This sets a new serial number for an existing DNS record in the inkDNS zone file on the server
+
+# How to use:
+## ./inkdnsserial [ domain.tld ]
+## ./inkdnsserial [ domain.tld ] verber
+
+usagenotes="This sets a new serial number for an existing DNS record in the inkDNS zone file on the server"
+usageformat="inkdnsserial [ domain.tld ] verber"
+usageexample="inkdnsserial inkisaverb.com
+inkdnsserial myself.verb.blue verber"
+hierarchy=( secondary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=( "verber" )
+vopttypes=( string_match )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkdnsinstall )
+prerequesite=(  )
+usedby=( inkdnsadddomain  )
+useserfs=( inkdnsserial inkdnsaddinkdkim inkdnsaddmail inkdnsaddonesub inkdnsaddvipsub killinkdnsinkdkim killinkdnsmail killinkdnsonesub killinkdnssub killinkdnsvipsub setserve )
+useconfigs=( servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdnsserial.replace" ]; then . /opt/verb/mods/inkdnsserial.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdnsserial.before" ]; then . /opt/verb/mods/inkdnsserial.before; fi # Precedes this script
+
+
+DNsdnsDomainAIN="$1"
+if [ -n $2 ] && [ "$2" = "verber" ]; then
+  ZONEDIR="inkzones"
+else
+  ZONEDIR="zones"
+fi
+
+# Check if the zone file exists
+if [ ! -f "/opt/verb/conf/inkdns/${ZONEDIR}/db.${DNsdnsDomainAIN}" ]; then
+/bin/echo "The domain \"${DNsdnsDomainAIN}\" has no DNS zone file. That comes first."
+exit 8; fi
+
+# Set the new serial
+## Create the datestamp
+DATESTAMP="$(date '+%Y%m%d')"
+## Set the increment for today
+### Make sure we have a count file
+if [ ! -f "/opt/verb/conf/inkdns/serial" ]; then
+/bin/echo "0" > /opt/verb/conf/inkdns/serial; fi
+OLDSERIAL="$(/bin/cat /opt/verb/conf/inkdns/serial)"
+### Keep it to two digits
+if [ "${OLDSERIAL}" -gt "98" ]; then
+OLDSERIAL="0"; fi
+### Keep the digits double
+NEWSERIAL=$(expr ${OLDSERIAL} + 1)
+if [ "${NEWSERIAL}" -le "9" ]; then
+NEWSERIAL="0${NEWSERIAL}"; fi
+### Record the serial
+/bin/echo "${NEWSERIAL}" > /opt/verb/conf/inkdns/serial
+## Create a datestamp-based serial number to the second (how inkVerb does it)
+SERNO="${DATESTAMP}${NEWSERIAL}\t\t; Serial No"
+## Set it in the files
+/bin/sed -i "/; Serial No/c ${SERNO}" /opt/verb/conf/inkdns/${ZONEDIR}/db.${DNsdnsDomainAIN}
+
+
+
+
+if [ -e "/opt/verb/mods/inkdnsserial.after" ]; then . /opt/verb/mods/inkdnsserial.after; fi # Follows this script

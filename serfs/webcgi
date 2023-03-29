@@ -1,0 +1,54 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This enables cgi for a domain
+
+# How to use:
+## ./webcgi on [domain.tld or subdomain.domain.tld]
+## ./webcgi off [domain.tld or subdomain.domain.tld]
+
+
+DOMAIN=$2
+
+. /opt/verb/conf/servertype
+
+if [ ${ServerType} = "lemp" ]; then
+	/bin/echo "CGI not allowed on LEMP servers."
+
+elif [ ${ServerType} = "lamp" ] || [ ${ServerType} = "laemp" ]; then
+
+	if [ "$1" = "on" ]; then
+
+		# Apache
+		## Check to see if "fixhttps" has already been added
+		if /bin/grep -q "Options Indexes FollowSymLinks MultiViews Execcgi" /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf; then
+			/bin/systemctl restart httpd; wait
+			/bin/echo "${DOMAIN} already has the CGI enabled. The server was just reloaded so the site should work."
+		else
+			/bin/sed -i "s/Options Indexes FollowSymLinks MultiViews/Options Indexes FollowSymLinks MultiViews Execcgi\nAddHandler cgi-script .cgi/" /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf
+			/bin/systemctl restart httpd; wait
+			/bin/echo "CGI enabled for ${DOMAIN}."
+		fi
+
+	elif [ "$1" = "off" ]; then
+
+		# Apache
+		## Check to see if "fixhttps" has already been added
+		if ! /bin/grep -q "Options Indexes FollowSymLinks MultiViews Execcgi" /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf; then
+			/bin/systemctl restart httpd; wait
+			/bin/echo "${DOMAIN} already has the CGI disabled. The server was just reloaded so the site should work."
+		else
+			/bin/sed -i "s/Options Indexes FollowSymLinks MultiViews Execcgi/Options Indexes FollowSymLinks MultiViews/" /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf
+			/bin/sed -i "/AddHandler cgi-script .cgi/d" /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf
+			/bin/systemctl restart httpd; wait
+			/bin/echo "CGI disabled for ${DOMAIN}."
+		fi
+
+	fi
+
+fi
+
+
+
+
+if [ -e "/opt/verb/mods/webcgi.after" ]; then . /opt/verb/mods/webcgi.after; fi # Follows this script

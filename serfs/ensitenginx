@@ -1,0 +1,37 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This enables an nginx site by creating a symlink
+## Use flag "-r" to reload automatically
+
+# How to use:
+## ./ensitenginx [domain.tld or subdomain.domain.tld] [domain2.tld] [domain3.tld]
+## ./ensitenginx [domain.tld or subdomain.domain.tld]
+## ./ensitenginx -r [domain.tld or subdomain.domain.tld] [domain2.tld] [domain3.tld]
+## ./ensitenginx -r [domain.tld or subdomain.domain.tld]
+
+
+# Run as a loop so multiple sites can be enabled in one command, just like a2ensite
+for DOMAIN in $@; do
+  if [ "${DOMAIN}" = "-r" ]; then
+    continue
+  elif [ -e "/etc/nginx/sites-available/${DOMAIN}.conf" ] && [ -f "/opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf" ]; then
+    /usr/bin/ln -sfn /opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf /opt/verb/conf/webserver/nginx/sites-enabled/${DOMAIN}.conf
+  else
+    /usr/bin/echo "${DOMAIN} Nginx config does not exist at /etc/nginx/sites-available/${DOMAIN}.conf, cannot enable"
+  fi
+done
+
+# Restart?
+while getopts ":r" Var; do
+  case $Var in
+    r)
+      /usr/bin/systemctl restart nginx; wait
+    ;;
+  esac
+done
+
+
+
+
+if [ -e "/opt/verb/mods/ensitenginx.after" ]; then . /opt/verb/mods/ensitenginx.after; fi # Follows this script

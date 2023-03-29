@@ -1,0 +1,38 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This drops (deletes) a MySQL/MariaDB database
+
+# How to use:
+## ./mysqlkilldb [ database name ]
+
+usagenotes="This drops (deletes) a MySQL/MariaDB database"
+usageformat="mysqlkilldb [ database name ]"
+usageexample="mysqlkilldb myGreat99DB"
+hierarchy=( primary )
+vsetnames=( "Database name" )
+vsettypes=( isSQLDatabasename )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( mysqlinstall )
+prerequesite=( mysqlnewdb )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/mysqlkilldb.replace" ]; then . /opt/verb/mods/mysqlkilldb.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/mysqlkilldb.before" ]; then . /opt/verb/mods/mysqlkilldb.before; fi # Precedes this script
+
+
+DBASE=$1
+
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+DROP DATABASE ${DBASE};"
+
+
+
+
+
+if [ -e "/opt/verb/mods/mysqlkilldb.after" ]; then . /opt/verb/mods/mysqlkilldb.after; fi # Follows this script

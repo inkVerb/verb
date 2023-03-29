@@ -1,0 +1,63 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This creates a client key for inkVPN
+## This is run automatically by inkvpninstall, but can be run separately
+## DEV This currently only supports one client, but could theoretically be made to create a client by any name by replacing "client" in this script
+
+# How to use:
+## ./inkvpnclientkey
+
+
+# Check if the directory exists
+if [ ! -d "/opt/openvpn/certificates" ]; then
+/bin/echo "The OpenVPN \"certificates\" directory does not exist, something's wrong. Bye."; exit 0; fi
+
+# Include the configs
+. /opt/verb/conf/inkvpn/inkvpnstatus
+
+# Remove keys and start everything over
+cd /opt/openvpn/certificates || exit 0
+## Delete every .pem but dh2048.pem
+/bin/mv /opt/openvpn/certificates/keys/dh2048.pem /opt/openvpn/certificates/keys/dh2048.pem.save
+/bin/rm -f /opt/openvpn/certificates/keys/*.pem
+/bin/mv /opt/openvpn/certificates/keys/dh2048.pem.save /opt/openvpn/certificates/keys/dh2048.pem
+/bin/rm -f /opt/openvpn/certificates/keys/{client.crt,client.csr,client.key}
+/bin/rm -f /opt/openvpn/certificates/keys/*.pem
+/bin/sed -i "/client/d" /opt/openvpn/certificates/keys/index.txt
+source ./vars && ./build-key --batch client
+# do it right # 1 line below, failed attempt at this: https://unix.stackexchange.com/a/498688/315069
+#openssl ca -config openssl-1.0.0.cnf -extensions client_cert -notext -md sha256 -in keys/client.csr -out keys/client.crt
+/bin/mkdir -p clients && cp /usr/share/doc/openvpn/examples/sample-config-files/client.conf clients/client.ovpn
+/bin/sed -i "s/remote my-server-1.*/remote ${Hostname} ${InkVPNPort}/" /opt/openvpn/certificates/clients/client.ovpn
+/bin/sed -i "s/;user nobody/user nobody/" /opt/openvpn/certificates/clients/client.ovpn
+/bin/sed -i "s/;group nogroup/group nogroup/" /opt/openvpn/certificates/clients/client.ovpn
+/bin/sed -i 's/ca ca.crt/#ca ca.crt/' /opt/openvpn/certificates/clients/client.ovpn
+/bin/sed -i 's/cert client.crt/#cert client.crt/' /opt/openvpn/certificates/clients/client.ovpn
+/bin/sed -i 's/key client.key/#key client.key/' /opt/openvpn/certificates/clients/client.ovpn
+/bin/sed -i 's/tls-auth ta.key 1/#tls-auth ta.key 1/' /opt/openvpn/certificates/clients/client.ovpn
+/bin/echo "
+# Added by inkVerb #
+<ca>
+$(/bin/cat /opt/openvpn/certificates/keys/ca.crt)
+</ca>
+<cert>
+$(/bin/cat /opt/openvpn/certificates/keys/client.crt)
+</cert>
+<key>
+$(/bin/cat /opt/openvpn/certificates/keys/client.key)
+</key>
+key-direction 1
+<tls-auth>
+$(/bin/cat /opt/openvpn/certificates/keys/ta.key)
+</tls-auth>
+## Added by inkVerb ##
+" >> /opt/openvpn/certificates/clients/client.ovpn
+
+# Set the download link and finish
+/opt/verb/serfs/inkvpnclientdl
+
+
+
+
+if [ -e "/opt/verb/mods/inkvpnclientkey.after" ]; then . /opt/verb/mods/inkvpnclientkey.after; fi # Follows this script

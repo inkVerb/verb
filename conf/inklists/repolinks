@@ -1,0 +1,18 @@
+#!/bin/sh
+# inkVerb repo donjon download info list
+
+ampache="https://github.com/ampache/ampache/releases NOTE: still using md5 & zip"
+fossil="https://www.fossil-scm.org/fossil/uv/download.html NOTE: download it and get the SHA256 with \"shasum -a 256 FILE.tar.gz\""
+iwpadmin="https://infinitewp.com/installing-download/ NOTE: No SHA. Must include email with the donjon knight."
+mediawiki="https://www.mediawiki.org/wiki/Download NOTE: download it and get your own SHA256 with \"shasum -a 256 FILE.tar.gz\""
+net2ftp="http://www.net2ftp.com/homepage/download.html NOTE: download it and get your own SHA256 with \"shasum -a 256 FILE.zip\""
+nextcloud="https://nextcloud.com/install/#instructions-server NOTE: SHA retrieved automatically because NextCloud is cool"
+orangehrm="https://sourceforge.net/projects/orangehrm/files/stable/"
+owa="https://github.com/padams/Open-Web-Analytics/tags NOTE: download it and get the SHA256 with \"shasum -a 256 FILE.tar.gz\""
+owncloud="https://owncloud.org/download/  NOTE: SHA retrieved automatically because ownCloud is cool"
+phpmyadmin="https://www.phpmyadmin.net/ NOTE: use SHA256 from the Download button popup"
+postfixadmin="https://sourceforge.net/projects/postfixadmin/files/postfixadmin/ NOTE: just the plain tar.gz"
+postfixadmingit="https://github.com/postfixadmin/postfixadmin" #for reference, perhaps to replace
+roundcube="https://roundcube.net/download/"
+suitecrm="https://sourceforge.net/projects/suitecrm/files/ NOTE: using zip and still sha1"
+

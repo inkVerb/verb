@@ -1,0 +1,76 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This restores a backup .vbak file from Nextcloud backed-up using backupnextcloud
+
+# Prereq: Nextcloud must be installed via the installnextcloud serf on the new server first
+
+# Instructions:
+## The file can have any name, even if you changed it from the original, as long as it ends in .vbak
+## The file MUST be uploaded to the "vip" folder, which can be done with vsftp installed and an ftpvip
+
+# How to use:
+## ./backupnextcloudrestore [filename]
+
+# Eg:
+## ./backuprestorenextcloud verb.nextcloud.sF52.vbak  # (This is for the backup file verb.nextcloud.sF52.vbak)
+
+
+FILENAME=$1
+
+# Include the site config
+. /opt/verb/conf/servernameip
+
+# Backup whatever the original status is
+if [ -e "/opt/verb/conf/vapp.nextcloud" ]; then
+. /opt/verb/conf/vapp.nextcloud
+cd /srv/www/vapps/nextcloud/data || exit 0
+/opt/verb/serfs/mysqlvappex vapp.nextcloud; wait
+/bin/cp /opt/verb/conf/vapp.nextcloud .
+cd /srv/www/vapps/nextcloud || exit 0
+/opt/verb/serfs/vtxzin data
+/bin/mv data.txz verb.nextcloud.restore-originalbackedup.vbak
+/bin/mv verb.nextcloud.restore-originalbackedup.vbak /srv/www/vip/
+/bin/rm -rf /srv/www/vapps/nextcloud/data
+fi
+
+# Unpack the file
+cd /srv/www/vip || exit 0
+/bin/mv ${FILENAME} data.txz
+/opt/verb/serfs/vtxzout data
+cd data || exit 0
+/bin/rm -f index.html
+/bin/rm -f nextcloud.log
+/bin/rm -rf updater-data
+cd .. || exit 0
+/bin/cp /srv/www/vapps/nextcloud/data/index.html data/
+/bin/cp /srv/www/vapps/nextcloud/data/nextcloud.log data/
+/bin/rm -rf /srv/www/vapps/nextcloud/data
+/bin/mv data /srv/www/vapps/nextcloud/
+
+# Restore and include the app config
+. /srv/www/vapps/nextcloud/data/vapp.nextcloud
+OLDDBASE="${APPDBASE}"
+. /opt/verb/conf/vapp.nextcloud
+
+# Restore the database
+cd /srv/www/vapps/nextcloud/data || exit 0
+/bin/mv ${OLDDBASE}.sql ${APPDBASE}.sql; wait
+/opt/verb/serfs/mysqlin ${APPDBASE}; wait
+/bin/rm -f ${APPDBASE}.sql
+
+# Own
+/bin/chown -R www:www /srv/www/vapps/nextcloud
+
+# Finish
+/bin/echo "Owncloud's user data has been restored and all its backup files removed from this server.
+
+A backup of the previous Nextcloud data on this server has been saved in the vip folder just in case.
+
+You will probably need to log into Nextcloud as an admin to disable and re-enable apps that show \"enabled\" but are not working.
+"
+
+
+
+
+if [ -e "/opt/verb/mods/backupnextcloudrestore.after" ]; then . /opt/verb/mods/backupnextcloudrestore.after; fi # Follows this script

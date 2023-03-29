@@ -1,0 +1,148 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This displays dependency, prerequesite, and argument info for a serf
+
+# How to use:
+## ./info serfname
+## ./info
+
+SerfsDIR='/opt/verb/serfs'
+
+if [ -z $1 ]; then
+	echo "Must set a serf"
+	exit 0
+else
+	SERF=$1
+	infoINKonly='true'
+if [ -e "/opt/verb/mods/info.replace" ]; then . /opt/verb/mods/info.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/info.before" ]; then . /opt/verb/mods/info.before; fi # Precedes this script
+fi
+
+. "${SerfsDIR}/${SERF}"
+
+# Specific information
+if [ -n "$2" ]; then
+	PARAM=$2
+	echo "${PARAM}: ${!PARAM[*]}"
+# All information
+else
+	echo "${SERF} :: Information"
+
+	echo "Notes (usagenotes): $usagenotes"
+
+	echo "Usage format (usageformat):
+$usageformat"
+
+	if [ -n "${usageexample}" ] && [ "${usageexample}" != "" ]; then
+		echo "Usage example (usageexample):
+$usageexample"
+	fi
+
+	if [ -n "${vsetnames[0]}" ]; then
+		echo "Settings (vsetnames):"
+		count=1
+		for Var in "${vsetnames[@]}"; do
+			echo "  $count: $Var"
+			count=$((count + 1))
+		done
+	fi
+
+	if [ -n "${vsettypes[0]}" ]; then
+		echo "Setting datatypes (vsettypes):"
+		count=1
+		for Var in "${vsettypes[@]}"; do
+			echo "  $count: $Var"
+			count=$((count + 1))
+		done
+	fi
+
+	if [ -n "${voptnames[0]}" ]; then
+		echo "Optional settings (voptnames):"
+		count=1
+		for Var in "${voptnames[@]}"; do
+			echo "  $count: $Var"
+			count=$((count + 1))
+		done
+	fi
+
+	if [ -n "${vopttypes[0]}" ]; then
+		echo "Optional setting datatypes (vopttypes):"
+		count=1
+		for Var in "${vopttypes[@]}"; do
+			echo "  $count: $Var"
+			count=$((count + 1))
+		done
+	fi
+
+	if [ -n "${voptflags[0]}" ]; then
+		echo "Optional flags (voptflags):"
+		for Var in "${voptflags[@]}"; do
+			echo "  -$Var"
+		done
+	fi
+
+	if [ -n "${voptflagpurpose[0]}" ]; then
+		echo "Optional flags purpose (voptflagpurpose):"
+		for Var in "${voptflagpurpose[@]}"; do
+			echo "  $Var"
+		done
+	fi
+
+	echo "Hierarchy (hierarchy): ${hierarchy[0]}"
+
+	if [ "${hierarchy[0]}" = "tertiary" ] && [ -n "${hierarchy[1]}" ]; then
+		echo "Primaries:"
+		for Var in "${hierarchy[@]}"; do
+			if [ "$Var" = "${hierarchy[0]}" ]; then
+				continue
+			fi
+			echo "  # $Var"
+		done
+	fi
+
+	if [ -n "${dependencyinstall[0]}" ]; then
+		echo "Dependency install (dependencyinstall):"
+		for Var in "${dependencyinstall[@]}"; do
+			echo "  # $Var"
+		done
+	fi
+
+	if [ -n "${installedpackages[0]}" ]; then
+		echo "Installed Linux packages (installedpackages):"
+		for Var in "${installedpackages[@]}"; do
+			echo "  # $Var"
+		done
+	fi
+
+	if [ -n "${prerequesite[0]}" ]; then
+		echo "Prerequesite (prerequesite):"
+		for Var in "${prerequesite[@]}"; do
+			echo "  # $Var"
+		done
+	fi
+
+	if [ -n "${usedby[0]}" ]; then
+		echo "Used by (usedby):"
+		for Var in "${usedby[@]}"; do
+			echo "  :: $Var"
+		done
+	fi
+
+	if [ -n "${useserfs[0]}" ]; then
+		echo "Uses (useserfs):"
+		for Var in "${useserfs[@]}"; do
+			echo "  . $Var"
+		done
+	fi
+
+	if [ -n "${useconfigs[0]}" ]; then
+		echo "Needs configs (useconfigs):"
+		for Var in "${useconfigs[@]}"; do
+			echo "  conf/ $Var"
+		done
+	fi
+fi
+
+
+if [ -e "/opt/verb/mods/info.after" ]; then . /opt/verb/mods/info.after; fi # Follows this script

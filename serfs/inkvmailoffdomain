@@ -1,0 +1,46 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This sets a domain to 'inactive' in the inkvmail database
+
+# How to use:
+## ./inkvmailoffdomain [ domain ]
+
+usagenotes="This sets a domain to 'inactive' in the inkvmail database"
+usageformat="inkvmailoffdomain [ domain ]"
+usageexample="inkvmailoffdomain inkisaverb.com"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installinkvmail )
+prerequesite=( inkvmaildomain )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkvmailoffdomain.replace" ]; then . /opt/verb/mods/inkvmailoffdomain.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkvmailoffdomain.before" ]; then . /opt/verb/mods/inkvmailoffdomain.before; fi # Precedes this script
+
+
+# Check to see if inkvmail is installed
+. /opt/verb/conf/servermailpath
+if [ "$ServerMailStatus" != "VMAIL_SERVER" ]; then
+  /bin/echo "Vmail not installed, not adding $domain to PFA"
+  exit 0; fi
+
+domain="$1"
+
+# Run the update
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "UPDATE domain SET active=0, modified=CURRENT_TIMESTAMP WHERE domain='$domain';"
+
+# Finish
+/bin/echo "Domain $domain set to inactive"
+
+
+
+
+if [ -e "/opt/verb/mods/inkvmailoffdomain.after" ]; then . /opt/verb/mods/inkvmailoffdomain.after; fi # Follows this script

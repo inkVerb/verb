@@ -1,0 +1,51 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This delets an email domain in the inkvmail database and removes all mail with the folder in vmail/
+
+# How to use:
+## ./inkvmaildeldomain [ domain ]
+
+usagenotes="This delets an email domain in the inkvmail database and removes all mail with the folder in vmail/"
+usageformat="inkvmaildeldomain [ domain ]"
+usageexample="inkvmaildeldomain inkisaverb.com"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installinkvmail )
+prerequesite=( inkvmaildomain )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkvmaildeldomain.replace" ]; then . /opt/verb/mods/inkvmaildeldomain.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkvmaildeldomain.before" ]; then . /opt/verb/mods/inkvmaildeldomain.before; fi # Precedes this script
+
+
+# Check to see if inkvmail is installed
+. /opt/verb/conf/servermailpath
+if [ "$ServerMailStatus" != "VMAIL_SERVER" ]; then
+  /bin/echo "Vmail not installed, not adding $domain to PFA"
+  exit 0; fi
+
+domain="$1"
+
+# Run the update
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "DELETE FROM domain WHERE domain='$domain';"
+
+# Delete the vmail folder
+/usr/bin/rm -rf /srv/vmail/${domain}
+
+# Finish
+/bin/echo "Email domain $domain deleted...
+The original mail should still be on the server, which you can access if you create the same domain again,
+To remove any mail still on the server, use inkvmailpurgedomain"
+
+
+
+
+if [ -e "/opt/verb/mods/inkvmaildeldomain.after" ]; then . /opt/verb/mods/inkvmaildeldomain.after; fi # Follows this script

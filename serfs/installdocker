@@ -1,0 +1,29 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This installs Docker, which is used by various apps, including Collabora Online for Nextcloud
+## Instructions per VPS service for advanced connections: https://docs.docker.com/engine/installation/#docker-cloud
+
+# How to use:
+## ./installdocker
+
+
+# Check if already installed
+if [ -f /opt/verb/conf/dockerinstalled ]; then
+/bin/echo "Docker is already installed."
+exit 0; fi
+
+# Install Docker
+/usr/bin/apt-get install -y docker.io
+
+# Record config
+/usr/bin/touch /opt/verb/conf/dockerinstalled
+
+# Finish
+/bin/echo "Docker installed."
+
+
+
+
+
+if [ -e "/opt/verb/mods/installdocker.after" ]; then . /opt/verb/mods/installdocker.after; fi # Follows this script

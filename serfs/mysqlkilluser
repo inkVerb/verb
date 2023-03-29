@@ -1,0 +1,38 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This drops (deletes) a MySQL/MariaDB  user
+
+# How to use:
+## ./mysqlkilluser [ database userename ]
+
+usagenotes="This drops (deletes) a MySQL/MariaDB user"
+usageformat="mysqlkilluser [ database userename ]"
+usageexample="mysqlkilluser myGreat99DBuser"
+hierarchy=( primary )
+vsetnames=( "Database username" )
+vsettypes=( isSQLUserCredential )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( mysqlinstall )
+prerequesite=( mysqlnewdbuser 'or' mysqlnewboss )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/mysqlkilluser.replace" ]; then . /opt/verb/mods/mysqlkilluser.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/mysqlkilluser.before" ]; then . /opt/verb/mods/mysqlkilluser.before; fi # Precedes this script
+
+
+DBUSER=$1
+
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+DROP USER ${DBUSER}@localhost;"
+
+
+
+
+
+if [ -e "/opt/verb/mods/mysqlkilluser.after" ]; then . /opt/verb/mods/mysqlkilluser.after; fi # Follows this script

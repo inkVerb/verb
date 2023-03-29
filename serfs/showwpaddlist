@@ -1,0 +1,19 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This displays the most recent list of available wpadd archives on the Inker
+
+# DEV: This is not finished yet
+
+# How to use:
+## ./showwpaddlist
+
+
+# inkNet to the Inker to display locally: wpaddshowlist
+
+# The read-only lists are in: tools/wpadd.human.list and tools/wpadd.list
+
+
+
+
+if [ -e "/opt/verb/mods/showwpaddlist.after" ]; then . /opt/verb/mods/showwpaddlist.after; fi # Follows this script

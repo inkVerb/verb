@@ -1,0 +1,81 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This installs ClamAV for SpamAssassin and may be installed after if it was not installed during
+## This is intended to be used only by installinkvmail and not used by itself
+## This is in separate development because ClamAV is heavy on the system
+
+# How to use:
+## ./installclamav
+
+usagenotes="This installs ClamAV for SpamAssassin and may be installed after if it was not installed during"
+usageformat="installclamav"
+usageexample="installclamav"
+hierarchy=( secondary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installpostfixvmail installspamassassin )
+prerequesite=(  )
+usedby=( installspamassassin )
+useserfs=( inkvmailfreshclam )
+useconfigs=( servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/installclamav.replace" ]; then . /opt/verb/mods/installclamav.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installclamav.before" ]; then . /opt/verb/mods/installclamav.before; fi # Precedes this script
+
+
+# Only if this hasn't been run yet
+. /opt/verb/conf/servermailpath
+if [ "${SASTATUS}" = "INSTALLED" ]; then
+  /bin/echo "SpamAssassin already installed, doing nothing."
+  exit 0
+fi
+
+# Update Keyring
+/usr/bin/pacman -Sy archlinux-keyring --noconfirm
+
+# Update Packages
+/usr/bin/pacman -Syyu --noconfirm --needed
+
+# Install
+/usr/bin/pacman -S --noconfirm --needed clamav perl-cpanplus-dist-arch
+if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
+
+# Remove unneeded packages
+/usr/bin/pacman -Qdt --noconfirm
+/usr/bin/pacman -Scc --noconfirm
+
+# ClamAV
+## Config files
+/bin/cp /opt/verb/conf/lib/vmail/clamav/clamav.cf /etc/mail/spamassassin/
+/bin/cp /opt/verb/conf/lib/vmail/clamav/clamav.pm /etc/mail/spamassassin/
+/usr/bin/chown spamd:spamd /etc/mail/spamassassin/clamav.cf /etc/mail/spamassassin/clamav.pm
+/usr/bin/mkdir -p /var/lib/clamav
+/usr/bin/chmod 755 /var/lib/clamav
+/usr/bin/chown -R clamav:clamav /var/lib/clamav
+/usr/bin/touch /run/clamav/clamd.ctl
+/usr/bin/chown clamav:clamav /run/clamav/clamd.ctl
+## Uses the package perl-cpanplus-dist-arch, which we installed
+#/usr/bin/vendor_perl/cpanp -i File::Scan::ClamAV; wait
+# echo "y" to ignore an error
+/usr/bin/echo "y" | /usr/bin/vendor_perl/cpanp -i File::Scan::ClamAV; wait
+/usr/bin/sudo -u spamd /usr/bin/vendor_perl/sa-update --nogpg
+/usr/bin/sudo -u spamd /usr/bin/vendor_perl/sa-compile
+
+## Service
+/usr/bin/systemctl enable clamav-daemon.service; wait
+/usr/bin/systemctl start clamav-daemon.service; wait
+/usr/bin/systemctl restart spamassassin.service; wait
+
+# freshclam
+#DEV freshclam is system heavy and needs to shut down several processeses in order to have enough resources to work
+/opt/verb/serfs/inkvmailfreshclam
+
+
+
+
+if [ -e "/opt/verb/mods/installclamav.after" ]; then . /opt/verb/mods/installclamav.after; fi # Follows this script

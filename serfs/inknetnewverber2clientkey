@@ -1,0 +1,46 @@
+#!/bin/bash
+# inkVerb serf/surfer, verb.ink
+
+# This creates an Verber Client key to be signed by a CA Verber that will be used to sign into the CA Verber
+## Prerequisite: inknetmakeverberclient
+
+# How to use:
+## ./inknetnewverber2clientkey [CA2 Host/Name]
+
+# Eg:
+## ./inknetnewverber2clientkey joeyca2_joeyca_verb_ink
+## ./inknetnewverber2clientkey joeyca2.joeyca.verb.ink
+## ./inknetnewverber2clientkey joey_joey_verb_email
+## ./inknetnewverber2clientkey joey.joey.verb.email
+
+
+ICASEC=$1
+CA2NAME="$(/bin/echo ${ICASEC} | sed 's/\./_/g')"
+
+# Check the config
+if [ ! -f /opt/verb/conf/inknet/2cav.${CA2NAME}.cnf ]; then
+/bin/echo "Out of order. This is not a Client yet.
+
+First run inknetaddsecondarycaverber
+"
+exit 8; fi
+
+# Include the config
+. /opt/verb/conf/inknet/2cav.${CA2NAME}.cnf
+
+# Generate the keys
+runuser -l ${CLIENTSAILOR} -c "ssh-keygen -t rsa -N '' -f /opt/ivapp/inknet/sailor/${CLIENTSAILOR}/.ssh/in_cli_${CLIENTNAME}_key"
+
+# Finish
+/bin/echo "Ready for the next step...
+"
+/opt/verb/serfs/showinknetclientinfo
+wait
+/opt/verb/serfs/showinknetverberclientkey
+wait
+
+
+
+
+
+if [ -e "/opt/verb/mods/inknetnewverber2clientkey.after" ]; then . /opt/verb/mods/inknetnewverber2clientkey.after; fi # Follows this script

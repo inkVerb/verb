@@ -1,0 +1,98 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This runs inkcertaddle for a domain and all of its subdomains
+## Prerequesite: inkcertreqle
+
+# NOTE: This is intended to be run by inkcertdole, but can be run separately, such as for updates
+# NOTE: If your domain and subdomains have the same certificate then run this only for the main domain
+
+# How to use:
+## ./inkcertaddallle [ domain.tld or sub.domain.tld ] [ DOMAIN OF CERTIFICATE IF DIFFERENT, ie: domain.tld ]
+
+# Eg:
+## ./inkcertaddallle NAME.verb.ink (will apply to all subdomains of NAME.verb.ink)
+## ./inkcertaddallle inkisaverb.com (will apply to all subdomains of inkisaverb.com)
+## ./inkcertaddallle poetryiscode.com inkisaverb.com (if the SSL cert for poetryiscode.com is included in the CN of the certificate for inkisaverb.com)
+
+usagenotes="This runs inkcertaddle for a domain and all of its subdomains"
+usageformat="inkcertaddallle [ domain.tld or sub.domain.tld ] [ DOMAIN OF CERTIFICATE IF DIFFERENT, ie: domain.tld ]"
+usageexample="inkcertaddallle NAME.verb.ink (will apply to all subdomains of NAME.verb.ink)
+inkcertaddallle inkisaverb.com (will apply to all subdomains of inkisaverb.com)
+inkcertaddallle poetryiscode.com inkisaverb.com (if the SSL cert for poetryiscode.com is included in the CN of the certificate for inkisaverb.com)"
+hierarchy=( tertiary inkcertdole )	# Choose: primary (works by itself, may use secondaries or tertiaries); secondary (can work by itself, but not normally, may use other secondaries or tertiaries); tertiary (cannot run by itself, must be run by a secondary or primary);oversight (uses primaries)
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=( "Domain of cert, if different" )
+vopttypes=( isDomain )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkcertinstall )
+prerequesite=( inkcertinstall inkcertreqle )
+usedby=( inkcertdole )
+useserfs=( inkcertaddle )
+useconfigs=(  )	# List config files of any kind used in this serf, please preserve order of appearance
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkcertaddallle.replace" ]; then . /opt/verb/mods/inkcertaddallle.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkcertaddallle.before" ]; then . /opt/verb/mods/inkcertaddallle.before; fi # Precedes this script
+
+
+SITEDOMAIN=$1
+CERTDOMAIN=$2
+
+# Check inkCert installed
+if [ "${InkCertInstalled}" = "NOT_YET" ]; then
+/bin/echo "inkCert not yet installed.
+
+First run inkcertinstall
+"
+exit 0
+fi
+
+# Check variables
+if [ -z ${1} ]; then
+/bin/echo "You need to specify a domain. Read the instructions."; exit 0
+fi
+
+# Set variable for same certificate as domain (most all scenarios)
+if [ -z ${2} ]; then
+CERTDOMAIN=$1
+fi
+
+# Get each subdomain from the cli-ini file that the certificate was based on and that the domain-subdomain structure was based on from adddomain and newdomainshell
+domainlist=$(/usr/bin/grep 'domains = ' /opt/verb/conf/inkcert/cli-ini/cli.${CERTDOMAIN}.ini | sed 's/domains = //')
+for eachsite in ${domainlist//,/ }; do
+## Run inkCertAddLE per site config
+  /opt/verb/serfs/inkcertaddle ${eachsite} ${CERTDOMAIN}
+wait
+done
+
+#DEV Replaced with above cli-ini file, more exact
+# # For the main domain first
+# /opt/verb/serfs/inkcertaddle ${SITEDOMAIN}
+# wait
+#
+# # For any/all sub-domains
+# if [ ${ServerType} = "lamp" ] || [ ${ServerType} = "laemp" ]; then
+#   cd /opt/verb/conf/webserver/httpd/sites-available
+# elif [ ${ServerType} = "lemp" ]; then
+#   cd /opt/verb/conf/webserver/nginx/sites-available
+# fi
+# ## Get the name of each subdomain .conf file available
+# find . -name "*.${SITEDOMAIN}.conf"|while read findsitesubdomain; do
+# ## Strip the .conf extension
+#  sitesubdomain=$(basename ${findsitesubdomain} .conf)
+# ## Run inkCertAddLE per site config
+#  /opt/verb/serfs/inkcertaddle ${sitesubdomain} ${CERTDOMAIN}
+# wait
+# done
+
+# Finish
+/bin/echo "
+Done. ${CERTDOMAIN} certs installed for ${SITEDOMAIN}.
+"
+
+
+
+
+if [ -e "/opt/verb/mods/inkcertaddallle.after" ]; then . /opt/verb/mods/inkcertaddallle.after; fi # Follows this script

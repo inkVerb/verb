@@ -1,0 +1,41 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This creates a powerful user who can read everything and access everything in the shared home folder /srv/www/vip, including filers' home folders
+## Requires installvsftpd
+
+# How to use:
+## ./newftpvip [ new user] [ new user password ]
+
+
+usagenotes="This creates a powerful user who can read everything and access everything in the shared home folder /srv/www/vip, including filers' home folders"
+usageformat="newftpvip [ new user ] [ new user password ]"
+usageexample="newftpvip userjohn NotSecure125"
+hierarchy=( primary )
+vsetnames=( "Username" "Password" )
+vsettypes=( isUsername string_quote )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installvsftpd )
+prerequesite=(  )
+usedby=(  )
+useserfs=( newftpuser )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/newftpvip.replace" ]; then . /opt/verb/mods/newftpvip.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/newftpvip.before" ]; then . /opt/verb/mods/newftpvip.before; fi # Precedes this script
+
+NEWFTPUSER=$1
+NEWUSERPASS=$2
+
+# Create the user with vsftpd
+/opt/verb/serfs/newftpuser ${NEWFTPUSER} ${NEWUSERPASS}
+
+# Change the vsftpd vip directory to the user's directory
+/bin/ln -sfn /srv/vip /srv/vsftpd/${NEWFTPUSER}/
+
+
+
+if [ -e "/opt/verb/mods/newftpvip.after" ]; then . /opt/verb/mods/newftpvip.after; fi # Follows this script

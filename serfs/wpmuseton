@@ -1,0 +1,54 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This sets up a WordPress vapp for multisite
+## Specifically, this adds the multisite settings in wp-config.php necessary to begin the installation from the WordPress dashboard
+
+# How to use:
+## ./wpmuseton [domain.tld]
+
+# Eg:
+## ./wpmuseton inkisaverb.com
+## ./wpmuseton mysubsite.inkisaverb.com
+
+
+WPDOMAIN=$1
+
+# Check if already set
+if /bin/grep -Fq "define( 'WP_ALLOW_MULTISITE', true );" /srv/www/html/${WPDOMAIN}/wp-config.php; then
+/bin/echo "Multisite already set. To remove, use: wpmusetoff"
+exit 8; fi
+
+
+# We've got to fenagle this around in order to make the code readable while also doing this properly
+## Make a content file to work with
+/bin/cp /srv/www/html/${WPDOMAIN}/wp-config.php /srv/www/html/${WPDOMAIN}/wp-config.php.Vmu
+## Sanitize the content file
+/bin/sed -i "/<?php/d" /srv/www/html/${WPDOMAIN}/wp-config.php.Vmu
+## Start stacking the new file
+/bin/echo "<?php" > /srv/www/html/${WPDOMAIN}/wp-config.php.NEW
+## Add the declaration
+/bin/echo "
+/* Multisite via inkVerb */
+define( 'WP_ALLOW_MULTISITE', true );" >> /srv/www/html/${WPDOMAIN}/wp-config.php.NEW
+## Add the original content
+/bin/cat /srv/www/html/${WPDOMAIN}/wp-config.php.Vmu >> /srv/www/html/${WPDOMAIN}/wp-config.php.NEW
+## Check that the universe is in working order
+if [ ! -e "/srv/www/html/${WPDOMAIN}/wp-config.php.Vmu" ]; then
+/bin/echo "Something is very not right."
+exit 6; fi
+## Remove & replace the original
+/bin/rm -f /srv/www/html/${WPDOMAIN}/wp-config.php
+/bin/mv /srv/www/html/${WPDOMAIN}/wp-config.php.NEW /srv/www/html/${WPDOMAIN}/wp-config.php
+## Cleanup
+/bin/rm -f /srv/www/html/${WPDOMAIN}/wp-config.php.Vmu
+
+# Finish
+/bin/echo "http://${WPDOMAIN} is ready to install WP Multisite. Log in again, make sure all plugins are disabled, then go to Tools > Network Setup and follow instructions.
+Then, when instructed to modify the wp-config.php and .htaccess files, just run: wpmuhtaccess & wpmusetconfig, which will complete that setup for you."
+
+
+
+
+
+if [ -e "/opt/verb/mods/wpmuseton.after" ]; then . /opt/verb/mods/wpmuseton.after; fi # Follows this script

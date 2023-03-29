@@ -1,0 +1,79 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This completely removes a domain's inkCert, Letsencrypt, inkDNS, and inkDKIM (OpenDKIM) profiles
+## This does NOT:
+### Remove any subdomains
+### Remove any web or Apache folders or configs
+### Remove the mail entry in the database used by Postfix and the mail folder at /srv/vmail/
+
+# How to use:
+## ./killdomainshell [ domain.tld ]
+
+usagenotes="This completely removes a domain's inkCert, Letsencrypt, inkDNS, and inkDKIM (OpenDKIM) profiles"
+usageformat="killdomainshell [ domain.tld ]"
+usageexample="killdomainshell inkisaverb.com"
+hierarchy=( tertiary killdomainhard )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( adddomain )
+usedby=(  )
+useserfs=( killinkcertdomain killinkdnsdomain killinkdkim killinkcertmail )
+useconfigs=( servermailpath inkdnsconf inkcertstatus siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/killdomainshell.replace" ]; then . /opt/verb/mods/killdomainshell.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/killdomainshell.before" ]; then . /opt/verb/mods/killdomainshell.before; fi # Precedes this script
+
+
+# Dependencies
+if ! /bin/grep -q 'InkCertInstalled="DONE"' /opt/verb/conf/inkcertstatus; then
+  /usr/bin/echo "Install inkCert first, I quit."; exit 8
+fi
+if ! /bin/grep -q 'InkDNSStat="INSTALLED"' /opt/verb/conf/inkdnsconf; then
+  /usr/bin/echo "Install inkDNS first, I quit."; exit 8
+fi
+if ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpath; then
+  /usr/bin/echo "Install Postfix Vmail first, I quit."; exit 8
+fi
+
+KILLDOMSHELL=$1
+
+# Make sure we don't kill a verb domain
+if /bin/grep -q "${KILLDOMSHELL}" /opt/verb/conf/siteurilist; then
+  /usr/bin/echo "Can't kill a verber domain, I quit."; exit 9
+fi
+
+# Remove inkCert (including Letsencrypt) configs
+/opt/verb/serfs/killinkcertdomain ${KILLDOMAIN}; wait
+
+# Remove inkCert mail entries
+/opt/verb/serfs/killinkcertmail ${KILLDOMSHELL}; wait
+#DEV above may be redundant because the entire file is removed below
+
+# Remove inkDNS zone file
+/opt/verb/serfs/killinkdnsdomain ${KILLDOMAIN}; wait
+
+# Remove inkDKIM entries
+/opt/verb/serfs/killinkdkim ${KILLDOMSHELL}; wait
+
+# Remove any mailboxes
+/opt/verb/serfs/inkvmaildeldomain ${KILLDOMSHELL}; wait
+
+# Notify the NS slave servers
+/opt/verb/serfs/rinkkilldomain ${KILLDOMSHELL}; wait
+
+# Finish
+/bin/echo "No more papers...
+
+The inkCert, inkDNS, and inkDKIM profiles for ${KILLDOMSHELL} have been deleted.
+"
+
+
+
+
+if [ -e "/opt/verb/mods/killdomainshell.after" ]; then . /opt/verb/mods/killdomainshell.after; fi # Follows this script

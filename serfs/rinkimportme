@@ -1,0 +1,103 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This runs rinkadddomain for each domain already active on this verber after being imported by the Rink, not created by the Rink
+## This automatically loops through verb domains and normal domains, using servertldstatus and entries in inkdns/ and inkcert/, then verifying their configs in the webserver configs
+## This does not loop through subdomains, but only through domains created using newdomainshell, just as newdomainshell would have run rinkadddomain just the same
+## This does not check for webserver files because 1. that location vaires with lamp/lemp/laemp and 2. we only need to check for a viable reason that the verb system created this domain (inkcert) and that it can be served (inkdns)
+## Prerequesite: run inkdnssetns1 inkdnssetns2
+## Caution: This should only be used when the Primary Rink nameserver imported this verber after its creation using rink/run/importvps
+### Circumstances where this is useful are few, usually relating to project scallability and the PM decision to manage multiple verbers centrally after an enterprise has grown
+
+# How to use:
+## ./rinkimportme
+
+usagenotes="This runs rinkadddomain for each domain already active on this verber after being imported by the Rink, not created by the Rink"
+usageformat="rinkimportme"
+usageexample="rinkimportme"
+hierarchy=(  )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( "Controlled by Rink" )
+prerequesite=( rink::importvps )
+usedby=(  )
+useserfs=( rinkadddomain )
+useconfigs=( servertldstatus siteurilist servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/rinkimportme.replace" ]; then . /opt/verb/mods/rinkimportme.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/rinkimportme.before" ]; then . /opt/verb/mods/rinkimportme.before; fi # Precedes this script
+
+
+# Configs
+. /opt/verb/conf/servertldstatus
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/servernameip
+
+# Already configured?
+if [ "$RinkConfigured" != "true" ]; then
+	echo "Rink NS server keys not configured, DNS nameserver zone files will need to be updated manually"
+	exit 0
+fi
+
+# Temp file
+/usr/bin/rm -f /opt/verb/conf/inkdns/rinkimportme.tmp
+/usr/bin/touch /opt/verb/conf/inkdns/rinkimportme.tmp
+
+# Cycle through active verb TLDs
+if [ $VERBemail = "true" ] && [ -f "/opt/verb/conf/inkdns/inkzones/db.${emailURI}" ] && [ -f "/opt/verb/conf/inkcert/cli-ini/siteinkcert.${vipURI}" ]; then
+/usr/bin/echo "inkdnsaddslave ${ServerName}-${ServerTLD} ${emailURI} -n" >> /opt/verb/conf/inkdns/rinkimportme.tmp
+fi
+wait
+if [ $VERBone = "true" ] && [ -f "/opt/verb/conf/inkdns/inkzones/db.${oneURI}" ] && [ -f "/opt/verb/conf/inkcert/cli-ini/siteinkcert.${vipURI}" ]; then
+/usr/bin/echo "inkdnsaddslave ${ServerName}-${ServerTLD} ${oneURI} -n" >> /opt/verb/conf/inkdns/rinkimportme.tmp
+fi
+wait
+if [ $VERBink = "true" ] && [ -f "/opt/verb/conf/inkdns/inkzones/db.${inkURI}" ] && [ -f "/opt/verb/conf/inkcert/cli-ini/siteinkcert.${vipURI}" ]; then
+/usr/bin/echo "inkdnsaddslave ${ServerName}-${ServerTLD} ${inkURI} -n" >> /opt/verb/conf/inkdns/rinkimportme.tmp
+fi
+wait
+if [ $VERBblue = "true" ] && [ -f "/opt/verb/conf/inkdns/inkzones/db.${blueURI}" ] && [ -f "/opt/verb/conf/inkcert/cli-ini/siteinkcert.${vipURI}" ]; then
+/usr/bin/echo "inkdnsaddslave ${ServerName}-${ServerTLD} ${blueURI} -n" >> /opt/verb/conf/inkdns/rinkimportme.tmp
+fi
+wait
+if [ $VERBvip = "true" ] && [ -f "/opt/verb/conf/inkdns/inkzones/db.${vipURI}" ] && [ -f "/opt/verb/conf/inkcert/cli-ini/siteinkcert.${vipURI}" ]; then
+/usr/bin/echo "inkdnsaddslave ${ServerName}-${ServerTLD} ${vipURI} -n" >> /opt/verb/conf/inkdns/rinkimportme.tmp
+fi
+wait
+if [ $VERBkiwi = "true" ] && [ -f "/opt/verb/conf/inkdns/inkzones/db.${kiwiURI}" ] && [ -f "/opt/verb/conf/inkcert/cli-ini/siteinkcert.${vipURI}" ]; then
+/usr/bin/echo "inkdnsaddslave ${ServerName}-${ServerTLD} ${kiwiURI} -n" >> /opt/verb/conf/inkdns/rinkimportme.tmp
+fi
+wait
+if [ $VERBred = "true" ] && [ -f "/opt/verb/conf/inkdns/inkzones/db.${redURI}" ] && [ -f "/opt/verb/conf/inkcert/cli-ini/siteinkcert.${vipURI}" ]; then
+/usr/bin/echo "inkdnsaddslave ${ServerName}-${ServerTLD} ${redURI} -n" >> /opt/verb/conf/inkdns/rinkimportme.tmp
+fi
+wait
+
+# Loop through active non-verb domains
+cd /opt/verb/conf/inkdns/zones || exit 6
+for domainDB in db.*; do
+  domain="$(/bin/echo ${domainDB} | /bin/sed 's/db\.//' )"
+  if [ -f "/opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}" ]; then
+	# Add the entry
+	/usr/bin/echo "inkdnsaddslave ${ServerName}-${ServerTLD} ${domain} -n" >> /opt/verb/conf/inkdns/rinkimportme.tmp
+  fi
+done
+
+
+# Check for conflicts
+/opt/verb/serfs/rinkcheck inkdnsaddslave
+/opt/verb/serfs/rinkcheck killinkdnsslavedns
+
+# Insert the function statements
+/usr/bin/cat /opt/verb/conf/inkdns/rinkimportme.tmp | /usr/bin/ssh ns1 "/usr/bin/cat > /srv/sns/${ServerName}-${ServerTLD}/calls/inkdnsaddslave"
+/usr/bin/cat /opt/verb/conf/inkdns/rinkimportme.tmp | /usr/bin/ssh ns2 "/usr/bin/cat > /srv/sns/${ServerName}-${ServerTLD}/calls/inkdnsaddslave"
+
+# Cleanup
+/usr/bin/rm -f /opt/verb/conf/inkdns/rinkimportme.tmp
+
+
+if [ -e "/opt/verb/mods/rinkimportme.after" ]; then . /opt/verb/mods/rinkimportme.after; fi # Follows this script

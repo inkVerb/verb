@@ -1,0 +1,28 @@
+# This contains descriptions of folders in verb/inst.
+
+webserver - contains the apache/nginx site defaults, to be moved into sites-available and templates, according to LAMP-LEMP-LAEMP
+root-config - contains some early /etc/ settings file, fewer of which may be used on a LAEMP server
+
+# Options that must be run first if using
+make-dns - sets the server to be a slave DNS server for other Verbers
+make-dommod - sets this to use a custom domain, rather than verb domains
+preverboff/preverbon - turns on or off certain domains, default is all are on
+make-dev-ink - sets webapp install repo to an off-site repo for dev purposes, may either become default in setup or depreciated
+
+# Preparing (reboot after)
+make-preverber - sets preliminary requirements before needed reboot, including locale, terminal styling, and basic packages like vim git net-tools curl etc
+
+# Choose needs number argument, for sqap GB size, see instructions in file (2 is example)
+
+# Choose (reboot after, tested for WordPress, able to run most Apache sites like WordPress, can run Apache-only and Nginx-only sites also)
+make-verber-laemp 2 - the only working server, finalizes and pre-installs packages for a LAEMP (Apache-Nginx reverse proxy) server
+## Note most production snapshots are made from this phase
+
+# Choose alternatives (reboot after) for for niche needs, untested but mostly up-to-date
+make-verber-lamp 2 - finalizes and pre-installs packages for a LAMP (Apache) server
+make-verber-lemp 2 - finalizes and pre-installs packages for a LEMP (Nginx) server
+## Note, alternative to make-verber-laemp, needs testing before production use
+
+# Finalize (reboot after)
+setup - Applies name, IP, location/time, and reconfigures all names and framework for the domain throughout the server
+## After, server is ready for production

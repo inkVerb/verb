@@ -1,0 +1,5 @@
+user = mail
+password = mailpassword
+hosts = localhost
+dbname = mail
+query = SELECT alias_domain FROM alias_domain WHERE alias_domain='%s' AND active = '1'

@@ -1,0 +1,57 @@
+#!/bin/sh
+#inkVerb! repo donjon dragon, verb.ink
+#set -e
+
+# This updates the phpMyAdmin repo package
+
+# How to use:
+## ./phpmyadmin.updaterepo
+
+
+CVAPPNAME=phpmyadmin
+# Include the config files
+. /opt/verb/conf/serverinkget
+. /opt/verb/conf/inklists/repoverlist
+DISTVER="${phpmyadmin}"
+
+if [ $InkGet_Method != "ZJZ" ]; then
+  cd /opt/verb/repo; fi
+
+# Announce
+/bin/echo "Updating the phpMyAdmin package to v${DISTVER}..."
+
+# Get the package
+/usr/bin/wget https://files.phpmyadmin.net/phpMyAdmin/${DISTVER}/phpMyAdmin-${DISTVER}-all-languages.zip
+if [ ! -f "phpMyAdmin-${DISTVER}-all-languages.zip" ]; then
+/bin/echo "Failed download."; touch "${CVAPPNAME}.failed"
+exit 4; else
+/bin/rm -f ${CVAPPNAME}.failed; fi
+## Check the hash
+CHECKSHA=$(shasum -a 256 phpMyAdmin-${DISTVER}-all-languages.zip)
+if [ "${CHECKSHA}" = "${phpmyadminsha}  phpMyAdmin-${DISTVER}-all-languages.zip" ]; then
+/bin/echo "Download checks out."
+else
+/bin/echo "SHA check failed. The downloaded file is not what was expected."
+exit 4
+fi
+
+if [ $InkGet_Method != "ZJZ" ]; then
+  # Set it as the new package
+  /bin/rm -f ${CVAPPNAME}.legacy.txz
+  /usr/bin/touch ${CVAPPNAME}.txz
+  /bin/mv ${CVAPPNAME}.txz ${CVAPPNAME}.legacy.txz
+fi
+/usr/bin/echo "Extracting from vendor..."
+/usr/bin/unzip -q phpMyAdmin-${DISTVER}-all-languages.zip
+/bin/rm phpMyAdmin-${DISTVER}-all-languages.zip
+/bin/mv phpMyAdmin-${DISTVER}-all-languages ${CVAPPNAME}
+if [ $InkGet_Method != "ZJZ" ]; then
+  /opt/verb/serfs.txzin ${CVAPPNAME}; wait
+  /bin/rm -rf ${CVAPPNAME}
+
+  # Make a record of current version
+  /bin/echo "${DISTVER}" > ${CVAPPNAME}.ver.${DISTVER}
+fi
+
+# Finish
+/bin/echo "Downloaded phpMyAdmin v${DISTVER}."

@@ -1,0 +1,16 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This sets the inkGet repo version list so that it will not automatically update when the Verber is updated
+
+# How to use:
+## ./setrepocust
+
+
+/bin/sed -i "s/InkGet_List=.*/InkGet_List=\"CUSTOM\"/g" /opt/verb/conf/serverinkget
+
+
+
+
+
+if [ -e "/opt/verb/mods/setrepocust.after" ]; then . /opt/verb/mods/setrepocust.after; fi # Follows this script

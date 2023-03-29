@@ -1,0 +1,80 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This creates a domain inkDNS zone file on the server
+
+# How to use:
+## ./inkdnsadddomain [ domain.tld ]
+
+usagenotes="This creates a domain inkDNS zone file on the server"
+usageformat="inkdnsadddomain [ domain.tld ]"
+usageexample="inkdnsadddomain inkisaverb.com"
+hierarchy=( tertiary newdomainshell )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkdnsinstall )
+prerequesite=(  )
+usedby=( newdomainshell )
+useserfs=( inkdnsserial inkdnsrefreshbind )
+useconfigs=( servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdnsadddomain.replace" ]; then . /opt/verb/mods/inkdnsadddomain.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdnsadddomain.before" ]; then . /opt/verb/mods/inkdnsadddomain.before; fi # Precedes this script
+
+
+# Dependencies
+if ! /bin/grep -q 'InkCertInstalled="DONE"' /opt/verb/conf/inkcertstatus; then
+  /usr/bin/echo "Install inkCert first, I quit."; exit 8
+fi
+if ! /bin/grep -q 'InkDNSStat="INSTALLED"' /opt/verb/conf/inkdnsconf; then
+  /usr/bin/echo "Install inkDNS first, I quit."; exit 8
+fi
+if ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpath; then
+  /usr/bin/echo "Install Postfix Vmail first, I quit."; exit 8
+fi
+
+DNsdnsDomainAIN="$1"
+
+# Include the configs
+. /opt/verb/conf/servernameip
+
+# Check if already added
+if [ -e "/opt/verb/conf/inkdns/zones/db.${DNsdnsDomainAIN}" ]; then
+/bin/echo "The domain ${DNsdnsDomainAIN} zone file has already been created. Use killinkdnsdomain to remove it."
+exit 0; fi
+
+# DNS zone file
+/bin/cp /opt/verb/conf/inkdns/db.dnsdomain /opt/verb/conf/inkdns/zones/db.${DNsdnsDomainAIN}
+/bin/sed -i "s/hostdomain286/${DNsdnsDomainAIN}/g" /opt/verb/conf/inkdns/zones/db.${DNsdnsDomainAIN}
+
+# rDNS zone file
+/bin/echo "; PTR Domain" > /opt/verb/conf/inkdns/zones/nv.${DNsdnsDomainAIN}
+## IP4?
+if [ "${ServerIPv4}" != "NOIP4" ]; then
+  /bin/echo "${ServerARPAIPv4}		IN  PTR  ${DNsdnsDomainAIN}." >> /opt/verb/conf/inkdns/zones/nv.${DNsdnsDomainAIN}
+fi
+## IP6?
+if [ "${ServerIPv6}" != "NOIP6" ]; then
+  /bin/echo "${ServerARPAIPv6}		IN  PTR  ${DNsdnsDomainAIN}." >> /opt/verb/conf/inkdns/zones/nv.${DNsdnsDomainAIN}
+fi
+
+# Set the Serial No
+/opt/verb/serfs/inkdnsserial ${DNsdnsDomainAIN}
+
+# Refresh zones
+if [ -f "/opt/verb/conf/inkdnsconf" ]; then
+  . /opt/verb/conf/inkdnsconf
+  if [ "${InkDNSStat}" = "INSTALLED" ]; then
+/opt/verb/serfs/inkdnsrefreshbind; fi; fi
+
+# Finish
+/bin/echo "${DNsdnsDomainAIN} DNS zone file created."
+
+
+
+
+if [ -e "/opt/verb/mods/inkdnsadddomain.after" ]; then . /opt/verb/mods/inkdnsadddomain.after; fi # Follows this script

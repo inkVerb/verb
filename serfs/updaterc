@@ -1,0 +1,70 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This updates an existing Roundcube installation once it has been updated in the inkVerb repo
+## After, ensure that Roundcube works correctly, then run updatercrmvbak
+
+# How to use:
+## ./updaterc
+
+
+# Include the config file
+. /opt/verb/conf/servernameip
+
+# Download and unpack
+cd /srv/www || exit 0
+## Remove any existing roundcube folder
+if [ -d roundcube ]; then
+/bin/rm -rf roundcube; fi
+## Get the update
+if [ -d /srv/www/email/roundcube.vbak ]; then
+/usr/bin/rm -rf /srv/www/email/roundcube.vbak; fi
+/usr/bin/cp -R /srv/www/email/roundcube /srv/www/email/roundcube.vbak
+/opt/verb/serfs/inkget roundcube; wait
+## Own and run by www
+/usr/bin/chown -R www:www roundcube
+/usr/bin/su www -c '/srv/www/roundcube/bin/installto.sh /srv/www/email/roundcube'
+wait
+## Disable the installer
+/bin/sed -i "s/\$config\['enable_installer'\].*/\$config\['enable_installer'\] = false;/g" /srv/www/email/roundcube/config/config.inc.php
+## Remove the updater
+cd /srv/www || exit 0
+/usr/bin/rm -rf /srv/www/roundcube
+
+# Copy the branding files
+/usr/bin/cp /opt/verb/conf/lib/vmail/roundcube/roundcubepics/verbink_logo.png /srv/www/email/roundcube/
+/usr/bin/cp /opt/verb/conf/lib/vmail/roundcube/roundcubepics/skins/elastic/images/logo.svg /srv/www/email/roundcube/skins/elastic/images/
+/usr/bin/cp /opt/verb/conf/lib/vmail/roundcube/roundcubepics/skins/elastic/images/favicon.ico /srv/www/email/roundcube/skins/elastic/images/
+/usr/bin/cp /opt/verb/conf/lib/vmail/roundcube/roundcubepics/favicon.ico /srv/www/email/roundcube/
+/usr/bin/cp /opt/verb/conf/lib/vmail/roundcube/roundcubepics/skins/larry/images/verbink_logo.png /srv/www/email/roundcube/skins/larry/images/
+/usr/bin/cp /opt/verb/conf/lib/vmail/roundcube/roundcubepics/skins/larry/images/watermark.jpg /srv/www/email/roundcube/skins/larry/images/
+/usr/bin/cp /opt/verb/conf/lib/vmail/roundcube/roundcubepics/skins/larry/images/favicon.ico /srv/www/email/roundcube/skins/larry/images/
+
+# Own
+/usr/bin/chown -R www:www /srv/www/email/roundcube
+
+# Notify status
+/bin/echo "
+RoudCube update complete.
+
+If all works well, you may delete the backup wtih updatercrmvbak before updating again.
+
+Now updating plugins with Composer...
+"
+
+# Composer Plugins update
+cd /srv/www/email/roundcube || exit 0
+## Ignore requirements that trip false warnings: --ignore-platform-req=
+## Use the www user so changes can be made to the web directory
+/usr/bin/su www -c 'php composer.phar update -n --ignore-platform-req=php --ignore-platform-req=ext-gd --ignore-platform-req=ext-ldap --ignore-platform-req=ext-iconv'
+
+# Finish
+/bin/echo "
+All done. :-) Ink.
+"
+
+
+
+
+
+if [ -e "/opt/verb/mods/updaterc.after" ]; then . /opt/verb/mods/updaterc.after; fi # Follows this script

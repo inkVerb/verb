@@ -1,0 +1,4 @@
+Files placed here by the same name of a script in serfs/ will run respectively to the following extensions:
+- SERFNAME.replace
+- SERFNAME.before
+- SERFNAME.after

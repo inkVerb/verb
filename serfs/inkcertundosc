@@ -1,0 +1,40 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This batch runs a revoke and uninstall of inkCert Self-Cert certs for a domain and replaces the Snakeoil certificate
+## It applies only to one domain/subdomain at a time
+## Prerequesite: inkcertdosc (or both subscripts thereof: inkcertreqsc, inkcertaddsc)
+
+# Dev NOTE:
+## The portion of this script that calls the CA to revoke the cert has not been written yet.
+
+# How to use:
+## ./inkcertundosc [domain.tld or sub.domain.tld]
+
+#Eg:
+## ./inkcertundosc inkisaverb.com
+## ./inkcertundosc YOURNAME.verb.one
+## ./inkcertundosc owncloud.YOURNAME.verb.blue
+
+
+DOMAIN=$1
+
+# Check variables
+if [ -z ${1} ]; then
+/bin/echo "You need to specify a domain. Read the instructions."; exit 0
+fi
+
+# Request and get the certs
+/opt/verb/serfs/inkcertrevokesc ${DOMAIN}
+
+# Install the certs
+/opt/verb/serfs/inkcertremovesc ${DOMAIN}
+
+# Remove mail certs
+/usr/bin/rm -f /etc/ssl/server/mail/${DOMAIN}.crt
+/usr/bin/rm -f /etc/ssl/server/mail/${DOMAIN}.key
+
+
+
+
+if [ -e "/opt/verb/mods/inkcertundosc.after" ]; then . /opt/verb/mods/inkcertundosc.after; fi # Follows this script

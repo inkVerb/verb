@@ -1,0 +1,126 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This downloads and installs WordPress to blog.NAME.verb.ink
+## WordPress actually resides in www/vapps/wp.inkblog
+
+# All options are optional, but must are sequential, omit last options first.
+
+# How to use:
+## ./installwpinkblog [dbase] [dbuser] [dbpassword]
+
+
+CVAPPNAME=wp.inkblog
+# "wp" is the normal app, so it must be specified when retrieving from the repo
+
+# Include the config
+. /opt/verb/conf/siteurilist
+
+DBASE=$1
+DBUSER=$2
+DBPASSWORD=$3
+CLEANNAME=$(/bin/echo $CVAPPNAME | sed -e 's/\.//g')
+
+# Check for existing inkblog
+. /opt/verb/conf/inkinksiteinstallstatus
+if [ "${INKblog}" != "NOT_YET" ]; then
+/bin/echo "Um... How do I say this...
+Your blog at blog.${inkURI} already has ${INKblog} installed. This just isn't going to work.
+"
+exit 0
+fi
+
+# Download and establish wordpress in the server to pre-created domain
+cd /srv/www/vapps || exit 0
+/opt/verb/serfs/inkget wp check; wait
+if [ "$?" = 4 ]; then
+/bin/echo "Repo failed to retrieve the file."
+exit 4; fi
+
+# Auto database
+if [ -z ${4} ]; then
+DBPASSWORD=$(/usr/bin/pwgen -s -1 10); fi
+if [ -z ${2} ]; then
+DBASE=${CLEANNAME}$(/usr/bin/pwgen -s -1 6); fi
+if [ -z ${3} ]; then
+DBUSER=${DBASE}; fi
+
+/bin/mv wp ${CVAPPNAME}; wait
+/opt/verb/serfs/setvapplinkon ${CVAPPNAME}; wait
+/bin/ln -sfn /srv/www/vapps/${CVAPPNAME} /srv/vip/_webapps/; wait
+/bin/chown -R www:www /srv/www/verb/ink.i/blog; wait
+/bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}; wait
+
+# Create the database and credentials
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+CREATE DATABASE  ${DBASE};
+GRANT ALL PRIVILEGES ON ${DBASE}.* TO '${DBUSER}'@'localhost' IDENTIFIED BY '${DBPASSWORD}';
+FLUSH PRIVILEGES;"
+
+# Write the config for backup
+/bin/echo "#!/bin/bash
+APPDBASE=${DBASE}
+APPDDBUSR=${DBUSER}
+APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.${CVAPPNAME}
+
+# VIP domain
+/bin/ln -s /srv/www/verb/ink.i/blog /srv/vip/_domains/
+
+# Put the settings in the WordPress config file
+cd ${CVAPPNAME} || exit 0
+/bin/cp wp-config-sample.php wp-config.php
+/bin/sed -i "s/database_name_here/${DBASE}/g" wp-config.php
+/bin/sed -i "s/username_here/${DBUSER}/g" wp-config.php
+/bin/sed -i "s/password_here/${DBPASSWORD}/g" wp-config.php
+
+# Add the secure salt and key strings
+AUTH_KEY=$(/usr/bin/pwgen -s -1 27)
+SECURE_AUTH_KEY=$(/usr/bin/pwgen -s -1 27)
+LOGGED_IN_KEY=$(/usr/bin/pwgen -s -1 27)
+NONCE_KEY=$(/usr/bin/pwgen -s -1 27)
+AUTH_SALT=$(/usr/bin/pwgen -s -1 27)
+SECURE_AUTH_SALT=$(/usr/bin/pwgen -s -1 27)
+LOGGED_IN_SALT=$(/usr/bin/pwgen -s -1 27)
+NONCE_SALT=$(/usr/bin/pwgen -s -1 27)
+/bin/sed -i "s/define( 'AUTH_KEY',         .*/define( 'AUTH_KEY',         '${AUTH_KEY}' );/g" wp-config.php
+/bin/sed -i "s/define( 'SECURE_AUTH_KEY',  .*/define( 'SECURE_AUTH_KEY',  '${SECURE_AUTH_KEY}' );/g" wp-config.php
+/bin/sed -i "s/define( 'LOGGED_IN_KEY',    .*/define( 'LOGGED_IN_KEY',    '${LOGGED_IN_KEY}' );/g" wp-config.php
+/bin/sed -i "s/define( 'NONCE_KEY',        .*/define( 'NONCE_KEY',        '${NONCE_KEY}' );/g" wp-config.php
+/bin/sed -i "s/define( 'AUTH_SALT',        .*/define( 'AUTH_SALT',        '${AUTH_SALT}' );/g" wp-config.php
+/bin/sed -i "s/define( 'SECURE_AUTH_SALT', .*/define( 'SECURE_AUTH_SALT', '${SECURE_AUTH_SALT}' );/g" wp-config.php
+/bin/sed -i "s/define( 'LOGGED_IN_SALT',   .*/define( 'LOGGED_IN_SALT',   '${LOGGED_IN_SALT}' );/g" wp-config.php
+/bin/sed -i "s/define( 'NONCE_SALT',       .*/define( 'NONCE_SALT',       '${NONCE_SALT}' );/g" wp-config.php
+
+#### fixhttps already done?
+if /bin/grep -q '##INKHTTPSFIX=fixed' /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf; then
+/bin/sed -i "/WP_SITEURL/d" /srv/www/vapps/wp.${DOMAIN}/wp-config.php
+/bin/sed -i "/WP_HOME/d" /srv/www/vapps/wp.${DOMAIN}/wp-config.php
+/bin/echo "define( 'WP_SITEURL', 'https://${DOMAIN}' );
+define( 'WP_HOME', 'https://${DOMAIN}' );" >> /srv/www/vapps/wp.${DOMAIN}/wp-config.php
+fi
+
+# Reset all permissions
+/bin/chmod -R 440 wp-config.php
+/bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}
+
+
+# Set the site-wide inkblog config
+/bin/sed -i "s/INKblog=.*/INKblog=\"WordPress\"/g" /opt/verb/conf/inkinksiteinstallstatus
+
+# Reset all permissions
+/bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}
+
+# Finish
+/bin/echo "These are setup:
+
+Database: ${DBASE}
+Database user: ${DBUSER}
+Database password: ${DBPASSWORD}
+
+Go to http://blog.${inkURI}/wp-admin/index.php to install.
+"
+
+
+
+
+if [ -e "/opt/verb/mods/installwpinkblog.after" ]; then . /opt/verb/mods/installwpinkblog.after; fi # Follows this script

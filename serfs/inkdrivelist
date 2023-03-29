@@ -1,0 +1,145 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+# This lists all mounted drives, including size, usage, device, type, and mounted contents
+
+# How to use:
+## ./inkdrivelist [ drive name - optional to see specific drive ] [ 'content' - optional to see content ] [ '-a' - optional see content for single (no drive name) ]
+
+# Eg:
+## ./inkdrivelist
+## ./inkdrivelist mydrive
+## ./inkdrivelist mydrive content
+## ./inkdrivelist content -a
+
+
+usagenotes="This lists all mounted drives, including size, device, type, and mounted contents"
+usageformat="inkdrivelist [ drive name - optional to see specific drive; ] [ 'content' - optional to see content ] [ '-a' - optional see content for single (no drive name) ]"
+usageexample="inkdrivelist
+inkdrivelist mydrive
+inkdrivelist mydrive content
+inkdrivelist content -a"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=( "Drive name" "'content'" "-s" )
+vopttypes=( isExists string string )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( inkdriveadd )
+usedby=(  )
+useserfs=(  )
+useconfigs=( inkdrive/inkdriveinfo )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdrivelist.replace" ]; then . /opt/verb/mods/inkdrivelist.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdrivelist.before" ]; then . /opt/verb/mods/inkdrivelist.before; fi # Precedes this script
+
+# Check if installed
+if [ ! -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
+  /usr/bin/echo "inkDrive not installed. Nothing to show."
+fi
+
+# Single drive or all; show content or not?
+if [ -n "$1" ] && [ -z "$2" ]; then
+  Display="single"
+  Content="false"
+elif [ -n "$1" ] && [ -n "$2" ] && [ "$2" = "content" ] ; then
+  Display="single"
+  Content="true"
+elif [ -n "$1" ] && [ "$1" = "content" ] && [ -n "$2" ] && [ "$2" = "-a" ]; then
+  Display="all"
+  Content="true"
+elif [ -z "$1" ]; then
+  Display="all"
+  Content="false"
+else
+  /usr/bin/echo "Incorrect arguments. Read the instructions."
+  exit 5
+fi
+
+## Single drive
+if [ "${Display}" = "single" ]; then
+    Mnt="$1"
+    SpaceSizeH="$(/usr/bin/df -h "/mnt/${Mnt}" | /usr/bin/awk 'NR==2 { print $2 }')"
+    SpaceUsedH="$(/usr/bin/df -h "/mnt/${Mnt}" | /usr/bin/awk 'NR==2 { print $3 }')"
+    SpaceAvailH="$(/usr/bin/df -h "/mnt/${Mnt}" | /usr/bin/awk 'NR==2 { print $4 }')"
+    Device="$(/usr/bin/readlink -f "/mnt/${Mnt}" | sed "s:/dev/::")"
+    if [ -f "/opt/verb/conf/inkdrive/ssd.${Mnt}" ]; then
+        Typ="ssd"
+    elif [ -f "/opt/verb/conf/inkdrive/hdd.${Mnt}" ]; then
+        Typ="hdd"
+    fi
+
+    # Check the config
+    . /opt/verb/conf/inkdrive/"${Typ}"."${Mnt}"
+    [[ "${Type}" != "${Typ}" ]] && /usr/bin/echo "Config file is inconsistent with itself. Something is very wrong." && exit 6
+    
+    # Collect the drive info
+    SpaceSizeH="$(/usr/bin/df -h "/mnt/${Mnt}" | /usr/bin/awk 'NR==2 { print $2 }')"
+    SpaceUsedH="$(/usr/bin/df -h "/mnt/${Mnt}" | /usr/bin/awk 'NR==2 { print $3 }')"
+    SpaceAvailH="$(/usr/bin/df -h "/mnt/${Mnt}" | /usr/bin/awk 'NR==2 { print $4 }')"
+    Device="$(/usr/bin/readlink -f "/mnt/${Mnt}" | sed "s:/dev/::")"
+    if [ -f "/opt/verb/conf/inkdrive/ssd.${Mnt}" ]; then
+        Typ="ssd"
+        TypeH="SSD"
+    elif [ -f "/opt/verb/conf/inkdrive/hdd.${Mnt}" ]; then
+        Typ="hdd"
+        TypeH="HDD"
+    fi
+
+    # Check the config
+    . /opt/verb/conf/inkdrive/"${Typ}"."${Mnt}"
+    [[ "${Type}" != "${Typ}" ]] && /usr/bin/echo "Config file is inconsistent with itself. Something is very wrong." && exit 6
+
+    # echo the drive info
+    /usr/bin/echo ${SpaceSizeH}$'\t'${SpaceUsedH}$'\t'${SpaceAvailH}$'\t'${TypeH}$'\t'${Device}
+
+    # List content?
+    if [ "${Content}" = "true" ]; then
+        cd "/mnt/${Mnt}" || /usr/bin/echo "Drive has configs, but is not mounted. Something is very wrong." && exit 6
+        for Dir in */; do
+            Dir="$(/usr/bin/echo ${Dir} | sed "s:/::")"
+            DestUsedH="$(/usr/bin/df -h "/mnt/${Mnt}/${Dir}" | /usr/bin/awk 'NR==2 { print $3 }')"
+            /usr/bin/echo ${DestUsedH}$'\t'${Dir}
+        done
+    fi
+    
+## All drives
+elif [ "${Display}" = "all" ]; then
+    cd /mnt || exit 6
+    for Mnt in */ ; do
+
+        # Collect the drive info
+        SpaceSizeH="$(/usr/bin/df -h "/mnt/${Mnt}" | /usr/bin/awk 'NR==2 { print $2 }')"
+        SpaceUsedH="$(/usr/bin/df -h "/mnt/${Mnt}" | /usr/bin/awk 'NR==2 { print $3 }')"
+        SpaceAvailH="$(/usr/bin/df -h "/mnt/${Mnt}" | /usr/bin/awk 'NR==2 { print $4 }')"
+        Device="$(/usr/bin/readlink -f "/mnt/${Mnt}" | sed "s:/dev/::")"
+        if [ -f "/opt/verb/conf/inkdrive/ssd.${Mnt}" ]; then
+            Typ="ssd"
+            TypeH="SSD"
+        elif [ -f "/opt/verb/conf/inkdrive/hdd.${Mnt}" ]; then
+            Typ="hdd"
+            TypeH="HDD"
+        fi
+        
+        # Check the config
+        . /opt/verb/conf/inkdrive/"${Typ}"."${Mnt}"
+        [[ "${Type}" != "${Typ}" ]] && /usr/bin/echo "Config file is inconsistent with itself. Something is very wrong." && exit 6
+        
+        # echo the info
+        /usr/bin/echo ${SpaceSizeH}$'\t'${SpaceUsedH}$'\t'${SpaceAvailH}$'\t'${TypeH}$'\t'${Device}// ${Mnt}
+
+    # List content?
+    if [ "${Content}" = "true" ]; then
+        cd "/mnt/${Mnt}" || /usr/bin/echo "Drive has configs, but is not mounted. Something is very wrong." && exit 6
+        for Dir in */; do
+            Dir="$(/usr/bin/echo ${Dir} | sed "s:/::")"
+            DestUsedH="$(/usr/bin/df -h "/mnt/${Mnt}/${Dir}" | /usr/bin/awk 'NR==2 { print $3 }')"
+            /usr/bin/echo ${DestUsedH}$'\t'${Dir}
+        done
+    fi
+    done
+fi
+
+
+if [ -e "/opt/verb/mods/inkdrivelist.after" ]; then . /opt/verb/mods/inkdrivelist.after; fi # Follows this script

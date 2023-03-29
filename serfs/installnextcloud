@@ -1,0 +1,239 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This installs Nextcloud through the Arch repositories ....verb.blue
+
+# All options are optional, but must are sequential, omit last options first.
+
+# How to use:
+## ./installnextcloud [dbase] [dbuser] [dbpassword]
+
+# Eg:
+## ./installnextcloud
+## ./installnextcloud bestdbase bestdbuser besteverpass
+
+
+CVAPPNAME=nextcloud
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/servertype
+. /opt/verb/conf/servermailpath
+
+# Check if already installed
+## Config
+if [ -f /opt/verb/conf/vapp.${CVAPPNAME} ]; then
+/bin/echo "This is already installed."
+exit 0; fi
+## Directory
+if [ -d /srv/www/vapps/${CVAPPNAME} ]; then
+/bin/echo "Nextcloud already exists in the system. If it isn't working, look deeper on the server. For now, doing nothing."
+exit 8; fi
+
+DBASE=$1
+DBUSER=$2
+DBPASSWORD=$3
+CLEANNAME=$(/bin/echo $CVAPPNAME | sed -e 's/\.//g')
+
+##DEV If as webapp
+# # Download as webapp
+# cd /srv/www/vapps
+# /opt/verb/serfs/inkget ${CVAPPNAME} check
+# ## Check
+# if [ "$?" = 4 ]; then
+# /bin/echo "Repo failed to retrieve the file."
+# exit 4; fi
+# if [ ! -f ${CVAPPNAME}.txz ]; then
+# /bin/echo "Failed to retrieve from the repo."
+# exit 4; fi
+# ## Extract
+# /bin/rm -rf ${CVAPPNAME}
+# /opt/verb/serfs/vtxzout ${CVAPPNAME}; wait
+# ## Install it
+# /opt/verb/serfs/setvapplinkon ${CVAPPNAME}; wait
+# /bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}; wait
+# /bin/chown -R www:www /srv/www/verb/blue; wait
+# ## Run the Nextcloud script
+# /opt/verb/donjon/nextcloudprep.sh; wait
+# ## Verify ownership
+# /bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}; wait
+
+# Install the package
+/usr/bin/pacman -Sy archlinux-keyring --noconfirm
+/usr/bin/pacman -Syyu --noconfirm --needed
+/usr/bin/pacman -S --noconfirm --needed nextcloud
+if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: ls'; exit 4; fi
+/usr/bin/pacman -Qdt --noconfirm
+/usr/bin/pacman -Scc --noconfirm
+# /usr/bin/pacman -S --noconfirm --needed uwsgi-plugin-php # For uwsgi if it works
+
+# Install notify_push
+#/usr/bin/su worker -c '/usr/bin/yay -S nextcloud-app-notify_push --noconfirm' # Broken package?
+
+# Links for vapps
+/usr/bin/mkdir /srv/www/vapps/${CVAPPNAME}
+/usr/bin/ln -sfn /var/lib/nextcloud/data /srv/www/vapps/${CVAPPNAME}/
+
+# Auto database
+if [ -z ${4} ]; then
+DBPASSWORD=$(/usr/bin/pwgen -s -1 10); fi
+if [ -z ${2} ]; then
+DBASE=${CLEANNAME}$(/usr/bin/pwgen -s -1 6); fi
+if [ -z ${3} ]; then
+DBUSER=${DBASE}; fi
+
+# Create the database and credentials
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+CREATE DATABASE ${DBASE} DEFAULT CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_general_ci';
+GRANT ALL PRIVILEGES ON ${DBASE}.* TO '${DBUSER}'@'localhost' IDENTIFIED BY '${DBPASSWORD}';
+FLUSH PRIVILEGES;"
+
+# Write the config for backup
+/bin/echo "APPDBASE=${DBASE}
+APPDDBUSR=${DBUSER}
+APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.${CVAPPNAME}
+
+# php-fpm
+/usr/bin/cat <<'EOF' > /etc/php/php-fpm.d/nextcloud.conf
+[nextcloud]
+user = nextcloud
+group = nextcloud
+listen = /run/nextcloud/nextcloud.sock
+env[PATH] = /usr/local/bin:/usr/bin:/bin
+env[TMP] = /tmp
+
+; should be accessible by your web server
+listen.owner = http
+listen.group = http
+
+pm = dynamic
+pm.max_children = 15
+pm.start_servers = 2
+pm.min_spare_servers = 1
+pm.max_spare_servers = 3
+EOF
+/usr/bin/mkdir -p /etc/systemd/system/php-fpm.service.d
+/usr/bin/cat <<'EOF' > /etc/systemd/system/php-fpm.service.d/override.conf
+[Service]
+# Your data directory
+ReadWritePaths=/var/lib/nextcloud/data
+
+# Optional: add if you've set the default apps directory to be writable in config.php
+ReadWritePaths=/usr/share/webapps/nextcloud/apps
+
+# Optional: unnecessary if you've set 'config_is_read_only' => true in your config.php
+ReadWritePaths=/usr/share/webapps/nextcloud/config
+ReadWritePaths=/etc/webapps/nextcloud/config
+
+# Optional: add if you want to use Nextcloud's internal update process
+# ReadWritePaths=/usr/share/webapps/nextcloud
+EOF
+## For trouble shooting
+#/usr/bin/sed -i 's?;env\[PATH\] = /usr/local/bin:/usr/bin:/bin?env\[PATH\] = /usr/local/bin:/usr/bin:/bin?' /etc/php/php-fpm.d/www.conf
+/usr/bin/systemctl restart php-fpm; wait
+
+# Webserver setup
+if [ ${ServerType} = "laemp" ]; then
+  /usr/bin/mv /opt/verb/conf/webserver/nginx/sites-available/cloud.${blueURI}.conf /opt/verb/conf/webserver/nginx/sites-available/cloud.${blueURI}.conf.old
+  /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud-pac.conf /opt/verb/conf/webserver/nginx/sites-available/cloud.${blueURI}.conf
+  /usr/bin/mv /opt/verb/conf/webserver/httpd/sites-available/cloud.${blueURI}.conf /opt/verb/conf/webserver/httpd/sites-available/cloud.${blueURI}.conf.old
+  /usr/bin/rm /opt/verb/conf/webserver/httpd/sites-enabled/cloud.${blueURI}.conf
+elif [ ${ServerType} = "lemp" ]; then
+  /usr/bin/mv /opt/verb/conf/webserver/nginx/sites-available/cloud.${blueURI}.conf /opt/verb/conf/webserver/nginx/sites-available/cloud.${blueURI}.conf.old
+  /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud.conf /opt/verb/conf/webserver/nginx/sites-available/cloud.${blueURI}.conf
+elif [ ${ServerType} = "lamp" ]; then
+  /usr/bin/su worker -c '/usr/bin/yay -S mod_itk --noconfirm'
+  # Include the virtual host configurations:
+  echo "# Load the mod_itk module so Apache can use the nextcloud user
+  LoadModule mpm_itk_module modules/mpm_itk.so" >> /etc/httpd/conf/httpd.conf
+  /usr/bin/mv /opt/verb/conf/webserver/httpd/sites-available/cloud.${blueURI}.conf /opt/verb/conf/webserver/httpd/sites-available/cloud.${blueURI}.conf.old
+  /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud.conf /opt/verb/conf/webserver/httpd/sites-available/cloud.${blueURI}.conf
+fi
+
+# Setup for inkCert
+. /opt/verb/conf/inkcert/cli-ini/siteinkcert.${blueURI}
+case ${InkCerted} in
+  DONE_SC)
+  /opt/verb/serfs/inkcertaddsc ${blueURI}
+  ;;
+  DONE_LE)
+  /opt/verb/serfs/inkcertaddle ${blueURI}
+  ;;
+  DONE_CBSINGLE)
+  /opt/verb/serfs/inkcertaddcbsingle ${blueURI}
+  ;;
+  DONE_CB)
+  /opt/verb/serfs/inkcertaddcb ${blueURI}
+  ;;
+  NO|NOT_YET)
+    /bin/echo "Nextcloud is currently using Snakeoil certs, ready for inkCert"
+  ;;
+  *)
+    if ! /bin/grep -q "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN}; then
+      /bin/echo "Something's wrong with the inkCert siteinkcert configs! Aborting"
+      exit 6
+    else
+      /bin/echo "Nextcloud is currently using Snakeoil certs, ready for inkCert"
+    fi
+  ;;
+esac
+
+# Webserver restart
+if [ ${ServerType} = "laemp" ]; then
+  /usr/bin/systemctl restart nginx; wait
+  /usr/bin/systemctl restart httpd; wait
+elif [ ${ServerType} = "lemp" ]; then
+  /usr/bin/systemctl restart nginx; wait
+elif [ ${ServerType} = "lamp" ]; then
+  /usr/bin/systemctl restart httpd; wait
+fi
+
+# PHP version spoof
+sed -i "s/if (PHP_VERSION_ID >=.*/if (PHP_VERSION_ID >= 90000) {/" /usr/share/webapps/nextcloud/lib/versioncheck.php
+
+# Set the database and credentials for Nextcloud from the command line
+#/usr/bin/su www -c 'php /usr/share/webapps/nextcloud/occ maintenance:install --database mysql --database-name ${DBASE} --database-host localhost --database-user ${DBUSER} --database-pass=${DBPASSWORD} --data-dir /var/lib/nextcloud/data/'
+#/usr/bin/su www -c 'php /usr/share/webapps/nextcloud/occ maintenance:install --database mysql --database-name nextcloudlG49P6 --database-host localhost --database-user nextcloudlG49P6 --database-pass=x870WeniU0 --data-dir /var/lib/nextcloud/data/'
+
+# Apps
+#/usr/bin/su www -c 'php /usr/share/webapps/nextcloud/occ app:disable recommendation'
+#/usr/bin/su www -c 'php /usr/share/webapps/nextcloud/occ app:install notes bookmarks onlyoffice calendar contacts spreed tasks files_markdown news audioplayer mail'
+
+## Set up cron for updates (manage the crontab files directly)
+/bin/echo '*/15 * * * *  www-data php -f /usr/share/webapps/nextcloud/cron.php' > /etc/cron.d/nextcloud
+/bin/chmod 0644 /etc/cron.d/nextcloud
+
+# See if PFA is installed
+if [ "${ServerPFAPath}" = "PFA_NOT_INSTALLED" ]; then
+  MESSAGEPFAPATH="_path_after_installed_"
+else
+  MESSAGEPFAPATH="${ServerPFAPath}"
+fi
+
+# Finish
+/bin/echo "These are setup:
+
+Database user: ${DBUSER}
+Database password: ${DBPASSWORD}
+Database name: ${DBASE}
+Host: localhost
+
+*Don't make any other changes during the install!
+
+Go to https://${blueURI} to install.
+
+After installing, do important Admin settings at https://${blueURI}/index.php/settings/admin
+1. Background jobs
+- Cron
+2. Email
+- Server address: smtp.${nameURI} Port: 25 (Send mode: SMTP)
+- From address: Use an email address you set up at https://po.${emailTLDURI}/${MESSAGEPFAPATH}
+
+After, you may want to run setnextcloudbfdoff to disable brute force detection in order to allow some client apps to work. You can always turn it on again with setnextcloudbfdon
+"
+
+
+
+
+if [ -e "/opt/verb/mods/installnextcloud.after" ]; then . /opt/verb/mods/installnextcloud.after; fi # Follows this script

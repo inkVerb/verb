@@ -1,0 +1,30 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This should be run after PostfixAdmin has been setup through the web interface
+
+# How to use:
+## ./postinstallpfa
+
+
+# Deny http access to the setup file
+/bin/echo "<Files "setup.php">
+deny from all
+</Files>" > /srv/www/email/postfixadmin/public/.htaccess
+/bin/chown -R www:www /srv/www/email/postfixadmin/public/.htaccess
+
+# Set the setup password so it can't work until setpfapass runs agian
+/bin/sed -i "/setup_password/d" /srv/www/email/postfixadmin/config.local.php
+/bin/sed -i "/setup_password/d" /srv/www/email/postfixadmin/config.inc.php
+
+# Delete the old setup password record
+/usr/bin/rm /opt/verb/conf/pfasetuppass
+
+# Finish
+/bin/echo "Finished. PostfixAdmin Setup disallowed and the setup password disabled."
+
+
+
+
+
+if [ -e "/opt/verb/mods/postinstallpfa.after" ]; then . /opt/verb/mods/postinstallpfa.after; fi # Follows this script

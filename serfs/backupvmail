@@ -1,0 +1,59 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This backs up the entire email server, including folders and database
+
+# How to use:
+## ./backupinkvmail [securename 0-9, a-z, and A-Z only, optional] [-nl for no link, optional dep]
+
+# Eg:
+## ./backupinkvmail VERB-NAMESPACE
+## ./backupinkvmail 583-NAME
+## ./backupinkvmail aF9 -nl
+
+if [ -z "$1" ]; then
+SECNAME=$(/usr/bin/pwgen -s -1 12)
+else
+SECNAME=$1
+fi
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+
+# Export the database
+cd /srv/vmail || exit 0
+/opt/verb/serfs/mysqlex mail; wait
+
+# Copy the config
+/bin/cp /opt/verb/conf/servermailpath /srv/vmail/servermailpath-old
+/bin/cp /opt/verb/conf/servermailpass /srv/vmail/servermailpass-old
+/bin/cp /opt/verb/conf/servernameip /srv/vmail/servernameip-old
+
+# Zip the directory
+cd /var || exit 0
+/opt/verb/serfs/vtxzin inkvmail
+/bin/mv inkvmail.txz verb.inkvmail.${SECNAME}.vbak
+
+# Move to web-download area
+/bin/mv /var/verb.inkvmail.${SECNAME}.vbak /srv/www/vip/
+
+if [ "$2" = "-nl" ]; then
+/bin/echo "The email server data has been backed up to the 'vip' folder.
+Note that the email server remains live."
+exit 0
+fi
+
+/bin/ln -sfn /srv/www/vip/verb.inkvmail.${SECNAME}.vbak /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/
+/bin/chown -R www:www /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/verb.inkvmail.${SECNAME}.vbak
+/bin/echo "The email server data has been backed up to the 'vip' folder and can also be downloaded at
+
+http://${ServerServePath}/verb.inkvmail.${SECNAME}.vbak
+
+Note that the email server remains live.
+"
+
+
+
+
+if [ -e "/opt/verb/mods/backupinkvmail.after" ]; then . /opt/verb/mods/backupinkvmail.after; fi # Follows this script

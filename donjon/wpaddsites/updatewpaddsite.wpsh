@@ -1,0 +1,31 @@
+#!/bin/sh
+#inkVerb! repo donjon cron, verb.ink
+
+# This updates the WordPress plugin and theme repos from the recepie sites at inkisaverb.com
+## This is intended to be run as a chrontab job, so the recepie wp sites update automatically
+
+# How to use:
+## ./updatewpaddsite [wpadd namespace]
+
+NAME=$1
+PT=$2
+
+# Include the config
+. /opt/verb/donjon/wpaddsites/wpaddrepo.cnf
+. /opt/verb/donjon/wpaddsites/wpadd.list
+
+# Update -u recursive -r
+cd /var/www/html/${NAME}${WPADDNAMESUFF}.${WPADDDOMAIN}/wp-content
+/bin/rm -f /opt/verb/repo/wp.${NAME}.zip
+
+## Based on variables
+if [ "${PT}" = "p" ]; then
+/usr/bin/zip -r /opt/verb/repo/wp.${NAME}.zip plugins
+fi
+if [ "${PT}" = "t" ]; then
+/usr/bin/zip -r /opt/verb/repo/wp.${NAME}.zip themes
+fi
+if [ "${PT}" = "pt" ]; then
+/usr/bin/zip -r /opt/verb/repo/wp.${NAME}.zip plugins
+/usr/bin/zip -r /opt/verb/repo/wp.${NAME}.zip themes
+fi

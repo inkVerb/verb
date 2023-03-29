@@ -1,0 +1,59 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This removes a subdomain A & AAAA records from an existing DNS record in the inkDNS zone file on the server
+
+# How to use:
+## ./killinkdnssub [ subdomain ] [ domain.tld ]
+
+usagenotes="This removes a subdomain A & AAAA records from an existing DNS record in the inkDNS zone file on the server"
+usageformat="killinkdnssub [ subdomain ] [ domain.tld ]"
+usageexample="killinkdnssub dnssub inkisaverb.com"
+hierarchy=( tertiary killsubdomain )
+vsetnames=( "Subdomain" "Domain" )
+vsettypes=( isDomainPart isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( addsubdomain )
+usedby=( killsubdomain )
+useserfs=( inkdnsserial inkdnsrefreshbind )
+useconfigs=( servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/killinkdnssub.replace" ]; then . /opt/verb/mods/killinkdnssub.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/killinkdnssub.before" ]; then . /opt/verb/mods/killinkdnssub.before; fi # Precedes this script
+
+
+DNSSUBDOM="$1"
+DNsdnsDomainAIN="$2"
+
+# Include the configs
+. /opt/verb/conf/servernameip
+
+# Check if already added
+if ! /bin/grep -Fq "${DNSSUBDOM}.${DNsdnsDomainAIN}" /opt/verb/conf/inkdns/zones/db.${DNsdnsDomainAIN}; then
+/bin/echo "The subdomain ${DNSSUBDOM} has not been added to ${DNsdnsDomainAIN}. Use inkdnsaddsub to add it."
+exit 0; fi
+
+# Remove the records
+/bin/sed -i "/; Subdomain Records Added by inkDNS ${DNSSUBDOM}\.${DNsdnsDomainAIN}/,+2d" /opt/verb/conf/inkdns/zones/db.${DNsdnsDomainAIN}
+/bin/sed -i "/; PTR Subdomain Records Added by inkDNS ${DNSSUBDOM}\.${DNsdnsDomainAIN}/,+2d" /opt/verb/conf/inkdns/zones/nv.${DNsdnsDomainAIN}
+
+# Set the Serial No
+/opt/verb/serfs/inkdnsserial ${DNsdnsDomainAIN}
+
+# Refresh zones
+if [ -f "/opt/verb/conf/inkdnsconf" ]; then
+  . /opt/verb/conf/inkdnsconf
+  if [ "${InkDNSStat}" = "INSTALLED" ]; then
+/opt/verb/serfs/inkdnsrefreshbind; fi; fi
+
+# Finish
+/bin/echo "The subdomain ${DNSSUBDOM} has been removed from the ${DNsdnsDomainAIN} DNS zone file."
+
+
+
+
+if [ -e "/opt/verb/mods/killinkdnssub.after" ]; then . /opt/verb/mods/killinkdnssub.after; fi # Follows this script

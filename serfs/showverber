@@ -1,0 +1,40 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This displays the settings and info for this Verber
+## This is useful for many things, including Clients that need name and IP to connect to it
+
+# How to use:
+## ./showverber
+
+
+# Include the config
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/servermailpath
+. /opt/verb/conf/inklists/verberverno
+
+# Display info
+/bin/echo "IPv4: ${ServerIPv4}
+IPv6: ${ServerIPv6}
+Namespace: ${ServerName}
+Primary TLD: ${ServerTLD}
+Primary URI: ${nameURI}
+Host: ${ServerTLD}
+FQDN: ${hostURI}
+Timezone: ${ServerTimeCity}, ${SITETIMEREGION}
+Update channel: ${ServerUpdateRepo}
+Version: ${VERNO}
+Type: ${VTYPE}
+
+IT/SQL URL: ${itsqlTLD}
+Email main domain URI: ${emailURI}
+Email server URI: ${emailTLDURI}
+Email Status: ${ServerMailStatus}
+PFA path: ${ServerPFAPath}"
+
+
+
+
+
+if [ -e "/opt/verb/mods/showverber.after" ]; then . /opt/verb/mods/showverber.after; fi # Follows this script

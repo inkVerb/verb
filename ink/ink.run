@@ -1,0 +1,55 @@
+#!/bin/bash
+
+# Start log entries
+datenow=$(date)
+/bin/echo "$datenow ::ink# $serfcommand" >> "${LogDir}/inklog"
+/usr/bin/date >> "${LogDir}/outputlog"
+/bin/echo "::ink# $serfcommand" >> "${LogDir}/outputlog"
+/usr/bin/logger -p local6.info -t verber.ink "::ink# $serfcommand"
+
+# Run the serf
+if [ "${SOcli}" = "true" ]; then
+  echo "$serfcommand"
+  exit 0
+elif [ "${SOverbose}" = "true" ]; then
+  # We don't want a serf exit to exit this script, so run it as an if statement; thank you https://stackoverflow.com/a/66585275/10343144
+  if $serfcommand; then vsuccess="true"; fi
+else
+  if $serfcommand 1>> "${LogDir}/outputlog" 2>> "${LogDir}/outputlog"
+  then vsuccess="true"; fi
+fi
+
+# Serf output
+if [ -n "${serfOUT}" ] && [ -n "${success_message}" ]; then
+  success_message="${success_message}
+  ${serfOUT}"
+elif [ -n "${serfOUT}" ]; then
+  success_message="${serfOUT}"
+fi
+
+# Log messages
+# Ternary
+[[ -z "$fail_log" ]] && [[ -n "$fail_message" ]] && fail_log="$fail_message"
+[[ -z "$success_log" ]] && [[ -n "$success_message" ]] && success_log="$success_message"
+# Bashnary
+# if [ -z "$fail_log" ] && [ -n "$fail_message" ]; then
+#   fail_log="$fail_message"; fi
+# if [ -z "$success_log" ] && [ -n "$success_message" ]; then
+#   success_log="$success_message"; fi
+
+# Richtext
+if [ "$richtext" = "true" ]; then
+  if [ -n "$success_message" ]; then success_message="<span class=\"vsuccess\">$success_message</span>"; fi
+  if [ -n "$fail_message" ]; then fail_message="<span class=\"verror\">$fail_message</span>"; fi
+fi
+
+# Send exit messages & logs
+if [ "$vsuccess" = "true" ]; then
+  /bin/echo "Success! $(date)" >> "${LogDir}/inklog"
+  /usr/bin/logger -p local6.info -t verber.ink "$success_log"
+  if [ -n "$success_message" ]; then /bin/echo $success_message; fi
+elif [ "$vsuccess" != "true" ]; then
+  /bin/echo "Fail, check errorlog! $(date)" >> "${LogDir}/inklog"
+  /usr/bin/logger -p local6.err -t verber.ink "$fail_log"
+  if [ -n "$fail_message" ]; then /bin/echo $fail_message; fi
+fi

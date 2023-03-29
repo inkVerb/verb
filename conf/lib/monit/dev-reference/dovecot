@@ -1,0 +1,10 @@
+check process dovecot with pidfile /var/run/dovecot/master.pid
+  group mail
+  start program = "/sbin/start dovecot"
+  stop program = "/sbin/stop dovecot"
+  group mail
+  # We'd like to use this line, but see:
+  # http://serverfault.com/questions/610976/monit-failing-to-connect-to-dovecot-over-ssl-imap
+  #if failed port 993 type tcpssl sslauto protocol imap for 5 cycles then restart
+  if failed port 993 for 5 cycles then restart
+  if 5 restarts within 25 cycles then timeout

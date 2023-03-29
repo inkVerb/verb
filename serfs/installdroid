@@ -1,0 +1,38 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This installs droids from a git repo.
+
+# How to use:
+## installdroid [ http://github.com/clonePathTo/droidRepo - optional to avoid dialogue ]
+
+# Eg:
+## installdroid 
+## installdroid https://github.com/inkVerb/droids
+
+
+DROIDRepo=$1
+
+# Sanitize repo
+CLNDROIDRepo1=$(/bin/echo $DROIDRepo | cut -d'/' -f5-)
+CLNDROIDRepo=$(/bin/echo $CLNDROIDRepo1 | sed 's/\.git//')
+
+# Clone it
+cd /opt/verb/droids || exit 0
+git clone ${DROIDRepo}
+
+# Clean up and install
+cd ${CLNDROIDRepo} || exit 0
+/bin/chmod 750 vd*
+/bin/mv vd* ../
+cd .. || exit 0
+/bin/rm -rf ${CLNDROIDRepo}
+
+# Finish
+/bin/echo "The droids from \"${CLNDROIDRepo}\" are installed."
+
+
+
+
+
+if [ -e "/opt/verb/mods/installdroid.after" ]; then . /opt/verb/mods/installdroid.after; fi # Follows this script

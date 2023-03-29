@@ -1,0 +1,64 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This creates a new fossil available at fossil.NAME.verb.vip/FOSSIL-NAME.cgi
+## Prereq: fossil
+
+# How to use:
+## ./newfossil [ new-fossil-name ] [ username ] [ user-email ] [ userpassword ]
+
+# Example:
+## ./newfossil dinosaur adam adam@verb.ink Adamp4$$w0RD
+
+
+usagenotes="This creates a new fossil available at fossil.NAME.verb.vip/FOSSIL-NAME.cgi"
+usageformat="newfossil [ new-fossil-name ] [ username ] [ user-email ] [ userpassword ]"
+usageexample="newfossil dinosaur adam adam@verb.ink NotSecure125"
+hierarchy=( primary )
+vsetnames=( "Fossil name" "Username" "Email" "Password" )
+vsettypes=( isPathname isUsername isEmail string_quote )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( installfossil )
+usedby=( adddomain addsubdomain )
+useserfs=(  )
+useconfigs=( servernameip siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/newfossil.replace" ]; then . /opt/verb/mods/newfossil.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/newfossil.before" ]; then . /opt/verb/mods/newfossil.before; fi # Precedes this script
+
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+
+NEWFOSSIL=$1
+NEWUSER=$2
+NEWEMAIL=$3
+NEWPASS=$4
+
+# Create the fossil with user
+/srv/www/vip/fossil new ${NEWFOSSIL}.fossil --admin-user ${NEWUSER}
+
+# Change the user's password
+/srv/www/vip/fossil user password ${NEWUSER} ${NEWPASS} --repository ${NEWFOSSIL}.fossil
+
+# Write the .cgi file
+/bin/echo "#!/usr/bin/fossil
+repository: /fossil/${NEWFOSSIL}.fossil" > ${NEWFOSSIL}.cgi
+/bin/chmod 750 ${NEWFOSSIL}.cgi
+
+# Final chown to allow database to be writable
+/bin/chown -R www:www /srv/www/vip/fossil
+
+/bin/echo "${NEWFOSSIL}.fossil created.
+Available on web at fossil.${vipURI}/${NEWFOSSIL}.cgi"
+
+
+
+
+
+if [ -e "/opt/verb/mods/newfossil.after" ]; then . /opt/verb/mods/newfossil.after; fi # Follows this script

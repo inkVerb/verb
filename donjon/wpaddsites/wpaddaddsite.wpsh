@@ -1,0 +1,43 @@
+#!/bin/sh
+#inkVerb repo donjon dragon, verb.ink
+set -e
+
+# This creates the base WordPress site to be used to create a recipe for the wpadd repo
+## The namespace will be cut to 7 characters so it won't mess with the list display nor break other jobs with a name too long
+
+# How to use:
+## ./wpaddaddsite [namespace] [theme/plugin option: p, t, pt ] [ "description in quotes"]
+## p = contains only plugins; t = contains only themes; pt = contains both plugins and themes
+
+# Eg:
+## ./wpaddaddsite myname pt "This is My Name, plugins:.. ; themes:..."
+## ./wpaddaddsite themes t "This is Great Themes, themes:..."
+## ./wpaddaddsite blgplgs pt "This is Blogg-worthy plugins, plugins:.."
+
+
+WPADDNAMESPACE=$(/bin/echo $1 | cut -c1-7)
+WPADDPT=$2
+WPADDSITEDESCRIPT=$3
+
+# Include the config
+. /opt/verb/donjon/wpaddsites/wpaddrepo.cnf
+
+# Check that domain is not installed
+if [ -d /var/www/html/${WPADDNAMESPACE}${WPADDNAMESUFF}.${WPADDDOMAIN} ]; then
+/bin/echo "That site already exists. Doing nothing."
+exit 8
+fi
+
+# Create the site
+/opt/verb/serfs/addsubdomain ${WPADDNAMESPACE}${WPADDNAMESUFF} ${WPADDDOMAIN}
+
+# Install WordPress with inkVerb's auto-update MU-plugin
+/opt/verb/serfs/installwp ${WPADDNAMESPACE}${WPADDNAMESUFF}.${WPADDDOMAIN} wp${WPADDNAMESPACE}${WPADDNAMESUFF} wp${WPADDNAMESPACE}usr ${WPADDNAMESPACE}pass
+/opt/verb/serfs/wpautoupdate ${WPADDNAMESPACE}${WPADDNAMESUFF}.${WPADDDOMAIN}
+
+# Add the wpadd credentials
+/bin/echo "${WPADDNAMESPACE}=\"${WPADDSITEDESCRIPT}\"" >> /opt/verb/donjon/wpaddsites/wpadd.list
+## use -e to allow bash escape characters
+/bin/echo "${WPADDNAMESPACE}\t${WPADDPT}\t- ${WPADDSITEDESCRIPT}" >> /opt/verb/donjon/wpaddsites/wpadd.human.list
+/bin/echo "/opt/verb/donjon/wpaddsites/updatewpaddsite ${WPADDNAMESPACE} ${WPADDPT}" >> /opt/verb/donjon/wpaddsites/updatewpaddrepo.sh
+

@@ -1,0 +1,93 @@
+#!/bin/bash
+#inkVerbKnight! verb.ink
+
+# This adds the DNS configuration for all verb domains based on a given rink user config
+
+# How to use:
+## ./inkdnsaddslaveallverbs [ rink user ]
+
+# Eg:
+## ./inkdnsaddslaveallverbs john.ink
+## ./inkdnsaddslaveallverbs vern.blue
+
+usagenotes="This adds the DNS configuration for all verb domains based on a given rink user config"
+usageformat="inkdnsaddslave [ rink user ]"
+usageexample="inkdnsaddslaveallverbs john.ink
+inkdnsaddslaveallverbs vern.blue"
+hierarchy=( oversight )
+vsetnames=( "Existing rink user in /srv/sns/" )
+vsettypes=( NAME.VTLD )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkdnsinstall make-dns )
+prerequesite=(  )
+usedby=( rinkupdateallverbs )
+useserfs=( inkdnsaddslave )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdnsaddslaveallverbs.replace" ]; then . /opt/verb/mods/inkdnsaddslaveallverbs.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdnsaddslaveallverbs.before" ]; then . /opt/verb/mods/inkdnsaddslaveallverbs.before; fi # Precedes this script
+
+
+# Config check
+if [ ! -f "/opt/verb/conf/inkdns/sdns/dnshost" ]; then
+  /bin/echo "This server is not a DNS, I quit."; exit 0
+fi
+
+# Argument check
+if [ -z "$1" ]; then
+  /bin/echo "Not enough arguments, I quit."; exit 0
+fi
+
+# Rink
+serveverber="$1"
+
+# Rink user check
+if [ ! -d "/srv/sns/${serveverber}" ]; then
+  /bin/echo "This server does not supply rink user ${serveverber}, I quit."; exit 0
+fi
+
+# Rink user settings check
+if [ ! -f "/srv/sns/${serveverber}/servertldstatus" ] || [ ! -f "/srv/sns/${serveverber}/conf" ] || [ ! -f "/srv/sns/${serveverber}/siteurilist" ]; then
+  /bin/echo "Rink user ${serveverber} not properly configured, this shouldn't be possible. I quit."; exit 0
+fi
+
+. /srv/sns/${serveverber}/servertldstatus
+. /srv/sns/${serveverber}/siteurilist
+
+# Add the active verb domains, wait so we don't congest the server
+if [ $VERBemail=true ]; then
+/opt/verb/serfs/inkdnsaddslave ${serveverber} ${emailURI} -n
+fi
+wait
+if [ $VERBone=true ]; then
+/opt/verb/serfs/inkdnsaddslave ${serveverber} ${oneURI} -n
+fi
+wait
+if [ $VERBink=true ]; then
+/opt/verb/serfs/inkdnsaddslave ${serveverber} ${inkURI} -n
+fi
+wait
+if [ $VERBblue=true ]; then
+/opt/verb/serfs/inkdnsaddslave ${serveverber} ${blueURI} -n
+fi
+wait
+if [ $VERBvip=true ]; then
+/opt/verb/serfs/inkdnsaddslave ${serveverber} ${vipURI} -n
+fi
+wait
+if [ $VERBkiwi=true ]; then
+/opt/verb/serfs/inkdnsaddslave ${serveverber} ${kiwiURI} -n
+fi
+wait
+if [ $VERBred=true ]; then
+/opt/verb/serfs/inkdnsaddslave ${serveverber} ${redURI} -n
+fi
+
+# Refresh Bind
+/opt/verb/serfs/inkdnsrefreshbind
+
+
+if [ -e "/opt/verb/mods/inkdnsaddslaveallverbs.after" ]; then . /opt/verb/mods/inkdnsaddslaveallverbs.after; fi # Follows this script
