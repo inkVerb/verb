@@ -140,8 +140,8 @@ EOF
       for slv in /opt/verb/conf/inkdns/sdns/s.*; do
         . ${slv}
         /bin/echo "zone \"${sdnsDomain}\" { type slave; masters { ${sdnsIPv6Cmp}; ${sdnsIPv4}; }; allow-transfer { none; }; file \"db.${sdnsDomain}\"; };" >> /var/named/named.conf.verb
-        /bin/echo "zone \"${sdnsIPv4ARPA}\" { type slave; masters { ${sdnsIPv6Cmp}; ${sdnsIPv4}; }; allow-transfer { none; }; file \"nv4.${sdnsDomain}\"; };" >> /var/named/nv.verber
-        /bin/echo "zone \"${sdnsIPv6ARPA}\" { type slave; masters { ${sdnsIPv6Cmp}; ${sdnsIPv4}; }; allow-transfer { none; }; file \"nv6.${sdnsDomain}\"; };" >> /var/named/nv.verber
+        /bin/echo "zone \"${sdnsIPv4ARPA}\" { type slave; masters { ${sdnsIPv6Cmp}; ${sdnsIPv4}; }; allow-transfer { none; }; file \"nv4.${sdnsDomain}\"; };" >> /var/named/named.conf.rdns
+        /bin/echo "zone \"${sdnsIPv6ARPA}\" { type slave; masters { ${sdnsIPv6Cmp}; ${sdnsIPv4}; }; allow-transfer { none; }; file \"nv6.${sdnsDomain}\"; };" >> /var/named/named.conf.rdns
       done
     fi
   fi # End Slave DNS
