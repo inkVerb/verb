@@ -12,7 +12,7 @@ These earlier steps assume creation of VPS instances described later
 
 This presumes that your local machine is running Arch or Manjaro as your workstation
 
-0. You must have an Arch VPS with SSH access
+0. Start with an Arch VPS that has SSH access
 
 You could do this by creating SSH keys on your local machine and adding them into the SSH Keys area of your Vultr Account, then use these keys when creating your first Arch-OS VPS instance. Instructions for doing this are widely available, search "add SSH keys to my Vultr account" as a likely way to find some. If you do, then you may skip to step 1.
 
@@ -23,6 +23,8 @@ Create a VPS from an Arch image
 Gain terminal access through the Vultr website
 
 To be clean and fresh, update the VPS and reset the identity RSA keys...
+
+| **Arch 1** #
 
 ```console
 pacman -Sy archlinux-keyring --noconfirm
@@ -38,14 +40,16 @@ ssh-keygen -A
 
 On your local Arch/Manjaro machine (`My_Vultr_Key` can be anything)...
 
+| **Arch 2** #
+
 ```console
 pacman -S openssh
-mkdir -p /root/.ssh
-chmod 700 /root/.ssh
+mkdir -p ~/.ssh
+chmod 700 ~/.ssh
 ssh-keygen -t rsa -N "" -f ~/.ssh/My_Vultr_Key -C My_Vultr_Key
-chmod 644 /root/.ssh/My_Vultr_Key.pub
-chmod 600 /root/.ssh/My_Vultr_Key
-cat /root/.ssh/My_Vultr_Key.pub
+chmod 644 ~/.ssh/My_Vultr_Key.pub
+chmod 600 ~/.ssh/My_Vultr_Key
+cat ~/.ssh/My_Vultr_Key.pub
 ```
 
 The key should display in the terminal, ending with `= My_Vultr_Key`; copy it to your clipboard
@@ -54,15 +58,19 @@ In the Vultr terminal...
 
 Paste that key from above, ending with `= My_Vultr_Key`, into the code below, and enter it into the Vultr terminal
 
+| **Arch 3** #
+
 ```console
 cat <<EOF >> /root/.ssh/authorized_keys
 abcdefg1234567thatLongKeyLongerThanThis= My_Vultr_Key
 EOF
-chmod 700 ~/.ssh
-chmod 600 ~/.ssh/authorized_keys
+chmod 700 ~/root/.ssh
+chmod 600 /root/.ssh/authorized_keys
 ```
 
 Tighten security
+
+| **Arch 4** #
 
 ```console
 sed -i "s/#PasswordAuthentication yes/PasswordAuthentication no/" /etc/ssh/sshd_config
@@ -72,7 +80,23 @@ ufw allow 1543
 systemctl restart sshd
 ```
 
+Update and install `git` and `vim` so we can do more work...
+
+| **Arch 5** #
+
+```console
+/usr/bin/pacman -Sy archlinux-keyring --noconfirm
+/usr/bin/pacman -Syyu --noconfirm
+/usr/bin/pacman -Qdt --noconfirm
+/usr/bin/pacman -Scc --noconfirm
+/usr/bin/pacman -S git vim --noconfirm
+/usr/bin/pacman -Qdt --noconfirm
+/usr/bin/pacman -Scc --noconfirm
+```
+
 To be fully tidy, so you don't get that "add these keys permanently" message, on your local machine...
+
+| **Local 1** $
 
 ```console
 ssh-keyscan -H -p 22 arch.ipv4.four.addr >> ~/.ssh/known_hosts
@@ -80,62 +104,45 @@ ssh-keyscan -H -p 22 arch.ipv4.four.addr >> ~/.ssh/known_hosts
 
 Now, you have a Vultr Arch VPS that you can access from your local machine
 
-You might want to take a special snapshot of that VPS so you don't have to keep doing this
+Power it down
 
-1. Create our base snapshot
-- Create an instance from Arch
-- This host should be called: `rink.mysndomain.tld`
-- Update pacman keys and packages
-- Install git and vim
-- *The above are the prerequisites for a verber*
-- Clone inkVerb/verb
-- Then run make-preverber
-
-First, ssh into your server, probably with `ssh root@new.arch.ipv4.addr`
-
-Next, clone verb...
+| **Arch 6** #
 
 ```console
-cd /opt
-git clone https://github.com/inkverb/verb
-/opt/verb/inst/make-preverber
 poweroff
 ```
 
-Take a snapshot called: arch-premade
+Then take a snapshot of this called "arch-git-vim"
 
-After the snapshot is finished, power the VPS back on
+After creating the snapshot, you can destroy that VPS or keep using it for the next step
 
-Anytime before running `setup`, you may update `pacman` packages and the verb framework on this pre-setup 'arch-premade' verber snapshot with this: 
+1. Create our rink VPS and snapshot
+- Create an instance from Arch
+- Update pacman keys and packages
+- Install git and vim
+- *The above are the prerequisites for a verber*
 
-*(Note that the update will only affect verb actions that have not already been taken, for a fully up-to-date pre-`setup` verber, clone from arch-premade and start installing from the beginning)*
+Tip: you can use an `ssh` config to make life easier...
 
-```console
-/opt/verb/inst/update-snapshot
+| **~/.ssh/config** : (`chmod 600 ~/.ssh/config`)
+
+```bash
+ Host rink
+  HostName new.arch.ipv4.addr
+  User root
+  Port 22
+  IdentityFile ~/.ssh/Vultr_Rink_Key
 ```
 
-...which is a shortcut for:
+Create or coninue using a VPS based on arch-git-vim
 
-```console
-/opt/verb/inst/update-pre-setup
-/usr/bin/pacman -Sy archlinux-keyring --noconfirm
-/usr/bin/pacman -Syyu --noconfirm
-/usr/bin/pacman -Qdt --noconfirm
-/usr/bin/pacman -Scc --noconfirm
-/usr/bin/su worker -c '/usr/bin/yay -Syyu --noconfirm'
-/usr/bin/su worker -c '/usr/bin/yay -Scc --noconfirm'
-```
+This will be called Rink
 
-You may want to reset the RSA identity key also, then make sure you remove it from ~/.ssh/known_hosts on your local maching
+Then, `ssh` into the Rink server, probably with `ssh root@the.arch.ipv4.addr` or `ssh rink`
 
-```console
-rm /etc/ssh/ssh_host_*
-ssh-keygen -A
-```
+On this "rink" server, create ssh keys in /root/.ssh/Vultr_Rink_Key
 
-2. Install the rink keys
-
-- On this "rink" server, create ssh keys in /root/.ssh/Vultr_Rink_Key
+| **Rink 1** #
 
 ```console
 pacman -S openssh
@@ -149,18 +156,38 @@ cat /root/.ssh/Vultr_Rink_Key.pub
 
 That pub key should output to the terminal, ending with `= Vultr_Rink_Key`, copy this to the clipboard or somewhere secure because we will need it in a moment
 
-Take a snapshot called: arch-premade-rink, this is for safekeeping
+Power it down
+
+| **Rink 2** #
+
+```console
+poweroff
+```
+
+Take a snapshot of this VPS called "arch-rink", this is for safekeeping; we can always come back to this point from that snapshot
 
 After the snapshot is finished, power the VPS back on
 
-3. Prepare a production-ready LAEMP pre-setup Verber snapshot with `make-verber-laemp`
-- SSH keys must be created on the rink and the .pub key in /root/.ssh/authorized_keys on the verber snapshot
-- The Verber snapshot must already have @rink `/root/.ssh/Vultr_Rink_Key.pub` in @verber `/root/.ssh/authorized_keys`
-- FYI, later, the Rink will need to ssh-keyscan each new Verber's identity keys into /root/.ssh/known_hosts, so keys are a two-way street
+2. Create our controlled VPS and snapshot
 
-Spin up another VPS based on arch-premade, created in step 1, then SSH in
+Spin up a new VPS from arch-git-vim
+
+This will be called Keyed
+
+Then, `ssh` into the Rink server, probably with `ssh root@git.vim.ipv4.addr`
+
+You may want to reset the RSA identity key also, then make sure you remove it from ~/.ssh/known_hosts on your local maching
+
+| **Keyed-GitVim 0** #
+
+```console
+rm /etc/ssh/ssh_host_*
+ssh-keygen -A
+```
 
 We now will paste that long key from Vultr_Rink_Key.pub into /root/.ssh/authorized_keys
+
+| **Keyed-GitVim 1** #
 
 ```console
 cat <<EOF >> /root/.ssh/authorized_keys
@@ -168,38 +195,115 @@ abcdefg1234567thatLongKeyLongerThanThis= Vultr_Rink_Key
 EOF
 ```
 
-Install Verb-LAEMP so the snapshot is up and ready to go quickly, (make a 4GB swap file so it could work OOB with a 2GB-RAM VPS, or so it is less likely to mem-crash on a non-critical 1GB VPS)
+Power it down
+
+| **Keyed-GitVim 2** #
+
+```console
+poweroff
+```
+
+Take a snapshot of this VPS called "arch-keyed"; we will use this in the next step
+
+After the snapshot is finished, power the VPS back on; we will call it Keyed
+
+3. Prepare a production-ready LAEMP pre-setup Verber
+- This runs `make-verber-laemp` on both the Rink and Keyed
+- SSH keys have been be created on the Rink and the .pub key already placed in /root/.ssh/authorized_keys on the Keyed snapshot
+- The Verber snapshot must already have @rink `/root/.ssh/Vultr_Rink_Key.pub` in @verber `/root/.ssh/authorized_keys`
+- Once we install LAEMP from the `verb` repo, the arch-keyed Keyed server will be known as the Verber; Rink will still be called the Rink
+- FYI, later, the Rink will need to ssh-keyscan each new Verber's identity keys into /root/.ssh/known_hosts, so keys are a two-way street
+
+Spin up or continue using two VPS instances:
+- Rink (from arch-rink snapshot)
+- Keyed (from arch-keyed snapshot)
+
+`ssh` into each
+- Rink: `ssh root@the.arch.ipv4.addr` or `ssh rink`
+- Keyed: `ssh root@git.vim.ipv4.addr` or `ssh verber`
+
+Install Verb on both
+
+| **Rink 0** #
+
+```console
+cd /opt
+git clone https://github.com/inkverb/verb
+/opt/verb/inst/make-preverber
+restart
+```
+
+| **Verber 0** # (formerly Keyed, which made or was made from the arch-keyed snapshot)
+
+```console
+cd /opt
+git clone https://github.com/inkverb/verb
+/opt/verb/inst/make-preverber
+restart
+```
+
+Each will need to restart (due to refreshed ssh_host keys and locale), then install Verb-LAEMP so the snapshot is up and ready to go quickly, (make a 4GB swap file so it could work OOB with a 2GB-RAM VPS, or so it is less likely to mem-crash on a non-critical 1GB VPS)
+
+| **Rink 1** #
 
 ```console
 /opt/verb/inst/make-verber-laemp 4
 poweroff
 ```
 
-Take a snapshot of this second VPS called: arch-laemp-keyed
-
-After the snapshot is finished, you may destroy the VPS instance
-
-SSH into your original rink VPS we started in step 1
+| **Verber 1** #
 
 ```console
 /opt/verb/inst/make-verber-laemp 4
+poweroff
 ```
 
-This original rink server is now ready to become the "Rink" controller in step 5
+Make a snapshot of each:
+- Rink: arch-laemp-rink
+- Verber: arch-laemp-keyed
 
-Restart the rink server, perhaps take a snapshot for safekeeping called arch-laemp-rink
+After the snapshots are finished, you may destroy the Verber VPS instance, but not the Rink
+
+> **Snapshot Updates**
+> Anytime before running `setup`, you may update `pacman` packages and the verb framework on this pre-setup 'arch-premade' verber snapshot with this: 
+> 
+> *(Note that the update will only affect verb actions that have not already been taken, for a fully up-to-date pre-`setup` verber, clone from arch-rink or arch-keyed and start installing from the beginning)*
+> 
+> | **Verber/Rink pre-setup** #
+> 
+> ```console
+> /opt/verb/inst/update-snapshot
+> ```
+> 
+> ...which is a shortcut for:
+> 
+> ```console
+> /opt/verb/inst/update-pre-setup
+> /usr/bin/pacman -Sy archlinux-keyring --noconfirm
+> /usr/bin/pacman -Syyu --noconfirm
+> /usr/bin/pacman -Qdt --noconfirm
+> /usr/bin/pacman -Scc --noconfirm
+> /usr/bin/su worker -c '/usr/bin/yay -Syyu --noconfirm'
+> /usr/bin/su worker -c '/usr/bin/yay -Scc --noconfirm'
+> ```
+
+Snapshots and Rink are now ready for production and re-production
 
 4. Whitelist the IP for this Rink
-- Find IPs under the VPS Settings, recommend both IP4 and IP6
+- Find IPs under the Rink's VPS Settings, recommend both IP4 and IP6
 - Whitelist in: [https://my.vultr.com/settings/#settingsapi]
 - Note /32 is the default for that field, enter it manually
 
-5. Install the Rink controller
+5. Install the Rink controller `rink` repo
 
 - Some of these are redundant from rink/README.md
 - You will need an API key from Vultr Account > API
 
 SSH into your original VPS we started in step 1
+
+- `ssh root@the.arch.ipv4.addr` or `ssh rink`
+
+| **Rink 2** #
 
 ```console
 cd /opt
@@ -207,13 +311,17 @@ git clone https://github.com/inkverb/rink
 /opt/rink/inst/setup LONG_KEY_FROM_VULTR_API
 ```
 
-- List available snapshots
+List available snapshots
+
+| **Rink 3** #
 
 ```console
 vultr-cli snapshot list
 ```
 
 Find the serial number for the arch-laemp-keyed snapshot, use that as the first argument for setsnapshot below
+
+| **Rink 4** #
 
 ```console
 cd /opt/rink/run
@@ -232,6 +340,8 @@ cd /opt/rink/run
   - The Arch "Rink" with keys is:
     - Setup with "make-verber-laemp", as per steps 1-4
     - Setup with the rink and setrinknames, as per step 5
+
+| **Rink 5** #
 
 ```console
 /opt/rink/run/setuprinkns
@@ -273,8 +383,12 @@ Read these articles on [GoDaddy](https://www.godaddy.com/help/add-my-custom-host
 
 The rink is now set up and ready to start creating and managing verbers
 
-## New VPS via rink
+**New VPS via rink**
+
+| **Rink** :$
+
 ```console
+cd ~/rink
 ./addvps john ink 1gb laemp1 someuser yto America/Detroit # 1GB RAM $5/month
 ./addvps john ink 1gb laemp1 someuser # 1GB RAM $5/month
 ./addvps john ink 1gb laemp1 otherusr sea America/Los_Angeles # 1GB RAM $5/month
@@ -282,11 +396,20 @@ The rink is now set up and ready to start creating and managing verbers
 ./addvps john ink 1gb laemp1 someuser ord America/Chicago # 1GB RAM $5/month
 ```
 
-## Import a pre-existing Verber to become managed by a Rink
+**Import a pre-existing Verber to become managed by a Rink**
+
+First, make sure the to-be-imported Verber is up-to-date...
+
+| **Imported-Verber** :$
+
+```console
+/opt/verb/serfs/updateverber
+```
 
 | **Rink** :$
+
 ```console
-./importvps name ink johnuser s0mElong-An6Cr7z3-ID
+rink/run/importvps name ink start 1c1ee091-0bb2-4871-8f02-170e3f192bcc
 ```
 
 ___
