@@ -133,6 +133,3 @@ Pre-install is finished and is ready to run make-verber-*.
 Run: reboot
 
 Then log back onto the server to run make-verber-*."
-
-# Restart SSH after everything in case it disconnects
-/usr/bin/systemctl restart sshd
