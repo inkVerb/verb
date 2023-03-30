@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/sh
 #inkVerbMaker! verb.ink
 
 # This prepares the early settings for the name286.verb.ink or custom Domain Mod server necessary to make the Verber
@@ -17,7 +17,7 @@
 
 # File check
 if [ ! -f "/opt/verb/inst/make-preverber" ]; then
-  /bin/echo "Put the verb directory at /opt/verb first, then try again."
+  /usr/bin/echo "Put the verb directory at /opt/verb first, then try again."
 exit 8; fi
 
 # Locale
@@ -36,8 +36,8 @@ exit 8; fi
 if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
 
 # Enable NTP for accurate time (the standard service is commented below)
-#/bin/systemctl enable --now systemd-timesyncd
-/bin/systemctl enable --now ntpd
+#/usr/bin/systemctl enable --now systemd-timesyncd
+/usr/bin/systemctl enable --now ntpd
 
 # Remove unneeded packages
 /usr/bin/pacman -Qdt --noconfirm
@@ -48,7 +48,7 @@ if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
 /opt/verb/serfs/setbashrc root
 
 # Vim preferences for root
-/bin/echo 'nnoremap <C-c> "+y
+/usr/bin/echo 'nnoremap <C-c> "+y
 vnoremap <C-c> "+y
 nnoremap <C-p> "+p
 vnoremap <C-p> "+p
@@ -60,19 +60,19 @@ sed -i "s/#PasswordAuthentication yes/PasswordAuthentication no/" /etc/ssh/sshd_
 sed -i "s/#PermitRootLogin.*/PermitRootLogin prohibit-password/" /etc/ssh/sshd_config
 
 # Good housekeeping
-/bin/chmod 750 /opt/verb/serfs/*
+/usr/bin/chmod 750 /opt/verb/serfs/*
 
 # Prep for root convenience
-/bin/ln -s /opt/verb /root/
+/usr/bin/ln -s /opt/verb /root/
 
 # ink CLI tool
 /usr/bin/mv /opt/verb/inst/ink.set /opt/verb/ink/
-/bin/sed -i 's:vDir=.*:vDir="/opt/verb":' /opt/verb/ink/ink.set
+/usr/bin/sed -i 's:vDir=.*:vDir="/opt/verb":' /opt/verb/ink/ink.set
 /usr/bin/mkdir -p /opt/verb/ink/log
 /usr/bin/touch /opt/verb/ink/log/inklog
 /usr/bin/touch /opt/verb/ink/log/outputlog
-/usr/bin/ln -sfn /opt/verb/ink/ink /usr/local/bin/
-chmod 755 /usr/local/bin/ink
+/usr/bin/ln -sfn /opt/verb/ink/ink /usr/local/usr/bin/
+chmod 755 /usr/local/usr/bin/ink
 
 # Security check
 /opt/verb/serfs/setsecure; wait
@@ -86,7 +86,7 @@ chmod 755 /usr/local/bin/ink
 /usr/bin/mkdir -p /opt/verb/worker
 /usr/bin/chown -R worker:worker /opt/verb/worker
 /usr/bin/usermod -d /opt/verb/worker worker
-/bin/echo 'worker ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/worker
+/usr/bin/echo 'worker ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/worker
 
 # Let's use sudo
 /usr/bin/groupadd sudo
@@ -117,22 +117,22 @@ fi
 ## Add our own statement
 /usr/bin/echo "manage_etc_hosts: false" >> /etc/cloud/cloud.cfg
 
-
 # Remove unneeded packages
 /usr/bin/pacman -Qdt --noconfirm
 /usr/bin/pacman -Scc --noconfirm
 /usr/bin/su worker -c '/usr/bin/yay -Scc --noconfirm'
+wait
+
+# Delete this one-time script
+/usr/bin/rm -f /opt/verb/inst/make-preverber
 
 # Restart Server and reconnect at the new port
-/bin/echo "
+/usr/bin/echo "
 Pre-install is finished and is ready to run make-verber-*.
 
 Run: reboot
 
 Then log back onto the server to run make-verber-*."
 
-# Delete this one-time script
-/bin/rm -f /opt/verb/inst/make-preverber
-
-# Restart SSH
-/bin/systemctl restart sshd
+# Restart SSH after everything in case it disconnects
+/usr/bin/systemctl restart sshd

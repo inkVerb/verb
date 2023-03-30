@@ -23,11 +23,11 @@
 
 # Setup check
 if [ -f "/opt/verb/inst/make-preverber" ]; then
-  /bin/echo "Run make-preverber first, then try again."
+  /usr/bin/echo "Run make-preverber first, then try again."
 exit 8; fi
 # File check
 if [ ! -f "/opt/verb/inst/make-verber-laemp" ]; then
-  /bin/echo "I'm not where I'm supposed to be, I quit."
+  /usr/bin/echo "I'm not where I'm supposed to be, I quit."
 exit 8; fi
 
 # swap size
@@ -50,7 +50,7 @@ MYSQLBossPASS=$(/usr/bin/pwgen -s -1 10)
 # Verify SSH Directory
 cd ~ || exit 0
 if [ ! -d ~/.ssh ]; then
-/bin/mkdir .ssh
+/usr/bin/mkdir .ssh
 fi
 
 # Update Keyring
@@ -62,24 +62,24 @@ fi
 # Swap
 /opt/verb/serfs/setswapsize ${SWAPSIZEMAKE}; wait
 ## Enable swap at next startup
-/bin/echo "/var/swap.img    none    swap    sw    0    0" >> /etc/fstab
+/usr/bin/echo "/var/swap.img    none    swap    sw    0    0" >> /etc/fstab
 
 # Live patch
 ## Learn more here https://wiki.archlinux.org/title/Kernel_live_patching
 #/usr/bin/su worker -c '/usr/bin/yay -S --noconfirm --needed kpatch'
 
 # Link serfs & tools to boss box
-/bin/ln -sfn /opt/verb/serfs /opt/verb/boss/
-/bin/ln -sfn /opt/verb/tools /opt/verb/boss/
+/usr/bin/ln -sfn /opt/verb/serfs /opt/verb/boss/
+/usr/bin/ln -sfn /opt/verb/tools /opt/verb/boss/
 
 # Link setup to serfs
-/bin/ln -sfn /opt/verb/inst/setup /opt/verb/serfs/
+/usr/bin/ln -sfn /opt/verb/inst/setup /opt/verb/serfs/
 
 # Link verb to root home
-/bin/ln -sfn /opt/verb /root/
+/usr/bin/ln -sfn /opt/verb /root/
 
 # Record the MySQL root password
-/bin/echo "${MYSQLPASS}" > /opt/verb/inst/mysqlrootpassword
+/usr/bin/echo "${MYSQLPASS}" > /opt/verb/inst/mysqlrootpassword
 
 #  LAEMP Server
 ## Web directory
@@ -92,7 +92,7 @@ fi
 /usr/bin/mkdir -p /etc/ssl/server
 cd /etc/ssl/server || exit 0
 /usr/bin/rm -f server.key
-/usr/bin/openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:512 -out server.key
+/usr/bin/openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out server.key
 /usr/bin/chmod 400 server.key
 /usr/bin/rm -f /etc/ssl/server/server.csr
 /usr/bin/openssl req -new -sha256 -key server.key -out server.csr \
@@ -101,7 +101,7 @@ cd /etc/ssl/server || exit 0
 /usr/bin/rm -f /etc/ssl/server/server.csr
 
 ## Diffie-Helman Group file (small file just so the server works)
-/bin/rm -f /etc/ssl/server/dhparams.pem
+/usr/bin/rm -f /etc/ssl/server/dhparams.pem
 /usr/bin/openssl dhparam -out /etc/ssl/server/dhparams.pem 512
 /bin/chmod 600 /etc/ssl/server/dhparams.pem
 cd $OLDPWD || exit 0
@@ -190,7 +190,7 @@ http {
 EOF
 
 ## Nginx site defaults
-/bin/mkdir -p /etc/nginx/conf.d
+/usr/bin/mkdir -p /etc/nginx/conf.d
 /usr/bin/cat <<'EOF' > /etc/nginx/conf.d/default.conf
 server {
   listen 80 default_server;
@@ -212,7 +212,7 @@ server {
 
 }
 EOF
-/bin/mkdir -p /etc/nginx/default
+/usr/bin/mkdir -p /etc/nginx/default
 /usr/bin/cat <<'EOF' > /etc/nginx/default/index.htm
 <!DOCTYPE html>
 <html>
@@ -220,7 +220,7 @@ EOF
 <body><h1 style="text-align:center">Hey, Boo!</h1><hr></body>
 </html>
 EOF
-/bin/chown -R www:www /etc/nginx/default
+/usr/bin/chown -R www:www /etc/nginx/default
 
 ## PHP
 /usr/bin/pacman -S --noconfirm --needed php php-fpm
@@ -342,38 +342,38 @@ if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
 /usr/bin/ufw allow 443/tcp
 
 ## tmp folder for a secure PHP
-/bin/mkdir -p /srv/www/tmp
-/bin/chmod -R 777 /srv/www/tmp
+/usr/bin/mkdir -p /srv/www/tmp
+/usr/bin/chmod -R 777 /srv/www/tmp
 
 ## Create vip & vsftp web mod directories
-/bin/mkdir -p /srv/vip
-/bin/mkdir -p /srv/vip/_domains
-/bin/mkdir -p /srv/vip/_filecabinet
-/bin/mkdir -p /srv/vip/ftpusers
-/bin/mkdir -p /srv/vip/files
-/bin/mkdir -p /srv/vip/sql
-/bin/mkdir -p /srv/vip/repo
-/bin/mkdir -p /srv/vip/_webapps
-/bin/mkdir -p /srv/vip/_subs.vip
-/bin/ln -sfn /srv/vip /srv/www/
-/bin/ln -sfn /srv/vip /opt/verb/boss/
-/bin/ln -sfn /srv/vip /root/
+/usr/bin/mkdir -p /srv/vip
+/usr/bin/mkdir -p /srv/vip/_domains
+/usr/bin/mkdir -p /srv/vip/_filecabinet
+/usr/bin/mkdir -p /srv/vip/ftpusers
+/usr/bin/mkdir -p /srv/vip/files
+/usr/bin/mkdir -p /srv/vip/sql
+/usr/bin/mkdir -p /srv/vip/repo
+/usr/bin/mkdir -p /srv/vip/_webapps
+/usr/bin/mkdir -p /srv/vip/_subs.vip
+/usr/bin/ln -sfn /srv/vip /srv/www/
+/usr/bin/ln -sfn /srv/vip /opt/verb/boss/
+/usr/bin/ln -sfn /srv/vip /root/
 ## And the domains directory for hosted domains
-/bin/mkdir -p /srv/www/verb
-/bin/mkdir -p /srv/www/domains
-/bin/mkdir -p /srv/www/forwards
+/usr/bin/mkdir -p /srv/www/verb
+/usr/bin/mkdir -p /srv/www/domains
+/usr/bin/mkdir -p /srv/www/forwards
 ## Create inkVerb app directories
-/bin/mkdir -p /srv/www/email
-/bin/mkdir -p /srv/www/one
-/bin/mkdir -p /srv/www/vapps
+/usr/bin/mkdir -p /srv/www/email
+/usr/bin/mkdir -p /srv/www/one
+/usr/bin/mkdir -p /srv/www/vapps
 ## Create directory for Ghost installs
-/bin/mkdir -p /srv/www/ghost
+/usr/bin/mkdir -p /srv/www/ghost
 ## Own everything
-/bin/chown -R www:www /srv/www
-/bin/chown -R www:www /srv/vip
+/usr/bin/chown -R www:www /srv/www
+/usr/bin/chown -R www:www /srv/vip
 
 # inkGet repo
-/bin/mkdir -p /opt/verb/repo
+/usr/bin/mkdir -p /opt/verb/repo
 
 # MySQL superuser to auto-create databases
 /usr/bin/mysql -uroot -p${MYSQLPASS} -e "
@@ -382,7 +382,7 @@ SET PASSWORD FOR mysqlboss@localhost=PASSWORD('${MYSQLBossPASS}');
 GRANT ALL PRIVILEGES ON *.* TO 'mysqlboss'@'localhost' IDENTIFIED BY '${MYSQLBossPASS}' WITH GRANT OPTION;
 FLUSH PRIVILEGES;"
 ## Set the mysqlboss as the mysqlboss config file so the password is not in the line command
-/bin/echo "[client]
+/usr/bin/echo "[client]
 user = mysqlboss
 password = ${MYSQLBossPASS}
 host = localhost" > /opt/verb/conf/mysqlboss.cnf
@@ -392,20 +392,20 @@ host = localhost" > /opt/verb/conf/mysqlboss.cnf
 if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
 ## Copy configs (These seem to have precedence, files in /etc/monit seem to conflict with them but may be u/bin/sed instead
 /bin/mkdir -p /etc/monit/monitrc.d
-sed -i "s?#  include /etc/monit.d?  include /etc/monit.d?" /etc/monitrc
+/usr/bin/sed -i "s?#  include /etc/monit.d?  include /etc/monit.d?" /etc/monitrc
 /usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/mysql /etc/monit/monitrc.d/
 /usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/nginx /etc/monit/monitrc.d/
 /usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/apache /etc/monit/monitrc.d/
 # /usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/acpid /etc/monit/monitrc.d/
 # /usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/memcached /etc/monit/monitrc.d/
 # /usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/sshd /etc/monit/monitrc.d/
-/bin/systemctl enable monit; wait
-/bin/systemctl start monit; wait
+/usr/bin/systemctl enable monit; wait
+/usr/bin/systemctl start monit; wait
 
 # Server type
-/bin/echo 'ServerType="laemp"' > /opt/verb/conf/servertype
+/usr/bin/echo 'ServerType="laemp"' > /opt/verb/conf/servertype
 
-# Pre-install Go
+# Pre-install Go (may be redundand as Go is a dependency in make-preverber)
 /usr/bin/pacman -S --noconfirm --needed go
 if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
 
@@ -431,7 +431,7 @@ if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
 /usr/bin/su worker -c '/usr/bin/yay -Scc --noconfirm'
 
 # Restart Server and reconnect at the new port
-/bin/echo "
+/usr/bin/echo "
 The Verber™ server has been made and is ready to run setup.
 
 You must first reboot the server using:
@@ -440,4 +440,4 @@ reboot
 "
 
 # Delete this one-time script
-/bin/rm -f /opt/verb/inst/make-verber-*
+/usr/bin/rm -f /opt/verb/inst/make-verber-*
