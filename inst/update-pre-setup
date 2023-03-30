@@ -58,8 +58,19 @@ if [ ! -f "/opt/verb/inst/ink.set" ]; then
   /usr/bin/rm -f /opt/tmp/verb/inst/ink.set
 fi
 
-# Webserver folder
-/usr/bin/cp -rf /opt/verb/inst/webserver /opt/tmp/verb/conf/
+# Web folders
+/usr/bin/rm -rf /opt/tmp/verb/conf/site-files/conf
+/usr/bin/cp -rf /opt/verb/conf/site-files/conf /opt/tmp/verb/conf/site-files/
+/usr/bin/rm -rf /opt/tmp/verb/conf/webserver
+/usr/bin/cp -rf /opt/verb/conf/webserver /opt/tmp/verb/conf/
+
+# Ink CLI tool
+/usr/bin/rm -rf /opt/tmp/verb/ink
+/usr/bin/cp -rf /opt/verb/ink /opt/tmp/verb/
+
+# Other cleanup
+/usr/bin/cp -f /opt/verb/conf/servertype /opt/tmp/verb/conf/
+/usr/bin/cp -rf /opt/verb/repo /opt/tmp/verb/
 
 # setup link?
 if [ -e "/opt/verb/serfs/setup" ]; then setuplink="true"; fi
@@ -68,6 +79,12 @@ if [ -e "/opt/verb/serfs/setup" ]; then setuplink="true"; fi
 /usr/bin/rm -rf /opt/verb
 /usr/bin/mv /opt/tmp/verb /opt/
 wait
+
+# Boss links
+/usr/bin/ln -sfn /opt/verb/serfs /opt/verb/boss/
+/usr/bin/ln -sfn /opt/verb/tools /opt/verb/boss/
+/usr/bin/ln -sfn /srv/vip /opt/verb/boss/
+
 
 if [ "$setuplink" = "true" ]; then
   /bin/ln -sfn /opt/verb/inst/setup /opt/verb/serfs/
