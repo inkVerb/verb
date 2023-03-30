@@ -230,7 +230,7 @@ Install Verb on both
 cd /opt
 git clone https://github.com/inkverb/verb
 /opt/verb/inst/make-preverber
-restart
+reboot
 ```
 
 | **Verber 0** # (formerly Keyed, which made or was made from the arch-keyed snapshot)
@@ -239,10 +239,10 @@ restart
 cd /opt
 git clone https://github.com/inkverb/verb
 /opt/verb/inst/make-preverber
-restart
+reboot
 ```
 
-Each will need to restart (due to refreshed ssh_host keys and locale), then install Verb-LAEMP so the snapshot is up and ready to go quickly, (make a 4GB swap file so it could work OOB with a 2GB-RAM VPS, or so it is less likely to mem-crash on a non-critical 1GB VPS)
+Each will need to reboot (due to refreshed ssh_host keys and locale), then install Verb-LAEMP so the snapshot is up and ready to go quickly, (make a 4GB swap file so it could work OOB with a 2GB-RAM VPS, or so it is less likely to mem-crash on a non-critical 1GB VPS)
 
 | **Rink 1** #
 
