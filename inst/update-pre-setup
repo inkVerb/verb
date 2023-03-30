@@ -57,6 +57,10 @@ fi
 if [ ! -f "/opt/verb/inst/ink.set" ]; then
   /usr/bin/rm -f /opt/tmp/verb/inst/ink.set
 fi
+
+# Webserver folder
+/usr/bin/cp -rf /opt/verb/inst/webserver /opt/tmp/verb/conf/
+
 # setup link?
 if [ -e "/opt/verb/serfs/setup" ]; then setuplink="true"; fi
 
