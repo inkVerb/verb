@@ -1102,31 +1102,32 @@ fi
 # Security check
 /opt/verb/serfs/setsecure; wait
 
-# Web Services
-if [ ${ServerType} = "lemp" ]; then
-  /usr/bin/systemctl enable php-fpm; wait
-  /usr/bin/systemctl enable nginx; wait
-  /usr/bin/systemctl start php-fpm; wait
-  /usr/bin/systemctl start nginx; wait
-elif [ ${ServerType} = "lamp" ]; then
-  /usr/bin/systemctl enable php-fpm; wait
-  /usr/bin/systemctl enable httpd; wait
-  /usr/bin/systemctl start php-fpm; wait
-  /usr/bin/systemctl start httpd; wait
-elif [ ${ServerType} = "laemp" ]; then
-  /usr/bin/systemctl enable php-fpm; wait
-  /usr/bin/systemctl enable nginx; wait
-  /usr/bin/systemctl enable httpd; wait
-  /usr/bin/systemctl start php-fpm; wait
-  /usr/bin/systemctl start nginx; wait
-  /usr/bin/systemctl start httpd; wait
-fi
+#DEV already started from make-laemp-lemp-lamp
+# # Web Services
+# if [ "${ServerType}" = "lemp" ]; then
+#   /usr/bin/systemctl enable php-fpm; wait
+#   /usr/bin/systemctl enable nginx; wait
+#   /usr/bin/systemctl start php-fpm; wait
+#   /usr/bin/systemctl start nginx; wait
+# elif [ "${ServerType}" = "lamp" ]; then
+#   /usr/bin/systemctl enable php-fpm; wait
+#   /usr/bin/systemctl enable httpd; wait
+#   /usr/bin/systemctl start php-fpm; wait
+#   /usr/bin/systemctl start httpd; wait
+# elif [ "${ServerType}" = "laemp" ]; then
+#   /usr/bin/systemctl enable php-fpm; wait
+#   /usr/bin/systemctl enable nginx; wait
+#   /usr/bin/systemctl enable httpd; wait
+#   /usr/bin/systemctl start php-fpm; wait
+#   /usr/bin/systemctl start nginx; wait
+#   /usr/bin/systemctl start httpd; wait
+# fi
 
 # Update verber
 /opt/verb/serfs/updateverber
 
 # Controlled verber?
-if [ ${RinkConfigured} = "true" ]; then
+if [ "${RinkConfigured}" = "true" ]; then
   /usr/bin/echo "I am controlled by the Rink."
   # Other commands could be put here for verber instantiation as needed in the future
 fi
