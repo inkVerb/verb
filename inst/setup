@@ -716,16 +716,6 @@ fi
 # www default indexes
 /opt/verb/serfs/updatehtmlverbs; wait
 
-# Link sites
-if [ -d "/opt/verb/conf/webserver/httpd/sites-available" ] && [ -d "/etc/httpd" ]; then
-  /bin/ln -sfn /opt/verb/conf/webserver/httpd/sites-available /etc/httpd/
-  /bin/ln -sfn /opt/verb/conf/webserver/httpd/sites-enabled /etc/httpd/
-fi
-if [ -d "/opt/verb/conf/webserver/nginx/sites-available" ] && [ -d "/etc/nginx" ]; then
-  /bin/ln -sfn /opt/verb/conf/webserver/nginx/sites-available /etc/nginx/
-  /bin/ln -sfn /opt/verb/conf/webserver/nginx/sites-enabled /etc/nginx/
-fi
-
 # inkCert mail subdomains
 /opt/verb/serfs/setinkcertmailsubdomains ${nameURI}
 

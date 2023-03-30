@@ -222,6 +222,20 @@ EOF
 EOF
 /usr/bin/chown -R www:www /etc/nginx/default
 
+## Site files
+if [ -d "/opt/verb/conf/webserver/httpd/sites-available" ] && [ -d "/etc/httpd" ]; then
+  /usr/bin/ln -sfn /opt/verb/conf/webserver/httpd/sites-available /etc/httpd/
+  /usr/bin/ln -sfn /opt/verb/conf/webserver/httpd/sites-enabled /etc/httpd/
+else
+  /usr/bin/echo 'httpd config folder does not exist!'; exit 4
+fi
+if [ -d "/opt/verb/conf/webserver/nginx/sites-available" ] && [ -d "/etc/nginx" ]; then
+  /usr/bin/ln -sfn /opt/verb/conf/webserver/nginx/sites-available /etc/nginx/
+  /usr/bin/ln -sfn /opt/verb/conf/webserver/nginx/sites-enabled /etc/nginx/
+else
+  /usr/bin/echo 'nginx config folder does not exist!'; exit 4
+fi
+
 ## PHP
 /usr/bin/pacman -S --noconfirm --needed php php-fpm
 if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
