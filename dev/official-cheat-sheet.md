@@ -290,7 +290,7 @@ After the snapshots are finished, you may destroy the Verber VPS instance, but n
 Snapshots and Rink are now ready for production and re-production
 
 4. Whitelist the IP for this Rink
-- Find IPs under the Rink's VPS Settings, recommend both IP4 and IP6
+- Find IPs under the Rink's VPS Settings, recommend both IPv4 and IPv6
 - Whitelist in: [https://my.vultr.com/settings/#settingsapi]
 - Note /32 is the default for that field, enter it manually
 
@@ -319,7 +319,7 @@ List available snapshots
 vultr-cli snapshot list
 ```
 
-Find the serial number for the arch-laemp-keyed snapshot, use that as the first argument for setsnapshot below
+Find the serial number for the arch-laemp-keyed snapshot, use that as the first argument for setsnapshot below; we will nickname it laemp1
 
 | **Rink 4** #
 
