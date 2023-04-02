@@ -50,7 +50,7 @@ if [ -e "/opt/verb/mods/inkdnssetns2.before" ]; then . /opt/verb/mods/inkdnssetn
 
 # No custom settings? Refresh defaults
 . /opt/verb/conf/inklists/inkdnsnameservers
-if [ -z "$1" ] && [ -z "$CUSTOMRINK" ] || [ "$CUSTOMRINK" != "true" ]; then
+if [ -z "$1" ] && [ -z "$CustomNS" ] || [ "$CustomNS" != "true" ]; then
   . /opt/verb/conf/servernameip
   cd /opt/verb/ || exit 0
   /usr/bin/git clone https://github.com/${ServerUpdateOrg}/verb
@@ -112,8 +112,8 @@ if [ -n "$customns" ] && [ "$customns" = "true" ]; then
   /bin/sed -i "s/DefaultNS2.*/DefaultNS2=\"${NsdnsDomainAIN}\"/" /opt/verb/conf/inklists/inkdnsnameservers
   /bin/sed -i "s/NameserverNS2IPv4.*/NameserverNS2IPv4=\"${NsdnsIPv4}\"/" /opt/verb/conf/inklists/inkdnsnameservers
   /bin/sed -i "s/NameserverNS2IPv6.*/NameserverNS2IPv6=\"${NSIP6}\"/" /opt/verb/conf/inklists/inkdnsnameservers
-  if [ -z "$CUSTOMRINK" ] || [ "$CUSTOMRINK" != "true" ]; then
-    /bin/echo 'CUSTOMRINK="true"' >> /opt/verb/conf/inklists/inkdnsnameservers
+  if [ -z "$CustomNS" ] || [ "$CustomNS" != "true" ]; then
+    /bin/echo 'CustomNS="true"' >> /opt/verb/conf/inklists/inkdnsnameservers
   fi
 fi
 

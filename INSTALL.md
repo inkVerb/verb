@@ -99,7 +99,7 @@ At this point (if it is not a `make-dns` server), you may want to take a "snapsh
   - Verbers are intended to be created and maintained by a "rink", using original settings from the GitHub repos
 	- You can override these, but you must set them accordingly
 	- If you are using your own, customized nameservers, add this line to `conf/inklists/inkdnsnameservers`
-	  - `CUSTOMRINK="true"`
+	  - `CustomNS="true"`
 		- This will prevent updates from over-riding your custom nameservers
 
 ### Custom install instructions
@@ -126,7 +126,7 @@ These instructions expand on the instructions above under point 3. A. "Custom pr
 			- `RINK1ip4=`/`RINK2ip4=`
 			- `RINK1ip6=`/`RINK2ip6=`
 		- On this and all other Verbers you create, to `conf/inklists/inkdnsnameservers` add:
-	  	- `CUSTOMRINK="true"`
+	  	- `CustomNS="true"`
     - Run `serfs/rinklocalsetup` to create the keys used to auto-update the NS nameservers
       - Per instructions, you will need to manually add the Rink_... keys created to each NS nameserver
     - Run `serfs/rinkupdatekeys` so SSH updates will be allowed when connecting to your NS nameservers
