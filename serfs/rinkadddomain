@@ -42,7 +42,7 @@ elif [ "$RinkConfigured" = "rink" ] && [ -f "/opt/rink/run/addmasterdomain" ]; t
 fi
 
 # Add the configs to the domains/ folder on the NS nameservers
-/usr/bin/ssh ns1 <<EOS
+/usr/bin/ssh -T ns1 <<EOS
 /usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${slavedomain}
 sdnsDomain="${slavedomain}"
 sdnsIPv4="${ServerIPv4}"
@@ -52,7 +52,7 @@ sdnsIPv6Cmp="${ServerIPv6}"
 sdnsIPv6ARPA="${ServerARPAIPv6}"
 EOF
 EOS
-/usr/bin/ssh ns2 <<EOS
+/usr/bin/ssh -T ns2 <<EOS
 /usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${slavedomain}
 sdnsDomain="${slavedomain}"
 sdnsIPv4="${ServerIPv4}"
