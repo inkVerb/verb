@@ -40,8 +40,8 @@ if [ "${InkDNSStat}" = "INSTALLED" ]; then
   /usr/bin/rm -rf /var/named/zones
   /usr/bin/cp -rf /opt/verb/conf/inkdns/zones /var/named/
   ## Parked domains don't have priority #NOTE: On "proper" Linux distros, an -n option that is needed will exit 1, though on Manjaro it will exit 0; we use `|| true` to ensure we don't get an error code when we don't need one
-  /usr/bin/cp -n /opt/verb/conf/inkdns/parked/db.* /var/named/zones/ || true
-  /usr/bin/cp -n /opt/verb/conf/inkdns/parked/nv.* /var/named/zones/ || true
+  [[ -n "$(/usr/bin/ls -A /opt/verb/conf/inkdns/parked/db.* 2> /dev/null)" ]] && /usr/bin/cp -n /opt/verb/conf/inkdns/parked/db.* /var/named/zones/ || true
+  [[ -n "$(/usr/bin/ls -A /opt/verb/conf/inkdns/parked/nv.* 2> /dev/null)" ]] && /usr/bin/cp -n /opt/verb/conf/inkdns/parked/nv.* /var/named/zones/ || true
   /usr/bin/cp -f /opt/verb/conf/inkdns/inkzones/db.* /var/named/zones/
   /usr/bin/cp -f /opt/verb/conf/inkdns/inkzones/nv.* /var/named/zones/
   /bin/chown -R root:named /var/named/zones
