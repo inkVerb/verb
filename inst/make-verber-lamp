@@ -108,7 +108,7 @@ cd $OLDPWD || exit 0
 
 ## Apache
 /usr/bin/pacman -S --noconfirm --needed apache
-e="$?"; [[ "$e" = "0" ]] || /usr/bin/echo 'Failed: !!'; exit "$e"
+if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 /usr/bin/sed -i "s?#LoadModule proxy_module modules/mod_proxy.so?LoadModule proxy_module modules/mod_proxy.so?" /etc/httpd/conf/httpd.conf
 /usr/bin/sed -i "s?#LoadModule proxy_fcgi_module modules/mod_proxy_fcgi.so?LoadModule proxy_fcgi_module modules/mod_proxy_fcgi.so?" /etc/httpd/conf/httpd.conf
 /usr/bin/sed -i "s?^LoadModule mpm_event_module modules/mod_mpm_event.so?#LoadModule mpm_event_module modules/mod_mpm_event.so?" /etc/httpd/conf/httpd.conf
@@ -150,7 +150,7 @@ fi
 
 ## PHP
 /usr/bin/pacman -S --noconfirm --needed php php-fpm
-e="$?"; [[ "$e" = "0" ]] || /usr/bin/echo 'Failed: !!'; exit "$e"
+if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 
 ## PHP-FPM
 ### Security extensions
@@ -163,7 +163,7 @@ echo 'security.limit_extensions = .php .html .htm .shtml' >> /etc/php/php-fpm.d/
 
 ## PHP extras
 /usr/bin/pacman -S --noconfirm --needed pkg-config php-gd php-apcu nginx-mod-headers-more fcgiwrap php-imagick php-intl php-pspell
-e="$?"; [[ "$e" = "0" ]] || /usr/bin/echo 'Failed: !!'; exit "$e"
+if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 
 ## Services
 /usr/bin/systemctl enable php-fpm; wait
@@ -175,7 +175,7 @@ e="$?"; [[ "$e" = "0" ]] || /usr/bin/echo 'Failed: !!'; exit "$e"
 
 # MySQL (viz MariaDB)
 /usr/bin/pacman -S --noconfirm --needed mariadb
-e="$?"; [[ "$e" = "0" ]] || /usr/bin/echo 'Failed: !!'; exit "$e"
+if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 /usr/bin/mysql_install_db --user=mysql --basedir=/usr --datadir=/var/lib/mysql
 ## Start it now so it works when we run the secure installation
 /usr/bin/systemctl enable mariadb; wait
@@ -206,7 +206,7 @@ EOF
 
 # Firewall
 /usr/bin/pacman -S --noconfirm --needed ufw
-e="$?"; [[ "$e" = "0" ]] || /usr/bin/echo 'Failed: !!'; exit "$e"
+if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 /usr/bin/systemctl enable ufw; wait
 /usr/bin/systemctl start ufw; wait
 /usr/bin/ufw allow 80/tcp
@@ -260,7 +260,7 @@ host = localhost" > /opt/verb/conf/mysqlboss.cnf
 
 # Monit
 /usr/bin/pacman -S --noconfirm --needed monit
-e="$?"; [[ "$e" = "0" ]] || /usr/bin/echo 'Failed: !!'; exit "$e"
+if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 ## Copy configs (These seem to have precedence, files in /etc/monit seem to conflict with them but may be u/usr/bin/sed instead
 /usr/bin/mkdir -p /etc/monit/monitrc.d
 sed -i "s?#  include /etc/monit.d?  include /etc/monit.d?" /etc/monitrc
@@ -277,23 +277,23 @@ sed -i "s?#  include /etc/monit.d?  include /etc/monit.d?" /etc/monitrc
 
 # Pre-install Go (may be redundand as Go is a dependency in make-preverber)
 /usr/bin/pacman -S --noconfirm --needed go
-e="$?"; [[ "$e" = "0" ]] || /usr/bin/echo 'Failed: !!'; exit "$e"
+if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 
 # Pre-install Postfix server packages
 /usr/bin/pacman -S --noconfirm --needed postfix postfix-mysql dovecot pigeonhole mailutils cyrus-sasl opendkim msmtp
-e="$?"; [[ "$e" = "0" ]] || /usr/bin/echo 'Failed: !!'; exit "$e"
+if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 
 # Pre-install inkCert-LE
 /usr/bin/pacman -S --noconfirm --needed certbot certbot-apache
-e="$?"; [[ "$e" = "0" ]] || /usr/bin/echo 'Failed: !!'; exit "$e"
+if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 
 # Pre-install inkDNS
 /usr/bin/pacman -S --noconfirm --needed bind dnsutils certbot-dns-rfc2136
-e="$?"; [[ "$e" = "0" ]] || /usr/bin/echo 'Failed: !!'; exit "$e"
+if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 
 # Pre-install vsftpd
 /usr/bin/pacman -S --noconfirm --needed vsftpd
-e="$?"; [[ "$e" = "0" ]] || /usr/bin/echo 'Failed: !!'; exit "$e"
+if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 
 # Remove unneeded packages
 /usr/bin/pacman -Qdt --noconfirm

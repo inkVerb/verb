@@ -33,7 +33,7 @@ exit 8; fi
 
 # Install tools
 /usr/bin/pacman -S --noconfirm --needed ntp pwgen zip unzip htop which vim curl wget make cronie gcc autoconf imagemagick git parted net-tools inetutils man sudo
-e="$?"; [[ "$e" = "0" ]] || /usr/bin/echo 'Failed: !!'; exit "$e"
+if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 
 # Enable NTP for accurate time (the standard service is commented below)
 #/usr/bin/systemctl enable --now systemd-timesyncd
@@ -95,7 +95,7 @@ sed -i "s/#PermitRootLogin.*/PermitRootLogin prohibit-password/" /etc/ssh/sshd_c
 
 # AUR package manager
 /usr/bin/pacman -S --noconfirm --needed base-devel # Dependencies
-e="$?"; [[ "$e" = "0" ]] || /usr/bin/echo 'Failed: !!'; exit "$e"
+if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 cd /opt/verb/worker || exit 0
 /usr/bin/su worker -c '/usr/bin/git clone https://aur.archlinux.org/yay.git'
 cd yay || exit 0
