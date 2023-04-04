@@ -33,26 +33,18 @@ if [ -e "/opt/verb/mods/newdomainshell.replace" ]; then . /opt/verb/mods/newdoma
 if [ -e "/opt/verb/mods/newdomainshell.before" ]; then . /opt/verb/mods/newdomainshell.before; fi # Precedes this script
 
 
-# Dependencies
+# Dependencies same as adddomain
 if ! /bin/grep -q 'InkCertInstalled="DONE"' /opt/verb/conf/inkcertstatus; then
   /usr/bin/echo "Install inkCert first, I quit."; exit 8
 fi
 if ! /bin/grep -q 'InkDNSStat="INSTALLED"' /opt/verb/conf/inkdnsconf; then
   /usr/bin/echo "Install inkDNS first, I quit."; exit 8
 fi
-if ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpath; then
+if /bin/grep -q 'EmailAllowed="YES"' /opt/verb/conf/servernameip && ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpath; then
   /usr/bin/echo "Install Postfix Vmail first, I quit."; exit 8
 fi
-
-# Dependencies
-if ! /bin/grep -q 'InkCertInstalled="DONE"' /opt/verb/conf/inkcertstatus; then
-  /usr/bin/echo "Install inkCert first, I quit."; exit 8
-fi
-if ! /bin/grep -q 'InkDNSStat="INSTALLED"' /opt/verb/conf/inkdnsconf; then
-  /usr/bin/echo "Install inkDNS first, I quit."; exit 8
-fi
-if ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpath; then
-  /usr/bin/echo "Install Postfix Vmail first, I quit."; exit 8
+if ! /bin/grep -q 'DomHostAllowed="YES"' /opt/verb/conf/servermailpath; then
+  /usr/bin/echo "Domain hosting not allowed, I quit."; exit 8
 fi
 
 # Include settings

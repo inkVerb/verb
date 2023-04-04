@@ -5,7 +5,7 @@ datenow=$(date)
 /bin/echo "$datenow ::ink# $serfcommand" >> "${LogDir}/inklog"
 /usr/bin/date >> "${LogDir}/outputlog"
 /bin/echo "::ink# $serfcommand" >> "${LogDir}/outputlog"
-/usr/bin/logger -p local6.info -t verber.ink "::ink# $serfcommand"
+/usr/bin/logger -p local6.info -t verb.ink "::ink# $serfcommand"
 
 # Run the serf
 if [ "${SOcli}" = "true" ]; then
@@ -46,10 +46,10 @@ fi
 # Send exit messages & logs
 if [ "$vsuccess" = "true" ]; then
   /bin/echo "Success! $(date)" >> "${LogDir}/inklog"
-  /usr/bin/logger -p local6.info -t verber.ink "$success_log"
+  /usr/bin/logger -p local6.info -t verb.ink "$success_log"
   if [ -n "$success_message" ]; then /bin/echo $success_message; fi
 elif [ "$vsuccess" != "true" ]; then
   /bin/echo "Fail, check errorlog! $(date)" >> "${LogDir}/inklog"
-  /usr/bin/logger -p local6.err -t verber.ink "$fail_log"
+  /usr/bin/logger -p local6.err -t verb.ink "$fail_log"
   if [ -n "$fail_message" ]; then /bin/echo $fail_message; fi
 fi

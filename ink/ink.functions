@@ -1353,6 +1353,13 @@ This will display available schemas for the action.
 
 -h Help: ink [ action ] [ schema ] -h
 This will display help for the action and schema.
+
+Fails & logs:
+If a command fails or for more info, check the log files in /var/log/ink/ for more...
+- inklog: commands and notices
+- outputlog: more output from the ink serf script
+- journalctl -t verb.ink         # All entries and output
+- journalctl -t verb.ink -p err  # Error messages specifically
 "
 }
 

@@ -71,8 +71,9 @@ sed -i "s/#PermitRootLogin.*/PermitRootLogin prohibit-password/" /etc/ssh/sshd_c
 /usr/bin/mkdir -p /opt/verb/ink/log
 /usr/bin/touch /opt/verb/ink/log/inklog
 /usr/bin/touch /opt/verb/ink/log/outputlog
-/usr/bin/ln -sfn /opt/verb/ink/ink /usr/local/usr/bin/
-chmod 755 /usr/local/usr/bin/ink
+/usr/bin/ln -sfn /opt/verb/ink/log /var/log/ink
+/usr/bin/ln -sfn /opt/verb/ink/ink /usr/local/bin/
+/usr/bin/chmod 755 /usr/local/bin/ink
 
 # Security check
 /opt/verb/serfs/setsecure; wait
