@@ -39,7 +39,7 @@ if [ "$RinkConfigured" = "rink" ] && [ -f "/opt/rink/run/addmasterdomain" ]; the
 elif [ "$RinkConfigured" != "true" ]; then
 	echo "Rink NS nameserver keys not configured, DNS nameserver zone files must be updated manually"
 	exit 0
-if
+fi
 
 # Add the configs to the domains/ folder on the NS nameservers
 /usr/bin/ssh -T ns1 <<EOS
