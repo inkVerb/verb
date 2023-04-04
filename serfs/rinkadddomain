@@ -32,14 +32,14 @@ slavedomain=$1
 # Configs
 . /opt/verb/conf/servernameip
 
-# Already configured?
-if [ "$RinkConfigured" != "true" ]; then
-	echo "Rink NS nameserver keys not configured, DNS nameserver zone files will need to be updated manually"
-	exit 0
-elif [ "$RinkConfigured" = "rink" ] && [ -f "/opt/rink/run/addmasterdomain" ]; then
+# Already configured or allowed rink?
+if [ "$RinkConfigured" = "rink" ] && [ -f "/opt/rink/run/addmasterdomain" ]; then
 	/opt/rink/run/addmasterdomain ${slavedomain}
 	exit 0
-fi
+elif [ "$RinkConfigured" != "true" ]; then
+	echo "Rink NS nameserver keys not configured, DNS nameserver zone files must be updated manually"
+	exit 0
+if
 
 # Add the configs to the domains/ folder on the NS nameservers
 /usr/bin/ssh -T ns1 <<EOS
