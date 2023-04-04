@@ -41,6 +41,8 @@ if [ "${InkDNSStat}" = "INSTALLED" ]; then
   /usr/bin/cp -rf /opt/verb/conf/inkdns/zones /var/named/
   /usr/bin/cp -f /opt/verb/conf/inkdns/inkzones/db.* /var/named/zones/
   /usr/bin/cp -f /opt/verb/conf/inkdns/inkzones/nv.* /var/named/zones/
+  /usr/bin/cp -f /opt/verb/conf/inkdns/parked/db.* /var/named/zones/
+  /usr/bin/cp -f /opt/verb/conf/inkdns/parked/nv.* /var/named/zones/
   /bin/chown -R root:named /var/named/zones
   /bin/chmod -R 755 /var/named/zones
 
