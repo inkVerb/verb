@@ -59,6 +59,11 @@ if [ ${ServerPFAPath} != "PFA_NOT_INSTALLED" ]; then
 PostfixAdmin is already installed.
 "
 exit 0; fi
+if [ ${ServerMailStatus} = "EMAIL_NOT_INSTALLED" ]; then
+/bin/echo "
+Email is not yet installed, do that first.
+"
+exit 8; fi
 if /bin/grep -Fq "Email Control Records" /opt/verb/conf/inkdns/inkzones/db.${emailTLDURI}; then
 /bin/echo "Proceeding..."; else
 /bin/echo "

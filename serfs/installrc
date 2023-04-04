@@ -58,14 +58,14 @@ if [ ${ServerRCPath} = "RC_NOT_ALLOWED" ]; then
 This is a backup email server and Roundcube is not allowed.
 "
 exit 0; fi
-if [ ${ServerRCPath} != "RC_NOT_ALLOWED" ]; then
+if [ ${ServerRCPath} != "RC_NOT_INSTALLED" ]; then
 /bin/echo "
 Roundcube is already installed.
 "
 exit 0; fi
 if [ ${ServerMailStatus} = "EMAIL_NOT_INSTALLED" ]; then
 /bin/echo "
-This is a backup email server and Roundcube is not allowed.
+Email is not yet installed, do that first.
 "
 exit 8; fi
 if /bin/grep -Fq "Email Control Records" /opt/verb/conf/inkdns/inkzones/db.${emailTLDURI}; then
