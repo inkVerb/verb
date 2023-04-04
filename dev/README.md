@@ -223,6 +223,16 @@ IX. Other notes
 	- `inkdns*` serfs that contain `slave` in the name are meant to be run on an NS nameserver by the `rinkcon.cron` task script
 	  - These rely on certain settings inside `/srv/sns/VERBUSER.TLD/` configs for their IP and other arguments to be completed
 	- `inkdns*` and `rink*` serfs that contain `local` (and often `slave` also) are meant to be run manually on the server, such as for a `make-domainmod` verber, where NS records must be handled manually
+- Parking
+  - `db.*` and `nv.*` files can be placed in the `verb/conf/inkdns/parked/` directory
+    - These must be properly formatted Zone and PTA (rDNS) files
+	- These will be hosted by the local DNS Bind server after running `inkdnsrefreshbind`
+	- These are added to NS nameservers with `rinkparkme`
+	  - `rinkparkme` loops through `parked/db.*` files to list their domains on the NS nameservers
+  - Other parking tools to park a domain and add entries per validated zone line may be created at a later date
+    - Such tools would create individual zone file entries in a `parked/domain.tld/` folder as individual files
+	  - These entries would then be sorted and formed into proper `db.*` and `nv.*` files via `inkdnsrefreshbind`
+	- Another tool would allow dropping user prepared `db.*` and `nv.*` files into a `parked/domain.tld/` folder for validation
 
 ## ink cli tool
 
