@@ -39,10 +39,11 @@ if [ "${InkDNSStat}" = "INSTALLED" ]; then
   # Create the directories and configs
   /usr/bin/rm -rf /var/named/zones
   /usr/bin/cp -rf /opt/verb/conf/inkdns/zones /var/named/
+  ## Parked domains don't have priority #NOTE: On "proper" Linux distros, an -n option that is needed will exit 1, though on Manjaro it will exit 0; we use `|| true` to ensure we don't get an error code when we don't need one
+  /usr/bin/cp -n /opt/verb/conf/inkdns/parked/db.* /var/named/zones/ || true
+  /usr/bin/cp -n /opt/verb/conf/inkdns/parked/nv.* /var/named/zones/ || true
   /usr/bin/cp -f /opt/verb/conf/inkdns/inkzones/db.* /var/named/zones/
   /usr/bin/cp -f /opt/verb/conf/inkdns/inkzones/nv.* /var/named/zones/
-  /usr/bin/cp -f /opt/verb/conf/inkdns/parked/db.* /var/named/zones/
-  /usr/bin/cp -f /opt/verb/conf/inkdns/parked/nv.* /var/named/zones/
   /bin/chown -R root:named /var/named/zones
   /bin/chmod -R 755 /var/named/zones
 
@@ -83,7 +84,7 @@ EOF
   /bin/chown root:named /var/named/nv.verber
   /bin/chmod 644 /var/named/nv.verber
   ## rDNS zone file entries
-  cd /var/named/zones/
+  cd /var/named/zones/ || exit 6
   for inkZoneDB in db.*; do
     inkZone="$(/bin/echo ${inkZoneDB} | sed 's/db\.//' )"
     if [ "${inkZone}" = '*' ]; then continue; fi

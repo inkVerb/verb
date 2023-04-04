@@ -1,0 +1,52 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This runs rinkadddomain for each domain in the verb/conf/inkdns/parked directory
+
+# How to use:
+## ./rinkparkme
+
+usagenotes="This runs rinkadddomain for each domain in the verb/conf/inkdns/parked directory"
+usageformat="rinkparkme"
+usageexample="rinkparkme"
+hierarchy=(  )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( "Controlled by Rink" )
+prerequesite=( rink::importvps )
+usedby=(  )
+useserfs=( rinkadddomain )
+useconfigs=( servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/rinkparkme.replace" ]; then . /opt/verb/mods/rinkparkme.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/rinkparkme.before" ]; then . /opt/verb/mods/rinkparkme.before; fi # Precedes this script
+
+
+# Configs
+. /opt/verb/conf/servernameip
+
+# RinkConfigured in any way at all?
+if [ -z "$RinkConfigured" ]; then
+	echo "Not connected to any Rink, nowhere to go"
+	exit 0
+fi
+
+# Are domain hosting & parking allowed?
+if [ "$DomHostAllowed" != "YES" ]; then
+	echo "Domains not even allowed here, I quit"
+	exit 0
+fi
+
+  ## rDNS zone file entries
+  cd /opt/verb/conf/inkdns/parked || exit 6
+  for parkedZoneDB in db.*; do
+    parkedZone="$(/bin/echo ${parkedZoneDB} | sed 's/db\.//' )"
+    /opt/verb/serfs/rinkadddomain ${parkedZone}
+  done
+
+
+if [ -e "/opt/verb/mods/rinkparkme.after" ]; then . /opt/verb/mods/rinkparkme.after; fi # Follows this script
