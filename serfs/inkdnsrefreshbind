@@ -86,7 +86,7 @@ EOF
   ## rDNS zone file entries
   cd /var/named/zones/ || exit 6
   for inkZoneDB in db.*; do
-    inkZone="$(/bin/echo ${inkZoneDB} | sed 's/db\.//' )"
+    inkZone="$(/bin/echo ${inkZoneDB} | /usr/bin/sed 's/db\.//' )"
     if [ "${inkZone}" = '*' ]; then continue; fi
       # We don't use 'allow-update { none; };' because 'update-policy' will ignore 'allow-update'
       /bin/echo "zone \"${inkZone}\" { type master; allow-transfer { ${ServerNS1IPv6}; ${ServerNS1IPv4}; ${ServerNS2IPv6}; ${ServerNS2IPv4}; }; file \"zones/db.${inkZone}\"; update-policy { grant inkcert. name _acme-challenge.${inkZone}. TXT; grant inkcert. name _acme-challenge.*.${inkZone}. TXT; }; };" >> /var/named/named.conf.verb

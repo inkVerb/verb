@@ -31,22 +31,29 @@ if [ -e "/opt/verb/mods/rinkparkme.before" ]; then . /opt/verb/mods/rinkparkme.b
 
 # RinkConfigured in any way at all?
 if [ -z "$RinkConfigured" ]; then
-	echo "Not connected to any Rink, nowhere to go"
-	exit 0
+	/usr/bin/echo "Not connected to any Rink, nowhere to go"
+	exit 5
 fi
 
 # Are domain hosting & parking allowed?
 if [ "$DomHostAllowed" != "YES" ]; then
-	echo "Domains not even allowed here, I quit"
-	exit 0
+	/usr/bin/echo "Domains not even allowed here, I quit"
+	exit 5
 fi
 
-  ## rDNS zone file entries
-  cd /opt/verb/conf/inkdns/parked || exit 6
-  for parkedZoneDB in db.*; do
-    parkedZone="$(/bin/echo ${parkedZoneDB} | sed 's/db\.//' )"
-    /opt/verb/serfs/rinkadddomain ${parkedZone}
-  done
+# rDNS zone file entries
+cd /opt/verb/conf/inkdns/parked || exit 6
+for parkedZoneDB in db.*; do
+	parkedZone="$(/bin/echo ${parkedZoneDB} | /usr/bin/sed 's/db\.//' )"
+	/opt/verb/serfs/rinkadddomain ${parkedZone}
+	e="$?"; [[ "$e" = "0" ]] || exit "$e"
+done
 
+# Finish
+if [ -f "/opt/verb/conf/inkdns/parked/${parkedZoneDB}" ]; then # If it looped at least once
+  /usr/bin/echo "Parking import done."
+else
+  /usr/bin/echo "Parking import finished with no problems, but there was nothing parked here."
+fi
 
 if [ -e "/opt/verb/mods/rinkparkme.after" ]; then . /opt/verb/mods/rinkparkme.after; fi # Follows this script

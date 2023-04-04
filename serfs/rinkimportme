@@ -51,36 +51,43 @@ fi
 if [ $VERBemail = "true" ] && [ -f "/opt/verb/conf/inkdns/inkzones/db.${emailURI}" ] && [ -f "/opt/verb/conf/inkcert/cli-ini/siteinkcert.${vipURI}" ]; then
 	#/usr/bin/echo "inkdnsaddslave ${ServerName}-${ServerTLD} ${emailURI} -n" >> /opt/verb/conf/inkdns/rinkimportme.tmp
 	/opt/verb/serfs/rinkadddomain ${emailURI}
+	e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 wait
 if [ $VERBone = "true" ] && [ -f "/opt/verb/conf/inkdns/inkzones/db.${oneURI}" ] && [ -f "/opt/verb/conf/inkcert/cli-ini/siteinkcert.${vipURI}" ]; then
 	#/usr/bin/echo "inkdnsaddslave ${ServerName}-${ServerTLD} ${oneURI} -n" >> /opt/verb/conf/inkdns/rinkimportme.tmp
 	/opt/verb/serfs/rinkadddomain ${oneURI}
+	e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 wait
 if [ $VERBink = "true" ] && [ -f "/opt/verb/conf/inkdns/inkzones/db.${inkURI}" ] && [ -f "/opt/verb/conf/inkcert/cli-ini/siteinkcert.${vipURI}" ]; then
 	#/usr/bin/echo "inkdnsaddslave ${ServerName}-${ServerTLD} ${inkURI} -n" >> /opt/verb/conf/inkdns/rinkimportme.tmp
 	/opt/verb/serfs/rinkadddomain ${inkURI}
+	e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 wait
 if [ $VERBblue = "true" ] && [ -f "/opt/verb/conf/inkdns/inkzones/db.${blueURI}" ] && [ -f "/opt/verb/conf/inkcert/cli-ini/siteinkcert.${vipURI}" ]; then
 	#/usr/bin/echo "inkdnsaddslave ${ServerName}-${ServerTLD} ${blueURI} -n" >> /opt/verb/conf/inkdns/rinkimportme.tmp
 	/opt/verb/serfs/rinkadddomain ${blueURI}
+	e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 wait
 if [ $VERBvip = "true" ] && [ -f "/opt/verb/conf/inkdns/inkzones/db.${vipURI}" ] && [ -f "/opt/verb/conf/inkcert/cli-ini/siteinkcert.${vipURI}" ]; then
 	#/usr/bin/echo "inkdnsaddslave ${ServerName}-${ServerTLD} ${vipURI} -n" >> /opt/verb/conf/inkdns/rinkimportme.tmp
 	/opt/verb/serfs/rinkadddomain ${vipURI}
+	e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 wait
 if [ $VERBkiwi = "true" ] && [ -f "/opt/verb/conf/inkdns/inkzones/db.${kiwiURI}" ] && [ -f "/opt/verb/conf/inkcert/cli-ini/siteinkcert.${vipURI}" ]; then
 	#/usr/bin/echo "inkdnsaddslave ${ServerName}-${ServerTLD} ${kiwiURI} -n" >> /opt/verb/conf/inkdns/rinkimportme.tmp
 	/opt/verb/serfs/rinkadddomain ${kiwiURI}
+	e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 wait
 if [ $VERBred = "true" ] && [ -f "/opt/verb/conf/inkdns/inkzones/db.${redURI}" ] && [ -f "/opt/verb/conf/inkcert/cli-ini/siteinkcert.${vipURI}" ]; then
 	#/usr/bin/echo "inkdnsaddslave ${ServerName}-${ServerTLD} ${redURI} -n" >> /opt/verb/conf/inkdns/rinkimportme.tmp
 	/opt/verb/serfs/rinkadddomain ${redURI}
+	e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 wait
 
@@ -92,8 +99,12 @@ for domainDB in db.*; do
 	# Add the entry
 	#/usr/bin/echo "inkdnsaddslave ${ServerName}-${ServerTLD} ${domain} -n" >> /opt/verb/conf/inkdns/rinkimportme.tmp
 	/opt/verb/serfs/rinkadddomain ${domain}
+	e="$?"; [[ "$e" = "0" ]] || exit "$e"
   fi
 done
+
+# Finish
+/usr/bin/echo "Rink import done."
 
 # # Check for conflicts
 # /opt/verb/serfs/rinkcheck inkdnsaddslave
