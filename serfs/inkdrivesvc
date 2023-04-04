@@ -1,11 +1,10 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
-# This mounts a block storage drive to the /mnt/ directory and makes an entry in /etc/fstab
-## This places a config in verb/conf/inkdrive/
-## When managed by the rink, the drive names will reflext the disk type (hdd = hdd, ssd = ssh, hdd1 = second HDD disk likely for transfer purposes)
+# This relocates a service directory to an inkDrive mounted with inkdriveadd, such as www/ vmail/ mysql/
+## All credentials must be entered correctly for accurate confirmation
 
 # How to use:
-## ./inkdrivesvc [ service ] [ drive name - optional ]
+## ./inkdrivesvc [ service ] [ mount dir - optional ]
 
 # Eg:
 ## ./inkdrivesvc www mydrive 
