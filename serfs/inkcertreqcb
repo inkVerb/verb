@@ -180,17 +180,21 @@ fi
 sleep 1
 #DEV: This currently does only the domain interactively, not according to cli.ini files; this needs to be automated to modify inkDNS zone files with --preferred-challenges=dns
 #/usr/bin/certbot certonly --dns-rfc2136 --dns-rfc2136-credentials /etc/letsencrypt/rfc2136.ini --email ${InkCertEmail} --server https://acme-v02.api.letsencrypt.org/directory --agree-tos --no-eff-email --force-renewal -d "${DOMAIN}" -d *.${DOMAIN}
-#DEV: The above shell command should work, once the on-server Named zones are synced with other nameservers, such as ns1.inkisaverb.com
+#DEV: The above shell command should work, once the non-server Named zones are synced with other nameservers, such as ns1.inkisaverb.com
 if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
   /usr/bin/certbot --nginx certonly --preferred-challenges=dns --email ${InkCertEmail} --server https://acme-v02.api.letsencrypt.org/directory --agree-tos --no-eff-email --renew-by-default -d "${DOMAIN}" -d *.${DOMAIN}
   if [ "$?" != "0" ]; then
-    /bin/echo "inkCert certbot on-zero exit status for ${DOMAIN}: $?"
+    errcode="$?"
+    /bin/echo "inkCert certbot non-zero exit status for ${DOMAIN}: $errcode"
+    exit $errcode
   fi
   /bin/systemctl restart nginx; wait
 elif [ ${ServerType} = "lamp" ]; then
   /usr/bin/certbot --apache certonly --preferred-challenges=dns --email ${InkCertEmail} --server https://acme-v02.api.letsencrypt.org/directory --agree-tos --no-eff-email --renew-by-default -d "${DOMAIN}" -d *.${DOMAIN}
   if [ "$?" != "0" ]; then
-    /bin/echo "inkCert certbot on-zero exit status for ${DOMAIN}: $?"
+    errcode="$?"
+    /bin/echo "inkCert certbot non-zero exit status for ${DOMAIN}: $errcode"
+    exit $errcode
   fi
   /bin/systemctl start httpd; wait
 fi

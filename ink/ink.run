@@ -2,21 +2,27 @@
 
 # Start log entries
 datenow=$(date)
-/bin/echo "$datenow ::ink# $serfcommand" >> "${LogDir}/inklog"
+/usr/bin/echo "$datenow ::ink# $serfcommand" >> "${LogDir}/inklog"
 /usr/bin/date >> "${LogDir}/outputlog"
-/bin/echo "::ink# $serfcommand" >> "${LogDir}/outputlog"
+/usr/bin/echo "::ink# $serfcommand" >> "${LogDir}/outputlog"
 /usr/bin/logger -p local6.info -t verb.ink "::ink# $serfcommand"
 
 # Run the serf
 if [ "${SOcli}" = "true" ]; then
-  echo "$serfcommand"
+  /usr/bin/echo "$serfcommand"
   exit 0
 elif [ "${SOverbose}" = "true" ]; then
   # We don't want a serf exit to exit this script, so run it as an if statement; thank you https://stackoverflow.com/a/66585275/10343144
-  if $serfcommand; then vsuccess="true"; fi
+  if $serfcommand | /usr/bin/tee -a "${LogDir}/outputlog"
+    then vsuccess="true"
+    else vsuccess="false"
+  fi
 else
+  # For standard command where all serf & script output goes to the log and only the ink tool sends STDOUT
   if $serfcommand 1>> "${LogDir}/outputlog" 2>> "${LogDir}/outputlog"
-  then vsuccess="true"; fi
+    then vsuccess="true"
+    else vsuccess="false"
+  fi
 fi
 
 # Serf output
@@ -45,11 +51,11 @@ fi
 
 # Send exit messages & logs
 if [ "$vsuccess" = "true" ]; then
-  /bin/echo "Success! $(date)" >> "${LogDir}/inklog"
+  /usr/bin/echo "Success! $(date)" >> "${LogDir}/inklog"
   /usr/bin/logger -p local6.info -t verb.ink "$success_log"
-  if [ -n "$success_message" ]; then /bin/echo $success_message; fi
+  if [ -n "$success_message" ]; then /usr/bin/echo $success_message; fi
 elif [ "$vsuccess" != "true" ]; then
-  /bin/echo "Fail, check errorlog! $(date)" >> "${LogDir}/inklog"
+  /usr/bin/echo "Fail, check errorlog! $(date)" >> "${LogDir}/inklog"
   /usr/bin/logger -p local6.err -t verb.ink "$fail_log"
-  if [ -n "$fail_message" ]; then /bin/echo $fail_message; fi
+  if [ -n "$fail_message" ]; then /usr/bin/echo $fail_message; fi
 fi

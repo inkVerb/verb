@@ -58,6 +58,11 @@ if ! /usr/bin/grep -Fq 'Email Control Records' /opt/verb/conf/inkdns/inkzones/db
 Email Control Records not declared in the email domain DNS zone file. This won't work.
 "
 exit 7; fi
+if [ "${EmailAllowed}" != "YES" ]; then
+/bin/echo "
+Email not allowed on this server.
+"
+exit 0; fi
 
 # Update Keyring
 /usr/bin/pacman -Sy archlinux-keyring --noconfirm
