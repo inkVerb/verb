@@ -52,7 +52,8 @@ sdnsIPv6Cmp="${ServerIPv6}"
 sdnsIPv6ARPA="${ServerARPAIPv6}"
 EOF
 EOS
-e="$?"; [[ "$e" = "0" ]] || /usr/bin/echo "rinkadddomain failed to add ${slavedomain} to NS1"; exit "$e"
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+/usr/bin/echo "Added ${slavedomain} to NS1"
 /usr/bin/ssh -T ns2 <<EOS
 /usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${slavedomain}
 sdnsDomain="${slavedomain}"
@@ -63,6 +64,7 @@ sdnsIPv6Cmp="${ServerIPv6}"
 sdnsIPv6ARPA="${ServerARPAIPv6}"
 EOF
 EOS
-e="$?"; [[ "$e" = "0" ]] || /usr/bin/echo "rinkadddomain failed to add ${slavedomain} to NS2"; exit "$e"
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+/usr/bin/echo "Added ${slavedomain} to NS2"
 
 if [ -e "/opt/verb/mods/rinkadddomain.after" ]; then . /opt/verb/mods/rinkadddomain.after; fi # Follows this script
