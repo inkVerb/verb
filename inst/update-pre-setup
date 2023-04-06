@@ -72,7 +72,7 @@ fi
 /usr/bin/cp -f /opt/verb/conf/servertype /opt/tmp/verb/conf/
 /usr/bin/cp -rf /opt/verb/repo /opt/tmp/verb/
 /usr/bin/cp -f /opt/verb/conf/bossuser /opt/tmp/verb/conf/
-/usr/bin/cp -f  /opt/verb/inst/mysqlrootpassword /opt/tmp/verb/inst/
+/usr/bin/cp -f  /opt/verb/conf/mysqlrootpassword /opt/tmp/verb/conf/
 
 # setup link?
 if [ -e "/opt/verb/serfs/setup" ]; then setuplink="true"; fi

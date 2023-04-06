@@ -79,7 +79,7 @@ fi
 /usr/bin/ln -sfn /opt/verb /root/
 
 # Record the MySQL root password
-/usr/bin/echo "${MYSQLPASS}" > /opt/verb/inst/mysqlrootpassword
+/usr/bin/echo "${MYSQLPASS}" > /opt/verb/conf/mysqlrootpassword
 
 #  LEMP Server
 ## Web directory

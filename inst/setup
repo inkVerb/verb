@@ -424,7 +424,6 @@ fi
 
 # Site settings
 ## Configs
-/usr/bin/mv /opt/verb/inst/mysqlrootpassword /opt/verb/conf/
 /usr/bin/mv /opt/verb/conf/servernameip286 /opt/verb/conf/servernameip
 /usr/bin/mv /opt/verb/conf/serverport286 /opt/verb/conf/serverport
 /usr/bin/mv /opt/verb/conf/serverinkget286 /opt/verb/conf/serverinkget
@@ -799,7 +798,7 @@ fi
 
 # MySQL root user updates
 ## Password
-MYSQLPASS="$(/usr/bin/cat /opt/verb/inst/mysqlrootpassword)"
+MYSQLPASS="$(/usr/bin/cat /opt/verb/conf/mysqlrootpassword)"
 MYSQLBossPASS=$(/usr/bin/pwgen -s -1 10)
 ## MySQL superuser to auto-create databases
 /usr/bin/mysql -uroot -p${MYSQLPASS} -e "
@@ -818,7 +817,7 @@ NEWMYSQLPASS=$(/usr/bin/pwgen -0 -1 -A -B 11)
 /usr/bin/mysql -uroot -p${MYSQLPASS} -e "
 SET PASSWORD FOR root@localhost = PASSWORD('${NEWMYSQLPASS}');FLUSH PRIVILEGES;"
 if [ "$?" = 0 ]; then
-  /usr/bin/echo "${NEWMYSQLPASS}" > /opt/verb/inst/mysqlrootpassword
+  /usr/bin/echo "${NEWMYSQLPASS}" > /opt/verb/conf/mysqlrootpassword
 else
   /usr/bin/echo "Can't update MySQL root password, something is very wrong"
   exit 6
