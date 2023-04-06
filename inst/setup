@@ -403,10 +403,15 @@ if [ "${SERVERIPV6}" != "NOIP6" ]; then
   SERVERIPV6=$(compress_ipv6 ${SERVERIPV6})
   SERVERIPV6EXP=$(expand_ipv6 ${SERVERIPV6})
   SERVERIPV6ARPA=$(rarpa_ipv6 ${SERVERIPV6EXP})
+else
+  SERVERIPV6EXP="NOIP6"
+  SERVERIPV6ARPA="NOIP6"
 fi
 # Set IPv4 or set NA to none
 if [ "${SERVERIPV6}" != "NOIP4" ]; then
   SERVERIPV4ARPA=$(/usr/bin/echo ${SERVERIPV4} | sed -r 's/^([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3})$/\4.\3.\2.\1.in-addr.arpa/')
+else
+  SERVERIPV4ARPA="NOIP4"
 fi
 
 # Locale (in case a VPS deleted it after make-preverber)
@@ -537,10 +542,8 @@ serveDIR="$(/usr/bin/pwgen -s -1 6)"
 /bin/sed -i "s/ipv4286/${SERVERIPV4}/" /opt/verb/conf/servernameip
 /bin/sed -i "s/ipv6286/${SERVERIPV6}/" /opt/verb/conf/servernameip
 /bin/sed -i "s/expip6286/${SERVERIPV6EXP}/" /opt/verb/conf/servernameip
-
 /bin/sed -i "s/arpaipv4286/${SERVERIPV4ARPA}/" /opt/verb/conf/servernameip
 /bin/sed -i "s/arpaip6286/${SERVERIPV6ARPA}/" /opt/verb/conf/servernameip
-
 /bin/sed -i "s:timecity286:${PHPCITY}:" /opt/verb/conf/servernameip
 /bin/sed -i "s/updaterepo286/${VUPRepo}/" /opt/verb/conf/servernameip
 /bin/sed -i "s/updateorg286/${VUPORG}/" /opt/verb/conf/servernameip
