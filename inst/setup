@@ -293,6 +293,7 @@ else
   NEWBoss="${13}"
   setupUsername "${NEWBoss}" "New Linux 'boss' user"
 fi
+/usr/bin/echo "Boss user: ${NEWBoss}" >> /opt/verb/conf/bossuser
 
 if [ -z "${14}" ]; then
   NEWBossPASS=$(/usr/bin/pwgen -s -1 16)
@@ -300,6 +301,7 @@ else
   NEWBossPASS="${14}"
   setupPassword "${NEWBossPASS}" "New Linux 'boss' user password"
 fi
+/usr/bin/echo "Boss pass: ${NEWBossPASS}" >> /opt/verb/conf/bossuser
 
 if [ -z "${15}" ]; then
   VUPRepo="verb-update"
@@ -794,6 +796,34 @@ if [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lamp" ]; then
   # /usr/bin/systemctl start httpd; wait
   /usr/bin/systemctl restart httpd; wait
 fi
+
+# MySQL root user updates
+## Password
+MYSQLPASS="$(/usr/bin/cat /opt/verb/inst/mysqlrootpassword)"
+MYSQLBossPASS=$(/usr/bin/pwgen -s -1 10)
+## MySQL superuser to auto-create databases
+/usr/bin/mysql -uroot -p${MYSQLPASS} -e "
+CREATE USER mysqlboss@localhost;
+SET PASSWORD FOR mysqlboss@localhost=PASSWORD('${MYSQLBossPASS}');
+GRANT ALL PRIVILEGES ON *.* TO 'mysqlboss'@'localhost' IDENTIFIED BY '${MYSQLBossPASS}' WITH GRANT OPTION;
+FLUSH PRIVILEGES;"
+## Set the mysqlboss as the mysqlboss config file so the password is not in the line command
+/usr/bin/echo "[client]
+user = mysqlboss
+password = ${MYSQLBossPASS}
+host = localhost" > /opt/verb/conf/mysqlboss.cnf
+
+## New MySQL root password
+NEWMYSQLPASS=$(/usr/bin/pwgen -0 -1 -A -B 11)
+/usr/bin/mysql -uroot -p${MYSQLPASS} -e "
+SET PASSWORD FOR root@localhost = PASSWORD('${NEWMYSQLPASS}');FLUSH PRIVILEGES;"
+if [ "$?" = 0 ]; then
+  /usr/bin/echo "${NEWMYSQLPASS}" > /opt/verb/inst/mysqlrootpassword
+else
+  /usr/bin/echo "Can't update MySQL root password, something is very wrong"
+  exit 6
+fi
+
 
 # Create the new boss user
 /usr/bin/groupadd ${NEWBoss}

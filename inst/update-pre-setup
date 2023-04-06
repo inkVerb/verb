@@ -71,6 +71,8 @@ fi
 # Other cleanup
 /usr/bin/cp -f /opt/verb/conf/servertype /opt/tmp/verb/conf/
 /usr/bin/cp -rf /opt/verb/repo /opt/tmp/verb/
+/usr/bin/cp -f /opt/verb/conf/bossuser /opt/tmp/verb/conf/
+/usr/bin/cp -f  /opt/verb/inst/mysqlrootpassword /opt/tmp/verb/inst/
 
 # setup link?
 if [ -e "/opt/verb/serfs/setup" ]; then setuplink="true"; fi

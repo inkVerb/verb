@@ -246,17 +246,18 @@ if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 # inkGet repo
 /usr/bin/mkdir -p /opt/verb/repo
 
-# MySQL superuser to auto-create databases
-/usr/bin/mysql -uroot -p${MYSQLPASS} -e "
-CREATE USER mysqlboss@localhost;
-SET PASSWORD FOR mysqlboss@localhost=PASSWORD('${MYSQLBossPASS}');
-GRANT ALL PRIVILEGES ON *.* TO 'mysqlboss'@'localhost' IDENTIFIED BY '${MYSQLBossPASS}' WITH GRANT OPTION;
-FLUSH PRIVILEGES;"
-## Set the mysqlboss as the mysqlboss config file so the password is not in the line command
-/usr/bin/echo "[client]
-user = mysqlboss
-password = ${MYSQLBossPASS}
-host = localhost" > /opt/verb/conf/mysqlboss.cnf
+#DEV moved to setup
+# # MySQL superuser to auto-create databases
+# /usr/bin/mysql -uroot -p${MYSQLPASS} -e "
+# CREATE USER mysqlboss@localhost;
+# SET PASSWORD FOR mysqlboss@localhost=PASSWORD('${MYSQLBossPASS}');
+# GRANT ALL PRIVILEGES ON *.* TO 'mysqlboss'@'localhost' IDENTIFIED BY '${MYSQLBossPASS}' WITH GRANT OPTION;
+# FLUSH PRIVILEGES;"
+# ## Set the mysqlboss as the mysqlboss config file so the password is not in the line command
+# /usr/bin/echo "[client]
+# user = mysqlboss
+# password = ${MYSQLBossPASS}
+# host = localhost" > /opt/verb/conf/mysqlboss.cnf
 
 # Monit
 /usr/bin/pacman -S --noconfirm --needed monit
