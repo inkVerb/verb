@@ -30,11 +30,7 @@ if [ -e "/opt/verb/mods/rinkkillallverbs.before" ]; then . /opt/verb/mods/rinkki
 # Configs
 . /opt/verb/conf/servernameip
 
-# Already configured?
-
-
-
-# # Already configured or allowed rink?
+# Already configured or allowed rink?
 if [ "$RinkConfigured" = "rink" ] && [ -f "/opt/rink/rinknames" ]; then
   . /opt/rink/rinknames
   ns1="${RinkNS1Name}.${RinkVerbTLD}"

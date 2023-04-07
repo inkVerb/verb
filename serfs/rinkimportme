@@ -59,19 +59,19 @@ fi
 cd /opt/verb/conf/inkdns/parked || exit 6
 for parkedZoneDB in db.*; do
 	parkedZone="$(/bin/echo ${parkedZoneDB} | /usr/bin/sed 's/db\.//' )"
+  	if [ "${domain}" = '*' ]; then continue; fi
 	/opt/verb/serfs/rinkadddomain ${parkedZone}
-	e="$?"; [[ "$e" = "0" ]] || exit "$e"
 done
 
 # Loop through active non-verb domains
 cd /opt/verb/conf/inkdns/zones || exit 6
 for domainDB in db.*; do
   domain="$(/bin/echo ${domainDB} | /bin/sed 's/db\.//' )"
+  if [ "${domain}" = '*' ]; then continue; fi
   if [ -f "/opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}" ]; then
 	# Add the entry
 	#/usr/bin/echo "inkdnsaddslave ${ServerName}-${ServerTLD} ${domain} -n" >> /opt/verb/conf/inkdns/rinkimportme.tmp
 	/opt/verb/serfs/rinkadddomain ${domain}
-	e="$?"; [[ "$e" = "0" ]] || exit "$e"
   fi
 done
 
