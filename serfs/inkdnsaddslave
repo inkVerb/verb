@@ -2,8 +2,10 @@
 #inkVerbKnight! verb.ink
 
 # This manually adds a slave domain to this nameserver's DNS configuration based on a given rink user config, this is only used by the Rink in run/setuprinkns
+## This may be obsolete because the Rink network tools achieve this, but it remains as a backdoor method to add a domain manually to a local slave
 ## This is only for use on a nameserver or rink, not on a normal verber
 ## This creates the config file in a served verber's /srv/sns/ folder which inkdnsrefreshbind loops through to create slave NS entries
+## This presumes that the added domain is served, not merely parked, which only makes a difference in inkdnsrefreshbind because of priority
 ## This should notmally not be used
 
 # How to use:
@@ -70,11 +72,11 @@ if [ -f "/srv/sns/${verber}/domains/${domain}" ]; then
 fi
 
 # IP4 ARPA
-SIPV4="${VerbIPv4}"
-SIPV4ARPA=$(/bin/echo ${SIPV4} | sed -r 's/^([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3})$/\4.\3.\2.\1.in-addr.arpa/')
+sIPv4="${VerbIPv4}"
+sIPv4ARPA=$(/bin/echo ${sIPv4} | sed -r 's/^([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3})$/\4.\3.\2.\1.in-addr.arpa/')
 
 # IP6
-SIPV6="${VerbIPv6}"
+sIPv6="${VerbIPv6}"
 ### helper to convert hex to dec (portable version)
 hex2dec(){
     [ "$1" != "" ] && printf "%d" "$(( 0x$1 ))"
@@ -163,18 +165,18 @@ rarpa_ipv6() {
 }
 
 ## Our new variables for the rest
-SIPV6EXP=$(expand_ipv6 ${SIPV6})
-SIPV6CMP=$(compress_ipv6 ${SIPV6})
-SIPV6ARPA=$(rarpa_ipv6 ${SIPV6EXP})
+sIPv6EXP=$(expand_ipv6 ${sIPv6})
+sIPv6CMP=$(compress_ipv6 ${sIPv6})
+sIPv6ARPA=$(rarpa_ipv6 ${sIPv6EXP})
 
 ## Create the config
-/usr/bin/cat <<EOF > /srv/sns/${verber}/domains/${domain}
+/usr/bin/cat <<EOF > /srv/sns/${verber}/domains/served/${domain}
 sdnsDomain="${domain}"
-sdnsIPv4="${SIPV4}"
-sdnsIPv4ARPA="${SIPV4ARPA}"
-sdnsIPv6Exp="${SIPV6EXP}"
-sdnsIPv6Cmp="${SIPV6CMP}"
-sdnsIPv6ARPA="${SIPV6ARPA}"
+sdnsIPv4="${sIPv4}"
+sdnsIPv4ARPA="${sIPv4ARPA}"
+sdnsIPv6Exp="${sIPv6EXP}"
+sdnsIPv6Cmp="${sIPv6CMP}"
+sdnsIPv6ARPA="${sIPv6ARPA}"
 EOF
 
 # Refresh Bind?

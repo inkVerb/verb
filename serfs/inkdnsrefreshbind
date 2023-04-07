@@ -149,11 +149,36 @@ EOF
         /usr/bin/echo "zone \"${VerbARPAIPv4}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"nv4.${VerbHostID}.${VerbName}.${VerbTLD}\"; };" >> /var/named/named.conf.rdns
         /usr/bin/echo "zone \"${VerbARPAIPv6}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"nv6.${VerbHostID}.${VerbName}.${VerbTLD}\"; };" >> /var/named/named.conf.rdns
         #### DNS slave listings in domains/ folder of the served verber in /srv/sns/VERBER
-        for slv in "${snsverber}/domains/"*; do
+        ##### Parked
+        for slv in "${snsverber}/domains/parked/"*; do
           ##### Config for this domain
           . ${slv}
           ##### Validate file properly lists itself?
-          if [ ! -f "${snsverber}/domains/${sdnsDomain}" ]; then continue; fi
+          if [ ! -f "${snsverber}/domains/parked/${sdnsDomain}" ]; then continue; fi
+          #### # Served domains have priority
+          if [ -f "${snsverber}/domains/served/${sdnsDomain}" ]; then continue; fi
+          ##### No duplicates
+          if /usr/bin/grep -q "db.${sdnsDomain}" /var/named/named.conf.verb; then
+            /usr/bin/echo "$(date +'%Y-%m-%d %H:%M:%S') - Duplicate ${sdnsDomain} found on ${snsverber}" >> /opt/verb/rinkcon/log/nsduplicates
+            continue
+          fi
+          ##### DNS entry
+          /usr/bin/echo "zone \"${sdnsDomain}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"db.${sdnsDomain}\"; };" >> /var/named/named.conf.verb
+          ##### rDNS, pointing to PRT records listed in named/nv.verber on the master, but only if grep doesn't find the ARPA IP doesn't already exist
+          /usr/bin/grep -q "${sdnsIPv4ARPA}" /var/named/named.conf.rdns || /usr/bin/echo "zone \"${sdnsIPv4ARPA}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"nv4.${sdnsDomain}\"; };" >> /var/named/named.conf.rdns
+          /usr/bin/grep -q "${sdnsIPv6ARPA}" /var/named/named.conf.rdns || /usr/bin/echo "zone \"${sdnsIPv6ARPA}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"nv6.${sdnsDomain}\"; };" >> /var/named/named.conf.rdns
+        done
+        ##### Served
+        for slv in "${snsverber}/domains/served/"*; do
+          ##### Config for this domain
+          . ${slv}
+          ##### Validate file properly lists itself?
+          if [ ! -f "${snsverber}/domains/served/${sdnsDomain}" ]; then continue; fi
+          ##### No duplicates
+          if /usr/bin/grep -q "db.${sdnsDomain}" /var/named/named.conf.verb; then
+            /usr/bin/echo "Duplicate ${sdnsDomain} found on ${snsverber}" >> /opt/verb/rinkcon/log/nsduplicates
+            continue
+          fi
           ##### DNS entry
           /usr/bin/echo "zone \"${sdnsDomain}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"db.${sdnsDomain}\"; };" >> /var/named/named.conf.verb
           ##### rDNS, pointing to PRT records listed in named/nv.verber on the master, but only if grep doesn't find the ARPA IP doesn't already exist

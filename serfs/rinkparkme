@@ -41,7 +41,7 @@ if [ "$DomHostAllowed" != "YES" ]; then
 	exit 5
 fi
 
-# rDNS zone file entries
+# Parked domains
 cd /opt/verb/conf/inkdns/parked || exit 6
 for parkedZoneDB in db.*; do
 	parkedZone="$(/bin/echo ${parkedZoneDB} | /usr/bin/sed 's/db\.//' )"

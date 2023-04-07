@@ -1,8 +1,8 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
 
-# This runs rinkadddomain for each domain already active on this verber after being imported by the Rink, not created by the Rink
-## This automatically loops through verb domains and normal domains, using servertldstatus and entries in inkdns/ and inkcert/, then verifying their configs in the webserver configs
+# This runs rinkadddomain for each domain active on this verber, intended for just after being imported by the Rink, but also can be used to refresh all served domains
+## This automatically loops through verb domains and normal domains, using servertldstatus and entries in inkdns/zones, inkdns/inkzones, and inkcert/, then verifying their configs in the webserver configs
 ## This does not loop through subdomains, but only through domains created using newdomainshell, just as newdomainshell would have run rinkadddomain just the same
 ## This does not check for webserver files because 1. that location vaires with lamp/lemp/laemp and 2. we only need to check for a viable reason that the verb system created this domain (inkcert) and that it can be served (inkdns)
 ## Prerequesite: run inkdnssetns1 inkdnssetns2
@@ -12,7 +12,7 @@
 # How to use:
 ## ./rinkimportme
 
-usagenotes="This runs rinkadddomain for each domain already active on this verber after being imported by the Rink, not created by the Rink"
+usagenotes="This runs rinkadddomain for each domain already active on this verber, intended for just after being imported by the Rink"
 usageformat="rinkimportme"
 usageexample="rinkimportme"
 hierarchy=(  )
@@ -37,15 +37,31 @@ if [ -e "/opt/verb/mods/rinkimportme.before" ]; then . /opt/verb/mods/rinkimport
 . /opt/verb/conf/siteurilist
 . /opt/verb/conf/servernameip
 
+# RinkConfigured in any way at all?
+if [ -z "$RinkConfigured" ]; then
+	/usr/bin/echo "Not connected to any Rink, nowhere to go"
+	exit 5
+fi
+
 # Already configured?
 if [ "$RinkConfigured" != "true" ]; then
 	echo "Rink NS server keys not configured, DNS nameserver zone files will need to be updated manually"
 	exit 0
 fi
 
-# Temp file
-# /usr/bin/rm -f /opt/verb/conf/inkdns/rinkimportme.tmp
-# /usr/bin/touch /opt/verb/conf/inkdns/rinkimportme.tmp
+# Are domain hosting & parking allowed?
+if [ "$DomHostAllowed" != "YES" ]; then
+	/usr/bin/echo "Domains not even allowed here, I quit"
+	exit 5
+fi
+
+# Parked domains (first so they are easily over-written)
+cd /opt/verb/conf/inkdns/parked || exit 6
+for parkedZoneDB in db.*; do
+	parkedZone="$(/bin/echo ${parkedZoneDB} | /usr/bin/sed 's/db\.//' )"
+	/opt/verb/serfs/rinkadddomain ${parkedZone}
+	e="$?"; [[ "$e" = "0" ]] || exit "$e"
+done
 
 # Cycle through active verb TLDs
 if [ $VERBemail = "true" ] && [ -f "/opt/verb/conf/inkdns/inkzones/db.${emailURI}" ] && [ -f "/opt/verb/conf/inkcert/cli-ini/siteinkcert.${vipURI}" ]; then
@@ -106,16 +122,6 @@ done
 # Finish
 /usr/bin/echo "Rink import done."
 
-# # Check for conflicts
-# /opt/verb/serfs/rinkcheck inkdnsaddslave
-# /opt/verb/serfs/rinkcheck killinkdnsslavedns
-
-# # Insert the function statements
-# /usr/bin/cat /opt/verb/conf/inkdns/rinkimportme.tmp | /usr/bin/ssh ns1 "/usr/bin/cat > /srv/sns/${ServerName}-${ServerTLD}/calls/inkdnsaddslave"
-# /usr/bin/cat /opt/verb/conf/inkdns/rinkimportme.tmp | /usr/bin/ssh ns2 "/usr/bin/cat > /srv/sns/${ServerName}-${ServerTLD}/calls/inkdnsaddslave"
-
-# # Cleanup
-# /usr/bin/rm -f /opt/verb/conf/inkdns/rinkimportme.tmp
 
 
 if [ -e "/opt/verb/mods/rinkimportme.after" ]; then . /opt/verb/mods/rinkimportme.after; fi # Follows this script

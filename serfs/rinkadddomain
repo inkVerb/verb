@@ -41,9 +41,19 @@ elif [ "$RinkConfigured" != "true" ]; then
 	exit 5
 fi
 
+# Served or parked?
+if [ -f "/opt/verb/conf/inkdns/zones/${slavedomain}" ] || [ -f "/opt/verb/conf/inkdns/inkzones/${slavedomain}" ]; then
+  parkserve="served"
+elif [ -f "/opt/verb/conf/inkdns/parked/${slavedomain}" ]; then
+  parkserve="parked"
+else
+  /usr/bin/echo "${slavedomain} is neither served nor parked here; nothing to do"
+  exit 8
+fi
+
 # Add the configs to the domains/ folder on the NS nameservers
 /usr/bin/ssh -T ns1 <<EOS
-/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${slavedomain}
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${parkserve}/${slavedomain}
 sdnsDomain="${slavedomain}"
 sdnsIPv4="${ServerIPv4}"
 sdnsIPv4ARPA="${ServerARPAIPv4}"
@@ -55,7 +65,7 @@ EOS
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 /usr/bin/echo "Added ${slavedomain} to NS1"
 /usr/bin/ssh -T ns2 <<EOS
-/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${slavedomain}
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${parkserve}/${slavedomain}
 sdnsDomain="${slavedomain}"
 sdnsIPv4="${ServerIPv4}"
 sdnsIPv4ARPA="${ServerARPAIPv4}"
