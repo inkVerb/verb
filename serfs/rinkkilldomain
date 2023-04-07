@@ -46,9 +46,9 @@ else
 fi
 
 # Served or parked?
-if [ -f "/opt/verb/conf/inkdns/zones/${slavedomain}" ]; then
+if [ -f "/opt/verb/conf/inkdns/zones/db.${slavedomain}" ]; then
   parkserve="served"
-elif [ -f "/opt/verb/conf/inkdns/parked/${slavedomain}" ]; then
+elif [ -f "/opt/verb/conf/inkdns/parked/db.${slavedomain}" ]; then
   parkserve="parked"
 else
   /usr/bin/echo "${slavedomain} is neither served nor parked here; nothing to do"
