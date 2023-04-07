@@ -56,8 +56,8 @@ else
 fi
 
 # Insert the function statements
-/usr/bin/ssh ${ns1} "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${parkserve}/${servedomain}"
-/usr/bin/ssh ${ns2} "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${parkserve}/${servedomain}"
+/usr/bin/ssh -T ${ns1} "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${parkserve}/${servedomain}"
+/usr/bin/ssh -T ${ns2} "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${parkserve}/${servedomain}"
 # /usr/bin/ssh ns1 "/usr/bin/echo 'killinkdnsslavedns ${ServerName}-${ServerTLD} ${servedomain} -n' > /srv/sns/${ServerName}-${ServerTLD}/calls/killinkdnsslavedns"
 # /usr/bin/ssh ns2 "/usr/bin/echo 'killinkdnsslavedns ${ServerName}-${ServerTLD} ${servedomain} -n' > /srv/sns/${ServerName}-${ServerTLD}/calls/killinkdnsslavedns"
 
