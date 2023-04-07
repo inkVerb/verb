@@ -44,7 +44,7 @@ if [ -z "$RinkConfigured" ]; then
 fi
 
 # Already configured?
-if [ "$RinkConfigured" != "true" ]; then
+if [ "$RinkConfigured" != "true" ] && [ "$RinkConfigured" != "rink" ]; then
 	echo "Rink NS server keys not configured, DNS nameserver zone files will need to be updated manually"
 	exit 0
 fi
