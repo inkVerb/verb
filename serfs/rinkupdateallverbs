@@ -21,7 +21,7 @@ dependencyinstall=( "Controlled by Rink" )
 prerequesite=(  )
 usedby=( rink::addvps )
 useserfs=( rinkimportme )
-useconfigs=( servernameip )
+useconfigs=( servernameip siteurilist )
 
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/rinkupdateallverbs.replace" ]; then . /opt/verb/mods/rinkupdateallverbs.replace; return 0; fi # Replaces this script
@@ -30,6 +30,7 @@ if [ -e "/opt/verb/mods/rinkupdateallverbs.before" ]; then . /opt/verb/mods/rink
 
 # Configs
 . /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
 
 # Already configured or allowed rink?
 if [ "$RinkConfigured" = "rink" ] && [ -f "/opt/rink/rinknames" ]; then

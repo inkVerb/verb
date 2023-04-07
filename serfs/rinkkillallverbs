@@ -29,6 +29,7 @@ if [ -e "/opt/verb/mods/rinkkillallverbs.before" ]; then . /opt/verb/mods/rinkki
 
 # Configs
 . /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
 
 # Already configured or allowed rink?
 if [ "$RinkConfigured" = "rink" ] && [ -f "/opt/rink/rinknames" ]; then
