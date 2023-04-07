@@ -3,6 +3,7 @@
 
 # This remote runs inkdnsaddslave on both NS rink slave servers
 ## This is run automatically by newdomainshell and rinkimportme; it normally should not be run independently
+## This cannot import verb domains; use rinkupdateallverbs instead
 
 # How to use:
 ## ./rinkadddomain [ domain.tld ]
@@ -10,7 +11,7 @@
 usagenotes="This remote runs inkdnsaddslave on both NS rink slave servers"
 usageformat="rinkadddomain [ domain.tld ]"
 usageexample="rinkadddomain inkisaverb.com"
-hierarchy=( tertiary newdomainshell )
+hierarchy=( secondary )
 vsetnames=( "Domain" )
 vsettypes=( isDomain )
 voptnames=(  )
@@ -42,7 +43,7 @@ elif [ "$RinkConfigured" != "true" ]; then
 fi
 
 # Served or parked?
-if [ -f "/opt/verb/conf/inkdns/zones/${slavedomain}" ] || [ -f "/opt/verb/conf/inkdns/inkzones/${slavedomain}" ]; then
+if [ -f "/opt/verb/conf/inkdns/zones/${slavedomain}" ]; then
   parkserve="served"
 elif [ -f "/opt/verb/conf/inkdns/parked/${slavedomain}" ]; then
   parkserve="parked"

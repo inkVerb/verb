@@ -1,15 +1,16 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
 
-# This remote runs inkdnsaddslaveallverbs
+# This removes all listed domains on the NS nameservers and re-adds only verb domains hosted on this verber
+## This intented to be run by rinkimportme as the first step of clearing the listed slave domains before re-adding and refreshing the listed domains
 
 # How to use:
 ## ./rinkupdateallverbs
 
-usagenotes="This remote runs inkdnsaddslaveallverbs"
+usagenotes="his removes all listed domains on the NS nameservers and re-adds only verb domains hosted on this verber"
 usageformat="rinkupdateallverbs"
 usageexample="rinkupdateallverbs"
-hierarchy=( primary )
+hierarchy=( secondary )
 vsetnames=(  )
 vsettypes=(  )
 voptnames=(  )
@@ -19,7 +20,7 @@ voptflagpurpose=(  )
 dependencyinstall=( "Controlled by Rink" )
 prerequesite=(  )
 usedby=( rink::addvps )
-useserfs=(  )
+useserfs=( rinkimportme )
 useconfigs=( servernameip )
 
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
@@ -30,15 +31,22 @@ if [ -e "/opt/verb/mods/rinkupdateallverbs.before" ]; then . /opt/verb/mods/rink
 # Configs
 . /opt/verb/conf/servernameip
 
-# Already configured?
-if [ "$RinkConfigured" != "true" ]; then
+# Already configured or allowed rink?
+if [ "$RinkConfigured" = "rink" ] && [ -f "/opt/rink/rinknames" ]; then
+  . /opt/rink/rinknames
+  ns1="${RinkNS1Name}.${RinkVerbTLD}"
+  ns2="${RinkNS2Name}.${RinkVerbTLD}"
+elif [ "$RinkConfigured" != "true" ]; then
 	/usr/bin/echo "Rink NS server keys not configured, this won't work"
 	exit 0
+else
+  ns1="ns1"
+  ns2="ns1"
 fi
 
 if [ $VERBemail=true ]; then
-/usr/bin/ssh ns1 <<EOS
-/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${emailURI}
+/usr/bin/ssh ${ns1} <<EOS
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/served/${emailURI}
 sdnsDomain="${emailURI}"
 sdnsIPv4="${ServerIPv4}"
 sdnsIPv4ARPA="${ServerARPAIPv4}"
@@ -48,8 +56,8 @@ sdnsIPv6ARPA="${ServerARPAIPv6}"
 EOF
 EOS
 wait
-/usr/bin/ssh ns2 <<EOS
-/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${emailURI}
+/usr/bin/ssh ${ns2} <<EOS
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/served/${emailURI}
 sdnsDomain="${emailURI}"
 sdnsIPv4="${ServerIPv4}"
 sdnsIPv4ARPA="${ServerARPAIPv4}"
@@ -61,8 +69,8 @@ EOS
 fi
 wait
 if [ $VERBone=true ]; then
-/usr/bin/ssh ns1 <<EOS
-/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${oneURI}
+/usr/bin/ssh ${ns1} <<EOS
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/served/${oneURI}
 sdnsDomain="${oneURI}"
 sdnsIPv4="${ServerIPv4}"
 sdnsIPv4ARPA="${ServerARPAIPv4}"
@@ -72,8 +80,8 @@ sdnsIPv6ARPA="${ServerARPAIPv6}"
 EOF
 EOS
 wait
-/usr/bin/ssh ns2 <<EOS
-/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${oneURI}
+/usr/bin/ssh ${ns2} <<EOS
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/served/${oneURI}
 sdnsDomain="${oneURI}"
 sdnsIPv4="${ServerIPv4}"
 sdnsIPv4ARPA="${ServerARPAIPv4}"
@@ -85,8 +93,8 @@ EOS
 fi
 wait
 if [ $VERBink=true ]; then
-/usr/bin/ssh ns1 <<EOS
-/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${inkURI}
+/usr/bin/ssh ${ns1} <<EOS
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/served/${inkURI}
 sdnsDomain="${inkURI}"
 sdnsIPv4="${ServerIPv4}"
 sdnsIPv4ARPA="${ServerARPAIPv4}"
@@ -96,8 +104,8 @@ sdnsIPv6ARPA="${ServerARPAIPv6}"
 EOF
 EOS
 wait
-/usr/bin/ssh ns2 <<EOS
-/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${inkURI}
+/usr/bin/ssh ${ns2} <<EOS
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/served/${inkURI}
 sdnsDomain="${inkURI}"
 sdnsIPv4="${ServerIPv4}"
 sdnsIPv4ARPA="${ServerARPAIPv4}"
@@ -109,8 +117,8 @@ EOS
 fi
 wait
 if [ $VERBblue=true ]; then
-/usr/bin/ssh ns1 <<EOS
-/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${blueURI}
+/usr/bin/ssh ${ns1} <<EOS
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/served/${blueURI}
 sdnsDomain="${blueURI}"
 sdnsIPv4="${ServerIPv4}"
 sdnsIPv4ARPA="${ServerARPAIPv4}"
@@ -120,8 +128,8 @@ sdnsIPv6ARPA="${ServerARPAIPv6}"
 EOF
 EOS
 wait
-/usr/bin/ssh ns2 <<EOS
-/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${blueURI}
+/usr/bin/ssh ${ns2} <<EOS
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/served/${blueURI}
 sdnsDomain="${blueURI}"
 sdnsIPv4="${ServerIPv4}"
 sdnsIPv4ARPA="${ServerARPAIPv4}"
@@ -133,8 +141,8 @@ EOS
 fi
 wait
 if [ $VERBvip=true ]; then
-/usr/bin/ssh ns1 <<EOS
-/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${vipURI}
+/usr/bin/ssh ${ns1} <<EOS
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/served/${vipURI}
 sdnsDomain="${vipURI}"
 sdnsIPv4="${ServerIPv4}"
 sdnsIPv4ARPA="${ServerARPAIPv4}"
@@ -144,8 +152,8 @@ sdnsIPv6ARPA="${ServerARPAIPv6}"
 EOF
 EOS
 wait
-/usr/bin/ssh ns2 <<EOS
-/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${vipURI}
+/usr/bin/ssh ${ns2} <<EOS
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/served/${vipURI}
 sdnsDomain="${vipURI}"
 sdnsIPv4="${ServerIPv4}"
 sdnsIPv4ARPA="${ServerARPAIPv4}"
@@ -157,8 +165,8 @@ EOS
 fi
 wait
 if [ $VERBkiwi=true ]; then
-/usr/bin/ssh ns1 <<EOS
-/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${kiwiURI}
+/usr/bin/ssh ${ns1} <<EOS
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/served/${kiwiURI}
 sdnsDomain="${kiwiURI}"
 sdnsIPv4="${ServerIPv4}"
 sdnsIPv4ARPA="${ServerARPAIPv4}"
@@ -168,8 +176,8 @@ sdnsIPv6ARPA="${ServerARPAIPv6}"
 EOF
 EOS
 wait
-/usr/bin/ssh ns2 <<EOS
-/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${kiwiURI}
+/usr/bin/ssh ${ns2} <<EOS
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/served/${kiwiURI}
 sdnsDomain="${kiwiURI}"
 sdnsIPv4="${ServerIPv4}"
 sdnsIPv4ARPA="${ServerARPAIPv4}"
@@ -181,8 +189,8 @@ EOS
 fi
 wait
 if [ $VERBred=true ]; then
-/usr/bin/ssh ns1 <<EOS
-/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${redURI}
+/usr/bin/ssh ${ns1} <<EOS
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/served/${redURI}
 sdnsDomain="${redURI}"
 sdnsIPv4="${ServerIPv4}"
 sdnsIPv4ARPA="${ServerARPAIPv4}"
@@ -192,8 +200,8 @@ sdnsIPv6ARPA="${ServerARPAIPv6}"
 EOF
 EOS
 wait
-/usr/bin/ssh ns2 <<EOS
-/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${redURI}
+/usr/bin/ssh ${ns2} <<EOS
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/served/${redURI}
 sdnsDomain="${redURI}"
 sdnsIPv4="${ServerIPv4}"
 sdnsIPv4ARPA="${ServerARPAIPv4}"

@@ -10,7 +10,7 @@
 usagenotes="This remote runs killinkdnsslavedns on both NS rink slave servers"
 usageformat="rinkkilldomain [ domain.tld ]"
 usageexample="rinkkilldomain inkisaverb.com"
-hierarchy=( tertiary killdomainshell )
+hierarchy=( tertiary )
 vsetnames=( "Domain" )
 vsettypes=( isDomain )
 voptnames=(  )
@@ -32,15 +32,32 @@ servedomain=$1
 # Configs
 . /opt/verb/conf/servernameip
 
-# Already configured?
-if [ "$RinkConfigured" != "true" ]; then
-	echo "Rink NS server keys not configured, DNS nameserver zone files will need to be updated manually"
+# Already configured or allowed rink?
+if [ "$RinkConfigured" = "rink" ] && [ -f "/opt/rink/rinknames" ]; then
+  . /opt/rink/rinknames
+  ns1="${RinkNS1Name}.${RinkVerbTLD}"
+  ns2="${RinkNS2Name}.${RinkVerbTLD}"
+elif [ "$RinkConfigured" != "true" ]; then
+	/usr/bin/echo "Rink NS server keys not configured, this won't work"
 	exit 0
+else
+  ns1="ns1"
+  ns2="ns1"
+fi
+
+# Served or parked?
+if [ -f "/opt/verb/conf/inkdns/zones/${slavedomain}" ]; then
+  parkserve="served"
+elif [ -f "/opt/verb/conf/inkdns/parked/${slavedomain}" ]; then
+  parkserve="parked"
+else
+  /usr/bin/echo "${slavedomain} is neither served nor parked here; nothing to do"
+  exit 8
 fi
 
 # Insert the function statements
-/usr/bin/ssh ns1 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${servedomain}"
-/usr/bin/ssh ns2 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${servedomain}"
+/usr/bin/ssh ${ns1} "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${parkserve}/${servedomain}"
+/usr/bin/ssh ${ns2} "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${parkserve}/${servedomain}"
 # /usr/bin/ssh ns1 "/usr/bin/echo 'killinkdnsslavedns ${ServerName}-${ServerTLD} ${servedomain} -n' > /srv/sns/${ServerName}-${ServerTLD}/calls/killinkdnsslavedns"
 # /usr/bin/ssh ns2 "/usr/bin/echo 'killinkdnsslavedns ${ServerName}-${ServerTLD} ${servedomain} -n' > /srv/sns/${ServerName}-${ServerTLD}/calls/killinkdnsslavedns"
 

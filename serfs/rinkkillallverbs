@@ -31,45 +31,56 @@ if [ -e "/opt/verb/mods/rinkkillallverbs.before" ]; then . /opt/verb/mods/rinkki
 . /opt/verb/conf/servernameip
 
 # Already configured?
-if [ "$RinkConfigured" != "true" ]; then
+
+
+
+# # Already configured or allowed rink?
+if [ "$RinkConfigured" = "rink" ] && [ -f "/opt/rink/rinknames" ]; then
+  . /opt/rink/rinknames
+  ns1="${RinkNS1Name}.${RinkVerbTLD}"
+  ns2="${RinkNS2Name}.${RinkVerbTLD}"
+elif [ "$RinkConfigured" != "true" ]; then
 	/usr/bin/echo "Rink NS server keys not configured, this won't work"
 	exit 0
+else
+  ns1="ns1"
+  ns2="ns1"
 fi
 
-# Add the active verb domains, wait so we don't congest the server
+# Add the active verb domains/served, wait so we don't congest the server
 if [ $VERBemail=true ]; then
-/usr/bin/ssh ns1 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${emailURI}"
-/usr/bin/ssh ns2 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${emailURI}"
+/usr/bin/ssh ${ns1} "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/served/${emailURI}"
+/usr/bin/ssh ${ns2} "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/served/${emailURI}"
 fi
 wait
 if [ $VERBone=true ]; then
-/usr/bin/ssh ns1 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${oneURI}"
-/usr/bin/ssh ns2 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${oneURI}"
+/usr/bin/ssh ${ns1} "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/served/${oneURI}"
+/usr/bin/ssh ${ns2} "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/served/${oneURI}"
 fi
 wait
 if [ $VERBink=true ]; then
-/usr/bin/ssh ns1 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${inkURI}"
-/usr/bin/ssh ns2 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${inkURI}"
+/usr/bin/ssh ${ns1} "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/served/${inkURI}"
+/usr/bin/ssh ${ns2} "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/served/${inkURI}"
 fi
 wait
 if [ $VERBblue=true ]; then
-/usr/bin/ssh ns1 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${blueURI}"
-/usr/bin/ssh ns2 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${blueURI}"
+/usr/bin/ssh ${ns1} "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/served/${blueURI}"
+/usr/bin/ssh ${ns2} "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/served/${blueURI}"
 fi
 wait
 if [ $VERBvip=true ]; then
-/usr/bin/ssh ns1 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${vipURI}"
-/usr/bin/ssh ns2 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${vipURI}"
+/usr/bin/ssh ${ns1} "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/served/${vipURI}"
+/usr/bin/ssh ${ns2} "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/served/${vipURI}"
 fi
 wait
 if [ $VERBkiwi=true ]; then
-/usr/bin/ssh ns1 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${kiwiURI}"
-/usr/bin/ssh ns2 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${kiwiURI}"
+/usr/bin/ssh ${ns1} "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/served/${kiwiURI}"
+/usr/bin/ssh ${ns2} "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/served/${kiwiURI}"
 fi
 wait
 if [ $VERBred=true ]; then
-/usr/bin/ssh ns1 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${redURI}"
-/usr/bin/ssh ns2 "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${redURI}"
+/usr/bin/ssh ${ns1} "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/served/${redURI}"
+/usr/bin/ssh ${ns2} "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/served/${redURI}"
 fi
 
 
