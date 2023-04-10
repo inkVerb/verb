@@ -8,15 +8,17 @@
 ## This should renew by default, to include recently-added subdomains in the verb/config/inkcert/cli-ini/ files
 
 # How to use:
-## ./inkcertreqle [ domain.tld NO SUBDOMAINS ]
+## ./inkcertreqle [ domain.tld NO SUBDOMAINS ] [ r (optional) ]
 
 #Eg:
 ## ./inkcertreqle inkisaverb.com
+## ./inkcertreqle inkisaverb.com r
 ## ./inkcertreqle YOURNAME.verb.blue
 
 usagenotes="This requests and gets Letsencrypt certs via inkCert-Letsencrypt for a given domain, including inkVerb namespace domains"
 usageformat="inkcertreqle [ domain.tld NO SUBDOMAINS ]"
 usageexample="inkcertreqle inkisaverb.com
+inkcertreqle inkisaverb.com r
 inkcertreqle YOURNAME.verb.blue"
 hierarchy=( tertiary inkcertdole )
 vsetnames=( "Domain" )
@@ -68,32 +70,36 @@ case ${InkCerted} in
   /bin/echo $inkcertmsg
   /bin/echo "inkCert self-cert is already setup for ${DOMAIN}.
 
-  To set up certs differently, first run: inkcertrevokesc ${DOMAIN}, then run this again.
-  "
+To set up certs differently, first run: inkcertrevokesc ${DOMAIN}, then run this again.
+"
   exit 0
   ;;
   DONE_LE)
-  /bin/echo $inkcertmsg
-  /bin/echo "inkCert Letsencrypt is already setup for ${DOMAIN}.
+  if [ -z "$2" ] || [ "$2" != "r" ]; then
+    /bin/echo $inkcertmsg
+    /bin/echo "inkCert Letsencrypt is already setup for ${DOMAIN}.
 
-  To set up certs differently, first run: inkcertrevokele ${DOMAIN}, then run this again.
-  "
-  exit 0
+To set up certs differently, first run: inkcertrevokele ${DOMAIN}, then run this again.
+"
+    exit 0
+  else
+    /bin/echo "Refreshing inkCert Letsencrypt certs for ${DOMAIN}..."
+  fi
   ;;
   DONE_CBSINGLE)
   /bin/echo $inkcertmsg
-  /bin/echo "inkCert cert-bot single is already setup for ${DOMAIN}.
+  /bin/echo "inkCert cert-bot single-site cert is already setup for ${DOMAIN}.
 
-  To set up certs differently, first run: inkcertrevokecbsingle ${DOMAIN}, then run this again.
-  "
+To set up certs differently, first run: inkcertrevokecbsingle ${DOMAIN}, then run this again.
+"
   exit 0
   ;;
   DONE_CB)
   /bin/echo $inkcertmsg
   /bin/echo "inkCert cert-bot is already setup for ${DOMAIN}.
 
-  To set up certs differently, first run: inkcertrevokecb ${DOMAIN}, then run this again.
-  "
+To set up certs differently, first run: inkcertrevokecb ${DOMAIN}, then run this again.
+"
   exit 0
   ;;
   NO|NOT_YET)
