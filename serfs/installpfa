@@ -105,7 +105,7 @@ if [ "$?" = 4 ]; then
 if [ "${ServerRCPath}" != "RC_NOT_INSTALLED" ]; then
   /bin/sed -i "s/rcfolder286/${ServerRCPath}/g" /srv/www/email/postfixadmin/config.local.php
 else
-  /bin/sed -i "/rcfolder286/d" /srv/www/email/postfixadmin/config.local.php
+  /bin/sed -i "s/\$Conf\['show_footer_text'\] = 'YES';/\$Conf\['show_footer_text'\] = 'NO';/" /srv/www/email/postfixadmin/config.local.php
 fi
 ## Whether web-generated (secure) or auto-generated password
 /opt/verb/serfs/setpfapass ${PFAPASS}

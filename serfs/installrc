@@ -154,7 +154,10 @@ fi
 /usr/bin/sed -i "s/rcemailconfdeskeysalt286/${DESSALTGEN}/g" /srv/www/email/roundcube/config/config.inc.php
 # In the event that installpfa was run first
 if [ -e "/srv/www/email/postfixadmin/config.inc.php" ]; then
-/usr/bin/sed -i "s/rcfolder286/${RCFOLDER}/g" /srv/www/email/postfixadmin/config.inc.php
+  /usr/bin/sed -i "s/rcfolder286/${RCFOLDER}/g" /srv/www/email/postfixadmin/config.inc.php
+  if [ "$?" = "0" ]; then
+    /bin/sed -i "s/\$Conf\['show_footer_text'\] = 'NO';/\$Conf\['show_footer_text'\] = 'YES';/" /srv/www/email/postfixadmin/config.local.php
+  fi
 fi
 
 # Copy the branding files

@@ -133,7 +133,7 @@ $Conf['show_header_text'] = 'YES';
 $Conf['header_text'] = '';
 
 $Conf['show_footer_text'] = 'YES';
-$Conf['footer_text'] = 'Login to inkVerb webmail';
+$Conf['footer_text'] = 'Login to your webmail';
 $Conf['footer_link'] = 'https://box.emailTLDURI286/rcfolder286';
 
 $Conf['motd_user'] = 'Ink is a verb. So, get inking!';
