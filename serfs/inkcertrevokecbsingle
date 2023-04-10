@@ -60,7 +60,7 @@ There is nothing to revoke until you run inkcertdo or inkcertdole... And then, c
 fi
 
 # Run the LE revoke
-/usr/local/bin/certbot revoke --cert-path /etc/inkcert/le/live/${DOMAIN}/cert.pem
+/usr/bin/certbot revoke --cert-path /etc/inkcert/le/live/${DOMAIN}/cert.pem
 # Additional options if not doing certonly: --no-redirect --no-hsts --no-uir
 # https://certbot.eff.org/docs/using.html#command-line
 # https://certbot.eff.org/#ubuntuxenial-apache
