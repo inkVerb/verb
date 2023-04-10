@@ -30,36 +30,36 @@ if [ -z ${1} ]; then
 fi
 
 # Request and get the certs
-/opt/verb/serfs/inkcertsc ${DOMAIN}
+/opt/verb/serfs/inkcertsc ${domain}
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 # Install the certs
-if /bin/grep -q "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN}; then
-  if [ -e "/etc/inkcert/le/live/${DOMAIN}" ]; then
-    /opt/verb/serfs/inkcertaddsc ${DOMAIN}
+if /bin/grep -q "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
+  if [ -e "/etc/inkcert/le/live/${domain}" ]; then
+    /opt/verb/serfs/inkcertaddsc ${domain}
     e="$?"; [[ "$e" = "0" ]] || exit "$e"
   fi
 fi
 
 # Domain check for mail certs
 . /opt/verb/conf/siteurilist
-if [ "${DOMAIN}" = "${nameURI}" ]; then
-  /opt/verb/serfs/setinkcertmailcerts ${DOMAIN} inkvmail
+if [ "${domain}" = "${nameURI}" ]; then
+  /opt/verb/serfs/setinkcertmailcerts ${domain} inkvmail
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
-elif [ "${DOMAIN}" != "${emailTLD}" ] && [ "${DOMAIN}" != "${hostURI}" ] && [ "${DOMAIN}" != "${serveURI}" ] && [ "${DOMAIN}" != "${emailTLDURI}" ] && [ "${DOMAIN}" != "${emailURI}" ] && [ "${DOMAIN}" != "${oneURI}" ] && [ "${DOMAIN}" != "${inkURI}" ] && [ "${DOMAIN}" != "${blueURI}" ] && [ "${DOMAIN}" != "${vipURI}" ] && [ "${DOMAIN}" != "${kiwiURI}" ] && [ "${DOMAIN}" != "${redURI}" ]; then
-  /opt/verb/serfs/setinkcertmailcerts ${DOMAIN}
+elif [ "${domain}" != "${emailTLD}" ] && [ "${domain}" != "${hostURI}" ] && [ "${domain}" != "${serveURI}" ] && [ "${domain}" != "${emailTLDURI}" ] && [ "${domain}" != "${emailURI}" ] && [ "${domain}" != "${oneURI}" ] && [ "${domain}" != "${inkURI}" ] && [ "${domain}" != "${blueURI}" ] && [ "${domain}" != "${vipURI}" ] && [ "${domain}" != "${kiwiURI}" ] && [ "${domain}" != "${redURI}" ]; then
+  /opt/verb/serfs/setinkcertmailcerts ${domain}
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 
 # Update the inkCert-DOMAIN config file, fail silently (eg. when used on subdomains)
-/bin/sed -i "s/InkCerted=.*/InkCerted=DONE_SC/" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN} 2> /dev/null
+/bin/sed -i "s/InkCerted=.*/InkCerted=DONE_SC/" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain} 2> /dev/null
 
 # Finish
 /bin/echo "
 Excellent!
 Verify above exits - IMPORTANT NOTES: ... - Congratulations!
 
-If so, then ${DOMAIN} and all subdomains are now live with inkCert Letsencrypt certificates.
+If so, then ${domain} and all subdomains are now live with inkCert Letsencrypt certificates.
 "
 
 

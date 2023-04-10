@@ -10,19 +10,21 @@
 
 #Eg:
 ## ./inkcertdocb inkisaverb.com
+## ./inkcertdocb inkisaverb.com r
 ## ./inkcertdocb YOURNAME.verb.blue
 
 usagenotes="This batch runs inkCert-Certbot request and install scripts for a given domain, including inkVerb namespace domains"
 usageformat="inkcertdocb [ domain.tld NO SUBDOMAINS ]"
 usageexample="inkcertdocb inkisaverb.com
+inkcertdocb inkisaverb.com r
 inkcertdocb YOURNAME.verb.one"
 hierarchy=( primary )
 vsetnames=( "Domain" )
 vsettypes=( isDomain )
 voptnames=(  )
 vopttypes=(  )
-voptflags=(  )
-voptflagpurpose=(  )
+voptflags=( r )
+voptflagpurpose=( "Refresh if already done (required for domains with certs already installed)" )
 dependencyinstall=( inkcertinstall )
 prerequesite=( inkcertinstall )
 usedby=( inkcertdo-all-verbs inknetmakeca )
@@ -33,7 +35,14 @@ if [ -e "/opt/verb/mods/inkcertdocb.replace" ]; then . /opt/verb/mods/inkcertdoc
 if [ -e "/opt/verb/mods/inkcertdocb.before" ]; then . /opt/verb/mods/inkcertdocb.before; fi # Precedes this script
 
 
-DOMAIN=$1
+domain=$1
+
+# Refresh option
+if [ -n "$2" ] && [ "$2" = "r" ]; then
+  suffix=" r"
+else
+  suffix=""
+fi
 
 # Check inkCert installed
 if [ "${InkCertInstalled}" = "NOT_YET" ]; then
@@ -50,36 +59,36 @@ if [ -z "${1}" ]; then
 fi
 
 # Request and get the certs
-/opt/verb/serfs/inkcertreqcb ${DOMAIN}
+/opt/verb/serfs/inkcertreqcb ${domain}${suffix}
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 # Install the certs
-if /bin/grep -q "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN}; then
-  if [ -e "/etc/inkcert/le/live/${DOMAIN}" ]; then
-    /opt/verb/serfs/inkcertaddallcb ${DOMAIN}
+if /bin/grep -q "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
+  if [ -e "/etc/inkcert/le/live/${domain}" ]; then
+    /opt/verb/serfs/inkcertaddallcb ${domain}
     e="$?"; [[ "$e" = "0" ]] || exit "$e"
   fi
 fi
 
 # Domain check for mail certs
 . /opt/verb/conf/siteurilist
-if [ "${DOMAIN}" = "${nameURI}" ]; then
-  opt/verb/serfs/setinkcertmailcerts ${DOMAIN} inkvmail
+if [ "${domain}" = "${nameURI}" ]; then
+  opt/verb/serfs/setinkcertmailcerts ${domain} inkvmail
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
-elif [ "${DOMAIN}" != "${emailTLD}" ] && [ "${DOMAIN}" != "${hostURI}" ] && [ "${DOMAIN}" != "${serveURI}" ] && [ "${DOMAIN}" != "${emailTLDURI}" ] && [ "${DOMAIN}" != "${emailURI}" ] && [ "${DOMAIN}" != "${oneURI}" ] && [ "${DOMAIN}" != "${inkURI}" ] && [ "${DOMAIN}" != "${blueURI}" ] && [ "${DOMAIN}" != "${vipURI}" ] && [ "${DOMAIN}" != "${kiwiURI}" ] && [ "${DOMAIN}" != "${redURI}" ]; then
-  /opt/verb/serfs/setinkcertmailcerts ${DOMAIN}
+elif [ "${domain}" != "${emailTLD}" ] && [ "${domain}" != "${hostURI}" ] && [ "${domain}" != "${serveURI}" ] && [ "${domain}" != "${emailTLDURI}" ] && [ "${domain}" != "${emailURI}" ] && [ "${domain}" != "${oneURI}" ] && [ "${domain}" != "${inkURI}" ] && [ "${domain}" != "${blueURI}" ] && [ "${domain}" != "${vipURI}" ] && [ "${domain}" != "${kiwiURI}" ] && [ "${domain}" != "${redURI}" ]; then
+  /opt/verb/serfs/setinkcertmailcerts ${domain}
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 
 # Update the inkCert-DOMAIN config file, fail silently (eg. when used on subdomains)
-/bin/sed -i "s/InkCerted=.*/InkCerted=DONE_CB/" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN} 2> /dev/null
+/bin/sed -i "s/InkCerted=.*/InkCerted=DONE_CB/" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain} 2> /dev/null
 
 # Finish
 /bin/echo "
 Excellent!
 Verify above exits - IMPORTANT NOTES: ... - Congratulations!
 
-If so, then ${DOMAIN} and all subdomains are now live with inkCert Letsencrypt certificates.
+If so, then ${domain} and all subdomains are now live with inkCert Letsencrypt certificates.
 "
 
 
