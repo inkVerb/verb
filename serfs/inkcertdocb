@@ -50,12 +50,14 @@ if [ -z "${1}" ]; then
 fi
 
 # Request and get the certs
-/opt/verb/serfs/inkcertreqcb ${DOMAIN}; wait
+/opt/verb/serfs/inkcertreqcb ${DOMAIN}
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 # Install the certs
 if /bin/grep -q "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN}; then
   if [ -e "/etc/inkcert/le/live/${DOMAIN}" ]; then
-    /opt/verb/serfs/inkcertaddallcb ${DOMAIN}; wait
+    /opt/verb/serfs/inkcertaddallcb ${DOMAIN}
+    e="$?"; [[ "$e" = "0" ]] || exit "$e"
   fi
 fi
 
@@ -63,8 +65,10 @@ fi
 . /opt/verb/conf/siteurilist
 if [ "${DOMAIN}" = "${nameURI}" ]; then
   opt/verb/serfs/setinkcertmailcerts ${DOMAIN} inkvmail
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
 elif [ "${DOMAIN}" != "${emailTLD}" ] && [ "${DOMAIN}" != "${hostURI}" ] && [ "${DOMAIN}" != "${serveURI}" ] && [ "${DOMAIN}" != "${emailTLDURI}" ] && [ "${DOMAIN}" != "${emailURI}" ] && [ "${DOMAIN}" != "${oneURI}" ] && [ "${DOMAIN}" != "${inkURI}" ] && [ "${DOMAIN}" != "${blueURI}" ] && [ "${DOMAIN}" != "${vipURI}" ] && [ "${DOMAIN}" != "${kiwiURI}" ] && [ "${DOMAIN}" != "${redURI}" ]; then
   /opt/verb/serfs/setinkcertmailcerts ${DOMAIN}
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 
 # Update the inkCert-DOMAIN config file, fail silently (eg. when used on subdomains)

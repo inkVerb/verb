@@ -64,7 +64,7 @@ domainlist=$(/usr/bin/grep 'domains = ' /opt/verb/conf/inkcert/cli-ini/cli.${CER
 for eachsite in ${domainlist//,/ }; do
 ## Run inkCertAddLE per site config
   /opt/verb/serfs/inkcertaddle ${eachsite} ${CERTDOMAIN}
-wait
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
 done
 
 #DEV Replaced with above cli-ini file, more exact

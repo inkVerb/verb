@@ -53,76 +53,77 @@ fi
 if [ $VERBemail = "true" ]; then
 	## Get the name of each subdomain .conf file available
 	find . -name "*.${emailURI}.conf"|while read findsitesubdomain; do
-	## Strip the .conf extension
-	 sitesubdomain=$(basename ${findsitesubdomain} .conf)
-	## Run inkCertAddLE per site config
-	 /opt/verb/serfs/inkcertdocb ${sitesubdomain}
-	wait
+		## Strip the .conf extension
+		sitesubdomain=$(basename ${findsitesubdomain} .conf)
+		## Run inkCertAddLE per site config
+		/opt/verb/serfs/inkcertdocb ${sitesubdomain}
+		e="$?"; [[ "$e" = "0" ]] || exit "$e"
 	done
 fi
 
 if [ $VERBone = "true" ]; then
 	## Get the name of each subdomain .conf file available
 	find . -name "*.${oneURI}.conf"|while read findsitesubdomain; do
-	## Strip the .conf extension
-	 sitesubdomain=$(basename ${findsitesubdomain} .conf)
-	## Run inkCertAddLE per site config
-	 /opt/verb/serfs/inkcertdocb ${sitesubdomain}
-	wait
+		## Strip the .conf extension
+		sitesubdomain=$(basename ${findsitesubdomain} .conf)
+		## Run inkCertAddLE per site config
+		/opt/verb/serfs/inkcertdocb ${sitesubdomain}
+		e="$?"; [[ "$e" = "0" ]] || exit "$e"
 	done
 fi
 
 if [ $VERBink = "true" ]; then
 	## Get the name of each subdomain .conf file available
 	find . -name "*.${inkURI}.conf"|while read findsitesubdomain; do
-	## Strip the .conf extension
-	 sitesubdomain=$(basename ${findsitesubdomain} .conf)
-	## Run inkCertAddLE per site config
-	 /opt/verb/serfs/inkcertdocb ${sitesubdomain}
-	wait
+		## Strip the .conf extension
+		sitesubdomain=$(basename ${findsitesubdomain} .conf)
+		## Run inkCertAddLE per site config
+		/opt/verb/serfs/inkcertdocb ${sitesubdomain}
+		e="$?"; [[ "$e" = "0" ]] || exit "$e"
 	done
 fi
 
 if [ $VERBblue = "true" ]; then
 	## Get the name of each subdomain .conf file available
 	find . -name "*.${blueURI}.conf"|while read findsitesubdomain; do
-	## Strip the .conf extension
-	 sitesubdomain=$(basename ${findsitesubdomain} .conf)
-	## Run inkCertAddLE per site config
-	 /opt/verb/serfs/inkcertdocb ${sitesubdomain}
-	wait
+		## Strip the .conf extension
+		sitesubdomain=$(basename ${findsitesubdomain} .conf)
+		## Run inkCertAddLE per site config
+		/opt/verb/serfs/inkcertdocb ${sitesubdomain}
+		e="$?"; [[ "$e" = "0" ]] || exit "$e"
 	done
 fi
 
 if [ $VERBvip = "true" ]; then
 	## Get the name of each subdomain .conf file available
 	find . -name "*.${vipURI}.conf"|while read findsitesubdomain; do
-	## Strip the .conf extension
-	 sitesubdomain=$(basename ${findsitesubdomain} .conf)
-	## Run inkCertAddLE per site config
-	 /opt/verb/serfs/inkcertdocb ${sitesubdomain}
-	wait
+		## Strip the .conf extension
+		sitesubdomain=$(basename ${findsitesubdomain} .conf)
+		## Run inkCertAddLE per site config
+		/opt/verb/serfs/inkcertdocb ${sitesubdomain}
+		e="$?"; [[ "$e" = "0" ]] || exit "$e"
 	done
 fi
 
 if [ $VERBkiwi = "true" ]; then
 	## Get the name of each subdomain .conf file available
 	find . -name "*.${kiwiURI}.conf"|while read findsitesubdomain; do
-	## Strip the .conf extension
-	 sitesubdomain=$(basename ${findsitesubdomain} .conf)
-	## Run inkCertAddLE per site config
-	 /opt/verb/serfs/inkcertdocb ${sitesubdomain}
-	wait
+		## Strip the .conf extension
+		sitesubdomain=$(basename ${findsitesubdomain} .conf)
+		## Run inkCertAddLE per site config
+		/opt/verb/serfs/inkcertdocb ${sitesubdomain}
+		e="$?"; [[ "$e" = "0" ]] || exit "$e"
 	done
 fi
 
 if [ $VERBred = "true" ]; then
 	## Get the name of each subdomain .conf file available
 	find . -name "*.${redURI}.conf"|while read findsitesubdomain; do
-	## Strip the .conf extension
-	 sitesubdomain=$(basename ${findsitesubdomain} .conf)
-	## Run inkCertAddLE per site config
-	 /opt/verb/serfs/inkcertdocb ${sitesubdomain}
+		## Strip the .conf extension
+		sitesubdomain=$(basename ${findsitesubdomain} .conf)
+		## Run inkCertAddLE per site config
+		/opt/verb/serfs/inkcertdocb ${sitesubdomain}
+		e="$?"; [[ "$e" = "0" ]] || exit "$e"
 	done
 fi
 

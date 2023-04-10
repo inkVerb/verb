@@ -57,7 +57,7 @@ fi
 
 # For the main domain first
 /opt/verb/serfs/inkcertaddcbsingle ${SITEDOMAIN}
-wait
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 # For any/all sub-domains
 if [ ${ServerType} = "lamp" ] || [ ${ServerType} = "laemp" ]; then
@@ -71,7 +71,7 @@ find . -name "*.${SITEDOMAIN}.conf"|while read findsitesubdomain; do
  sitesubdomain=$(basename ${findsitesubdomain} .conf)
 ## Run inkCertAddLE per site config
  /opt/verb/serfs/inkcertaddcbsingle ${sitesubdomain}
-wait
+ e="$?"; [[ "$e" = "0" ]] || exit "$e"
 done
 
 # Finish

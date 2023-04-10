@@ -26,25 +26,25 @@ exit 0; fi
 # Let each run wait 1 second to avoid congesting the server
 if [ $VERBemail = "true" ]; then
 /opt/verb/serfs/inkcertdosc ${emailURI}; fi
-wait
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 if [ $VERBone = "true" ]; then
 /opt/verb/serfs/inkcertdosc ${oneURI}; fi
-wait
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 if [ $VERBink = "true" ]; then
 /opt/verb/serfs/inkcertdosc ${inkURI}; fi
-wait
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 if [ $VERBblue = "true" ]; then
 /opt/verb/serfs/inkcertdosc ${blueURI}; fi
-wait
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 if [ $VERBvip = "true" ]; then
 /opt/verb/serfs/inkcertdosc ${vipURI}; fi
-wait
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 if [ $VERBkiwi = "true" ]; then
 /opt/verb/serfs/inkcertdosc ${kiwiURI}; fi
-wait
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 if [ $VERBred = "true" ]; then
 /opt/verb/serfs/inkcertdosc ${redURI}; fi
-
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 
 

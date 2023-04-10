@@ -45,25 +45,25 @@ exit 0; fi
 # Let each run wait 1 second to avoid congesting the server
 if [ $VERBemail = "true" ]; then
 /opt/verb/serfs/inkcertdole ${emailURI}; fi
-wait
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 if [ $VERBone = "true" ]; then
 /opt/verb/serfs/inkcertdole ${oneURI}; fi
-wait
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 if [ $VERBink = "true" ]; then
 /opt/verb/serfs/inkcertdole ${inkURI}; fi
-wait
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 if [ $VERBblue = "true" ]; then
 /opt/verb/serfs/inkcertdole ${blueURI}; fi
-wait
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 if [ $VERBvip = "true" ]; then
 /opt/verb/serfs/inkcertdole ${vipURI}; fi
-wait
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 if [ $VERBkiwi = "true" ]; then
 /opt/verb/serfs/inkcertdole ${kiwiURI}; fi
-wait
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 if [ $VERBred = "true" ]; then
 /opt/verb/serfs/inkcertdole ${redURI}; fi
-wait
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 
 
