@@ -1,8 +1,3 @@
-#!/bin/bash
-## This is a config file for other verb scripts
-
-# Determine which site tlds are active on the server, all are on by default
-
 VERBemail=true
 VERBone=true
 VERBink=true

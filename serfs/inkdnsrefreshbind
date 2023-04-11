@@ -91,7 +91,7 @@ EOF
       # We don't use 'allow-update { none; };' because 'update-policy' will ignore 'allow-update'
       # Only one domain can fit the rDNS PTR record anyway, which should probably be the FQDN, but it just needs to resolve
       /usr/bin/echo "zone \"${inkZone}\" { type master; allow-transfer { ${ServerNS1IPv6}; ${ServerNS1IPv4}; ${ServerNS2IPv6}; ${ServerNS2IPv4}; }; file \"zones/db.${inkZone}\"; update-policy { grant inkcert. name _acme-challenge.${inkZone}. TXT; grant inkcert. name _acme-challenge.*.${inkZone}. TXT; }; };" >> /var/named/named.conf.verb
-      /usr/bin/echo "\$INCLUDE \"/var/named/zones/nv.${inkZone}\";" >> /var/named/nv.verber
+      #/usr/bin/echo "\$INCLUDE \"/var/named/zones/nv.${inkZone}\";" >> /var/named/nv.verber #DEV at this point of interwebs dev, only one PRT record; we may uncomment this in the future if multiple records are allowed
   done
 
   ## Slave DNS server?

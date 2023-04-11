@@ -1,6 +1,3 @@
-#!/bin/bash
-## This is the site-wide email config file for security paths.
-
 ServerRCPath="RC_NOT_INSTALLED"
 ServerPFAPath="PFA_NOT_INSTALLED"
 ServerBoxPath="BOX_NOT_INSTALLED"

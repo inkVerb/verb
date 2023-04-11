@@ -1,5 +1,2 @@
-#!/bin/bash
-## This is the site-wide email config file for passwords.
-
 ServerMailPassApg="EMAIL_NOT_INSTALLED"
 ServerBoxPassApg="RC_NOT_INSTALLED"
