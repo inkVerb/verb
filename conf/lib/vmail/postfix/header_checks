@@ -4,3 +4,4 @@
 /^X-Originating-IP:/         IGNORE
 /^x-cr-[a-z]*:/              IGNORE
 /^Thread-Index:/             IGNORE
+/^From:.*@(.*)/i PREPEND X-Sender-Domain: $1

@@ -35,7 +35,7 @@ if [ -e "/opt/verb/mods/installspamassassin.before" ]; then . /opt/verb/mods/ins
 
 # Only if SpamAssassin is installed
 . /opt/verb/conf/servermailpath
-if [ "${SASTATUS}" = "INSTALLED" ]; then
+if [ "${SpamAssassinStatus}" = "INSTALLED" ]; then
   /bin/echo "SpamAssassin already installed."
   exit 0
 fi
@@ -70,7 +70,7 @@ After=network.target
 [Service]
 Type=oneshot
 
-ExecStart=sudo -u spamd /usr/bin/vendor_perl/sa-update --allowplugins
+ExecStart=sudo -u spamd /usr/bin/vendor_perl/sa-update
 SuccessExitStatus=1
 ExecStart=sudo -u spamd /usr/bin/vendor_perl/sa-compile
 ExecStart=/usr/bin/systemctl -q --no-block try-restart spamassassin.service
@@ -97,7 +97,7 @@ cd /etc/mail/spamassassin/razor || exit 0
 cd $OLDPWD || exit 0
 
 # Finish
-/bin/echo "SASTATUS=\"INSTALLED\"" >> /opt/verb/conf/servermailpath
+/bin/echo "SpamAssassinStatus=\"INSTALLED\"" >> /opt/verb/conf/servermailpath
 
 # ClamAV?
 if [ -n "$2" ] && [ "$2" = "clamav" ]; then

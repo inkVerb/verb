@@ -1,0 +1,67 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This removes an emaail recipient filter to domain
+
+# How to use:
+## ./inkvmailkillscriptfilter [ emailuser ] [ domain ]
+
+# Eg:
+## ./inkvmailkillscriptfilter john inkisaverb.com
+
+usagenotes="This adds an email recipient filter to domain"
+usageformat="inkvmailkillscriptfilter [ emailuser ] [ domain ]"
+usageexample="inkvmailkillscriptfilter john inkisaverb.com"
+hierarchy=( secondary )
+vsetnames=( "Email user" "Domain" )
+vsettypes=( isDomainPart isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installinkvmail )
+prerequesite=( inkvmaildomain inkvmailaddscriptfilter )
+usedby=( killdomainshell )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkvmailkillscriptfilter.replace" ]; then . /opt/verb/mods/inkvmailkillscriptfilter.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkvmailkillscriptfilter.before" ]; then . /opt/verb/mods/inkvmailkillscriptfilter.before; fi # Precedes this script
+
+
+# Check to see if inkvmail is installed
+. /opt/verb/conf/servermailpath
+if [ "$ServerMailStatus" != "VMAIL_SERVER" ]; then
+  /bin/echo "Vmail not installed, not adding $domain to PFA"
+  exit 8; fi
+
+# Check credentials
+if [ -z "$2" ]; then
+  /usr/bin/echo "Must enter emailuser and domain as separate arguments"
+  exit 5
+fi
+
+emailuser="$1"
+domain="$2"
+emailaddress="${emailuser}@${domain}"
+scriptname="${emailuser}$(/usr/bin/echo ${domain} | /usr/bin/sed "s/[^[:alnum:]]//g")"
+
+# Only remove script if it is an unsubscribe script
+if [ "${emailuser}" = "unsubscribe" ]; then
+  /usr/bin/rm -f "/srv/vip/vmail/nativescripts/${scriptname}"
+fi
+
+# Remove the entries
+/usr/bin/sed -i "/${scriptname}/d" /etc/postfix/master.cf
+/usr/bin/sed -i "/${scriptname}/d" /etc/postfix/transport
+
+# Reload Postfix
+/usr/bin/postfix reload
+
+# Finish
+/bin/echo "Mail filter for ${emailaddress} removed"
+
+
+
+
+if [ -e "/opt/verb/mods/inkvmailkillscriptfilter.after" ]; then . /opt/verb/mods/inkvmailkillscriptfilter.after; fi # Follows this script

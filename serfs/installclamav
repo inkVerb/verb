@@ -30,7 +30,7 @@ if [ -e "/opt/verb/mods/installclamav.before" ]; then . /opt/verb/mods/installcl
 
 # Only if this hasn't been run yet
 . /opt/verb/conf/servermailpath
-if [ "${SASTATUS}" = "INSTALLED" ]; then
+if [ "${SpamAssassinStatus}" = "INSTALLED" ]; then
   /bin/echo "SpamAssassin already installed, doing nothing."
   exit 0
 fi
@@ -69,7 +69,6 @@ if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
 ## Service
 /usr/bin/systemctl enable clamav-daemon.service; wait
 /usr/bin/systemctl start clamav-daemon.service; wait
-/usr/bin/systemctl restart spamassassin.service; wait
 
 # freshclam
 #DEV freshclam is system heavy and needs to shut down several processeses in order to have enough resources to work

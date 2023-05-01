@@ -41,36 +41,39 @@ if ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpat
   /usr/bin/echo "Install Postfix Vmail first, I quit."; exit 8
 fi
 
-KILLDOMSHELL=$1
+killdomshell=$1
 
 # Make sure we don't kill a verb domain
-if /bin/grep -q "${KILLDOMSHELL}" /opt/verb/conf/siteurilist; then
+if /bin/grep -q "${killdomshell}" /opt/verb/conf/siteurilist; then
   /usr/bin/echo "Can't kill a verber domain, I quit."; exit 9
 fi
 
 # Remove inkCert (including Letsencrypt) configs
-/opt/verb/serfs/killinkcertdomain ${KILLDOMAIN}; wait
+/opt/verb/serfs/killinkcertdomain ${killdomshell}; wait
 
 # Remove inkCert mail entries
-/opt/verb/serfs/killinkcertmail ${KILLDOMSHELL}; wait
+/opt/verb/serfs/killinkcertmail ${killdomshell}; wait
 #DEV above may be redundant because the entire file is removed below
 
 # Remove inkDNS zone file
-/opt/verb/serfs/killinkdnsdomain ${KILLDOMAIN}; wait
+/opt/verb/serfs/killinkdnsdomain ${killdomshell}; wait
 
 # Remove inkDKIM entries
-/opt/verb/serfs/killinkdkim ${KILLDOMSHELL}; wait
+/opt/verb/serfs/killinkdkim ${killdomshell}; wait
 
 # Remove any mailboxes
-/opt/verb/serfs/inkvmaildeldomain ${KILLDOMSHELL}; wait
+/opt/verb/serfs/inkvmaildeldomain ${killdomshell}; wait
+
+# Remove the unsubscribe maile recipient filter
+/opt/verb/serfs/inkvmailkillscriptfilter unsubscribe ${killdomshell}; wait
 
 # Notify the NS slave servers
-/opt/verb/serfs/rinkkilldomain ${KILLDOMSHELL}; wait
+/opt/verb/serfs/rinkkilldomain ${killdomshell}; wait
 
 # Finish
 /bin/echo "No more papers...
 
-The inkCert, inkDNS, and inkDKIM profiles for ${KILLDOMSHELL} have been deleted.
+The inkCert, inkDNS, and inkDKIM profiles for ${killdomshell} have been deleted.
 "
 
 

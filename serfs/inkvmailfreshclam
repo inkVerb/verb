@@ -30,7 +30,7 @@ if [ -e "/opt/verb/mods/inkvmailfreshclam.before" ]; then . /opt/verb/mods/inkvm
 
 # Ensure that SpamAssassin is installed
 . /opt/verb/conf/servermailpath
-if [ "${SASTATUS}" != "INSTALLED" ]; then
+if [ "${SpamAssassinStatus}" != "INSTALLED" ]; then
   /bin/echo "SpamAssassin not installed, doing nothing."
   exit 0
 fi

@@ -1,0 +1,83 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This adds an emaail recipient filter to domain
+## The script must exist at: vip/vmail/customscripts/emailuserdomaintld  (only letters & numbers)
+## Heavily inspired by:
+### https://unix.stackexchange.com/a/179256/315069
+### https://serverfault.com/a/322681/487033
+### https://askubuntu.com/a/1460488/880404
+### http://www.postfix.org/FILTER_README.html#simple_filter
+
+# How to use:
+## ./inkvmailaddscriptfilter [ emailuser ] [ domain ]
+
+# Eg:
+## ./inkvmailaddscriptfilter john inkisaverb.com
+
+usagenotes="This adds an email recipient filter to domain; the script must exist at: vip/vmail/customscripts/emailuserdomaintld (only letters & numbers); if using unsubscribe@domain.tld and no custom script exists, then a default unsubscribe script will be created"
+usageformat="inkvmailaddscriptfilter [ emailuser ] [ domain ]"
+usageexample="inkvmailaddscriptfilter john inkisaverb.com"
+hierarchy=( secondary )
+vsetnames=( "Email user" "Domain" )
+vsettypes=( isDomainPart isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installinkvmail )
+prerequesite=( inkvmaildomain )
+usedby=( newdomainshell )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkvmailaddscriptfilter.replace" ]; then . /opt/verb/mods/inkvmailaddscriptfilter.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkvmailaddscriptfilter.before" ]; then . /opt/verb/mods/inkvmailaddscriptfilter.before; fi # Precedes this script
+
+
+# Check to see if inkvmail is installed
+. /opt/verb/conf/servermailpath
+if [ "$ServerMailStatus" != "VMAIL_SERVER" ]; then
+  /bin/echo "Vmail not installed, not adding $domain to PFA"
+  exit 8; fi
+
+# Check credentials
+if [ -z "$2" ]; then
+  /usr/bin/echo "Must enter emailuser and domain as separate arguments"
+  exit 5
+fi
+
+emailuser="$1"
+domain="$2"
+emailaddress="${emailuser}@${domain}"
+scriptname="${emailuser}$(/usr/bin/echo ${domain} | /usr/bin/sed "s/[^[:alnum:]]//g")"
+
+# Check script
+if [ ! -f "/srv/vip/vmail/customscripts/${scriptname}" ] && [ "${emailuser}" != "unsubscribe" ]; then
+  /usr/bin/echo "The necessary script \"${scriptname}\" was not fount in vip/vmail/customscripts/${scriptname}; I quit"
+  exit 8
+elif [ "${emailuser}" = "unsubscribe" ]; then
+  /usr/bin/echo "#!/bin/bash
+/usr/bin/echo \$1 >> /srv/vip/vmail/unsubscribe/${domain}" > "/srv/vip/vmail/nativescripts/${scriptname}"
+  /usr/bin/chmod 750 /srv/vip/vmail/nativescripts/${scriptname}
+  scriptpath="/srv/vip/vmail/nativescripts/${scriptname}"
+else
+  /usr/bin/chmod 750 /srv/vip/vmail/customscripts/${scriptname}
+  scriptpath="/srv/vip/vmail/customscripts/${scriptname}"
+fi
+
+# Make the entries
+/usr/bin/echo "${scriptname} unix -    n    n    -    -     pipe flags=Rq user=vmail argv=${scriptpath} \${sender}" >> /etc/postfix/master.cf
+/usr/bin/echo "${emailaddress} FILTER ${scriptname}:dummy" >> /etc/postfix/transport
+
+# Reload Postfix
+/usr/bin/postmap /etc/postfix/transport
+/usr/bin/postfix reload
+
+# Finish
+/bin/echo "Mail filter for ${emailaddress} entered"
+
+
+
+
+if [ -e "/opt/verb/mods/inkvmailaddscriptfilter.after" ]; then . /opt/verb/mods/inkvmailaddscriptfilter.after; fi # Follows this script

@@ -52,40 +52,43 @@ fi
 . /opt/verb/conf/servermailpath
 . /opt/verb/conf/inkcertstatus
 
-NEWDOMAIN=$1
+newdomain=$1
 
 # inkCert
-if [ ! -f "/opt/verb/conf/inkcert/cli-ini/siteinkcert.${NEWDOMAIN}" ]; then
-  /bin/cp /opt/verb/conf/lib/inkcert-ini/cli.new.ini /opt/verb/conf/inkcert/cli-ini/cli.${NEWDOMAIN}.ini
-  /bin/sed -i "s/inkcertemail589/${InkCertEmail}/g" /opt/verb/conf/inkcert/cli-ini/cli.${NEWDOMAIN}.ini
-  /bin/sed -i "s/newdomain589/${NEWDOMAIN}/g" /opt/verb/conf/inkcert/cli-ini/cli.${NEWDOMAIN}.ini
-  /bin/echo "InkCerted=NOT_YET" > /opt/verb/conf/inkcert/cli-ini/siteinkcert.${NEWDOMAIN}
-  /opt/verb/serfs/setinkcertmail ${NEWDOMAIN}
+if [ ! -f "/opt/verb/conf/inkcert/cli-ini/siteinkcert.${newdomain}" ]; then
+  /bin/cp /opt/verb/conf/lib/inkcert-ini/cli.new.ini /opt/verb/conf/inkcert/cli-ini/cli.${newdomain}.ini
+  /bin/sed -i "s/inkcertemail589/${InkCertEmail}/g" /opt/verb/conf/inkcert/cli-ini/cli.${newdomain}.ini
+  /bin/sed -i "s/newdomain589/${newdomain}/g" /opt/verb/conf/inkcert/cli-ini/cli.${newdomain}.ini
+  /bin/echo "InkCerted=NOT_YET" > /opt/verb/conf/inkcert/cli-ini/siteinkcert.${newdomain}
+  /opt/verb/serfs/setinkcertmail ${newdomain}
 fi
 
 # inkDNS
-if [ ! -f "/opt/verb/conf/inkdns/zones/db.${NEWDOMAIN}" ]; then
-  /opt/verb/serfs/inkdnsadddomain ${NEWDOMAIN}; wait
+if [ ! -f "/opt/verb/conf/inkdns/zones/db.${newdomain}" ]; then
+  /opt/verb/serfs/inkdnsadddomain ${newdomain}; wait
 fi
 
 # inkDKIM & inkvmail (if installed)
 if [ "${ServerMailStatus}" != "EMAIL_NOT_INSTALLED" ]; then
-  /opt/verb/serfs/newinkdkim ${NEWDOMAIN}; wait
-  /opt/verb/serfs/inkvmaildomain ${NEWDOMAIN}; wait
+  /opt/verb/serfs/newinkdkim ${newdomain}; wait
+  /opt/verb/serfs/inkvmaildomain ${newdomain}; wait
+  
+  # Add the unsubscribe maile recipient filter
+  /opt/verb/serfs/inkvmailaddscriptfilter unsubscribe ${newdomain}; wait
 
   # inkDNS for inkvmail
-  if [ -f "/opt/verb/conf/inkdns/zones/db.${NEWDOMAIN}" ]; then
-  /opt/verb/serfs/inkdnsaddmail ${NEWDOMAIN}; wait
-  /opt/verb/serfs/inkdnsaddinkdkim ${NEWDOMAIN}; wait
+  if [ -f "/opt/verb/conf/inkdns/zones/db.${newdomain}" ]; then
+  /opt/verb/serfs/inkdnsaddmail ${newdomain}; wait
+  /opt/verb/serfs/inkdnsaddinkdkim ${newdomain}; wait
   fi
 
 fi
 
 # Notify the NS slave nameservers
-/opt/verb/serfs/rinkadddomain ${NEWDOMAIN}; wait
+/opt/verb/serfs/rinkadddomain ${newdomain}; wait
 
 # Finish
-/bin/echo "Great! With no error messages, ${NEWDOMAIN} is ready on the Verber."
+/bin/echo "Great! With no error messages, ${newdomain} is ready on the Verber."
 
 
 

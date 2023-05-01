@@ -39,27 +39,27 @@ if [ -e "/opt/verb/mods/installpostfixvmail.before" ]; then . /opt/verb/mods/ins
 
 # Check to see if already installed
 if [ "${ServerMailStatus}" = "VMAIL_SERVER" ]; then
-/bin/echo "
+/usr/bin/echo "
 Email server already installed.
 "
 exit 0; fi
 if [ "${ServerMailStatus}" = "EMAIL_BACKUP_MX" ]; then
-/bin/echo "
+/usr/bin/echo "
 Email server is already a backup server.
 "
 exit 0; fi
 if [ "${ServerMailStatus}" = "PMAIL_SERVER" ]; then
-/bin/echo "
+/usr/bin/echo "
 Email server is already installed.
 "
 exit 0; fi
 if ! /usr/bin/grep -Fq 'Email Control Records' /opt/verb/conf/inkdns/inkzones/db.${emailTLDURI}; then
-/bin/echo "
+/usr/bin/echo "
 Email Control Records not declared in the email domain DNS zone file. This won't work.
 "
 exit 7; fi
 if [ "${EmailAllowed}" != "YES" ]; then
-/bin/echo "
+/usr/bin/echo "
 Email not allowed on this server.
 "
 exit 0; fi
@@ -71,56 +71,59 @@ exit 0; fi
 /usr/bin/pacman -Syyu --noconfirm --needed
 
 # Generate the mailpassword appendage
-MAILPASSGEN="$(/usr/bin/pwgen -s -1 5)"
+mailpassgen="$(/usr/bin/pwgen -s -1 5)"
 ## Create the MySQL login .cnf
-/bin/echo "[client]
+/usr/bin/echo "[client]
 user = mail
-password = mailpass${MAILPASSGEN}
+password = mailpass${mailpassgen}
 database = mail
 host = localhost
 " > /opt/verb/conf/mysqldb.vmail.cnf
 ## Set the config for backup
-/bin/sed -i "s/ServerMailPassApg.*/ServerMailPassApg=\"${MAILPASSGEN}\"/g" /opt/verb/conf/servermailpass
+/usr/bin/sed -i "s/ServerMailPassApg.*/ServerMailPassApg=\"${mailpassgen}\"/g" /opt/verb/conf/servermailpass
 
 # Packages already installed from make-verber-* postfix postfix-mysql dovecot php-imap spamassassin pigeonhole perl-cpanplus-dist-arch clamav razor cyrus-sasl opendkim
 
+# Utility directories
+/usr/bin/mkdir -p /srv/vip/vmail/customscripts /srv/vip/vmail/nativescripts /srv/vip/vmail/unsubscribe
+
 # Virtual mail user
-/bin/mkdir -p /srv/vmail
+/usr/bin/mkdir -p /srv/vmail
 /usr/bin/groupadd -g 5000 vmail
 /usr/bin/useradd -u 5000 -g vmail -s /usr/bin/nologin vmail
 /usr/bin/usermod -d /srv/vmail vmail
-/bin/chmod -R 770 /srv/vmail
-/bin/chown -R vmail:vmail /srv/vmail
+/usr/bin/chmod -R 770 /srv/vmail
+/usr/bin/chown -R vmail:vmail /srv/vmail
 ## Symlink for legacy support
 if [ ! -d "/var/vmail" ]; then
   /usr/bin/ln -sfn /srv/vmail /var/vmail
-  /bin/chown -R vmail:vmail /var/vmail
+  /usr/bin/chown -R vmail:vmail /var/vmail
 fi
 
 # Postfix
 ## Copy configs
 /usr/bin/touch /etc/postfix/virtual_ssl.map
-/bin/cp /opt/verb/conf/lib/vmail/postfix/main.cf /etc/postfix/
-/bin/cp /opt/verb/conf/lib/vmail/postfix/master.cf /etc/postfix/
-/bin/cp /opt/verb/conf/lib/vmail/postfix/virtual_alias_domains.cf /etc/postfix/
-/bin/cp /opt/verb/conf/lib/vmail/postfix/virtual_alias_domains_maps.cf /etc/postfix/
-/bin/cp /opt/verb/conf/lib/vmail/postfix/virtual_alias_maps.cf /etc/postfix/
-/bin/cp /opt/verb/conf/lib/vmail/postfix/virtual_mailbox_domains.cf /etc/postfix/
-/bin/cp /opt/verb/conf/lib/vmail/postfix/virtual_mailbox_domainaliases_maps.cf /etc/postfix/
-/bin/cp /opt/verb/conf/lib/vmail/postfix/virtual_mailbox_maps.cf /etc/postfix/
-/bin/cp /opt/verb/conf/lib/vmail/postfix/virtual_sender_login_maps.cf /etc/postfix/
-/bin/cp /opt/verb/conf/lib/vmail/postfix/header_checks /etc/postfix/
-/bin/cp /opt/verb/conf/lib/vmail/postfix/smtp_header_checks /etc/postfix/
-/bin/rm /etc/postfix/main.cf.default
+/usr/bin/cp /opt/verb/conf/lib/vmail/postfix/main.cf /etc/postfix/
+/usr/bin/cp /opt/verb/conf/lib/vmail/postfix/master.cf /etc/postfix/
+/usr/bin/cp /opt/verb/conf/lib/vmail/postfix/virtual_alias_domains.cf /etc/postfix/
+/usr/bin/cp /opt/verb/conf/lib/vmail/postfix/virtual_alias_domains_maps.cf /etc/postfix/
+/usr/bin/cp /opt/verb/conf/lib/vmail/postfix/virtual_alias_maps.cf /etc/postfix/
+/usr/bin/cp /opt/verb/conf/lib/vmail/postfix/virtual_mailbox_domains.cf /etc/postfix/
+/usr/bin/cp /opt/verb/conf/lib/vmail/postfix/virtual_mailbox_domainaliases_maps.cf /etc/postfix/
+/usr/bin/cp /opt/verb/conf/lib/vmail/postfix/virtual_mailbox_maps.cf /etc/postfix/
+/usr/bin/cp /opt/verb/conf/lib/vmail/postfix/virtual_sender_login_maps.cf /etc/postfix/
+/usr/bin/cp /opt/verb/conf/lib/vmail/postfix/header_checks /etc/postfix/
+/usr/bin/cp /opt/verb/conf/lib/vmail/postfix/smtp_header_checks /etc/postfix/
+/usr/bin/rm /etc/postfix/main.cf.default
 ## Replace configs
-/bin/sed -i "s/mailpassword/mailpass${MAILPASSGEN}/g" /etc/postfix/virtual_alias_domains.cf
-/bin/sed -i "s/mailpassword/mailpass${MAILPASSGEN}/g" /etc/postfix/virtual_alias_domains_maps.cf
-/bin/sed -i "s/mailpassword/mailpass${MAILPASSGEN}/g" /etc/postfix/virtual_alias_maps.cf
-/bin/sed -i "s/mailpassword/mailpass${MAILPASSGEN}/g" /etc/postfix/virtual_mailbox_domains.cf
-/bin/sed -i "s/mailpassword/mailpass${MAILPASSGEN}/g" /etc/postfix/virtual_mailbox_domainaliases_maps.cf
-/bin/sed -i "s/mailpassword/mailpass${MAILPASSGEN}/g" /etc/postfix/virtual_mailbox_maps.cf
-/bin/sed -i "s/mailpassword/mailpass${MAILPASSGEN}/g" /etc/postfix/virtual_sender_login_maps.cf
-/bin/sed -i "s/hostURI286/${hostURI}/g" /etc/postfix/main.cf
+/usr/bin/sed -i "s/mailpassword/mailpass${mailpassgen}/g" /etc/postfix/virtual_alias_domains.cf
+/usr/bin/sed -i "s/mailpassword/mailpass${mailpassgen}/g" /etc/postfix/virtual_alias_domains_maps.cf
+/usr/bin/sed -i "s/mailpassword/mailpass${mailpassgen}/g" /etc/postfix/virtual_alias_maps.cf
+/usr/bin/sed -i "s/mailpassword/mailpass${mailpassgen}/g" /etc/postfix/virtual_mailbox_domains.cf
+/usr/bin/sed -i "s/mailpassword/mailpass${mailpassgen}/g" /etc/postfix/virtual_mailbox_domainaliases_maps.cf
+/usr/bin/sed -i "s/mailpassword/mailpass${mailpassgen}/g" /etc/postfix/virtual_mailbox_maps.cf
+/usr/bin/sed -i "s/mailpassword/mailpass${mailpassgen}/g" /etc/postfix/virtual_sender_login_maps.cf
+/usr/bin/sed -i "s/hostURI286/${hostURI}/g" /etc/postfix/main.cf
 ## Permissions
 /usr/bin/chmod 644 /etc/postfix/virtual_alias_domains.cf
 /usr/bin/chmod 644 /etc/postfix/virtual_alias_domains_maps.cf
@@ -129,6 +132,15 @@ fi
 /usr/bin/chmod 644 /etc/postfix/virtual_mailbox_domainaliases_maps.cf
 /usr/bin/chmod 644 /etc/postfix/virtual_mailbox_maps.cf
 /usr/bin/chmod 644 /etc/postfix/virtual_sender_login_maps.cf
+## Unsubscribe framework for verber URI emails (normally done by inkvmailaddscriptfilter for hosted domains)
+emailaddress="unsubscribe@${nameURI}"
+scriptname="unsubscribe$(/usr/bin/echo ${nameURI} | /usr/bin/sed "s/[^[:alnum:]]//g")"
+/usr/bin/echo "#!/bin/bash
+/usr/bin/echo \$1 >> /srv/vip/vmail/unsubscribe/${nameURI}" > "/srv/vip/vmail/nativescripts/${scriptname}"
+/usr/bin/chmod 750 /srv/vip/vmail/nativescripts/${scriptname}
+scriptpath="/srv/vip/vmail/nativescripts/${scriptname}"
+/usr/bin/echo "${scriptname} unix -    n    n    -    -     pipe flags=Rq user=vmail argv=${scriptpath} \${sender}" >> /etc/postfix/master.cf
+/usr/bin/echo "${emailaddress} FILTER ${scriptname}:dummy" >> /etc/postfix/transport
 ## Add an important setting
 /usr/bin/cat <<EOF >> /etc/services
 smtps 465/tcp # inkVerb
@@ -158,33 +170,33 @@ EOF
 
 # Dovecot
 /usr/bin/mkdir -p /etc/dovecot/sieve.before.d /etc/dovecot/sieve-filter /etc/dovecot/crt.d
-/bin/cp -r /usr/share/doc/dovecot/example-config/conf.d /etc/dovecot
-/bin/cp /opt/verb/conf/lib/vmail/dovecot/dovecot.conf /etc/dovecot/
-/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/10-auth.conf /etc/dovecot/conf.d/
-/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/10-mail.conf /etc/dovecot/conf.d/
-/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/10-master.conf /etc/dovecot/conf.d/
-/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/10-ssl.conf /etc/dovecot/conf.d/
-/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/15-lda.conf /etc/dovecot/conf.d/
-/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/15-mailboxes.conf /etc/dovecot/conf.d/
-/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/20-lmtp.conf /etc/dovecot/conf.d/
-/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/20-lmtp.conf /etc/dovecot/conf.d/
-/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/20-managesieve.conf /etc/dovecot/conf.d/
-/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/90-plugin.conf /etc/dovecot/conf.d/
-/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/90-sieve.conf /etc/dovecot/conf.d/
-/bin/cp /opt/verb/conf/lib/vmail/dovecot/dovecot-sql.conf.ext /etc/dovecot/
-/bin/cp /opt/verb/conf/lib/vmail/dovecot/dovecot.conf /etc/dovecot/
+/usr/bin/cp -r /usr/share/doc/dovecot/example-config/conf.d /etc/dovecot
+/usr/bin/cp /opt/verb/conf/lib/vmail/dovecot/dovecot.conf /etc/dovecot/
+/usr/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/10-auth.conf /etc/dovecot/conf.d/
+/usr/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/10-mail.conf /etc/dovecot/conf.d/
+/usr/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/10-master.conf /etc/dovecot/conf.d/
+/usr/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/10-ssl.conf /etc/dovecot/conf.d/
+/usr/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/15-lda.conf /etc/dovecot/conf.d/
+/usr/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/15-mailboxes.conf /etc/dovecot/conf.d/
+/usr/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/20-lmtp.conf /etc/dovecot/conf.d/
+/usr/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/20-lmtp.conf /etc/dovecot/conf.d/
+/usr/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/20-managesieve.conf /etc/dovecot/conf.d/
+/usr/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/90-plugin.conf /etc/dovecot/conf.d/
+/usr/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/90-sieve.conf /etc/dovecot/conf.d/
+/usr/bin/cp /opt/verb/conf/lib/vmail/dovecot/dovecot-sql.conf.ext /etc/dovecot/
+/usr/bin/cp /opt/verb/conf/lib/vmail/dovecot/dovecot.conf /etc/dovecot/
 ### Diffie-Helman Group file (unique & extra large for email server)
 /usr/bin/rm -f /etc/dovecot/dh.pem
 #/usr/bin/openssl dhparam -out /etc/dovecot/dh.pem 4096
 /usr/bin/openssl dhparam -out /etc/dovecot/dh.pem 2048
-/bin/chmod 600 /etc/dovecot/dh.pem
+/usr/bin/chmod 600 /etc/dovecot/dh.pem
 ## Replace configs
-/bin/sed  -i "s/nameURI286/${nameURI}/g" /etc/dovecot/conf.d/10-ssl.conf
-/bin/sed  -i "s/nameURI286/${nameURI}/g" /etc/dovecot/conf.d/15-lda.conf
-/bin/sed  -i "s/mailpassword/mailpass${MAILPASSGEN}/g" /etc/dovecot/dovecot-sql.conf.ext
+/usr/bin/sed  -i "s/nameURI286/${nameURI}/g" /etc/dovecot/conf.d/10-ssl.conf
+/usr/bin/sed  -i "s/nameURI286/${nameURI}/g" /etc/dovecot/conf.d/15-lda.conf
+/usr/bin/sed  -i "s/mailpassword/mailpass${mailpassgen}/g" /etc/dovecot/dovecot-sql.conf.ext
 ## Own
-/bin/chown -R vmail:dovecot /etc/dovecot
-/bin/chmod -R o-rwx /etc/dovecot
+/usr/bin/chown -R vmail:dovecot /etc/dovecot
+/usr/bin/chmod -R o-rwx /etc/dovecot
 ## Service
 /usr/bin/systemctl enable dovecot
 /usr/bin/systemctl start dovecot
@@ -194,7 +206,8 @@ EOF
 #/opt/verb/serfs/installspamassassin clamav # Usee the 'clamav' argument to also install clamav, otherwise you can run the serf later 'installclamav' if you want to install clamav
 
 # Spam filter
-if [ SASTATUS = "INSTALLED" ]; then
+. /opt/verb/conf/servermailpath
+if [ SpamAssassinStatus = "INSTALLED" ]; then
   ## Dovecot integration
   /usr/bin/mkdir -p /etc/dovecot/sieve-filter
   /usr/bin/cat <<EOF > /var/lib/dovecot/sieve/global_sieves/move_to_spam_folder.sieve
@@ -220,8 +233,6 @@ EOF
   /usr/bin/systemctl start spamassassin.service; wait
   /usr/bin/systemctl enable spamassassin-update.timer; wait
   /usr/bin/systemctl start spamassassin-update.timer; wait
-  #/usr/bin/systemctl enable clamav-daemon.service; wait # Way too big on memory
-  #/usr/bin/systemctl start clamav-daemon.service; wait
   /usr/bin/systemctl restart spamassassin.service; wait
   if [ "$?" = "0" ]; then /usr/bin/echo "SpamAssassin installed and enabled."; else /usr/bin/echo "SpamAssassin could not be enabled for some reason."; fi
 else
@@ -231,7 +242,7 @@ fi
 # Virtual mail SQL database
 /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
 CREATE DATABASE mail DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-GRANT ALL PRIVILEGES ON mail.* TO 'mail'@'localhost' IDENTIFIED BY 'mailpass${MAILPASSGEN}';
+GRANT ALL PRIVILEGES ON mail.* TO 'mail'@'localhost' IDENTIFIED BY 'mailpass${mailpassgen}';
 FLUSH PRIVILEGES;"
 
 # SSL certs

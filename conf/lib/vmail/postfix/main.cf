@@ -120,8 +120,8 @@ virtual_transport = virtual
 dovecot_destination_recipient_limit = 1
 
 # Header (remove super-private details)
-smtp_header_checks = regexp:/etc/postfix/smtp_header_checks
 header_checks = regexp:/etc/postfix/header_checks
+smtp_header_checks = regexp:/etc/postfix/smtp_header_checks
 enable_original_recipient = no
 
 # DKIM

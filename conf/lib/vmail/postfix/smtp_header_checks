@@ -4,3 +4,4 @@
 /^X-Originating-IP: .*/   IGNORE
 /^x-cr-[a-z]*: .*/        IGNORE
 /^Thread-Index: .*/       IGNORE
+/^X-Sender-Domain:(.*)/i PREPEND List-Unsubscribe: mailto:unsubscribe@$1
