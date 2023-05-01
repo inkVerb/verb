@@ -58,8 +58,8 @@ if [ ! -f "/srv/vip/vmail/customscripts/${scriptname}" ] && [ "${emailuser}" != 
   /usr/bin/echo "The necessary script \"${scriptname}\" was not fount in vip/vmail/customscripts/${scriptname}; I quit"
   exit 8
 elif [ "${emailuser}" = "unsubscribe" ]; then
-  /usr/bin/echo "#!/bin/bash
-/usr/bin/echo \$1 >> /srv/vip/vmail/unsubscribe/${domain}" > "/srv/vip/vmail/nativescripts/${scriptname}"
+  /usr/bin/echo '#!/bin/bash' > "/srv/vip/vmail/nativescripts/${scriptname}"
+  /usr/bin/echo "/usr/bin/echo \$1 >> /srv/vip/vmail/unsubscribe/${domain}" > "/srv/vip/vmail/nativescripts/${scriptname}"
   /usr/bin/chmod 750 /srv/vip/vmail/nativescripts/${scriptname}
   scriptpath="/srv/vip/vmail/nativescripts/${scriptname}"
 else
