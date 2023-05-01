@@ -8,6 +8,7 @@
 ### https://serverfault.com/a/322681/487033
 ### https://askubuntu.com/a/1460488/880404
 ### http://www.postfix.org/FILTER_README.html#simple_filter
+### Dependent on framework provided by https://serverfault.com/a/1130023/487033
 
 # How to use:
 ## ./inkvmailaddscriptfilter [ emailuser ] [ domain ]
@@ -67,8 +68,8 @@ else
 fi
 
 # Make the entries
-/usr/bin/echo "${scriptname} unix -    n    n    -    -     pipe flags=Rq user=vmail argv=${scriptpath} \${sender}" >> /etc/postfix/master.cf
-/usr/bin/echo "${emailaddress} FILTER ${scriptname}:dummy" >> /etc/postfix/transport
+/usr/bin/echo "${scriptname} unix -    n    n    -    -     pipe flags=Rq user=vmail argv=${scriptpath} \${sender} # script filter" >> /etc/postfix/master.cf
+/usr/bin/echo "${emailaddress} FILTER ${scriptname}:dummy # script filter" >> /etc/postfix/transport
 
 # Reload Postfix
 /usr/bin/postmap /etc/postfix/transport

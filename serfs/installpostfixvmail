@@ -133,14 +133,19 @@ fi
 /usr/bin/chmod 644 /etc/postfix/virtual_mailbox_maps.cf
 /usr/bin/chmod 644 /etc/postfix/virtual_sender_login_maps.cf
 ## Unsubscribe framework for verber URI emails (normally done by inkvmailaddscriptfilter for hosted domains)
+### Dependent on framework provided by https://serverfault.com/a/1130023/487033
 emailaddress="unsubscribe@${nameURI}"
 scriptname="unsubscribe$(/usr/bin/echo ${nameURI} | /usr/bin/sed "s/[^[:alnum:]]//g")"
 /usr/bin/echo "#!/bin/bash
 /usr/bin/echo \$1 >> /srv/vip/vmail/unsubscribe/${nameURI}" > "/srv/vip/vmail/nativescripts/${scriptname}"
 /usr/bin/chmod 750 /srv/vip/vmail/nativescripts/${scriptname}
 scriptpath="/srv/vip/vmail/nativescripts/${scriptname}"
-/usr/bin/echo "${scriptname} unix -    n    n    -    -     pipe flags=Rq user=vmail argv=${scriptpath} \${sender}" >> /etc/postfix/master.cf
-/usr/bin/echo "${emailaddress} FILTER ${scriptname}:dummy" >> /etc/postfix/transport
+/usr/bin/echo "
+# inkVmail script filters (automatically managed, do not change)
+${scriptname} unix -    n    n    -    -     pipe flags=Rq user=vmail argv=${scriptpath} \${sender} # script filter default" >> /etc/postfix/master.cf
+/usr/bin/echo "
+# inkVmail script filters (automatically managed, do not change)
+${emailaddress} FILTER ${scriptname}:dummy # script filter default" >> /etc/postfix/transport
 ## Add an important setting
 /usr/bin/cat <<EOF >> /etc/services
 smtps 465/tcp # inkVerb
