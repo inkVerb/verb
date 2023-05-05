@@ -4,7 +4,7 @@
 ## This places a config in verb/conf/inkdrive/
 ## The first of a type (ssh/hdd) you add with this will become the default for that type in verb/conf/inkdrive/inkdriveinfo
 ### Drive type defaults are used by inkdriveapp and inkdrivesvc
-## When managed by the rink, the drive names will reflext the disk type (hdd = hdd, ssd = ssh, hdd1 = second HDD disk likely for transfer purposes)
+## When managed by the rink, the drive names will reflect the disk type (hdd = hdd, ssd = ssh, hdd1 = second HDD disk likely for transfer purposes)
 
 # How to use:
 ## ./inkdriveadd [ dev ] [ drive name ] [ disk type: hdd/ssd ]
@@ -61,8 +61,10 @@ if ls "/opt/verb/conf/inkdrive/*.${Mnt}" 1> /dev/null 2>&1; then
 fi
 if [ "${Typ}" = "ssd" ]; then
   TypDescr="SSD"
+  default="SSDdefault"
 elif [ "${Typ}" = "hdd" ]; then
   TypDescr="HDD"
+  default="HDDdefault"
 else
   /usr/bin/echo "Type must be 'ssd' or 'hdd'"
   exit 0
@@ -77,14 +79,19 @@ Type=${Typ}" > /opt/verb/conf/inkdrive/"${Typ}"."${Mnt}"
 # Drive drfaults
 if [ -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
   . /opt/verb/conf/inkdrive/inkdriveinfo
+  if [ "${TypDescr}" = "HDD" ]; then
+    defaultMnt="${HDDdefault}"
+  elif [ "${TypDescr}" = "SSD" ]; then
+    defaultMnt="${SSDdefault}"
+  fi
 fi
-if [ -z "${Typ}default" ]; then
-  /usr/bin/echo "${Typ}default=${Mnt}" >> /opt/verb/conf/inkdrive/inkdriveinfo
+if [ -z "${!default}" ]; then
+  /usr/bin/echo "${TypDescr}default=${Mnt}" >> /opt/verb/conf/inkdrive/inkdriveinfo
   /usr/bin/echo "Setting '${Mnt}' as the default ${TypDescr} drive."
 else
-  /usr/bin/echo "Default ${TypDescr} is already set to '${Typ}default'. Setting '${Mnt}' an additional ${TypDescr} drive."
+  /usr/bin/echo "Default ${TypDescr} is already set to '${defaultMnt}'. Setting '${Mnt}' an additional ${TypDescr} drive."
 fi
-  
+
 # Mount the drive
 /usr/bin/parted -s "/dev/${Dev}" mklabel gpt
 /usr/bin/parted -s "/dev/${Dev}" unit mib mkpart primary 0% 100%
