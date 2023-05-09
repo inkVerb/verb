@@ -865,6 +865,7 @@ FLUSH PRIVILEGES;"
 ### But, we don't want to rely on cloud-init automatic control, so we will set /etc/hosts also
 ## IPv4 & IPv6
 if [ -n "${SERVERIPV4}" ] && [ "${SERVERIPV4}" != "NOIP4" ] && [ -n "${SERVERIPV6}" ] && [ "${SERVERIPV6}" != "NOIP6" ]; then
+  if [ -e "/etc/cloud/templates/hosts.arch.tmpl" ]; then # Only if using cloud-init
   /usr/bin/cat <<EOF > /etc/cloud/templates/hosts.arch.tmpl
 ## template:jinja
 # inkVerb is managing this file through cloud-init.
@@ -890,6 +891,7 @@ ff02::1 ip6-allnodes
 ff02::2 ip6-allrouters
 ff02::3 ip6-allhosts
 EOF
+  fi
   /usr/bin/cat <<EOF > /etc/hosts
 # Set by inkVerb
 
@@ -913,6 +915,7 @@ ff02::3 ip6-allhosts
 EOF
 ### No IPv4
 elif [ -n "${SERVERIPV4}" ] && [ "${SERVERIPV4}" = "NOIP4" ]; then
+  if [ -e "/etc/cloud/templates/hosts.arch.tmpl" ]; then # Only if using cloud-init
   /usr/bin/cat <<EOF > /etc/cloud/templates/hosts.arch.tmpl
 ## template:jinja
 # inkVerb is managing this file through cloud-init.
@@ -935,6 +938,7 @@ ff02::1 ip6-allnodes
 ff02::2 ip6-allrouters
 ff02::3 ip6-allhosts
 EOF
+  fi
   /usr/bin/cat <<EOF > /etc/hosts
 # Set by inkVerb
 
@@ -955,6 +959,7 @@ ff02::3 ip6-allhosts
 EOF
 ### No IPv6
 elif [ -n "${SERVERIPV6}" ] && [ "${SERVERIPV6}" = "NOIP6" ]; then
+  if [ -e "/etc/cloud/templates/hosts.arch.tmpl" ]; then # Only if using cloud-init
   /usr/bin/cat <<EOF > /etc/cloud/templates/hosts.arch.tmpl
 ## template:jinja
 # inkVerb is managing this file through cloud-init.
@@ -969,6 +974,7 @@ elif [ -n "${SERVERIPV6}" ] && [ "${SERVERIPV6}" = "NOIP6" ]; then
 # IPv4
 ${SERVERIPV4} ${hostURI} ${Hostname}
 EOF
+  fi
   /usr/bin/cat <<EOF > /etc/hosts
 # Set by inkVerb
 
