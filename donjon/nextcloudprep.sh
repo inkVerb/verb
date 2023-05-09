@@ -18,40 +18,40 @@ htgroup='www'
 rootuser='root'
 
 ##NOTE: the "assets" directory breaks the web updater 
-printf "Creating possible missing Directories\n"
-mkdir -p $nxcpath/data
-#mkdir -p $nxcpath/assets
-mkdir -p $nxcpath/updater
+/usr/bin/printf "Creating possible missing Directories\n"
+/usr/bin/mkdir -p $nxcpath/data
+#/usr/bin/mkdir -p $nxcpath/assets
+/usr/bin/mkdir -p $nxcpath/updater
 
-printf "chmod Files and Directories\n"
-find ${nxcpath}/ -type f -print0 | xargs -0 chmod 0640
-find ${nxcpath}/ -type d -print0 | xargs -0 chmod 0750
-chmod 755 ${nxcpath}
+/usr/bin/printf "chmod Files and Directories\n"
+/usr/bin/find ${nxcpath}/ -type f -print0 | xargs -0 chmod 0640
+/usr/bin/find ${nxcpath}/ -type d -print0 | xargs -0 chmod 0750
+/usr/bin/chmod 755 ${nxcpath}
 
-printf "chown Directories\n"
-chown -R ${rootuser}:${htgroup} ${nxcpath}/
-chown -R ${htuser}:${htgroup} ${nxcpath}/apps/
+/usr/bin/printf "chown Directories\n"
+/usr/bin/chown -R ${rootuser}:${htgroup} ${nxcpath}/
+/usr/bin/chown -R ${htuser}:${htgroup} ${nxcpath}/apps/
 #chown -R ${htuser}:${htgroup} ${nxcpath}/assets/
-chown -R ${htuser}:${htgroup} ${nxcpath}/config/
-chown -R ${htuser}:${htgroup} ${nxcpath}/data/
-chown -R ${htuser}:${htgroup} ${nxcpath}/themes/
-chown -R ${htuser}:${htgroup} ${nxcpath}/updater/
+/usr/bin/chown -R ${htuser}:${htgroup} ${nxcpath}/config/
+/usr/bin/chown -R ${htuser}:${htgroup} ${nxcpath}/data/
+/usr/bin/chown -R ${htuser}:${htgroup} ${nxcpath}/themes/
+/usr/bin/chown -R ${htuser}:${htgroup} ${nxcpath}/updater/
 
-chmod ug+x ${nxcpath}/occ
+/usr/bin/chmod ug+x ${nxcpath}/occ
 
-printf "chmod/chown .htaccess\n"
+/usr/bin/printf "chmod/chown .htaccess\n"
 if [ -f ${nxcpath}/.htaccess ]
  then
-  chmod 0644 ${nxcpath}/.htaccess
-  chown ${rootuser}:${htgroup} ${nxcpath}/.htaccess
+  /usr/bin/chmod 0644 ${nxcpath}/.htaccess
+  /usr/bin/chown ${rootuser}:${htgroup} ${nxcpath}/.htaccess
 fi
 if [ -f ${nxcpath}/data/.htaccess ]
  then
-  chmod 0644 ${nxcpath}/data/.htaccess
-  chown ${rootuser}:${htgroup} ${nxcpath}/data/.htaccess
+  /usr/bin/chmod 0644 ${nxcpath}/data/.htaccess
+  /usr/bin/chown ${rootuser}:${htgroup} ${nxcpath}/data/.htaccess
 fi
 
 # Finish
-touch /opt/verb/conf/.nextcloudscript
-echo "Nextcloud settings script completed."
+/usr/bin/touch /opt/verb/conf/.nextcloudscript
+/usr/bin/echo "Nextcloud settings script completed."
 

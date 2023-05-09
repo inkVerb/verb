@@ -31,10 +31,23 @@ if [ -d /srv/www/vapps/${CVAPPNAME} ]; then
 /bin/echo "Nextcloud already exists in the system. If it isn't working, look deeper on the server. For now, doing nothing."
 exit 8; fi
 
-DBASE=$1
-DBUSER=$2
-DBPASSWORD=$3
+# Auto database
 CLEANNAME=$(/bin/echo $CVAPPNAME | sed -e 's/\.//g')
+if [ -z ${3} ]; then
+DBPASSWORD=$(/usr/bin/pwgen -s -1 10)
+else
+DBPASSWORD=$3
+fi
+if [ -z ${1} ]; then
+DBASE=${CLEANNAME}$(/usr/bin/pwgen -s -1 6)
+else
+DBASE=$1
+fi
+if [ -z ${2} ]; then
+DBUSER=${DBASE}
+else
+DBUSER=$2
+fi
 
 # Download as webapp
 cd /srv/www/vapps || exit 0
@@ -49,14 +62,6 @@ exit 4; fi
 /usr/bin/mkdir -p /srv/www/vapps/nextcloud/data
 /bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}; wait
 /bin/chown -R www:www /srv/www/verb/blue; wait
-
-# Auto database
-if [ -z ${4} ]; then
-DBPASSWORD=$(/usr/bin/pwgen -s -1 10); fi
-if [ -z ${2} ]; then
-DBASE=${CLEANNAME}$(/usr/bin/pwgen -s -1 6); fi
-if [ -z ${3} ]; then
-DBUSER=${DBASE}; fi
 
 # Create the database and credentials
 /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "

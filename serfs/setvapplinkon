@@ -40,8 +40,8 @@ mediawiki)
 ;;
 
 nextcloud)
-/bin/rm -rf /srv/www/verb/blue
-/bin/ln -sfn /srv/www/vapps/${VAPPNAME} /srv/www/verb/blue
+/bin/rm -rf /srv/www/verb/blue.cloud
+/bin/ln -sfn /srv/www/vapps/${VAPPNAME} /srv/www/verb/blue.cloud
 /bin/echo "${VAPPNAME} symlink is set."
 ;;
 
