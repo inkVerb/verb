@@ -41,7 +41,7 @@ voptflagpurpose=( "No domain, but other args" "No IP4, but other args" )
 dependencyinstall=( inkdnsinstall )
 prerequesite=(  )
 usedby=( inkdnsinstall rink::addvps )
-useserfs=( inkdnsrefreshbind )
+useserfs=(  )
 useconfigs=( servernameip inklists/inkdnsnameservers )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then exit 0 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/inkdnssetns2.replace" ]; then . /opt/verb/mods/inkdnssetns2.replace; exit 0 0; fi # Replaces this script
@@ -118,7 +118,6 @@ if [ -n "$customns" ] && [ "$customns" = "true" ]; then
 fi
 
 # Finish
-/opt/verb/serfs/inkdnsrefreshbind
 /bin/echo "Secondary DNS nameserver set to: ${NsdnsIPv4} & ${NSIP6} for ${NsdnsDomainAIN}"
 
 
