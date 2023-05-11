@@ -38,12 +38,12 @@ if [ "$RinkConfigured" = "rink" ] && [ -f "/opt/rink/rinknames" ]; then
   . /opt/rink/rinknames
   ns1="${RinkNS1Name}.${RinkVerbTLD}"
   ns2="${RinkNS2Name}.${RinkVerbTLD}"
-elif [ "$RinkConfigured" != "true" ]; then
-	/usr/bin/echo "Rink NS server keys not configured, this won't work"
-	exit 0
-else
+elif [ "$RinkConfigured" = "true" ]; then
   ns1="ns1"
-  ns2="ns1"
+  ns2="ns2"
+else
+	/usr/bin/echo "Rink NS server keys not configured, this won't work"
+	exit 6
 fi
 
 if [ $VERBemail=true ]; then
