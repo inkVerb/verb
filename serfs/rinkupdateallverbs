@@ -29,6 +29,7 @@ if [ -e "/opt/verb/mods/rinkupdateallverbs.before" ]; then . /opt/verb/mods/rink
 
 
 # Configs
+. /opt/verb/conf/serverport
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/siteurilist
 
