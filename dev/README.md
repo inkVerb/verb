@@ -105,6 +105,11 @@ III. inst/ contains files only used at installation and updates and some importa
 	  6. This cannot be reversed (LAEMP can't change to LEMP, etc)
 	  7. This links `setubverb` to the serfs directory so it could be run by the same method as any API may handle serfs
 	  8. This is intended to work as a "canned", VPS-ready image, such as a VPS snapshot
+	  9. The actual web server `.conf` files will be at `verb/conf/webserver/sites-available/nginx/` and/or `verb/conf/webserver/sites-available/httpd/`, which are linked to `/etc/nginx/sites-available` and `/etc/httpd/sites-available` respectively, et cetera
+	    - Normal `/etc/nginx` and `/etc/httpd` directory structure will still work seamlessly
+		- You can still use normal nginx and httpd enable commands if you choose, but to better honor this structure, use `serfs/ensiteapache` and `serfs/ensitenginx` to enable any sites from the CLI
+		  - If you are using the `ink` CLI tool, this won't matter anyway because `ink` will handle this automatically
+		- This structure allows easier CLI management of both `nginx` and `httpd` from the `verb/conf/webserver/` folder
 	C. `setup`
 	  1. This sets the customized user information, namespace, IP addresses, timezones, etc.
 	  2. This requires another reboot after completion
