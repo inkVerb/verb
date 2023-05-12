@@ -45,7 +45,7 @@ SUBDOMAIN=$1
 OLDDOMAIN=$2
 
 # Check if it already exists
-if [ -f /opt/verb/conf/webserver/httpd/sites-available/${SUBDOMAIN}.${OLDDOMAIN}.conf ]; then
+if [ -f /opt/verb/conf/webserver/sites-available/httpd/${SUBDOMAIN}.${OLDDOMAIN}.conf ]; then
  if [ -f /etc/httpd/sites-enabled/${SUBDOMAIN}.${OLDDOMAIN}.conf ]; then
    /bin/echo "That subdomain already exists."
    exit 7
@@ -73,20 +73,20 @@ fi
   /bin/chmod -R 750 /srv/www/domains/${SUBDOMAIN}.${OLDDOMAIN}
 ## Copy
 if [ ${ServerType} = "lemp" ]; then
-  /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxdomain.tld.conf /opt/verb/conf/webserver/nginx/sites-available/${SUBDOMAIN}.${OLDDOMAIN}.conf
-  /bin/sed -i "s/newdomain.tld/${SUBDOMAIN}.${OLDDOMAIN}/g" /opt/verb/conf/webserver/nginx/sites-available/${SUBDOMAIN}.${OLDDOMAIN}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxdomain.tld.conf /opt/verb/conf/webserver/sites-available/nginx/${SUBDOMAIN}.${OLDDOMAIN}.conf
+  /bin/sed -i "s/newdomain.tld/${SUBDOMAIN}.${OLDDOMAIN}/g" /opt/verb/conf/webserver/sites-available/nginx/${SUBDOMAIN}.${OLDDOMAIN}.conf
   ## Server
   /opt/verb/serfs/ensitenginx -r ${SUBDOMAIN}.${OLDDOMAIN}
 elif [ ${ServerType} = "lamp" ]; then
-  /usr/bin/cp /opt/verb/conf/site-files/conf/newdomain.tld.conf /opt/verb/conf/webserver/httpd/sites-available/${SUBDOMAIN}.${OLDDOMAIN}.conf
-  /bin/sed -i "s/newdomain.tld/${SUBDOMAIN}.${OLDDOMAIN}/g" /opt/verb/conf/webserver/httpd/sites-available/${SUBDOMAIN}.${OLDDOMAIN}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newdomain.tld.conf /opt/verb/conf/webserver/sites-available/httpd/${SUBDOMAIN}.${OLDDOMAIN}.conf
+  /bin/sed -i "s/newdomain.tld/${SUBDOMAIN}.${OLDDOMAIN}/g" /opt/verb/conf/webserver/sites-available/httpd/${SUBDOMAIN}.${OLDDOMAIN}.conf
   ## Server
   /opt/verb/serfs/ensiteapache -r ${SUBDOMAIN}.${OLDDOMAIN}
 elif [ ${ServerType} = "laemp" ]; then
-  /usr/bin/cp /opt/verb/conf/site-files/conf/newdomain.tld.conf /opt/verb/conf/webserver/httpd/sites-available/${SUBDOMAIN}.${OLDDOMAIN}.conf
-  /usr/bin/cp /opt/verb/conf/site-files/conf/newrpnginxdomain.tld.conf /opt/verb/conf/webserver/nginx/sites-available/${SUBDOMAIN}.${OLDDOMAIN}.conf
-  /bin/sed -i "s/newdomain.tld/${SUBDOMAIN}.${OLDDOMAIN}/g" /opt/verb/conf/webserver/httpd/sites-available/${SUBDOMAIN}.${OLDDOMAIN}.conf
-  /bin/sed -i "s/newdomain.tld/${SUBDOMAIN}.${OLDDOMAIN}/g" /opt/verb/conf/webserver/nginx/sites-available/${SUBDOMAIN}.${OLDDOMAIN}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newdomain.tld.conf /opt/verb/conf/webserver/sites-available/httpd/${SUBDOMAIN}.${OLDDOMAIN}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newrpnginxdomain.tld.conf /opt/verb/conf/webserver/sites-available/nginx/${SUBDOMAIN}.${OLDDOMAIN}.conf
+  /bin/sed -i "s/newdomain.tld/${SUBDOMAIN}.${OLDDOMAIN}/g" /opt/verb/conf/webserver/sites-available/httpd/${SUBDOMAIN}.${OLDDOMAIN}.conf
+  /bin/sed -i "s/newdomain.tld/${SUBDOMAIN}.${OLDDOMAIN}/g" /opt/verb/conf/webserver/sites-available/nginx/${SUBDOMAIN}.${OLDDOMAIN}.conf
   ## Server
   /opt/verb/serfs/ensiteapache -r ${SUBDOMAIN}.${OLDDOMAIN}
   /opt/verb/serfs/ensitenginx -r ${SUBDOMAIN}.${OLDDOMAIN}

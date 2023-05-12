@@ -50,23 +50,23 @@ NEWDOMAIN=$1
 
 # Check if it already exists
 if [ ${ServerType} = "lemp" ]; then
-  if [ -f /opt/verb/conf/webserver/nginx/sites-available/${NEWDOMAIN}.conf ]; then
+  if [ -f /opt/verb/conf/webserver/sites-available/nginx/${NEWDOMAIN}.conf ]; then
     /opt/verb/serfs/ensitenginx -r ${NEWDOMAIN}
     /bin/echo "Site already exists, server restarted."
     exit 0
   fi
 elif [ ${ServerType} = "lamp" ]; then
-  if [ -f /opt/verb/conf/webserver/httpd/sites-available/${NEWDOMAIN}.conf ]; then
+  if [ -f /opt/verb/conf/webserver/sites-available/httpd/${NEWDOMAIN}.conf ]; then
     /opt/verb/serfs/ensiteapache -r ${NEWDOMAIN}
     /bin/echo "Site already exists, server restarted."
     exit 0
   fi
 elif [ ${ServerType} = "laemp" ]; then
-  if [ -f /opt/verb/conf/webserver/nginx/sites-available/${NEWDOMAIN}.conf ]; then
+  if [ -f /opt/verb/conf/webserver/sites-available/nginx/${NEWDOMAIN}.conf ]; then
     /opt/verb/serfs/ensitenginx -r ${NEWDOMAIN}
     SITEON=true
   fi
-  if [ -f /opt/verb/conf/webserver/httpd/sites-available/${NEWDOMAIN}.conf ]; then
+  if [ -f /opt/verb/conf/webserver/sites-available/httpd/${NEWDOMAIN}.conf ]; then
     /opt/verb/serfs/ensiteapache -r ${NEWDOMAIN}
     SITEON=true
   fi
@@ -93,20 +93,20 @@ fi
 /bin/chmod -R 750 /srv/www/domains/${NEWDOMAIN}
 ## Copy
 if [ ${ServerType} = "lemp" ]; then
-  /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxdomain.tld.conf /opt/verb/conf/webserver/nginx/sites-available/${NEWDOMAIN}.conf
-  /bin/sed -i "s/newdomain.tld/${NEWDOMAIN}/g" /opt/verb/conf/webserver/nginx/sites-available/${NEWDOMAIN}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxdomain.tld.conf /opt/verb/conf/webserver/sites-available/nginx/${NEWDOMAIN}.conf
+  /bin/sed -i "s/newdomain.tld/${NEWDOMAIN}/g" /opt/verb/conf/webserver/sites-available/nginx/${NEWDOMAIN}.conf
   ## Server
   /opt/verb/serfs/ensitenginx -r ${NEWDOMAIN}
 elif [ ${ServerType} = "lamp" ]; then
-  /usr/bin/cp /opt/verb/conf/site-files/conf/newdomain.tld.conf /opt/verb/conf/webserver/httpd/sites-available/${NEWDOMAIN}.conf
-  /bin/sed -i "s/newdomain.tld/${NEWDOMAIN}/g" /opt/verb/conf/webserver/httpd/sites-available/${NEWDOMAIN}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newdomain.tld.conf /opt/verb/conf/webserver/sites-available/httpd/${NEWDOMAIN}.conf
+  /bin/sed -i "s/newdomain.tld/${NEWDOMAIN}/g" /opt/verb/conf/webserver/sites-available/httpd/${NEWDOMAIN}.conf
   ## Server
   /opt/verb/serfs/ensiteapache -r ${NEWDOMAIN}
 elif [ ${ServerType} = "laemp" ]; then
-  /usr/bin/cp /opt/verb/conf/site-files/conf/newdomain.tld.conf /opt/verb/conf/webserver/httpd/sites-available/${NEWDOMAIN}.conf
-  /usr/bin/cp /opt/verb/conf/site-files/conf/newrpnginxdomain.tld.conf /opt/verb/conf/webserver/nginx/sites-available/${NEWDOMAIN}.conf
-  /bin/sed -i "s/newdomain.tld/${NEWDOMAIN}/g" /opt/verb/conf/webserver/httpd/sites-available/${NEWDOMAIN}.conf
-  /bin/sed -i "s/newdomain.tld/${NEWDOMAIN}/g" /opt/verb/conf/webserver/nginx/sites-available/${NEWDOMAIN}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newdomain.tld.conf /opt/verb/conf/webserver/sites-available/httpd/${NEWDOMAIN}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newrpnginxdomain.tld.conf /opt/verb/conf/webserver/sites-available/nginx/${NEWDOMAIN}.conf
+  /bin/sed -i "s/newdomain.tld/${NEWDOMAIN}/g" /opt/verb/conf/webserver/sites-available/httpd/${NEWDOMAIN}.conf
+  /bin/sed -i "s/newdomain.tld/${NEWDOMAIN}/g" /opt/verb/conf/webserver/sites-available/nginx/${NEWDOMAIN}.conf
   ## Server
   /opt/verb/serfs/ensiteapache -r ${NEWDOMAIN}
   /opt/verb/serfs/ensitenginx -r ${NEWDOMAIN}

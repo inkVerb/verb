@@ -43,18 +43,18 @@ KILLSUBDOMAIN=${KILLSUB}.${oneURI}
 # Remove server configs and restart
 . /opt/verb/conf/servertype
 if [ ${ServerType} = "lemp" ]; then
-  /bin/rm -f /opt/verb/conf/webserver/nginx/sites-available/${KILLSUBDOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/nginx/sites-enabled/${KILLSUBDOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${KILLSUBDOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/nginx/${KILLSUBDOMAIN}.conf
   /usr/bin/systemctl restart nginx
 elif [ ${ServerType} = "lamp" ]; then
-  /bin/rm -f /opt/verb/conf/webserver/httpd/sites-available/${KILLSUBDOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/httpd/sites-enabled/${KILLSUBDOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${KILLSUBDOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/${KILLSUBDOMAIN}.conf
   /usr/bin/systemctl restart httpd
 elif [ ${ServerType} = "laemp" ]; then
-  /bin/rm -f /opt/verb/conf/webserver/httpd/sites-available/${KILLSUBDOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/httpd/sites-enabled/${KILLSUBDOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/nginx/sites-available/${KILLSUBDOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/nginx/sites-enabled/${KILLSUBDOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${KILLSUBDOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/${KILLSUBDOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${KILLSUBDOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/nginx/${KILLSUBDOMAIN}.conf
   /usr/bin/systemctl restart httpd
   /usr/bin/systemctl restart nginx
 fi

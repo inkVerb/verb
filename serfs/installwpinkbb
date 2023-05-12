@@ -89,7 +89,7 @@ NONCE_SALT=$(/usr/bin/pwgen -s -1 27)
 /bin/sed -i "s/define( 'NONCE_SALT',       .*/define( 'NONCE_SALT',       '${NONCE_SALT}' );/g" wp-config.php
 
 #### fixhttps already done?
-if /bin/grep -q '##INKHTTPSFIX=fixed' /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf; then
+if /bin/grep -q '##INKHTTPSFIX=fixed' /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf; then
 /bin/sed -i "/WP_SITEURL/d" /srv/www/vapps/wp.${DOMAIN}/wp-config.php
 /bin/sed -i "/WP_HOME/d" /srv/www/vapps/wp.${DOMAIN}/wp-config.php
 /bin/echo "define( 'WP_SITEURL', 'https://${DOMAIN}' );

@@ -112,18 +112,18 @@ FLUSH PRIVILEGES;"
 /usr/bin/chown -R www:www /srv/www/verb/${ServerEmailTLD}.box
 ## Hosting conf
 if [ ${ServerType} = "laemp" ]; then
-  /usr/bin/cp /opt/verb/conf/site-files/conf/box-nginx.conf /opt/verb/conf/webserver/nginx/sites-available/box.${emailTLDURI}.conf
-  /usr/bin/cp /opt/verb/conf/site-files/conf/box-httpd.conf /opt/verb/conf/webserver/httpd/sites-available/box.${emailTLDURI}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/box-nginx.conf /opt/verb/conf/webserver/sites-available/nginx/box.${emailTLDURI}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/box-httpd.conf /opt/verb/conf/webserver/sites-available/httpd/box.${emailTLDURI}.conf
   /opt/verb/serfs/ensitenginx box.${emailTLDURI}
   /opt/verb/serfs/ensiteapache box.${emailTLDURI}
   /usr/bin/systemctl restart nginx; wait
   /usr/bin/systemctl restart httpd; wait
 elif [ ${ServerType} = "lemp" ]; then
-  /usr/bin/cp /opt/verb/conf/site-files/conf/box-nginx.conf /opt/verb/conf/webserver/nginx/sites-available/box.${emailTLDURI}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/box-nginx.conf /opt/verb/conf/webserver/sites-available/nginx/box.${emailTLDURI}.conf
   /opt/verb/serfs/ensitenginx box.${emailTLDURI}
   /usr/bin/systemctl restart nginx; wait
 elif [ ${ServerType} = "lamp" ]; then
-  /usr/bin/cp /opt/verb/conf/site-files/conf/box-httpd.conf /opt/verb/conf/webserver/httpd/sites-available/box.${emailTLDURI}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/box-httpd.conf /opt/verb/conf/webserver/sites-available/httpd/box.${emailTLDURI}.conf
   /opt/verb/serfs/ensiteapache box.${emailTLDURI}
   /usr/bin/systemctl restart httpd; wait
 fi

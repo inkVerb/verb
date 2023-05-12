@@ -37,7 +37,7 @@ if [ "${!CHECKtld}" != true ]; then
 /bin/echo "Not an acceptable TLD, chose a valid TLD."; exit 0; fi
 
 # Remove the old settings
-/bin/rm -f /opt/verb/conf/webserver/httpd/sites-available/${serveURI}.conf
+/bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${serveURI}.conf
 /bin/sed -i "s/, ${serveURI}//g" /opt/verb/conf/inkcert/cli-ini/cli.*
 
 /bin/sed -i "s/ServerServeTLD=.*/ServerServeTLD=\"${vTLD}\"/" /opt/verb/conf/servernameip
@@ -49,26 +49,26 @@ if [ "${!CHECKtld}" != true ]; then
 
 if [ ${ServerType} = "lemp" ]; then
   # Nginx
-  /bin/cp /opt/verb/conf/site-files/conf/serve.conf /opt/verb/conf/webserver/nginx/sites-available/${serveURI}.conf
-  /bin/sed -i "s/serveURI286/${serveURI}/g" /opt/verb/conf/webserver/nginx/sites-available/${serveURI}.conf
-  /bin/sed -i "s/serveTLD286/${vTLD}/g" /opt/verb/conf/webserver/nginx/sites-available/${serveURI}.conf
+  /bin/cp /opt/verb/conf/site-files/conf/serve.conf /opt/verb/conf/webserver/sites-available/nginx/${serveURI}.conf
+  /bin/sed -i "s/serveURI286/${serveURI}/g" /opt/verb/conf/webserver/sites-available/nginx/${serveURI}.conf
+  /bin/sed -i "s/serveTLD286/${vTLD}/g" /opt/verb/conf/webserver/sites-available/nginx/${serveURI}.conf
   /opt/verb/serfs/ensitenginx -r ${serveURI}
 elif [ ${ServerType} = "lamp" ]; then
   # Apache
-  /bin/cp /opt/verb/conf/site-files/conf/serve.conf /opt/verb/conf/webserver/httpd/sites-available/${serveURI}.conf
-  /bin/sed -i "s/serveURI286/${serveURI}/g" /opt/verb/conf/webserver/httpd/sites-available/${serveURI}.conf
-  /bin/sed -i "s/serveTLD286/${vTLD}/g" /opt/verb/conf/webserver/httpd/sites-available/${serveURI}.conf
+  /bin/cp /opt/verb/conf/site-files/conf/serve.conf /opt/verb/conf/webserver/sites-available/httpd/${serveURI}.conf
+  /bin/sed -i "s/serveURI286/${serveURI}/g" /opt/verb/conf/webserver/sites-available/httpd/${serveURI}.conf
+  /bin/sed -i "s/serveTLD286/${vTLD}/g" /opt/verb/conf/webserver/sites-available/httpd/${serveURI}.conf
   /opt/verb/serfs/ensiteapache -r ${serveURI}
 elif [ ${ServerType} = "laemp" ]; then
   # Nginx
-  /bin/cp /opt/verb/conf/site-files/conf/servenginx.conf /opt/verb/conf/webserver/nginx/sites-available/${serveURI}.conf
-  /bin/sed -i "s/serveURI286/${serveURI}/g" /opt/verb/conf/webserver/nginx/sites-available/${serveURI}.conf
-  /bin/sed -i "s/serveTLD286/${vTLD}/g" /opt/verb/conf/webserver/nginx/sites-available/${serveURI}.conf
+  /bin/cp /opt/verb/conf/site-files/conf/servenginx.conf /opt/verb/conf/webserver/sites-available/nginx/${serveURI}.conf
+  /bin/sed -i "s/serveURI286/${serveURI}/g" /opt/verb/conf/webserver/sites-available/nginx/${serveURI}.conf
+  /bin/sed -i "s/serveTLD286/${vTLD}/g" /opt/verb/conf/webserver/sites-available/nginx/${serveURI}.conf
   /opt/verb/serfs/ensitenginx -r ${serveURI}
   # Apache
-  /bin/cp /opt/verb/conf/site-files/conf/serveapache.conf /opt/verb/conf/webserver/httpd/sites-available/${serveURI}.conf
-  /bin/sed -i "s/serveURI286/${serveURI}/g" /opt/verb/conf/webserver/httpd/sites-available/${serveURI}.conf
-  /bin/sed -i "s/serveTLD286/${vTLD}/g" /opt/verb/conf/webserver/httpd/sites-available/${serveURI}.conf
+  /bin/cp /opt/verb/conf/site-files/conf/serveapache.conf /opt/verb/conf/webserver/sites-available/httpd/${serveURI}.conf
+  /bin/sed -i "s/serveURI286/${serveURI}/g" /opt/verb/conf/webserver/sites-available/httpd/${serveURI}.conf
+  /bin/sed -i "s/serveTLD286/${vTLD}/g" /opt/verb/conf/webserver/sites-available/httpd/${serveURI}.conf
   /opt/verb/serfs/ensiteapache -r ${serveURI}
 fi
 

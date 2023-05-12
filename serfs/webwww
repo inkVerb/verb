@@ -20,7 +20,7 @@ if [ "$1" = "on" ]; then
 	if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
 		# Nginx
 		## Check to see if "fixwww" has already been added
-		if /bin/grep -q "##INKWWWFIX=fixed" /opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf; then
+		if /bin/grep -q "##INKWWWFIX=fixed" /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf; then
 			/bin/systemctl restart nginx; wait
 			/bin/echo "${DOMAIN} already has the www subdomain fix. The server was just reloaded so the site should work."
 		else
@@ -32,7 +32,7 @@ if [ "$1" = "on" ]; then
 	  server_name www.${DOMAIN};
 	  return 301 \$scheme://${DOMAIN}\$request_uri;
 	}
-	##verbFIXwww" >> /opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf
+	##verbFIXwww" >> /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf
 			/bin/systemctl restart nginx; wait
 
 			/bin/echo "${DOMAIN} now has the www subdomain fix and is ready to go."
@@ -40,7 +40,7 @@ if [ "$1" = "on" ]; then
 
 	elif [ ${ServerType} = "lamp" ]; then
 		# Check to see if "fixwww" has already been added
-		if /bin/grep -q "##INKWWWFIX=fixed" /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf; then
+		if /bin/grep -q "##INKWWWFIX=fixed" /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf; then
 			/usr/bin/systemctl restart httpd
 			/bin/echo "${DOMAIN} already has the www subdomain fix. The server was just reloaded so the site should work."
 		else
@@ -58,7 +58,7 @@ if [ "$1" = "on" ]; then
 	    Redirect permanent / https://${DOMAIN}/
 	  </VirtualHost>
 	</IfModule>
-	##verbFIXwww" >> /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf
+	##verbFIXwww" >> /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
 			/usr/bin/systemctl restart httpd
 
 			/bin/echo "${DOMAIN} now has the www subdomain fix and is ready to go."
@@ -71,14 +71,14 @@ elif [ "$1" = "off" ]; then
 	if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
 		# Nginx
 		## Verify that the "fixwww" has been added
-		if ! /bin/grep -q "##INKWWWFIX=fixed" /opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf; then
+		if ! /bin/grep -q "##INKWWWFIX=fixed" /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf; then
 			/bin/echo "${DOMAIN} doesn't have the www subdomain fix. Nothing to do."
 		fi
 
 		## Remove the old settings
-		/bin/sed -i '/^##INKWWWFIX=fixed/,/^##verbFIXwww/{/^##INKWWWFIX=fixed/!{/^##verbFIXwww/!d}}' /opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf
-		/bin/sed -i '/##INKWWWFIX=fixed/d' /opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf
-		/bin/sed -i '/##verbFIXwww/d' /opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf
+		/bin/sed -i '/^##INKWWWFIX=fixed/,/^##verbFIXwww/{/^##INKWWWFIX=fixed/!{/^##verbFIXwww/!d}}' /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf
+		/bin/sed -i '/##INKWWWFIX=fixed/d' /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf
+		/bin/sed -i '/##verbFIXwww/d' /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf
 		/bin/systemctl restart nginx; wait
 
 		# Finish
@@ -87,14 +87,14 @@ elif [ "$1" = "off" ]; then
 
 	elif [ ${ServerType} = "lamp" ]; then
 		# Verify that the "fixwww" has been added
-		if ! /bin/grep -q "##INKWWWFIX=fixed" /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf; then
+		if ! /bin/grep -q "##INKWWWFIX=fixed" /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf; then
 			/bin/echo "${DOMAIN} doesn't have the www subdomain fix. Nothing to do."
 		fi
 
 		## Remove the old settings
-		/bin/sed -i '/^##INKWWWFIX=fixed/,/^##verbFIXwww/{/^##INKWWWFIX=fixed/!{/^##verbFIXwww/!d}}' /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf
-		/bin/sed -i '/##INKWWWFIX=fixed/d' /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf
-		/bin/sed -i '/##verbFIXwww/d' /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf
+		/bin/sed -i '/^##INKWWWFIX=fixed/,/^##verbFIXwww/{/^##INKWWWFIX=fixed/!{/^##verbFIXwww/!d}}' /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
+		/bin/sed -i '/##INKWWWFIX=fixed/d' /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
+		/bin/sed -i '/##verbFIXwww/d' /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
 		/usr/bin/systemctl restart httpd
 
 		# Finish

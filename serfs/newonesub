@@ -39,22 +39,22 @@ NEWONESUB=$1
 
 # Server
 if [ ${ServerType} = "lemp" ]; then
-  /bin/cp /opt/verb/conf/site-files/conf/newnginxonesub.conf /opt/verb/conf/webserver/nginx/sites-available/${NEWONESUB}.${oneURI}.conf
-  /bin/sed -i "s/newonesub/${NEWONESUB}/g" /opt/verb/conf/webserver/nginx/sites-available/${NEWONESUB}.${oneURI}.conf
-  /bin/sed -i "s/oneURI286/${oneURI}/g" /opt/verb/conf/webserver/nginx/sites-available/${NEWONESUB}.${oneURI}.conf
+  /bin/cp /opt/verb/conf/site-files/conf/newnginxonesub.conf /opt/verb/conf/webserver/sites-available/nginx/${NEWONESUB}.${oneURI}.conf
+  /bin/sed -i "s/newonesub/${NEWONESUB}/g" /opt/verb/conf/webserver/sites-available/nginx/${NEWONESUB}.${oneURI}.conf
+  /bin/sed -i "s/oneURI286/${oneURI}/g" /opt/verb/conf/webserver/sites-available/nginx/${NEWONESUB}.${oneURI}.conf
   /opt/verb/serfs/ensitenginx -r ${NEWONESUB}.${oneURI}
 elif [ ${ServerType} = "lamp" ]; then
-  /bin/cp /opt/verb/conf/site-files/conf/newonesub.conf /opt/verb/conf/webserver/httpd/sites-available/${NEWONESUB}.${oneURI}.conf
-  /bin/sed -i "s/newonesub/${NEWONESUB}/g" /opt/verb/conf/webserver/httpd/sites-available/${NEWONESUB}.${oneURI}.conf
-  /bin/sed -i "s/oneURI286/${oneURI}/g" /opt/verb/conf/webserver/httpd/sites-available/${NEWONESUB}.${oneURI}.conf
+  /bin/cp /opt/verb/conf/site-files/conf/newonesub.conf /opt/verb/conf/webserver/sites-available/httpd/${NEWONESUB}.${oneURI}.conf
+  /bin/sed -i "s/newonesub/${NEWONESUB}/g" /opt/verb/conf/webserver/sites-available/httpd/${NEWONESUB}.${oneURI}.conf
+  /bin/sed -i "s/oneURI286/${oneURI}/g" /opt/verb/conf/webserver/sites-available/httpd/${NEWONESUB}.${oneURI}.conf
   /opt/verb/serfs/ensiteapache -r ${NEWONESUB}.${oneURI}
 elif [ ${ServerType} = "laemp" ]; then
-  /bin/cp /opt/verb/conf/site-files/conf/newonesub.conf /opt/verb/conf/webserver/httpd/sites-available/${NEWONESUB}.${oneURI}.conf
-  /bin/sed -i "s/newonesub/${NEWONESUB}/g" /opt/verb/conf/webserver/httpd/sites-available/${NEWONESUB}.${oneURI}.conf
-  /bin/sed -i "s/oneURI286/${oneURI}/g" /opt/verb/conf/webserver/httpd/sites-available/${NEWONESUB}.${oneURI}.conf
-  /bin/cp /opt/verb/conf/site-files/conf/newrpnginxonesub.conf /opt/verb/conf/webserver/nginx/sites-available/${NEWONESUB}.${oneURI}.conf
-  /bin/sed -i "s/newonesub/${NEWONESUB}/g" /opt/verb/conf/webserver/nginx/sites-available/${NEWONESUB}.${oneURI}.conf
-  /bin/sed -i "s/oneURI286/${oneURI}/g" /opt/verb/conf/webserver/nginx/sites-available/${NEWONESUB}.${oneURI}.conf
+  /bin/cp /opt/verb/conf/site-files/conf/newonesub.conf /opt/verb/conf/webserver/sites-available/httpd/${NEWONESUB}.${oneURI}.conf
+  /bin/sed -i "s/newonesub/${NEWONESUB}/g" /opt/verb/conf/webserver/sites-available/httpd/${NEWONESUB}.${oneURI}.conf
+  /bin/sed -i "s/oneURI286/${oneURI}/g" /opt/verb/conf/webserver/sites-available/httpd/${NEWONESUB}.${oneURI}.conf
+  /bin/cp /opt/verb/conf/site-files/conf/newrpnginxonesub.conf /opt/verb/conf/webserver/sites-available/nginx/${NEWONESUB}.${oneURI}.conf
+  /bin/sed -i "s/newonesub/${NEWONESUB}/g" /opt/verb/conf/webserver/sites-available/nginx/${NEWONESUB}.${oneURI}.conf
+  /bin/sed -i "s/oneURI286/${oneURI}/g" /opt/verb/conf/webserver/sites-available/nginx/${NEWONESUB}.${oneURI}.conf
   /opt/verb/serfs/ensiteapache -r ${NEWONESUB}.${oneURI}
   /opt/verb/serfs/ensitenginx -r ${NEWONESUB}.${oneURI}
 fi

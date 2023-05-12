@@ -44,9 +44,9 @@ exit 0; fi
 
 # For any/all sub-domains
 if [ ${ServerType} = "lamp" ] || [ ${ServerType} = "laemp" ]; then
-  cd /opt/verb/conf/webserver/httpd/sites-available
+  cd /opt/verb/conf/webserver/sites-available/httpd
 elif [ ${ServerType} = "lemp" ]; then
-  cd /opt/verb/conf/webserver/nginx/sites-available
+  cd /opt/verb/conf/webserver/sites-available/nginx
 fi
 
 # Let each run wait 1 second to avoid congesting the server

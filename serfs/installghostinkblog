@@ -73,10 +73,10 @@ cd /srv/www/ghost/ghostblog || exit 0
 # Web server
 . /opt/verb/conf/servertype
 if [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
-  /bin/rm -f /opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf
-  /bin/cp -f /opt/verb/conf/site-files/conf/newnginxghostinkblog.conf /opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf
-  /bin/sed -i "s/ghostsite286/${DOMAIN}/g" /opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf
-  /bin/sed -i "s/2368/${NEWPORT}/g" /opt/verb/conf/webserver/nginx/sites-available/${DOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf
+  /bin/cp -f /opt/verb/conf/site-files/conf/newnginxghostinkblog.conf /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf
+  /bin/sed -i "s/ghostsite286/${DOMAIN}/g" /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf
+  /bin/sed -i "s/2368/${NEWPORT}/g" /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf
 elif [ ${ServerType} = "lamp" ]; then
   ## IP4?
   if [ "${ServerIPv4}" != "NOIP4" ]; then
@@ -85,11 +85,11 @@ elif [ ${ServerType} = "lamp" ]; then
   elif [ "${ServerIPv6}" != "NOIP6" ]; then
     SITEIP="[${ServerIPv6}]" # Brackets because we include a port number, and this is the proper format
   fi
-  /bin/rm -f /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf
-  /bin/cp -f /opt/verb/conf/site-files/conf/newghostinkblog.conf /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf
-  /bin/sed -i "s/ghostsite286/${DOMAIN}/g" /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf
-  /bin/sed -i "s/2368/${NEWPORT}/g" /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf
-  /bin/sed -i "s/ipv4286/${SITEIP}/g" /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
+  /bin/cp -f /opt/verb/conf/site-files/conf/newghostinkblog.conf /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
+  /bin/sed -i "s/ghostsite286/${DOMAIN}/g" /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
+  /bin/sed -i "s/2368/${NEWPORT}/g" /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
+  /bin/sed -i "s/ipv4286/${SITEIP}/g" /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
 fi
 
 ## inkCert SSL certs

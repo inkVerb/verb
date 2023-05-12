@@ -115,7 +115,7 @@ define( 'WP_HOME', 'https://${DOMAIN}' );" >> wp-config.php
 /opt/verb/serfs/setsecurewp ${DOMAIN}
 
 #### fixhttps already done?
-if /bin/grep -q '##INKHTTPSFIX=fixed' /opt/verb/conf/webserver/httpd/sites-available/${DOMAIN}.conf; then
+if /bin/grep -q '##INKHTTPSFIX=fixed' /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf; then
 /bin/sed -i "/WP_SITEURL/d" /srv/www/vapps/wp.${DOMAIN}/wp-config.php
 /bin/sed -i "/WP_HOME/d" /srv/www/vapps/wp.${DOMAIN}/wp-config.php
 /bin/echo "define( 'WP_SITEURL', 'https://${DOMAIN}' );

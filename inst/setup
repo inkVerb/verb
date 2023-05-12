@@ -578,95 +578,95 @@ fi
 # sites-available
 . /opt/verb/conf/servertype
 ## Apache
-if [ -d "/opt/verb/conf/webserver/httpd/sites-available" ]; then
+if [ -d "/opt/verb/conf/webserver/sites-available/httpd" ]; then
   ### Replace
-  /bin/sed -i "s/emailTLD286/${emailTLD}/g" /opt/verb/conf/webserver/httpd/sites-available/*.conf
-  /bin/sed -i "s/itsqlTLD286/${itsqlTLD}/g" /opt/verb/conf/webserver/httpd/sites-available/*.conf
-  /bin/sed -i "s/itsqlTLDURI286/${itsqlTLDURI}/g" /opt/verb/conf/webserver/httpd/sites-available/*.conf
-  /bin/sed -i "s/emailURI286/${emailURI}/g" /opt/verb/conf/webserver/httpd/sites-available/*.conf
-  /bin/sed -i "s/oneURI286/${oneURI}/g" /opt/verb/conf/webserver/httpd/sites-available/*.conf
-  /bin/sed -i "s/inkURI286/${inkURI}/g" /opt/verb/conf/webserver/httpd/sites-available/*.conf
-  /bin/sed -i "s/blueURI286/${blueURI}/g" /opt/verb/conf/webserver/httpd/sites-available/*.conf
-  /bin/sed -i "s/vipURI286/${vipURI}/g" /opt/verb/conf/webserver/httpd/sites-available/*.conf
-  /bin/sed -i "s/kiwiURI286/${kiwiURI}/g" /opt/verb/conf/webserver/httpd/sites-available/*.conf
-  /bin/sed -i "s/redURI286/${redURI}/g" /opt/verb/conf/webserver/httpd/sites-available/*.conf
+  /bin/sed -i "s/emailTLD286/${emailTLD}/g" /opt/verb/conf/webserver/sites-available/httpd/*.conf
+  /bin/sed -i "s/itsqlTLD286/${itsqlTLD}/g" /opt/verb/conf/webserver/sites-available/httpd/*.conf
+  /bin/sed -i "s/itsqlTLDURI286/${itsqlTLDURI}/g" /opt/verb/conf/webserver/sites-available/httpd/*.conf
+  /bin/sed -i "s/emailURI286/${emailURI}/g" /opt/verb/conf/webserver/sites-available/httpd/*.conf
+  /bin/sed -i "s/oneURI286/${oneURI}/g" /opt/verb/conf/webserver/sites-available/httpd/*.conf
+  /bin/sed -i "s/inkURI286/${inkURI}/g" /opt/verb/conf/webserver/sites-available/httpd/*.conf
+  /bin/sed -i "s/blueURI286/${blueURI}/g" /opt/verb/conf/webserver/sites-available/httpd/*.conf
+  /bin/sed -i "s/vipURI286/${vipURI}/g" /opt/verb/conf/webserver/sites-available/httpd/*.conf
+  /bin/sed -i "s/kiwiURI286/${kiwiURI}/g" /opt/verb/conf/webserver/sites-available/httpd/*.conf
+  /bin/sed -i "s/redURI286/${redURI}/g" /opt/verb/conf/webserver/sites-available/httpd/*.conf
   ### Rename
-  for cfg in /opt/verb/conf/webserver/httpd/sites-available/*itsqlTLDURI286.conf
+  for cfg in /opt/verb/conf/webserver/sites-available/httpd/*itsqlTLDURI286.conf
   do
     /usr/bin/mv -- "$cfg" "${cfg/%itsqlTLDURI286.conf/}${itsqlTLDURI}.conf"
   done
-  for cfg in /opt/verb/conf/webserver/httpd/sites-available/*emailURI286.conf
+  for cfg in /opt/verb/conf/webserver/sites-available/httpd/*emailURI286.conf
   do
     /usr/bin/mv -- "$cfg" "${cfg/%emailURI286.conf/}${emailURI}.conf"
   done
-  for cfg in /opt/verb/conf/webserver/httpd/sites-available/*oneURI286.conf
+  for cfg in /opt/verb/conf/webserver/sites-available/httpd/*oneURI286.conf
   do
     /usr/bin/mv -- "$cfg" "${cfg/%oneURI286.conf/}${oneURI}.conf"
   done
-  for cfg in /opt/verb/conf/webserver/httpd/sites-available/*inkURI286.conf
+  for cfg in /opt/verb/conf/webserver/sites-available/httpd/*inkURI286.conf
   do
     /usr/bin/mv -- "$cfg" "${cfg/%inkURI286.conf/}${inkURI}.conf"
   done
-  for cfg in /opt/verb/conf/webserver/httpd/sites-available/*blueURI286.conf
+  for cfg in /opt/verb/conf/webserver/sites-available/httpd/*blueURI286.conf
   do
     /usr/bin/mv -- "$cfg" "${cfg/%blueURI286.conf/}${blueURI}.conf"
   done
-  for cfg in /opt/verb/conf/webserver/httpd/sites-available/*vipURI286.conf
+  for cfg in /opt/verb/conf/webserver/sites-available/httpd/*vipURI286.conf
   do
     /usr/bin/mv -- "$cfg" "${cfg/%vipURI286.conf/}${vipURI}.conf"
   done
-  for cfg in /opt/verb/conf/webserver/httpd/sites-available/*kiwiURI286.conf
+  for cfg in /opt/verb/conf/webserver/sites-available/httpd/*kiwiURI286.conf
   do
     /usr/bin/mv -- "$cfg" "${cfg/%kiwiURI286.conf/}${kiwiURI}.conf"
   done
-  for cfg in /opt/verb/conf/webserver/httpd/sites-available/*redURI286.conf
+  for cfg in /opt/verb/conf/webserver/sites-available/httpd/*redURI286.conf
   do
     /usr/bin/mv -- "$cfg" "${cfg/%redURI286.conf/}${redURI}.conf"
   done
 fi
 ## Nginx
-if [ -d "/opt/verb/conf/webserver/nginx/sites-available" ]; then
+if [ -d "/opt/verb/conf/webserver/sites-available/nginx" ]; then
   ### Replace
-  /bin/sed -i "s/emailTLD286/${emailTLD}/g" /opt/verb/conf/webserver/nginx/sites-available/*.conf
-  /bin/sed -i "s/itsqlTLD286/${itsqlTLD}/g" /opt/verb/conf/webserver/nginx/sites-available/*.conf
-  /bin/sed -i "s/itsqlTLDURI286/${itsqlTLDURI}/g" /opt/verb/conf/webserver/nginx/sites-available/*.conf
-  /bin/sed -i "s/emailURI286/${emailURI}/g" /opt/verb/conf/webserver/nginx/sites-available/*.conf
-  /bin/sed -i "s/oneURI286/${oneURI}/g" /opt/verb/conf/webserver/nginx/sites-available/*.conf
-  /bin/sed -i "s/inkURI286/${inkURI}/g" /opt/verb/conf/webserver/nginx/sites-available/*.conf
-  /bin/sed -i "s/blueURI286/${blueURI}/g" /opt/verb/conf/webserver/nginx/sites-available/*.conf
-  /bin/sed -i "s/vipURI286/${vipURI}/g" /opt/verb/conf/webserver/nginx/sites-available/*.conf
-  /bin/sed -i "s/kiwiURI286/${kiwiURI}/g" /opt/verb/conf/webserver/nginx/sites-available/*.conf
-  /bin/sed -i "s/redURI286/${redURI}/g" /opt/verb/conf/webserver/nginx/sites-available/*.conf
+  /bin/sed -i "s/emailTLD286/${emailTLD}/g" /opt/verb/conf/webserver/sites-available/nginx/*.conf
+  /bin/sed -i "s/itsqlTLD286/${itsqlTLD}/g" /opt/verb/conf/webserver/sites-available/nginx/*.conf
+  /bin/sed -i "s/itsqlTLDURI286/${itsqlTLDURI}/g" /opt/verb/conf/webserver/sites-available/nginx/*.conf
+  /bin/sed -i "s/emailURI286/${emailURI}/g" /opt/verb/conf/webserver/sites-available/nginx/*.conf
+  /bin/sed -i "s/oneURI286/${oneURI}/g" /opt/verb/conf/webserver/sites-available/nginx/*.conf
+  /bin/sed -i "s/inkURI286/${inkURI}/g" /opt/verb/conf/webserver/sites-available/nginx/*.conf
+  /bin/sed -i "s/blueURI286/${blueURI}/g" /opt/verb/conf/webserver/sites-available/nginx/*.conf
+  /bin/sed -i "s/vipURI286/${vipURI}/g" /opt/verb/conf/webserver/sites-available/nginx/*.conf
+  /bin/sed -i "s/kiwiURI286/${kiwiURI}/g" /opt/verb/conf/webserver/sites-available/nginx/*.conf
+  /bin/sed -i "s/redURI286/${redURI}/g" /opt/verb/conf/webserver/sites-available/nginx/*.conf
   ### Rename
-  for cfg in /opt/verb/conf/webserver/nginx/sites-available/*itsqlTLDURI286.conf
+  for cfg in /opt/verb/conf/webserver/sites-available/nginx/*itsqlTLDURI286.conf
   do
     /usr/bin/mv -- "$cfg" "${cfg/%itsqlTLDURI286.conf/}${itsqlTLDURI}.conf"
   done
-  for cfg in /opt/verb/conf/webserver/nginx/sites-available/*emailURI286.conf
+  for cfg in /opt/verb/conf/webserver/sites-available/nginx/*emailURI286.conf
   do
     /usr/bin/mv -- "$cfg" "${cfg/%emailURI286.conf/}${emailURI}.conf"
   done
-  for cfg in /opt/verb/conf/webserver/nginx/sites-available/*oneURI286.conf
+  for cfg in /opt/verb/conf/webserver/sites-available/nginx/*oneURI286.conf
   do
     /usr/bin/mv -- "$cfg" "${cfg/%oneURI286.conf/}${oneURI}.conf"
   done
-  for cfg in /opt/verb/conf/webserver/nginx/sites-available/*inkURI286.conf
+  for cfg in /opt/verb/conf/webserver/sites-available/nginx/*inkURI286.conf
   do
     /usr/bin/mv -- "$cfg" "${cfg/%inkURI286.conf/}${inkURI}.conf"
   done
-  for cfg in /opt/verb/conf/webserver/nginx/sites-available/*blueURI286.conf
+  for cfg in /opt/verb/conf/webserver/sites-available/nginx/*blueURI286.conf
   do
     /usr/bin/mv -- "$cfg" "${cfg/%blueURI286.conf/}${blueURI}.conf"
   done
-  for cfg in /opt/verb/conf/webserver/nginx/sites-available/*vipURI286.conf
+  for cfg in /opt/verb/conf/webserver/sites-available/nginx/*vipURI286.conf
   do
     /usr/bin/mv -- "$cfg" "${cfg/%vipURI286.conf/}${vipURI}.conf"
   done
-  for cfg in /opt/verb/conf/webserver/nginx/sites-available/*kiwiURI286.conf
+  for cfg in /opt/verb/conf/webserver/sites-available/nginx/*kiwiURI286.conf
   do
     /usr/bin/mv -- "$cfg" "${cfg/%kiwiURI286.conf/}${kiwiURI}.conf"
   done
-  for cfg in /opt/verb/conf/webserver/nginx/sites-available/*redURI286.conf
+  for cfg in /opt/verb/conf/webserver/sites-available/nginx/*redURI286.conf
   do
     /usr/bin/mv -- "$cfg" "${cfg/%redURI286.conf/}${redURI}.conf"
   done

@@ -67,9 +67,9 @@ done
 #
 # # For any/all sub-domains
 # if [ ${ServerType} = "lamp" ] || [ ${ServerType} = "laemp" ]; then
-#   cd /opt/verb/conf/webserver/httpd/sites-available
+#   cd /opt/verb/conf/webserver/sites-available/httpd
 # elif [ ${ServerType} = "lemp" ]; then
-#   cd /opt/verb/conf/webserver/nginx/sites-available
+#   cd /opt/verb/conf/webserver/sites-available/nginx
 # fi
 # ## Get the name of each subdomain .conf file available
 # find . -name "*.${SITEDOMAIN}.conf"|while read findsitesubdomain; do

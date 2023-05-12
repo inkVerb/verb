@@ -54,17 +54,17 @@ KILLDOMAIN=$1
 # Remove all config files, symlinks, and directories
 if [ ${ServerType} = "lemp" ]; then
   /bin/rm -f /etc/nginx/sites-enabled/${KILLDOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/nginx/sites-available/${KILLDOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${KILLDOMAIN}.conf
   /usr/bin/systemctl restart nginx
 elif [ ${ServerType} = "lamp" ]; then
   /bin/rm -f /etc/httpd/sites-enabled/${KILLDOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/httpd/sites-available/${KILLDOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${KILLDOMAIN}.conf
   /usr/bin/systemctl restart httpd
 elif [ ${ServerType} = "laemp" ]; then
   /bin/rm -f /etc/httpd/sites-enabled/${KILLDOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/httpd/sites-available/${KILLDOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${KILLDOMAIN}.conf
   /bin/rm -f /etc/nginx/sites-enabled/${KILLDOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/nginx/sites-available/${KILLDOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${KILLDOMAIN}.conf
   /usr/bin/systemctl restart httpd
   /usr/bin/systemctl restart nginx
 fi

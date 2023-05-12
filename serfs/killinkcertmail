@@ -76,34 +76,34 @@ fi
 # Webserver files so inkCert-LE checks work
 if [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
 
-  /bin/rm -f /opt/verb/conf/webserver/nginx/sites-available/mail.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/nginx/sites-available/smtp.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/nginx/sites-available/imap.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/nginx/sites-available/pop3.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/nginx/sites-available/pop2.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/nginx/sites-available/pop.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/nginx/sites-enabled/mail.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/nginx/sites-enabled/smtp.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/nginx/sites-enabled/imap.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/nginx/sites-enabled/pop3.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/nginx/sites-enabled/pop2.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/nginx/sites-enabled/pop.${DOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/mail.${DOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/smtp.${DOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/imap.${DOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/pop3.${DOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/pop2.${DOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/pop.${DOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/nginx/mail.${DOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/nginx/smtp.${DOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/nginx/imap.${DOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/nginx/pop3.${DOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/nginx/pop2.${DOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/nginx/pop.${DOMAIN}.conf
   /bin/systemctl restart nginx
 
 elif [ ${ServerType} = "lamp" ]; then
 
-  /bin/rm -f /opt/verb/conf/webserver/httpd/sites-available/mail.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/httpd/sites-available/smtp.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/httpd/sites-available/imap.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/httpd/sites-available/pop3.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/httpd/sites-available/pop2.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/httpd/sites-available/pop.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/httpd/sites-enabled/mail.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/httpd/sites-enabled/smtp.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/httpd/sites-enabled/imap.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/httpd/sites-enabled/pop3.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/httpd/sites-enabled/pop2.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/httpd/sites-enabled/pop.${DOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/mail.${DOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/smtp.${DOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/imap.${DOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/pop3.${DOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/pop2.${DOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/pop.${DOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/mail.${DOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/smtp.${DOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/imap.${DOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/pop3.${DOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/pop2.${DOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/pop.${DOMAIN}.conf
   /bin/systemctl restart httpd
 
 fi

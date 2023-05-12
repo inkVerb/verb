@@ -128,18 +128,18 @@ fi
 /usr/bin/chown -R www:www /srv/www/email/postfixadmin; wait
 ## Hosting conf
 if [ ${ServerType} = "laemp" ]; then
-  /bin/cp /opt/verb/conf/site-files/conf/po-nginx.conf /opt/verb/conf/webserver/nginx/sites-available/po.${emailTLDURI}.conf
-  /bin/cp /opt/verb/conf/site-files/conf/po-httpd.conf /opt/verb/conf/webserver/httpd/sites-available/po.${emailTLDURI}.conf
+  /bin/cp /opt/verb/conf/site-files/conf/po-nginx.conf /opt/verb/conf/webserver/sites-available/nginx/po.${emailTLDURI}.conf
+  /bin/cp /opt/verb/conf/site-files/conf/po-httpd.conf /opt/verb/conf/webserver/sites-available/httpd/po.${emailTLDURI}.conf
   /opt/verb/serfs/ensitenginx po.${emailTLDURI}
   /opt/verb/serfs/ensiteapache po.${emailTLDURI}
   /usr/bin/systemctl restart nginx; wait
   /usr/bin/systemctl restart httpd; wait
 elif [ ${ServerType} = "lemp" ]; then
-  /bin/cp /opt/verb/conf/site-files/conf/po-nginx.conf /opt/verb/conf/webserver/nginx/sites-available/po.${emailTLDURI}.conf
+  /bin/cp /opt/verb/conf/site-files/conf/po-nginx.conf /opt/verb/conf/webserver/sites-available/nginx/po.${emailTLDURI}.conf
   /opt/verb/serfs/ensitenginx po.${emailTLDURI}
   /usr/bin/systemctl restart nginx; wait
 elif [ ${ServerType} = "lamp" ]; then
-  /bin/cp /opt/verb/conf/site-files/conf/po-httpd.conf /opt/verb/conf/webserver/httpd/sites-available/po.${emailTLDURI}.conf
+  /bin/cp /opt/verb/conf/site-files/conf/po-httpd.conf /opt/verb/conf/webserver/sites-available/httpd/po.${emailTLDURI}.conf
   /opt/verb/serfs/ensiteapache po.${emailTLDURI}
   /usr/bin/systemctl restart httpd; wait
 fi

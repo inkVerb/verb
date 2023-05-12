@@ -59,7 +59,7 @@ fi
 
 # Set based on web directory and Apache status
 if [ -e /srv/www/html/${NEWCAHOST} ]; then
- if [ -f /opt/verb/conf/webserver/httpd/sites-available/${NEWCAHOST}.conf ]; then
+ if [ -f /opt/verb/conf/webserver/sites-available/httpd/${NEWCAHOST}.conf ]; then
   if [ -e /etc/httpd/sites-enabled/${NEWCAHOST}.conf ]; then
   /bin/echo "Great, ${NEWCAHOST} already exists..."
   else
@@ -76,8 +76,8 @@ else
  if [ ! -e /srv/www/domains/${NEWCAHOST} ]; then
  /bin/echo "Creating ${NEWCAHOST}..."
 ## Remove any duplicate, because that can happen in the known plasmaverse and interwebverse.
-  if [ -f /opt/verb/conf/webserver/httpd/sites-available/${NEWCAHOST}.conf ]; then
-  rm -f /opt/verb/conf/webserver/httpd/sites-available/${NEWCAHOST}.conf; fi
+  if [ -f /opt/verb/conf/webserver/sites-available/httpd/${NEWCAHOST}.conf ]; then
+  rm -f /opt/verb/conf/webserver/sites-available/httpd/${NEWCAHOST}.conf; fi
   if [ -e /etc/httpd/sites-enabled/${NEWCAHOST}.conf ]; then
   rm -f /etc/httpd/sites-enabled/${NEWCAHOST}.conf; fi
   /opt/verb/serfs/adddomain ${nameTLD} ${nameURI}

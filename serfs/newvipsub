@@ -40,22 +40,22 @@ NEWVIPSUB=$1
 
 # Server
 if [ ${ServerType} = "lemp" ]; then
-  /bin/cp -f /opt/verb/conf/site-files/conf/newnginxvipsub.conf /opt/verb/conf/webserver/nginx/sites-available/${NEWVIPSUB}.${vipURI}.conf
-  /bin/sed -i "s/newvipsub/${NEWVIPSUB}/g" /opt/verb/conf/webserver/nginx/sites-available/${NEWVIPSUB}.${vipURI}.conf
-  /bin/sed -i "s/vipURI286/${vipURI}/g" /opt/verb/conf/webserver/nginx/sites-available/${NEWVIPSUB}.${vipURI}.conf
+  /bin/cp -f /opt/verb/conf/site-files/conf/newnginxvipsub.conf /opt/verb/conf/webserver/sites-available/nginx/${NEWVIPSUB}.${vipURI}.conf
+  /bin/sed -i "s/newvipsub/${NEWVIPSUB}/g" /opt/verb/conf/webserver/sites-available/nginx/${NEWVIPSUB}.${vipURI}.conf
+  /bin/sed -i "s/vipURI286/${vipURI}/g" /opt/verb/conf/webserver/sites-available/nginx/${NEWVIPSUB}.${vipURI}.conf
   /opt/verb/serfs/ensitenginx -r ${NEWVIPSUB}.${vipURI}
 elif [ ${ServerType} = "lamp" ]; then
-  /bin/cp -f /opt/verb/conf/site-files/conf/newvipsub.conf /opt/verb/conf/webserver/httpd/sites-available/${NEWVIPSUB}.${vipURI}.conf
-  /bin/sed -i "s/newvipsub/${NEWVIPSUB}/g" /opt/verb/conf/webserver/httpd/sites-available/${NEWVIPSUB}.${vipURI}.conf
-  /bin/sed -i "s/vipURI286/${vipURI}/g" /opt/verb/conf/webserver/httpd/sites-available/${NEWVIPSUB}.${vipURI}.conf
+  /bin/cp -f /opt/verb/conf/site-files/conf/newvipsub.conf /opt/verb/conf/webserver/sites-available/httpd/${NEWVIPSUB}.${vipURI}.conf
+  /bin/sed -i "s/newvipsub/${NEWVIPSUB}/g" /opt/verb/conf/webserver/sites-available/httpd/${NEWVIPSUB}.${vipURI}.conf
+  /bin/sed -i "s/vipURI286/${vipURI}/g" /opt/verb/conf/webserver/sites-available/httpd/${NEWVIPSUB}.${vipURI}.conf
   /opt/verb/serfs/ensiteapache -r ${NEWVIPSUB}.${vipURI}
 elif [ ${ServerType} = "laemp" ]; then
-  /bin/cp -f /opt/verb/conf/site-files/conf/newvipsub.conf /opt/verb/conf/webserver/httpd/sites-available/${NEWVIPSUB}.${vipURI}.conf
-  /bin/sed -i "s/newvipsub/${NEWVIPSUB}/g" /opt/verb/conf/webserver/httpd/sites-available/${NEWVIPSUB}.${vipURI}.conf
-  /bin/sed -i "s/vipURI286/${vipURI}/g" /opt/verb/conf/webserver/httpd/sites-available/${NEWVIPSUB}.${vipURI}.conf
-  /bin/cp -f /opt/verb/conf/site-files/conf/newrpnginxvipsub.conf /opt/verb/conf/webserver/nginx/sites-available/${NEWVIPSUB}.${vipURI}.conf
-  /bin/sed -i "s/newvipsub/${NEWVIPSUB}/g" /opt/verb/conf/webserver/nginx/sites-available/${NEWVIPSUB}.${vipURI}.conf
-  /bin/sed -i "s/vipURI286/${vipURI}/g" /opt/verb/conf/webserver/nginx/sites-available/${NEWVIPSUB}.${vipURI}.conf
+  /bin/cp -f /opt/verb/conf/site-files/conf/newvipsub.conf /opt/verb/conf/webserver/sites-available/httpd/${NEWVIPSUB}.${vipURI}.conf
+  /bin/sed -i "s/newvipsub/${NEWVIPSUB}/g" /opt/verb/conf/webserver/sites-available/httpd/${NEWVIPSUB}.${vipURI}.conf
+  /bin/sed -i "s/vipURI286/${vipURI}/g" /opt/verb/conf/webserver/sites-available/httpd/${NEWVIPSUB}.${vipURI}.conf
+  /bin/cp -f /opt/verb/conf/site-files/conf/newrpnginxvipsub.conf /opt/verb/conf/webserver/sites-available/nginx/${NEWVIPSUB}.${vipURI}.conf
+  /bin/sed -i "s/newvipsub/${NEWVIPSUB}/g" /opt/verb/conf/webserver/sites-available/nginx/${NEWVIPSUB}.${vipURI}.conf
+  /bin/sed -i "s/vipURI286/${vipURI}/g" /opt/verb/conf/webserver/sites-available/nginx/${NEWVIPSUB}.${vipURI}.conf
   /opt/verb/serfs/ensiteapache -r ${NEWVIPSUB}.${vipURI}
   /opt/verb/serfs/ensitenginx -r ${NEWVIPSUB}.${vipURI}
 fi
