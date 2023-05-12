@@ -122,9 +122,9 @@ fi
 /bin/cp /opt/verb/conf/lib/vmail/postfixadmin/pfapics/images/favicon-ink.ico /srv/www/email/postfixadmin/public/images/
 
 # Webserver
-/usr/bin/mkdir -p /srv/www/verb/${ServerEmailTLD}.pfa
-/bin/ln -sfn /srv/www/email/postfixadmin/public /srv/www/verb/${ServerEmailTLD}.pfa/${PFAFOLDER}; wait
-/usr/bin/chown -R www:www /srv/www/verb/${ServerEmailTLD}.pfa; wait
+/usr/bin/mkdir -p /srv/www/verb/${ServerEmailTLD}.po
+/bin/ln -sfn /srv/www/email/postfixadmin/public /srv/www/verb/${ServerEmailTLD}.po/${PFAFOLDER}; wait
+/usr/bin/chown -R www:www /srv/www/verb/${ServerEmailTLD}.po; wait
 /usr/bin/chown -R www:www /srv/www/email/postfixadmin; wait
 ## Hosting conf
 if [ ${ServerType} = "laemp" ]; then
@@ -157,8 +157,8 @@ elif [ "${InkCerted}" = "DONE_SC" ]; then
 fi
 
 # DNS
-/bin/sed -i "s/; Email Control Records/; Email Control Records\npfa.${emailTLDURI}. \tIN  A \t${ServerIPv4}\npfa.${emailTLDURI}. \tIN  AAAA \t${ServerIPv6}/" /opt/verb/conf/inkdns/inkzones/db.${emailTLDURI}
-/bin/sed -i "s/; Email Control Records/; Email Control Records\n${ServerARPAIPv4} \tIN  PTR \tpfa.${emailTLDURI}.\n${ServerARPAIPv6} \tIN  PTR \tpfa.${emailTLDURI}./" /opt/verb/conf/inkdns/inkzones/nv.${emailTLDURI}
+/bin/sed -i "s/; Email Control Records/; Email Control Records\npo.${emailTLDURI}. \tIN  A \t${ServerIPv4}\npo.${emailTLDURI}. \tIN  AAAA \t${ServerIPv6}/" /opt/verb/conf/inkdns/inkzones/db.${emailTLDURI}
+/bin/sed -i "s/; Email Control Records/; Email Control Records\n${ServerARPAIPv4} \tIN  PTR \tpo.${emailTLDURI}.\n${ServerARPAIPv6} \tIN  PTR \tpo.${emailTLDURI}./" /opt/verb/conf/inkdns/inkzones/nv.${emailTLDURI}
 
 # Write the config
 /bin/sed -i "s/ServerPFAPath.*/ServerPFAPath=\"${PFAFOLDER}\"/g" /opt/verb/conf/servermailpath

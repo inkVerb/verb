@@ -100,7 +100,7 @@ You must restart the server in order for email boxes to send and receive.
 Postfix Admin:
 - https://po.${emailTLDURI}/${PFAFOLDER}/setup.php
 - Use the install password '${PFAPASS}'
-- Then run ./postinstallpfa
+- Then run serfs/postinstallpfa
 
 Roundcube:
 - https://box.${emailTLDURI}/${BOXFOLDER}

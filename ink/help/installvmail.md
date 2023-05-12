@@ -10,7 +10,7 @@
   - All flags are optional!
 
 - `ink install vmail -r someDir1 -p someOtherDir2 -s set4MeUP -b verb.vmail.rAnD8mn5l3.vbak`
-  - Creates the email folders `www/email/roundcube` & `www/email/postfixadmin` makes them live in `www/verb/email.rc` & `www/verb/email.pfa`
+  - Creates the email folders `www/email/roundcube` & `www/email/postfixadmin` makes them live in `www/verb/email.box` & `www/verb/email.po`
   - Installs packages for:
     - `postfix`
     - `dovecot`

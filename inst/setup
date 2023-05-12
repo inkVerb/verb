@@ -1181,8 +1181,8 @@ fi
   - login root: ${IPADDRBLOCKroot}
   - login boss: ${IPADDRBLOCKboss}
 3. Run:
-  - inkCert for verb domains ('ink cert do -ma' or 'serfs/inkcertdole-all-verbs')
   - inkVmail installer ('serfs/installinkvmail')
+  - inkCert for verb domains ('ink cert do -ma' or 'serfs/inkcertdole-all-verbs')
 "
 
 # Cleanup
