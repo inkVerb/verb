@@ -130,8 +130,8 @@ Protocols h2 http/1.1
 
 # Include the virtual host configurations:
 IncludeOptional /etc/httpd/sites-enabled/*.conf" >> /etc/httpd/conf/httpd.conf
-/usr/bin/mkdir -p /opt/verb/conf/webserver/httpd/sites-available /opt/verb/conf/webserver/httpd/sites-enabled /etc/httpd
-/usr/bin/cp /opt/verb/inst/webserver/lamp-sites-available/*.conf /opt/verb/conf/webserver/httpd/sites-available/
+/usr/bin/mkdir -p /opt/verb/conf/webserver/sites-available/httpd /opt/verb/conf/webserver/sites-enabled/httpd /etc/httpd
+/usr/bin/cp /opt/verb/inst/webserver/laemp-httpd-sites-available/*.conf /opt/verb/conf/webserver/sites-available/httpd/
 /usr/bin/cat <<'EOF' > /srv/http/index.htm
 <!DOCTYPE html>
 <html>
@@ -142,8 +142,8 @@ EOF
 
 ## Site files
 if [ -d "/opt/verb/conf/webserver/httpd/sites-available" ] && [ -d "/etc/httpd" ]; then
-  /usr/bin/ln -sfn /opt/verb/conf/webserver/httpd/sites-available /etc/httpd/
-  /usr/bin/ln -sfn /opt/verb/conf/webserver/httpd/sites-enabled /etc/httpd/
+  /usr/bin/ln -sfn /opt/verb/conf/webserver/sites-available/httpd /etc/httpd/sites-available
+  /usr/bin/ln -sfn /opt/verb/conf/webserver/sites-enabled/httpd /etc/httpd/sites-enabled
 else
   /usr/bin/echo 'httpd config folder does not exist!'; exit 4
 fi
