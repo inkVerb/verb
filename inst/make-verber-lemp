@@ -186,7 +186,7 @@ EOF
 /usr/bin/chown -R www:www /etc/nginx/default
 
 ## Site files
-if [ -d "/opt/verb/conf/webserver/nginx/sites-available" ] && [ -d "/etc/nginx" ]; then
+if [ -d "/opt/verb/conf/webserver/sites-available/nginx" ] && [ -d "/opt/verb/conf/webserver/sites-enabled/nginx" ] && [ -d "/etc/nginx" ]; then
   /usr/bin/ln -sfn /opt/verb/conf/webserver/sites-available/nginx /etc/nginx/sites-available
   /usr/bin/ln -sfn /opt/verb/conf/webserver/sites-enabled/nginx /etc/nginx/sites-enabled
 else

@@ -141,7 +141,7 @@ IncludeOptional /etc/httpd/sites-enabled/*.conf" >> /etc/httpd/conf/httpd.conf
 EOF
 
 ## Site files
-if [ -d "/opt/verb/conf/webserver/httpd/sites-available" ] && [ -d "/etc/httpd" ]; then
+if [ -d "/opt/verb/conf/webserver/sites-available/httpd" ] && [ -d "/opt/verb/conf/webserver/sites-enabled/httpd" ] && [ -d "/etc/httpd" ]; then
   /usr/bin/ln -sfn /opt/verb/conf/webserver/sites-available/httpd /etc/httpd/sites-available
   /usr/bin/ln -sfn /opt/verb/conf/webserver/sites-enabled/httpd /etc/httpd/sites-enabled
 else
