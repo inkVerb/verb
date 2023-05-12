@@ -860,9 +860,11 @@ FLUSH PRIVILEGES;"
 ## Set /etc/hostname
 /usr/bin/echo "${hostURI}" > /etc/hostname
 ## Set /etc/hosts
-### Normally this goes to /etc/hosts, but cloud-init is managing it, so we set the template file instead
-/usr/bin/cp /etc/cloud/templates/hosts.arch.tmpl /etc/cloud/templates/hosts.arch.tmpl.old
-### But, we don't want to rely on cloud-init automatic control, so we will set /etc/hosts also
+### Normally this goes to /etc/hosts, but if cloud-init is managing it, so we set the template file instead
+if [ -e "/etc/cloud/templates/hosts.arch.tmpl" ]; then
+  /usr/bin/cp /etc/cloud/templates/hosts.arch.tmpl /etc/cloud/templates/hosts.arch.tmpl.old
+fi
+### But, we don't want to rely on cloud-init automatic control, so we will set /etc/hosts regardless
 ## IPv4 & IPv6
 if [ -n "${SERVERIPV4}" ] && [ "${SERVERIPV4}" != "NOIP4" ] && [ -n "${SERVERIPV6}" ] && [ "${SERVERIPV6}" != "NOIP6" ]; then
   if [ -e "/etc/cloud/templates/hosts.arch.tmpl" ]; then # Only if using cloud-init
