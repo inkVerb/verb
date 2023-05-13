@@ -68,14 +68,14 @@ if [ ! -f "/opt/verb/inst/setup" ]; then
 exit 8; fi
 
 # Slave DNS Server check
-VNAME="$1"
-SERVERTLD="$2"
+vName="$1"
+serverTLD="$2"
 ## Check for consistency if there is a domain mod
 if [ -f "/opt/verb/inst/domain.mod.conf" ]; then
   . /opt/verb/inst/domain.mod.conf
   #DEV if statement removed becuase it's too picky and not necessary, NS host does not need to match verb namespace
   # if [ "${DOMMODHOST}" = "$1" ]; then
-    VNAME="$1"
+    vName="$1"
   # else
   #   /bin/echo "Argued host is not the same as the DNS preconfig, I quit."
   #   exit 8
@@ -86,7 +86,7 @@ fi
 if [ -f "/opt/verb/conf/inkdns/sdns/dnshost" ]; then
   . /opt/verb/conf/inkdns/sdns/dnshost
   if [ "${Hostname}" = "$5" ]; then
-    VNAME="$1"
+    vName="$1"
     HOSTURI="${DNSSlave}"
   else
     /usr/bin/echo "Argued host is not the same as the host in the DNS preconfig, I quit."
@@ -107,7 +107,7 @@ WantedBy=multi-user.target' > /etc/systemd/system/inkdnscontrol.service
   /bin/chmod 750 /opt/verb/rinkcon/rinkcon.loop
 else # Normal verber, not Slave DNS
   . /opt/verb/conf/inklists/inkdnsnameservers
-  VNAME="$1"
+  vName="$1"
   Hostname="$5"
   custom_hostname="true"
   # Remove rinkcon files used by a Slave DNS (because this is not)
@@ -248,8 +248,8 @@ exit 0; fi
 }
 
 # Checks
-setupDomainPart "${VNAME}" "Verb namespace"
-setupVerbTLD "${SERVERTLD}" "Main server Verb TLD"
+setupDomainPart "${vName}" "Verb namespace"
+setupVerbTLD "${serverTLD}" "Main server Verb TLD"
 setupVerbTLD "${SvMailTLD}" "Email server Verb TLD"
 setupVerbTLD "${ITsqlTLD}" "IT/SQL server Verb TLD"
 if [ -n "${custom_hostname}" ] && [ "${custom_hostname}" = "true" ]; then
@@ -440,10 +440,10 @@ fi
 
 ## Domain Mod?
 if [ -f "/opt/verb/inst/domain.mod.conf" ]; then
-  baseDOM="${VNAME}.${DModBase}"
+  baseDOM="${vName}.${DModBase}"
   /bin/sed -i "s/name286/DOMAIN_MOD-${baseDOM}/" /opt/verb/conf/servernameip
 else
-  /bin/sed -i "s/name286/${VNAME}/" /opt/verb/conf/servernameip
+  /bin/sed -i "s/name286/${vName}/" /opt/verb/conf/servernameip
 fi
 
 # Site URI List
@@ -463,12 +463,12 @@ if [ -f "/opt/verb/inst/domain.mod.conf" ]; then
 /usr/bin/cat <<EOF > /opt/verb/conf/siteurilist
 #!/bin/sh
 baseDOM="${baseDOM}"
-nameTLD="${SERVERTLD}"
+nameTLD="${serverTLD}"
 emailTLD="${SvMailTLD}"
 itsqlTLD="${ITsqlTLD}"
-nameURI="${SERVERTLD}.${baseDOM}"
+nameURI="${serverTLD}.${baseDOM}"
 hostURI="${HOSTURI}"
-serveURI="serve.${SERVERTLD}.${baseDOM}"
+serveURI="serve.${serverTLD}.${baseDOM}"
 emailTLDURI="${SvMailTLD}.${baseDOM}"
 itsqlTLDURI="${ITsqlTLD}.${baseDOM}"
 emailURI="email.${baseDOM}"
@@ -483,25 +483,25 @@ EOF
 else
   ## Is the host already set as a slave server?
   if [ -z "${HOSTURI}" ]; then
-    HOSTURI="${Hostname}.${VNAME}.verb.${SERVERTLD}"
+    HOSTURI="${Hostname}.${vName}.verb.${serverTLD}"
   fi
 /usr/bin/cat <<EOF > /opt/verb/conf/siteurilist
 #!/bin/sh
-nameTLD="${SERVERTLD}"
+nameTLD="${serverTLD}"
 emailTLD="${SvMailTLD}"
 itsqlTLD="${ITsqlTLD}"
-nameURI="${VNAME}.verb.${SERVERTLD}"
+nameURI="${vName}.verb.${serverTLD}"
 hostURI="${HOSTURI}"
-serveURI="serve.${VNAME}.verb.${SERVERTLD}"
-emailTLDURI="${VNAME}.verb.${SvMailTLD}"
-itsqlTLDURI="${VNAME}.verb.${ITsqlTLD}"
-emailURI="${VNAME}.verb.email"
-oneURI="${VNAME}.verb.one"
-inkURI="${VNAME}.verb.ink"
-blueURI="${VNAME}.verb.blue"
-vipURI="${VNAME}.verb.vip"
-kiwiURI="${VNAME}.verb.kiwi"
-redURI="${VNAME}.verb.red"
+serveURI="serve.${vName}.verb.${serverTLD}"
+emailTLDURI="${vName}.verb.${SvMailTLD}"
+itsqlTLDURI="${vName}.verb.${ITsqlTLD}"
+emailURI="${vName}.verb.email"
+oneURI="${vName}.verb.one"
+inkURI="${vName}.verb.ink"
+blueURI="${vName}.verb.blue"
+vipURI="${vName}.verb.vip"
+kiwiURI="${vName}.verb.kiwi"
+redURI="${vName}.verb.red"
 EOF
 fi
 . /opt/verb/conf/siteurilist
@@ -536,8 +536,8 @@ cd $OLDPWD || exit 6
 # Site name & IP
 serveDIR="$(/usr/bin/pwgen -s -1 6)"
 /bin/sed -i "s/host286/${Hostname}/" /opt/verb/conf/servernameip
-/bin/sed -i "s/tld286/${SERVERTLD}/" /opt/verb/conf/servernameip
-/bin/sed -i "s/tldserve286/${SERVERTLD}/" /opt/verb/conf/servernameip
+/bin/sed -i "s/tld286/${serverTLD}/" /opt/verb/conf/servernameip
+/bin/sed -i "s/tldserve286/${serverTLD}/" /opt/verb/conf/servernameip
 /bin/sed -i "s/servedir286/${serveDIR}/" /opt/verb/conf/servernameip
 /bin/sed -i "s/serveuri286/${serveURI}/" /opt/verb/conf/servernameip
 /bin/sed -i "s/ipv4286/${ServerIPv4}/" /opt/verb/conf/servernameip
@@ -565,7 +565,7 @@ fi
 /bin/sed -i "s/phplimit286/${PHPlimit}/g" /opt/verb/conf/php.ini
 /bin/sed -i "s/phpsize286M/${PHPsize}M/g" /opt/verb/conf/php.ini
 /bin/sed -i "s:phptimecity286:${PHPcity}:g" /opt/verb/conf/php.ini
-/bin/sed -i "s/name286/${VNAME}/g" /opt/verb/conf/php.ini
+/bin/sed -i "s/name286/${vName}/g" /opt/verb/conf/php.ini
 /bin/sed -i "s/;.*.open_basedir =.*/open_basedir = \/var\/www/" /opt/verb/conf/php.ini
 /bin/sed -i "s/;.*.sys_temp_dir =.*/sys_temp_dir = \/var\/www\/tmp/" /opt/verb/conf/php.ini
 /bin/sed -i "s/;.*.upload_tmp_dir =.*/upload_tmp_dir = \/var\/www\/tmp/" /opt/verb/conf/php.ini
@@ -1073,7 +1073,7 @@ fi
 /usr/bin/sed -i "s/hostdomain286/${kiwiURI}/g" /opt/verb/conf/inkdns/inkzones/nv.kiwi
 /usr/bin/sed -i "s/hostdomain286/${redURI}/g" /opt/verb/conf/inkdns/inkzones/nv.red
 ## Set host FQDN
-#/usr/bin/sed -i "s/;; End Root Site Defaults/${hostURI}\.\t\tIN  A\t\t${ServerIPv4}\n${hostURI}\.\t\tIN  AAAA\t${ServerIPv6}\n;; End Root Site Defaults/" /opt/verb/conf/inkdns/inkzones/db.${SERVERTLD}
+#/usr/bin/sed -i "s/;; End Root Site Defaults/${hostURI}\.\t\tIN  A\t\t${ServerIPv4}\n${hostURI}\.\t\tIN  AAAA\t${ServerIPv6}\n;; End Root Site Defaults/" /opt/verb/conf/inkdns/inkzones/db.${serverTLD}
 ## Set the URI names
 /usr/bin/mv /opt/verb/conf/inkdns/inkzones/db.email /opt/verb/conf/inkdns/inkzones/db.${emailURI}
 /usr/bin/mv /opt/verb/conf/inkdns/inkzones/db.one /opt/verb/conf/inkdns/inkzones/db.${oneURI}
