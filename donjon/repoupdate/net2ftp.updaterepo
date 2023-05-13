@@ -27,7 +27,7 @@ if [ ! -f "net2ftp_v${distVer}.zip" ]; then
 exit 4; else
 /bin/rm -f ${cVappName}.failed; fi
 ## Check the hash
-checksha=$(sha256sum net2ftp_v${distVer}.zip)
+checksha=$(/usr/bin/sha256sum net2ftp_v${distVer}.zip)
 if [ "${checksha}" = "${net2ftpsha}  net2ftp_v${distVer}.zip" ]; then
 /bin/echo "Download checks out."
 else
