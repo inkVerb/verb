@@ -479,11 +479,11 @@ exit 0; fi
 ## Email
 ### Thanks https://stackoverflow.com/a/2138832/10343144
 isEmail() {
-local EMAIL="$1"
+local email="$1"
 local vvar="$2"
-local EMAILregex="^[a-z0-9!#\$%&'*+/=?^_\`{|}~-]+(\.[a-z0-9!#$%&'*+/=?^_\`{|}~-]+)*@([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z0-9]([a-z0-9-]*[a-z0-9])?\$"
+local emailregex="^[a-z0-9!#\$%&'*+/=?^_\`{|}~-]+(\.[a-z0-9!#$%&'*+/=?^_\`{|}~-]+)*@([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z0-9]([a-z0-9-]*[a-z0-9])?\$"
 
-if [[ "${EMAIL}" =~ ${EMAILregex} ]] ; then
+if [[ "${email}" =~ ${emailregex} ]] ; then
 isEmail="true"; else
 isEmail="false"; fi
 

@@ -66,6 +66,8 @@ fi
 ## Logging (permissions are finicky, so create and own)
 /usr/bin/touch /var/log/named.log
 /usr/bin/chown named:named /var/log/named.log
+## Allow the machine to make dig calls
+/usr/bin/sed -i "s/^\s*allow-recursion/  #allow-recursion/" /etc/named.conf
 
 # Set the NS domains
 ## Verber Domains
@@ -94,17 +96,17 @@ fi
 /usr/bin/ufw allow 53/udp
 
 # Restart
-/bin/systemctl enable named; wait
-/bin/systemctl start named; wait
+/usr/bin/systemctl enable named; wait
+/usr/bin/systemctl start named; wait
 
 # Config
-/bin/sed -i "s/InkDNSStat=.*/InkDNSStat=\"INSTALLED\"/" /opt/verb/conf/inkdnsconf
+/usr/bin/sed -i "s/InkDNSStat=.*/InkDNSStat=\"INSTALLED\"/" /opt/verb/conf/inkdnsconf
 
 # Refresh all records
 /opt/verb/serfs/inkdnsrefreshbind
 
 # Finish
-/bin/echo "inkDNS installed."
+/usr/bin/echo "inkDNS installed."
 /opt/verb/serfs/showdns
 
 

@@ -114,14 +114,14 @@ else # Normal verber, not Slave DNS
   /usr/bin/rm -f /opt/verb/rinkcon/rinkcon.*
 fi
 
-SVMAILTLD="$3"
-ITSQLTLD="$4"
-SERVERIPV4="$6"
-SERVERIPV6="$7"
-SSLEMAIL="$8"
-PHPLIMIT="$9"
-PHPSIZE="${10}"
-PHPCITY="${11}"
+SvMailTLD="$3"
+ITsqlTLD="$4"
+ServerIPv4="$6"
+ServerIPv6="$7"
+SSLemail="$8"
+PHPlimit="$9"
+PHPsize="${10}"
+PHPcity="${11}"
 
 # Validation functions
 setupDomainPart() {
@@ -179,11 +179,11 @@ exit 0; fi
 }
 
 setupEmail() {
-local EMAIL="$1"
+local email="$1"
 local vvar="$2"
-local EMAILregex="^[a-z0-9!#\$%&'*+/=?^_\`{|}~-]+(\.[a-z0-9!#$%&'*+/=?^_\`{|}~-]+)*@([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z0-9]([a-z0-9-]*[a-z0-9])?\$"
+local emailregex="^[a-z0-9!#\$%&'*+/=?^_\`{|}~-]+(\.[a-z0-9!#$%&'*+/=?^_\`{|}~-]+)*@([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z0-9]([a-z0-9-]*[a-z0-9])?\$"
 
-if [[ "${EMAIL}" =~ ${EMAILregex} ]] ; then
+if [[ "${email}" =~ ${emailregex} ]] ; then
 setupEmail="true"; else
 setupEmail="false"; fi
 
@@ -250,15 +250,15 @@ exit 0; fi
 # Checks
 setupDomainPart "${VNAME}" "Verb namespace"
 setupVerbTLD "${SERVERTLD}" "Main server Verb TLD"
-setupVerbTLD "${SVMAILTLD}" "Email server Verb TLD"
-setupVerbTLD "${ITSQLTLD}" "IT/SQL server Verb TLD"
+setupVerbTLD "${SvMailTLD}" "Email server Verb TLD"
+setupVerbTLD "${ITsqlTLD}" "IT/SQL server Verb TLD"
 if [ -n "${custom_hostname}" ] && [ "${custom_hostname}" = "true" ]; then
   setupDomainPart "${Hostname}" "Host name"
 fi
 ## IPv4?
-if [ -n "${SERVERIPV4}" ] && [ "${SERVERIPV4}" != "NOIP4" ]; then
-  setupIP4 "${SERVERIPV4}" "IPv4 address"
-elif [ -n "${SERVERIPV4}" ] && [ "${SERVERIPV4}" = "NOIP4" ]; then
+if [ -n "${ServerIPv4}" ] && [ "${ServerIPv4}" != "NOIP4" ]; then
+  setupIP4 "${ServerIPv4}" "IPv4 address"
+elif [ -n "${ServerIPv4}" ] && [ "${ServerIPv4}" = "NOIP4" ]; then
   /bin/sed -i "s/ ipv4286//" /etc/httpd/conf/rpaf.conf
   /bin/sed -i "/hostipv4286/d" /opt/verb/conf/inkdns/inkzones/db.*
   /bin/sed -i "/hostipv4286/d" /opt/verb/conf/inkdns/db.dnsdomain
@@ -266,19 +266,19 @@ elif [ -n "${SERVERIPV4}" ] && [ "${SERVERIPV4}" = "NOIP4" ]; then
   /bin/sed -i "/hostarpaipv4286/d" /opt/verb/conf/inkdns/nv.dnsdomain
 fi
 ## IPv6?
-if [ -n "${SERVERIPV6}" ] && [ "${SERVERIPV6}" != "NOIP6" ]; then
-  setupIP6 "${SERVERIPV6}" "IPv6 address"
-elif [ -n "${SERVERIPV6}" ] && [ "${SERVERIPV6}" = "NOIP6" ]; then
+if [ -n "${ServerIPv6}" ] && [ "${ServerIPv6}" != "NOIP6" ]; then
+  setupIP6 "${ServerIPv6}" "IPv6 address"
+elif [ -n "${ServerIPv6}" ] && [ "${ServerIPv6}" = "NOIP6" ]; then
   /bin/sed -i "s/ ipv6286//" /etc/httpd/conf/rpaf.conf
   /bin/sed -i "/hostipv6286/d" /opt/verb/conf/inkdns/inkzones/db.*
   /bin/sed -i "/hostipv6286/d" /opt/verb/conf/inkdns/db.dnsdomain
   /bin/sed -i "/hostarpaipv6286/d" /opt/verb/conf/inkdns/inkzones/nv.*
   /bin/sed -i "/hostarpaipv6286/d" /opt/verb/conf/inkdns/nv.dnsdomain
 fi
-setupEmail "${SSLEMAIL}" "SSL cert contact email address"
-setupInt "${PHPLIMIT}" "PHP upload file count limit"
-setupInt "${PHPSIZE}" "PHP upload file size"
-setupPHPcity "${PHPCITY}" "PHP city"
+setupEmail "${SSLemail}" "SSL cert contact email address"
+setupInt "${PHPlimit}" "PHP upload file count limit"
+setupInt "${PHPsize}" "PHP upload file size"
+setupPHPcity "${PHPcity}" "PHP city"
 
 if [ -z "${12}" ]; then
   NEWPORT="22"
@@ -400,27 +400,27 @@ rarpa_ipv6() {
   printf 'ip6.arpa\n'
 }
 # Set IPv6 or set NA to none
-if [ "${SERVERIPV6}" != "NOIP6" ]; then
+if [ "${ServerIPv6}" != "NOIP6" ]; then
   # Call the IPv6 compression function just created above
-  SERVERIPV6=$(compress_ipv6 ${SERVERIPV6})
-  SERVERIPV6EXP=$(expand_ipv6 ${SERVERIPV6})
-  SERVERIPV6ARPA=$(rarpa_ipv6 ${SERVERIPV6EXP})
+  ServerIPv6=$(compress_ipv6 ${ServerIPv6})
+  ServerIPv6EXP=$(expand_ipv6 ${ServerIPv6})
+  ServerIPv6ARPA=$(rarpa_ipv6 ${ServerIPv6EXP})
 else
-  SERVERIPV6EXP="NOIP6"
-  SERVERIPV6ARPA="NOIP6"
+  ServerIPv6EXP="NOIP6"
+  ServerIPv6ARPA="NOIP6"
 fi
 # Set IPv4 or set NA to none
-if [ "${SERVERIPV6}" != "NOIP4" ]; then
-  SERVERIPV4ARPA=$(/usr/bin/echo ${SERVERIPV4} | sed -r 's/^([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3})$/\4.\3.\2.\1.in-addr.arpa/')
+if [ "${ServerIPv6}" != "NOIP4" ]; then
+  ServerIPv4ARPA=$(/usr/bin/echo ${ServerIPv4} | sed -r 's/^([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3})$/\4.\3.\2.\1.in-addr.arpa/')
 else
-  SERVERIPV4ARPA="NOIP4"
+  ServerIPv4ARPA="NOIP4"
 fi
 
 # Locale (in case a VPS deleted it after make-preverber)
 /usr/bin/localectl set-locale LANG=en_US.UTF-8
 
 # System timezone
-/bin/ln -sfn /usr/share/zoneinfo/${PHPCITY} /etc/localtime
+/bin/ln -sfn /usr/share/zoneinfo/${PHPcity} /etc/localtime
 
 # Site settings
 ## Configs
@@ -464,13 +464,13 @@ if [ -f "/opt/verb/inst/domain.mod.conf" ]; then
 #!/bin/sh
 baseDOM="${baseDOM}"
 nameTLD="${SERVERTLD}"
-emailTLD="${SVMAILTLD}"
-itsqlTLD="${ITSQLTLD}"
+emailTLD="${SvMailTLD}"
+itsqlTLD="${ITsqlTLD}"
 nameURI="${SERVERTLD}.${baseDOM}"
 hostURI="${HOSTURI}"
 serveURI="serve.${SERVERTLD}.${baseDOM}"
-emailTLDURI="${SVMAILTLD}.${baseDOM}"
-itsqlTLDURI="${ITSQLTLD}.${baseDOM}"
+emailTLDURI="${SvMailTLD}.${baseDOM}"
+itsqlTLDURI="${ITsqlTLD}.${baseDOM}"
 emailURI="email.${baseDOM}"
 oneURI="one.${baseDOM}"
 inkURI="ink.${baseDOM}"
@@ -488,13 +488,13 @@ else
 /usr/bin/cat <<EOF > /opt/verb/conf/siteurilist
 #!/bin/sh
 nameTLD="${SERVERTLD}"
-emailTLD="${SVMAILTLD}"
-itsqlTLD="${ITSQLTLD}"
+emailTLD="${SvMailTLD}"
+itsqlTLD="${ITsqlTLD}"
 nameURI="${VNAME}.verb.${SERVERTLD}"
 hostURI="${HOSTURI}"
 serveURI="serve.${VNAME}.verb.${SERVERTLD}"
-emailTLDURI="${VNAME}.verb.${SVMAILTLD}"
-itsqlTLDURI="${VNAME}.verb.${ITSQLTLD}"
+emailTLDURI="${VNAME}.verb.${SvMailTLD}"
+itsqlTLDURI="${VNAME}.verb.${ITsqlTLD}"
 emailURI="${VNAME}.verb.email"
 oneURI="${VNAME}.verb.one"
 inkURI="${VNAME}.verb.ink"
@@ -540,16 +540,16 @@ serveDIR="$(/usr/bin/pwgen -s -1 6)"
 /bin/sed -i "s/tldserve286/${SERVERTLD}/" /opt/verb/conf/servernameip
 /bin/sed -i "s/servedir286/${serveDIR}/" /opt/verb/conf/servernameip
 /bin/sed -i "s/serveuri286/${serveURI}/" /opt/verb/conf/servernameip
-/bin/sed -i "s/ipv4286/${SERVERIPV4}/" /opt/verb/conf/servernameip
-/bin/sed -i "s/ipv6286/${SERVERIPV6}/" /opt/verb/conf/servernameip
-/bin/sed -i "s/expip6286/${SERVERIPV6EXP}/" /opt/verb/conf/servernameip
-/bin/sed -i "s/arpaipv4286/${SERVERIPV4ARPA}/" /opt/verb/conf/servernameip
-/bin/sed -i "s/arpaip6286/${SERVERIPV6ARPA}/" /opt/verb/conf/servernameip
-/bin/sed -i "s:timecity286:${PHPCITY}:" /opt/verb/conf/servernameip
+/bin/sed -i "s/ipv4286/${ServerIPv4}/" /opt/verb/conf/servernameip
+/bin/sed -i "s/ipv6286/${ServerIPv6}/" /opt/verb/conf/servernameip
+/bin/sed -i "s/expip6286/${ServerIPv6EXP}/" /opt/verb/conf/servernameip
+/bin/sed -i "s/arpaipv4286/${ServerIPv4ARPA}/" /opt/verb/conf/servernameip
+/bin/sed -i "s/arpaip6286/${ServerIPv6ARPA}/" /opt/verb/conf/servernameip
+/bin/sed -i "s:timecity286:${PHPcity}:" /opt/verb/conf/servernameip
 /bin/sed -i "s/updaterepo286/${VUPRepo}/" /opt/verb/conf/servernameip
 /bin/sed -i "s/updateorg286/${VUPORG}/" /opt/verb/conf/servernameip
-/bin/sed -i "s/ServerEmailTLD=.*/ServerEmailTLD=\"${SVMAILTLD}\"/" /opt/verb/conf/servermailpath
-/bin/sed -i "s/inkcertemail286/${SSLEMAIL}/" /opt/verb/conf/inkcertstatus
+/bin/sed -i "s/ServerEmailTLD=.*/ServerEmailTLD=\"${SvMailTLD}\"/" /opt/verb/conf/servermailpath
+/bin/sed -i "s/inkcertemail286/${SSLemail}/" /opt/verb/conf/inkcertstatus
 ##DEV Check that this is correct with: SQL[(none)]> SHOW variables like '%pid%';
 /bin/sed -i "s:/var/lib/mysql/localhost.pid:/var/lib/mysql/${Hostname}.pid:" /etc/monit/monitrc.d/mysql
 ## Copy other config files with pre-install status
@@ -557,14 +557,14 @@ serveDIR="$(/usr/bin/pwgen -s -1 6)"
 
 # LAEMP Reverse Proxy?
 if [ -f "/etc/httpd/conf/rpaf.conf" ]; then
-  /bin/sed -i "s/ipv4286/${SERVERIPV4}/g" /etc/httpd/conf/rpaf.conf
-  /bin/sed -i "s/ipv6286/${SERVERIPV6}/g" /etc/httpd/conf/rpaf.conf
+  /bin/sed -i "s/ipv4286/${ServerIPv4}/g" /etc/httpd/conf/rpaf.conf
+  /bin/sed -i "s/ipv6286/${ServerIPv6}/g" /etc/httpd/conf/rpaf.conf
 fi
 
 # PHP ini file
-/bin/sed -i "s/phplimit286/${PHPLIMIT}/g" /opt/verb/conf/php.ini
-/bin/sed -i "s/phpsize286M/${PHPSIZE}M/g" /opt/verb/conf/php.ini
-/bin/sed -i "s:phptimecity286:${PHPCITY}:g" /opt/verb/conf/php.ini
+/bin/sed -i "s/phplimit286/${PHPlimit}/g" /opt/verb/conf/php.ini
+/bin/sed -i "s/phpsize286M/${PHPsize}M/g" /opt/verb/conf/php.ini
+/bin/sed -i "s:phptimecity286:${PHPcity}:g" /opt/verb/conf/php.ini
 /bin/sed -i "s/name286/${VNAME}/g" /opt/verb/conf/php.ini
 /bin/sed -i "s/;.*.open_basedir =.*/open_basedir = \/var\/www/" /opt/verb/conf/php.ini
 /bin/sed -i "s/;.*.sys_temp_dir =.*/sys_temp_dir = \/var\/www\/tmp/" /opt/verb/conf/php.ini
@@ -692,7 +692,7 @@ fi
 
 # inkCert ini and cron files
 ## Replace
-/usr/bin/sed -i "s/sslemail286/${SSLEMAIL}/g" /opt/verb/conf/inkcert/cli-ini/*
+/usr/bin/sed -i "s/sslemail286/${SSLemail}/g" /opt/verb/conf/inkcert/cli-ini/*
 /usr/bin/sed -i "s/nameURI286/${nameURI}/g" /opt/verb/conf/inkcert/verber-openssl.cnf
 /usr/bin/sed -i "s/emailURI286/${emailURI}/g" /opt/verb/conf/inkcert/cli-ini/*
 /usr/bin/sed -i "s/oneURI286/${oneURI}/g" /opt/verb/conf/inkcert/cli-ini/*
@@ -866,7 +866,7 @@ if [ -e "/etc/cloud/templates/hosts.arch.tmpl" ]; then
 fi
 ### But, we don't want to rely on cloud-init automatic control, so we will set /etc/hosts regardless
 ## IPv4 & IPv6
-if [ -n "${SERVERIPV4}" ] && [ "${SERVERIPV4}" != "NOIP4" ] && [ -n "${SERVERIPV6}" ] && [ "${SERVERIPV6}" != "NOIP6" ]; then
+if [ -n "${ServerIPv4}" ] && [ "${ServerIPv4}" != "NOIP4" ] && [ -n "${ServerIPv6}" ] && [ "${ServerIPv6}" != "NOIP6" ]; then
   if [ -e "/etc/cloud/templates/hosts.arch.tmpl" ]; then # Only if using cloud-init
   /usr/bin/cat <<EOF > /etc/cloud/templates/hosts.arch.tmpl
 ## template:jinja
@@ -880,10 +880,10 @@ if [ -n "${SERVERIPV4}" ] && [ "${SERVERIPV4}" != "NOIP4" ] && [ -n "${SERVERIPV
 127.0.0.1 localhost.localdomain localhost
 
 # IPv4
-${SERVERIPV4} ${hostURI} ${Hostname}
+${ServerIPv4} ${hostURI} ${Hostname}
 
 # IPv6
-${SERVERIPV6} ${hostURI} ${Hostname}
+${ServerIPv6} ${hostURI} ${Hostname}
 
 # The following lines are desirable for IPv6 capable hosts
 ::1 localhost ip6-localhost ip6-loopback
@@ -902,10 +902,10 @@ EOF
 127.0.0.1 localhost.localdomain localhost
 
 # IPv4
-${SERVERIPV4} ${hostURI} ${Hostname}
+${ServerIPv4} ${hostURI} ${Hostname}
 
 # IPv6
-${SERVERIPV6} ${hostURI} ${Hostname}
+${ServerIPv6} ${hostURI} ${Hostname}
 
 # The following lines are desirable for IPv6 capable hosts
 ::1 localhost ip6-localhost ip6-loopback
@@ -916,7 +916,7 @@ ff02::2 ip6-allrouters
 ff02::3 ip6-allhosts
 EOF
 ### No IPv4
-elif [ -n "${SERVERIPV4}" ] && [ "${SERVERIPV4}" = "NOIP4" ]; then
+elif [ -n "${ServerIPv4}" ] && [ "${ServerIPv4}" = "NOIP4" ]; then
   if [ -e "/etc/cloud/templates/hosts.arch.tmpl" ]; then # Only if using cloud-init
   /usr/bin/cat <<EOF > /etc/cloud/templates/hosts.arch.tmpl
 ## template:jinja
@@ -930,7 +930,7 @@ elif [ -n "${SERVERIPV4}" ] && [ "${SERVERIPV4}" = "NOIP4" ]; then
 127.0.0.1 localhost.localdomain localhost
 
 # IPv6
-${SERVERIPV6} ${hostURI} ${Hostname}
+${ServerIPv6} ${hostURI} ${Hostname}
 
 # The following lines are desirable for IPv6 capable hosts
 ::1 localhost ip6-localhost ip6-loopback
@@ -949,7 +949,7 @@ EOF
 127.0.0.1 localhost.localdomain localhost
 
 # IPv6
-${SERVERIPV6} ${hostURI} ${Hostname}
+${ServerIPv6} ${hostURI} ${Hostname}
 
 # The following lines are desirable for IPv6 capable hosts
 ::1 ip6-localhost ip6-loopback
@@ -960,7 +960,7 @@ ff02::2 ip6-allrouters
 ff02::3 ip6-allhosts
 EOF
 ### No IPv6
-elif [ -n "${SERVERIPV6}" ] && [ "${SERVERIPV6}" = "NOIP6" ]; then
+elif [ -n "${ServerIPv6}" ] && [ "${ServerIPv6}" = "NOIP6" ]; then
   if [ -e "/etc/cloud/templates/hosts.arch.tmpl" ]; then # Only if using cloud-init
   /usr/bin/cat <<EOF > /etc/cloud/templates/hosts.arch.tmpl
 ## template:jinja
@@ -974,7 +974,7 @@ elif [ -n "${SERVERIPV6}" ] && [ "${SERVERIPV6}" = "NOIP6" ]; then
 127.0.0.1 localhost.localdomain localhost
 
 # IPv4
-${SERVERIPV4} ${hostURI} ${Hostname}
+${ServerIPv4} ${hostURI} ${Hostname}
 EOF
   fi
   /usr/bin/cat <<EOF > /etc/hosts
@@ -985,17 +985,17 @@ EOF
 127.0.0.1 localhost.localdomain localhost
 
 # IPv4
-${SERVERIPV4} ${hostURI} ${Hostname}
+${ServerIPv4} ${hostURI} ${Hostname}
 EOF
 fi
 
 # ARPA & inverse IP
 ## IPv4?
-if [ -n "${SERVERIPV4}" ] && [ "${SERVERIPV4}" != "NOIP4" ]; then
-  /opt/verb/serfs/setipv4 "${SERVERIPV4}"
+if [ -n "${ServerIPv4}" ] && [ "${ServerIPv4}" != "NOIP4" ]; then
+  /opt/verb/serfs/setipv4 "${ServerIPv4}"
 ## IPv6?
-elif [ -n "${SERVERIPV6}" ] && [ "${SERVERIPV6}" != "NOIP6" ]; then
-  /opt/verb/serfs/setipv6 "${SERVERIPV6}"
+elif [ -n "${ServerIPv6}" ] && [ "${ServerIPv6}" != "NOIP6" ]; then
+  /opt/verb/serfs/setipv6 "${ServerIPv6}"
 fi
 
 # Verber DNS records
@@ -1019,31 +1019,31 @@ fi
 
 ## Set the email TLD URI
 /usr/bin/echo "
-; Email Control Records" >> /opt/verb/conf/inkdns/inkzones/db.${SVMAILTLD}
+; Email Control Records" >> /opt/verb/conf/inkdns/inkzones/db.${SvMailTLD}
 /usr/bin/echo "
-; Email Control PTR Records" >> /opt/verb/conf/inkdns/inkzones/nv.${SVMAILTLD}
+; Email Control PTR Records" >> /opt/verb/conf/inkdns/inkzones/nv.${SvMailTLD}
 
 ## Set the itsql TLD URI
 /usr/bin/echo "
-; IT Control Records" >> /opt/verb/conf/inkdns/inkzones/db.${ITSQLTLD}
+; IT Control Records" >> /opt/verb/conf/inkdns/inkzones/db.${ITsqlTLD}
 /usr/bin/echo "
-; IT Control PTR Records" >> /opt/verb/conf/inkdns/inkzones/nv.${ITSQLTLD}
+; IT Control PTR Records" >> /opt/verb/conf/inkdns/inkzones/nv.${ITsqlTLD}
 ### IPv4?
-if [ -n "${SERVERIPV4}" ] && [ "${SERVERIPV4}" != "NOIP4" ]; then
-  /usr/bin/echo "sql.${itsqlTLDURI}.	IN  A		hostipv4286" >> /opt/verb/conf/inkdns/inkzones/db.${ITSQLTLD}
-  /usr/bin/echo "hostarpaipv4286  IN  PTR  sql.${itsqlTLDURI}." >> /opt/verb/conf/inkdns/inkzones/nv.${ITSQLTLD}
+if [ -n "${ServerIPv4}" ] && [ "${ServerIPv4}" != "NOIP4" ]; then
+  /usr/bin/echo "sql.${itsqlTLDURI}.	IN  A		hostipv4286" >> /opt/verb/conf/inkdns/inkzones/db.${ITsqlTLD}
+  /usr/bin/echo "hostarpaipv4286  IN  PTR  sql.${itsqlTLDURI}." >> /opt/verb/conf/inkdns/inkzones/nv.${ITsqlTLD}
 ### IPv6?
-elif [ -n "${SERVERIPV6}" ] && [ "${SERVERIPV6}" != "NOIP6" ]; then
-  /usr/bin/echo "sql.${itsqlTLDURI}.	IN  AAAA	hostipv6286" >> /opt/verb/conf/inkdns/inkzones/db.${ITSQLTLD}
-  /usr/bin/echo "hostarpaipv6286  IN  PTR  sql.${itsqlTLDURI}." >> /opt/verb/conf/inkdns/inkzones/nv.${ITSQLTLD}
+elif [ -n "${ServerIPv6}" ] && [ "${ServerIPv6}" != "NOIP6" ]; then
+  /usr/bin/echo "sql.${itsqlTLDURI}.	IN  AAAA	hostipv6286" >> /opt/verb/conf/inkdns/inkzones/db.${ITsqlTLD}
+  /usr/bin/echo "hostarpaipv6286  IN  PTR  sql.${itsqlTLDURI}." >> /opt/verb/conf/inkdns/inkzones/nv.${ITsqlTLD}
 fi
 
 ## Set the namespace, TLD, and IP values
 /usr/bin/mkdir -p /opt/verb/conf/inkdns/zones
-/usr/bin/sed -i "s/hostipv4286/${SERVERIPV4}/g" /opt/verb/conf/inkdns/inkzones/db.*
-/usr/bin/sed -i "s/hostipv4286/${SERVERIPV4}/g" /opt/verb/conf/inkdns/db.dnsdomain
-/usr/bin/sed -i "s/hostipv6286/${SERVERIPV6}/g" /opt/verb/conf/inkdns/inkzones/db.*
-/usr/bin/sed -i "s/hostipv6286/${SERVERIPV6}/g" /opt/verb/conf/inkdns/db.dnsdomain
+/usr/bin/sed -i "s/hostipv4286/${ServerIPv4}/g" /opt/verb/conf/inkdns/inkzones/db.*
+/usr/bin/sed -i "s/hostipv4286/${ServerIPv4}/g" /opt/verb/conf/inkdns/db.dnsdomain
+/usr/bin/sed -i "s/hostipv6286/${ServerIPv6}/g" /opt/verb/conf/inkdns/inkzones/db.*
+/usr/bin/sed -i "s/hostipv6286/${ServerIPv6}/g" /opt/verb/conf/inkdns/db.dnsdomain
 /usr/bin/sed -i "s/hostURI286/${hostURI}/g" /opt/verb/conf/inkdns/inkzones/db.*
 /usr/bin/sed -i "s/hostURI286/${hostURI}/g" /opt/verb/conf/inkdns/db.dnsdomain
 /usr/bin/sed -i "s/sitename286/${ServerName}/g" /opt/verb/conf/inkdns/inkzones/db.*
@@ -1073,7 +1073,7 @@ fi
 /usr/bin/sed -i "s/hostdomain286/${kiwiURI}/g" /opt/verb/conf/inkdns/inkzones/nv.kiwi
 /usr/bin/sed -i "s/hostdomain286/${redURI}/g" /opt/verb/conf/inkdns/inkzones/nv.red
 ## Set host FQDN
-#/usr/bin/sed -i "s/;; End Root Site Defaults/${hostURI}\.\t\tIN  A\t\t${SERVERIPV4}\n${hostURI}\.\t\tIN  AAAA\t${SERVERIPV6}\n;; End Root Site Defaults/" /opt/verb/conf/inkdns/inkzones/db.${SERVERTLD}
+#/usr/bin/sed -i "s/;; End Root Site Defaults/${hostURI}\.\t\tIN  A\t\t${ServerIPv4}\n${hostURI}\.\t\tIN  AAAA\t${ServerIPv6}\n;; End Root Site Defaults/" /opt/verb/conf/inkdns/inkzones/db.${SERVERTLD}
 ## Set the URI names
 /usr/bin/mv /opt/verb/conf/inkdns/inkzones/db.email /opt/verb/conf/inkdns/inkzones/db.${emailURI}
 /usr/bin/mv /opt/verb/conf/inkdns/inkzones/db.one /opt/verb/conf/inkdns/inkzones/db.${oneURI}
@@ -1155,6 +1155,10 @@ fi
 #   /usr/bin/systemctl start httpd; wait
 # fi
 
+# dig for inkCert
+/usr/bin/echo '*/5 * * * * root /opt/verb/donjon/digverbs.sh' > /etc/cron.d/digverbs
+/usr/bin/chmod 0644 /etc/cron.d/digverbs
+
 # Update verber
 /opt/verb/serfs/updateverber
 
@@ -1165,17 +1169,17 @@ if [ "${RinkConfigured}" = "true" ]; then
 fi
 
 # Next step instructions
-if [ "${SERVERIPV4}" != "NOIP4" ] && [ "${SERVERIPV6}" != "NOIP6" ]; then
-  IPADDRBLOCKroot="'ssh root@${SERVERIPV4} -p ${NEWPORT} 'or 'ssh root@${SERVERIPV6} -p ${NEWPORT}'"
-  IPADDRBLOCKboss="'ssh ${NEWBoss}@${SERVERIPV4} -p ${NEWPORT} 'or 'ssh root@${SERVERIPV6} -p ${NEWPORT}'"
+if [ "${ServerIPv4}" != "NOIP4" ] && [ "${ServerIPv6}" != "NOIP6" ]; then
+  IPADDRBLOCKroot="'ssh root@${ServerIPv4} -p ${NEWPORT} 'or 'ssh root@${ServerIPv6} -p ${NEWPORT}'"
+  IPADDRBLOCKboss="'ssh ${NEWBoss}@${ServerIPv4} -p ${NEWPORT} 'or 'ssh root@${ServerIPv6} -p ${NEWPORT}'"
 ## IPv4?
 elif [ "${ServerIPv4}" != "NOIP4" ]; then
-  IPADDRBLOCKroot="'ssh root@${SERVERIPV4} -p ${NEWPORT}'"
-  IPADDRBLOCKboss="'ssh ${NEWBoss}@${SERVERIPV4} -p ${NEWPORT}'"
+  IPADDRBLOCKroot="'ssh root@${ServerIPv4} -p ${NEWPORT}'"
+  IPADDRBLOCKboss="'ssh ${NEWBoss}@${ServerIPv4} -p ${NEWPORT}'"
 ## IPv6?
 elif [ "${ServerIPv6}" != "NOIP6" ]; then
-  IPADDRBLOCKroot="'ssh root@${SERVERIPV6} -p ${NEWPORT}'"
-  IPADDRBLOCKboss="'ssh ${NEWBoss}@${SERVERIPV6} -p ${NEWPORT}'"
+  IPADDRBLOCKroot="'ssh root@${ServerIPv6} -p ${NEWPORT}'"
+  IPADDRBLOCKboss="'ssh ${NEWBoss}@${ServerIPv6} -p ${NEWPORT}'"
 fi
 /bin/echo "Setup is finished, this verber is unique
 1. reboot

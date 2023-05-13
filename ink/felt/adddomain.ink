@@ -19,12 +19,18 @@ EOU
 optSerf="d:hrcv"
 declare -A optName
 declare -A optDesc
+optName[a]="Automatic inkCert"
+optDesc[a]="Choose 'multi' or 'wild'"
 optName[d]="Domain"
 optDesc[d]="A new domain (or subdomain if using for email and unique SSL certificates)"
 
 # Check the variables
 while getopts "${optSerf}" Flag; do
  case "${Flag}" in
+  a)
+    isDomain "${OPTARG}" "${optName[a]}"
+    SOa="${OPTARG}"
+  ;;
   d)
     isDomain "${OPTARG}" "${optName[d]}"
     SOd="${OPTARG}"
@@ -75,7 +81,7 @@ if [ -z "${SOd}" ]; then
 fi
 
 # Prepare command
-serfcommand="${Serfs}/${SURFNAME} ${SOd}"
+serfcommand="${Serfs}/${SURFNAME} ${SOd} ${SOa}"
 
 # Run the ink
 . $InkRun

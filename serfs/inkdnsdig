@@ -1,0 +1,81 @@
+#!/bin/bash
+#inkVerbKnight! verb.ink
+
+# This checks whether a domain points to this server and returns STDOUT regardless, but with exit 4 if it does not
+## This is intended to check DNS nameserver readiness for installing inkCert SSL certs for a hosted domain
+## Any new system or domain recently added with adddomain will set a cron task with this to loop this command until ready, then automatically run inkCert
+
+# How to use:
+## ./inkdnsdig [ domain.tld ] [ mail - option to only for mail domains (smtp, imap, pop3, mail) ]
+
+# Eg:
+## ./inkdnsdig inkisaverb.com
+## ./inkdnsdig v.inkisaverb.com
+## ./inkdnsdig inkisaverb.com mail
+
+usagenotes="This checks whether a domain points to this server and returns STDOUT regardless, but with exit 4 if it does not"
+usageformat="inkdnsdig [ domain.tld ] [ mail - option to only for mail domains (smtp, imap, pop3, mail) ]"
+usageexample="inkdnsdig inkisaverb.com
+inkdnsdig v.inkisaverb.com
+inkdnsdig inkisaverb.com mail"
+hierarchy=( secondary )
+vsetnames=(  )
+vsettypes=( isDomain )
+voptnames=( "Check also for mail domains" )
+vopttypes=( "string_match" )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkdnsinstall )
+prerequesite=(  )
+usedby=( inkdnsdigverbs adddomain )
+useserfs=(  )
+useconfigs=( siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdnsdig.replace" ]; then . /opt/verb/mods/inkdnsdig.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdnsdig.before" ]; then . /opt/verb/mods/inkdnsdig.before; fi # Precedes this script
+
+
+# Include the configs
+. /opt/verb/conf/inkdnsconf
+. /opt/verb/conf/servertldstatus
+
+# Config check
+if ! /bin/grep -q 'InkDNSStat="INSTALLED"' /opt/verb/conf/inkdnsconf; then
+  /usr/bin/echo "Install inkDNS first, I quit."; exit 8
+fi
+
+# Argument check
+if [ -z "$1" ]; then
+  /bin/echo "Must specify a domain, I quit."; exit 5
+fi
+
+# Domain
+domain="$1"
+
+# Check mail?
+if [ -n "$2" ] && [ "$2" = "mail" ]; then
+  /usr/bin/dig ${domain} ns | /usr/bin/grep "${ServerNS1DNS}" || /usr/bin/echo "No NS record for ${ServerNS1DNS} " && exit 4
+  /usr/bin/dig ${domain} ns | /usr/bin/grep "${ServerNS2DNS}" || /usr/bin/echo "No NS record for ${ServerNS2DNS} " && exit 4
+  /usr/bin/dig ${domain} mx | /usr/bin/grep MX | /usr/bin/grep "mail.${domain}." || /usr/bin/echo "No MX record for ${domain} " && exit 4
+  /usr/bin/dig inkdkim._domainkey.${domain} txt | /usr/bin/grep TXT | /usr/bin/grep "inkdkim" || /usr/bin/echo "No TXT record for DKIM " && exit 4
+  /usr/bin/dig ${domain} a | /usr/bin/grep A | /usr/bin/grep "${ServerIPv4}" || /usr/bin/echo "No A record for ${ServerIPv4} " && exit 4
+  /usr/bin/dig ${domain} aaaa | /usr/bin/grep AAAA | /usr/bin/grep "${ServerIPv6}" || /usr/bin/echo "No AAAA record for ${ServerIPv6} " && exit 4
+  /usr/bin/dig mail.${domain} a | /usr/bin/grep A | /usr/bin/grep "${ServerIPv4}" || /usr/bin/echo "No A record for ${ServerIPv4} " && exit 4
+  /usr/bin/dig mail.${domain} aaaa | /usr/bin/grep AAAA | /usr/bin/grep "${ServerIPv6}" || /usr/bin/echo "No AAAA record for ${ServerIPv6} " && exit 4
+  /usr/bin/dig smtp.${domain} a | /usr/bin/grep A | /usr/bin/grep "${ServerIPv4}" || /usr/bin/echo "No A record for ${ServerIPv4} " && exit 4
+  /usr/bin/dig smtp.${domain} aaaa | /usr/bin/grep AAAA | /usr/bin/grep "${ServerIPv6}" || /usr/bin/echo "No AAAA record for ${ServerIPv6} " && exit 4
+  /usr/bin/dig imap.${domain} a | /usr/bin/grep A | /usr/bin/grep "${ServerIPv4}" || /usr/bin/echo "No A record for ${ServerIPv4} " && exit 4
+  /usr/bin/dig imap.${domain} aaaa | /usr/bin/grep AAAA | /usr/bin/grep "${ServerIPv6}" || /usr/bin/echo "No AAAA record for ${ServerIPv6} " && exit 4
+  /usr/bin/dig pop3.${domain} a | /usr/bin/grep A | /usr/bin/grep "${ServerIPv4}" || /usr/bin/echo "No A record for ${ServerIPv4} " && exit 4
+  /usr/bin/dig pop3.${domain} aaaa | /usr/bin/grep AAAA | /usr/bin/grep "${ServerIPv6}" || /usr/bin/echo "No AAAA record for ${ServerIPv6} " && exit 4
+else
+  /usr/bin/dig ${domain} ns | /usr/bin/grep "${ServerNS1DNS}" || /usr/bin/echo "No NS record for ${ServerNS1DNS} " && exit 4
+  /usr/bin/dig ${domain} ns | /usr/bin/grep "${ServerNS2DNS}" || /usr/bin/echo "No NS record for ${ServerNS2DNS} " && exit 4
+  /usr/bin/dig ${domain} a | /usr/bin/grep A | /usr/bin/grep "${ServerIPv4}" || /usr/bin/echo "No A record for ${ServerIPv4} " && exit 4
+  /usr/bin/dig ${domain} aaaa | /usr/bin/grep AAAA | /usr/bin/grep "${ServerIPv6}" || /usr/bin/echo "No AAAA record for ${ServerIPv6} " && exit 4
+fi
+
+
+
+
+if [ -e "/opt/verb/mods/inkdnsdig.after" ]; then . /opt/verb/mods/inkdnsdig.after; fi # Follows this script

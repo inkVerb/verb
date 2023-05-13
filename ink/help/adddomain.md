@@ -7,7 +7,7 @@
 
 
 ## Usage
-- `ink add domain -d [ somedomain.tld ]`
+- `ink add domain -d [ somedomain.tld ] - a [ multi/wild - auto SSL cert option ]`
 
 - `ink add domain -d inkisaverb.com`
   - Creates the domain folder `www/domains/inkisaverb.com` & makes it live at `www/html/inkisaverb.com`
@@ -18,4 +18,11 @@
     - OpenDKIM records and keys
     - Email domain in PostfixAdmin
     - Framework to add subdomains via `add subdomain`
-
+- `ink add domain -d inkisaverb.com -a multi`
+  - Does everything same as above, but automatically installs a Letsencrypt multi certs for only this domain
+    - This is achieved by creating a self-destructing cron task called digdomain-DOMAIN, which runs "donjon/digdomain.sh inkisaverb.com multi" every 5 minutes
+  - `ink cert` will not be able to nor need to run for this domain after using this option, unless running `ink cert undo` first
+- `ink add domain -d inkisaverb.com -a wild`
+  - Does everything same as above, but automatically installs a Certbot wildcard certs for this domain
+    - This is achieved by creating a self-destructing cron task called digdomain-DOMAIN, which runs "donjon/digdomain.sh inkisaverb.com wild" every 5 minutes
+  - `ink cert` will not be able to nor need to run for this domain after using this option, unless running `ink cert undo` first

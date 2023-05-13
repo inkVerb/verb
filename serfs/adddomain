@@ -5,16 +5,23 @@
 ## This also creates an inkDNS zone file, complete with mail records
 
 # How to use:
-## ./adddomain [ newdomain.tld ]
+## ./adddomain [ newdomain.tld ] [ multi/wild - optional for auto-inkCert when ready ]
+
+## Eg:
+## ./adddomain inkisaverb.com
+## ./adddomain inkisaverb.com multi # automatically run inkcertdole for specified domain only; addsubdomain won't work for this domain after using this option
+## ./adddomain inkisaverb.com wild # automatically run inkcertdocb with wildcard certs
 
 usagenotes="This adds a new domain, complete with inkDKIM OpenDKIM profiles and keys, inkDNS DNS zone record, inkCert Letsencrypt cli-ini entries, and Apache/Nginx configs and folders in www/domains/ that link to www/html/"
-usageformat="adddomain [ newdomain.tld ]"
-usageexample="adddomain inkisaverb.com"
+usageformat="adddomain [ newdomain.tld ] [ auto/wild - optional for auto-inkCert when ready ]"
+usageexample="adddomain inkisaverb.com
+adddomain inkisaverb.com multi # will automatically run inkcertdole for specified domain only; addsubdomain won't work for this domain after using this option
+adddomain inkisaverb.com wild # will automatically run inkcertdocb with wildcard certs"
 hierarchy=( primary )
 vsetnames=( "Domain" )
 vsettypes=( isDomain )
-voptnames=(  )
-vopttypes=(  )
+voptnames=( "Auto-cert" )
+vopttypes=( "string_match" )
 voptflags=(  )
 voptflagpurpose=(  )
 dependencyinstall=(  )
@@ -46,74 +53,83 @@ fi
 . /opt/verb/conf/servertype
 . /opt/verb/conf/inkcertstatus
 
-NEWdomain=$1
+newdomain=$1
 
 # Check if it already exists
 if [ ${ServerType} = "lemp" ]; then
-  if [ -f /opt/verb/conf/webserver/sites-available/nginx/${NEWDOMAIN}.conf ]; then
-    /opt/verb/serfs/ensitenginx -r ${NEWDOMAIN}
+  if [ -f /opt/verb/conf/webserver/sites-available/nginx/${newdomain}.conf ]; then
+    /opt/verb/serfs/ensitenginx -r ${newdomain}
     /bin/echo "Site already exists, server restarted."
     exit 0
   fi
 elif [ ${ServerType} = "lamp" ]; then
-  if [ -f /opt/verb/conf/webserver/sites-available/httpd/${NEWDOMAIN}.conf ]; then
-    /opt/verb/serfs/ensiteapache -r ${NEWDOMAIN}
+  if [ -f /opt/verb/conf/webserver/sites-available/httpd/${newdomain}.conf ]; then
+    /opt/verb/serfs/ensiteapache -r ${newdomain}
     /bin/echo "Site already exists, server restarted."
     exit 0
   fi
 elif [ ${ServerType} = "laemp" ]; then
-  if [ -f /opt/verb/conf/webserver/sites-available/nginx/${NEWDOMAIN}.conf ]; then
-    /opt/verb/serfs/ensitenginx -r ${NEWDOMAIN}
-    SITEON=true
+  if [ -f /opt/verb/conf/webserver/sites-available/nginx/${newdomain}.conf ]; then
+    /opt/verb/serfs/ensitenginx -r ${newdomain}
+    siteon=true
   fi
-  if [ -f /opt/verb/conf/webserver/sites-available/httpd/${NEWDOMAIN}.conf ]; then
-    /opt/verb/serfs/ensiteapache -r ${NEWDOMAIN}
-    SITEON=true
+  if [ -f /opt/verb/conf/webserver/sites-available/httpd/${newdomain}.conf ]; then
+    /opt/verb/serfs/ensiteapache -r ${newdomain}
+    siteon=true
   fi
-  if [ "$SITEON" = "true" ]; then
+  if [ "$siteon" = "true" ]; then
     /bin/echo "Site already exists, server restarted."
     exit 0
   fi
 fi
 
 # Check the domain shell
-if [ ! -f "/opt/verb/conf/inkcert/cli-ini/siteinkcert.${NEWDOMAIN}" ] || [ ! -f "/opt/verb/conf/inkcert/cli-ini/cli.${NEWDOMAIN}.ini" ]; then
-  /bin/echo "The shell for ${NEWDOMAIN} does not exist yet. Creating it..."
-  /opt/verb/serfs/newdomainshell ${NEWDOMAIN}; wait
+if [ ! -f "/opt/verb/conf/inkcert/cli-ini/siteinkcert.${newdomain}" ] || [ ! -f "/opt/verb/conf/inkcert/cli-ini/cli.${newdomain}.ini" ]; then
+  /bin/echo "The shell for ${newdomain} does not exist yet. Creating it..."
+  /opt/verb/serfs/newdomainshell ${newdomain}; wait
 fi
 
 # Server config files
 ## Web directory
-if [ ! -d /srv/www/domains/${NEWDOMAIN} ]; then
-  /usr/bin/cp -rf /opt/verb/conf/site-files/newdomain.tld /srv/www/domains/${NEWDOMAIN}
+if [ ! -d /srv/www/domains/${newdomain} ]; then
+  /usr/bin/cp -rf /opt/verb/conf/site-files/newdomain.tld /srv/www/domains/${newdomain}
 fi
-/bin/ln -sfn /srv/www/domains/${NEWDOMAIN} /srv/www/html/
-/bin/chown -R www:www /srv/www/html/${NEWDOMAIN}
-/bin/chown -R www:www /srv/www/domains/${NEWDOMAIN}
-/bin/chmod -R 750 /srv/www/domains/${NEWDOMAIN}
+/bin/ln -sfn /srv/www/domains/${newdomain} /srv/www/html/
+/bin/chown -R www:www /srv/www/html/${newdomain}
+/bin/chown -R www:www /srv/www/domains/${newdomain}
+/bin/chmod -R 750 /srv/www/domains/${newdomain}
 ## Copy
 if [ ${ServerType} = "lemp" ]; then
-  /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxdomain.tld.conf /opt/verb/conf/webserver/sites-available/nginx/${NEWDOMAIN}.conf
-  /bin/sed -i "s/newdomain.tld/${NEWDOMAIN}/g" /opt/verb/conf/webserver/sites-available/nginx/${NEWDOMAIN}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxdomain.tld.conf /opt/verb/conf/webserver/sites-available/nginx/${newdomain}.conf
+  /bin/sed -i "s/newdomain.tld/${newdomain}/g" /opt/verb/conf/webserver/sites-available/nginx/${newdomain}.conf
   ## Server
-  /opt/verb/serfs/ensitenginx -r ${NEWDOMAIN}
+  /opt/verb/serfs/ensitenginx -r ${newdomain}
 elif [ ${ServerType} = "lamp" ]; then
-  /usr/bin/cp /opt/verb/conf/site-files/conf/newdomain.tld.conf /opt/verb/conf/webserver/sites-available/httpd/${NEWDOMAIN}.conf
-  /bin/sed -i "s/newdomain.tld/${NEWDOMAIN}/g" /opt/verb/conf/webserver/sites-available/httpd/${NEWDOMAIN}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newdomain.tld.conf /opt/verb/conf/webserver/sites-available/httpd/${newdomain}.conf
+  /bin/sed -i "s/newdomain.tld/${newdomain}/g" /opt/verb/conf/webserver/sites-available/httpd/${newdomain}.conf
   ## Server
-  /opt/verb/serfs/ensiteapache -r ${NEWDOMAIN}
+  /opt/verb/serfs/ensiteapache -r ${newdomain}
 elif [ ${ServerType} = "laemp" ]; then
-  /usr/bin/cp /opt/verb/conf/site-files/conf/newdomain.tld.conf /opt/verb/conf/webserver/sites-available/httpd/${NEWDOMAIN}.conf
-  /usr/bin/cp /opt/verb/conf/site-files/conf/newrpnginxdomain.tld.conf /opt/verb/conf/webserver/sites-available/nginx/${NEWDOMAIN}.conf
-  /bin/sed -i "s/newdomain.tld/${NEWDOMAIN}/g" /opt/verb/conf/webserver/sites-available/httpd/${NEWDOMAIN}.conf
-  /bin/sed -i "s/newdomain.tld/${NEWDOMAIN}/g" /opt/verb/conf/webserver/sites-available/nginx/${NEWDOMAIN}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newdomain.tld.conf /opt/verb/conf/webserver/sites-available/httpd/${newdomain}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newrpnginxdomain.tld.conf /opt/verb/conf/webserver/sites-available/nginx/${newdomain}.conf
+  /bin/sed -i "s/newdomain.tld/${newdomain}/g" /opt/verb/conf/webserver/sites-available/httpd/${newdomain}.conf
+  /bin/sed -i "s/newdomain.tld/${newdomain}/g" /opt/verb/conf/webserver/sites-available/nginx/${newdomain}.conf
   ## Server
-  /opt/verb/serfs/ensiteapache -r ${NEWDOMAIN}
-  /opt/verb/serfs/ensitenginx -r ${NEWDOMAIN}
+  /opt/verb/serfs/ensiteapache -r ${newdomain}
+  /opt/verb/serfs/ensitenginx -r ${newdomain}
+fi
+
+# Auto-inkCert when DNS is populated?
+if [ -n "$2" ] && [ "$2" = "multi" ]; then
+  /usr/bin/echo '*/5 * * * * root /opt/verb/donjon/digdomain.sh' "${newdomain} multi" > /etc/cron.d/digdomain-${newdomain}
+  /usr/bin/chmod 0644 /etc/cron.d/digdomain-${newdomain}
+elif [ -n "$2" ] && [ "$2" = "wild" ]; then
+  /usr/bin/echo '*/5 * * * * root /opt/verb/donjon/digdomain.sh' "${newdomain} wild" > /etc/cron.d/digdomain-${newdomain}
+  /usr/bin/chmod 0644 /etc/cron.d/digdomain-${newdomain}
 fi
 
 # Finish
-/bin/echo "Great! With no error messages, you are ready to run inkCert for ${NEWDOMAIN}, unless you want to add subdomains."
+/bin/echo "Great! With no error messages, you are ready to run inkCert for ${newdomain}, unless you want to add subdomains."
 
 
 

@@ -1,0 +1,64 @@
+#!/bin/bash
+#inkVerbKnight! verb.ink
+
+# This runs inkdnsdig per active verb domain and checks for mail domains for the main URI
+# How to use:
+## ./inkdnsdigverbs
+
+# Eg:
+## ./inkdnsdigverbs
+
+usagenotes="This runs inkdnsdig per active verb domain and checks for mail domains for the main URI"
+usageformat="inkdnsdigverbs"
+usageexample="inkdnsdigverbs"
+hierarchy=( secondary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkdnsinstall )
+prerequesite=(  )
+usedby=( "setup - via donjon/digverbs.sh" )
+useserfs=( inkdnsdig )
+useconfigs=( inkdnsconf servertldstatus siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdnsdigverbs.replace" ]; then . /opt/verb/mods/inkdnsdigverbs.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdnsdigverbs.before" ]; then . /opt/verb/mods/inkdnsdigverbs.before; fi # Precedes this script
+
+
+# Include the configs
+. /opt/verb/conf/inkdnsconf
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/servertldstatus
+
+# Config check
+if ! /bin/grep -q 'InkDNSStat="INSTALLED"' /opt/verb/conf/inkdnsconf; then
+  /usr/bin/echo "Install inkDNS first, I quit."; exit 8
+fi
+
+# Primary VPS host
+/opt/verb/serfs/inkdnsdigverbs ${nameURI} mail; e="$?"; [[ "$e" = "0" ]] || exit "$e"
+
+if [ ${VERBemail} = "true" ]; then
+  /opt/verb/serfs/inkdnsdigverbs ${emailURI}; e="$?"; [[ "$e" = "0" ]] || exit "$e"
+fi
+if [ ${VERBone} = "true" ]; then
+  /opt/verb/serfs/inkdnsdigverbs ${oneURI}; e="$?"; [[ "$e" = "0" ]] || exit "$e"
+fi
+if [ ${VERBink} = "true" ]; then
+  /opt/verb/serfs/inkdnsdigverbs ${inkURI}; e="$?"; [[ "$e" = "0" ]] || exit "$e"
+fi
+if [ ${VERBblue} = "true" ]; then
+  /opt/verb/serfs/inkdnsdigverbs ${blueURI}; e="$?"; [[ "$e" = "0" ]] || exit "$e"
+fi
+if [ ${VERBvip} = "true" ]; then
+  /opt/verb/serfs/inkdnsdigverbs ${vipURI}; e="$?"; [[ "$e" = "0" ]] || exit "$e"
+fi
+if [ ${VERBkiwi} = "true" ]; then
+  /opt/verb/serfs/inkdnsdigverbs ${kiwiURI}; e="$?"; [[ "$e" = "0" ]] || exit "$e"
+fi
+if [ ${VERBred} = "true" ]; then
+  /opt/verb/serfs/inkdnsdigverbs ${redURI}; e="$?"; [[ "$e" = "0" ]] || exit "$e"
+fi
