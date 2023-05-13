@@ -32,7 +32,7 @@ if [ -e "/opt/verb/mods/inkcertundole.replace" ]; then . /opt/verb/mods/inkcertu
 if [ -e "/opt/verb/mods/inkcertundole.before" ]; then . /opt/verb/mods/inkcertundole.before; fi # Precedes this script
 
 
-DOMAIN=$1
+domain=$1
 
 # Check variables
 if [ -z ${1} ]; then
@@ -40,14 +40,14 @@ if [ -z ${1} ]; then
 fi
 
 # Revoke the certs
-/opt/verb/serfs/inkcertrevokele ${DOMAIN}
+/opt/verb/serfs/inkcertrevokele ${domain}
 
 # Remove the certs
-/opt/verb/serfs/inkcertremoveallle ${DOMAIN}
+/opt/verb/serfs/inkcertremoveallle ${domain}
 
 # Remove mail certs
-/usr/bin/rm -f /etc/ssl/server/mail/${DOMAIN}.crt
-/usr/bin/rm -f /etc/ssl/server/mail/${DOMAIN}.key
+/usr/bin/rm -f /etc/ssl/server/mail/${domain}.crt
+/usr/bin/rm -f /etc/ssl/server/mail/${domain}.key
 
 
 

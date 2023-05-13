@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #inkVerb! repo donjon dragon, verb.ink
 #set -e
 
@@ -8,27 +8,27 @@
 ## ./orangehrm.updaterepo
 
 
-CVAPPNAME=orangehrm
+cVappName=orangehrm
 # Include the config files
 . /opt/verb/conf/serverinkget
 . /opt/verb/conf/inklists/repoverlist
-DISTVER="${orangehrm}"
+distVer="${orangehrm}"
 
 if [ $InkGet_Method != "ZJZ" ]; then
   cd /opt/verb/repo; fi
 
 # Announce
-/bin/echo "Updating the OrangeHRM package to v${DISTVER}..."
+/bin/echo "Updating the OrangeHRM package to v${distVer}..."
 
 # Get the package
-/usr/bin/wget https://sourceforge.net/projects/orangehrm/files/stable/${DISTVER}/orangehrm-${DISTVER}.zip
-if [ ! -f "orangehrm-${DISTVER}.zip" ]; then
-/bin/echo "Failed download."; touch "${CVAPPNAME}.failed"
+/usr/bin/wget https://sourceforge.net/projects/orangehrm/files/stable/${distVer}/orangehrm-${distVer}.zip
+if [ ! -f "orangehrm-${distVer}.zip" ]; then
+/bin/echo "Failed download."; touch "${cVappName}.failed"
 exit 4; else
-/bin/rm -f ${CVAPPNAME}.failed; fi
+/bin/rm -f ${cVappName}.failed; fi
 ## Check the hash
-CHECKSHA=$(sha1sum orangehrm-${DISTVER}.zip)
-if [ "${CHECKSHA}" = "${orangehrmsha}  orangehrm-${DISTVER}.zip" ]; then
+checksha=$(sha1sum orangehrm-${distVer}.zip)
+if [ "${checksha}" = "${orangehrmsha}  orangehrm-${distVer}.zip" ]; then
 /bin/echo "Download checks out."
 else
 /bin/echo "SHA check failed. The downloaded file is not what was expected."
@@ -37,22 +37,22 @@ fi
 
 if [ $InkGet_Method != "ZJZ" ]; then
   # Set it as the new package
-  /bin/rm -f ${CVAPPNAME}.legacy.txz
-  /usr/bin/touch ${CVAPPNAME}.txz
-  /bin/mv ${CVAPPNAME}.txz ${CVAPPNAME}.legacy.txz
+  /bin/rm -f ${cVappName}.legacy.txz
+  /usr/bin/touch ${cVappName}.txz
+  /bin/mv ${cVappName}.txz ${cVappName}.legacy.txz
 fi
 /usr/bin/echo "Extracting from vendor..."
-/usr/bin/unzip -q orangehrm-${DISTVER}.zip
-/bin/rm orangehrm-${DISTVER}.zip
-/bin/mv orangehrm-${DISTVER} ${CVAPPNAME}
+/usr/bin/unzip -q orangehrm-${distVer}.zip
+/bin/rm orangehrm-${distVer}.zip
+/bin/mv orangehrm-${distVer} ${cVappName}
 /bin/rm orangehrm-quick-start-guide.html
 if [ $InkGet_Method != "ZJZ" ]; then
-  /opt/verb/serfs/txzin ${CVAPPNAME}; wait
-  /bin/rm -rf ${CVAPPNAME}
+  /opt/verb/serfs/txzin ${cVappName}; wait
+  /bin/rm -rf ${cVappName}
 
   # Make a record of current version
-  /bin/echo "${DISTVER}" > ${CVAPPNAME}.ver.${DISTVER}
+  /bin/echo "${distVer}" > ${cVappName}.ver.${distVer}
 fi
 
 # Finish
-/bin/echo "Downloaded OrangeHRM v${DISTVER}."
+/bin/echo "Downloaded OrangeHRM v${distVer}."

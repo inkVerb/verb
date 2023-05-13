@@ -13,7 +13,7 @@
 ## ./installnextcloud bestdbase bestdbuser besteverpass
 
 
-CVAPPNAME=nextcloud
+cVappName=nextcloud
 
 # Include the configs
 . /opt/verb/conf/servernameip
@@ -23,16 +23,16 @@ CVAPPNAME=nextcloud
 
 # Check if already installed
 ## Config
-if [ -f /opt/verb/conf/vapp.${CVAPPNAME} ]; then
+if [ -f /opt/verb/conf/vapp.${cVappName} ]; then
 /bin/echo "This is already installed."
 exit 0; fi
 ## Directory
-if [ -d /srv/www/vapps/${CVAPPNAME} ]; then
+if [ -d /srv/www/vapps/${cVappName} ]; then
 /bin/echo "Nextcloud already exists in the system. If it isn't working, look deeper on the server. For now, doing nothing."
 exit 8; fi
 
 # Auto database
-CLEANNAME=$(/bin/echo $CVAPPNAME | sed -e 's/\.//g')
+CLEANNAME=$(/bin/echo $cVappName | sed -e 's/\.//g')
 if [ -z ${3} ]; then
 DBPASSWORD=$(/usr/bin/pwgen -s -1 10)
 else
@@ -51,13 +51,13 @@ fi
 
 # Download as webapp
 cd /srv/www/vapps || exit 6
-/opt/verb/serfs/inkget ${CVAPPNAME} check
+/opt/verb/serfs/inkget ${cVappName} check
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 ## Install it
-/opt/verb/serfs/setvapplinkon ${CVAPPNAME}; wait
+/opt/verb/serfs/setvapplinkon ${cVappName}; wait
 /usr/bin/mkdir -p /srv/www/vapps/nextcloud/data
-/bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}; wait
+/bin/chown -R www:www /srv/www/vapps/${cVappName}; wait
 /bin/chown -R www:www /srv/www/verb/blue; wait
 
 # Create the database and credentials
@@ -69,7 +69,7 @@ FLUSH PRIVILEGES;"
 # Write the config for backup
 /bin/echo "APPDBASE=${DBASE}
 APPDDBUSR=${DBUSER}
-APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.${CVAPPNAME}
+APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.${cVappName}
 
 # php-fpm
 /usr/bin/mkdir -p /var/run/nextcloud
@@ -151,7 +151,7 @@ case ${InkCerted} in
     /bin/echo "Nextcloud is currently using Snakeoil certs, ready for inkCert"
   ;;
   *)
-    if ! /bin/grep -q "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN}; then
+    if ! /bin/grep -q "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
       /bin/echo "Something's wrong with the inkCert siteinkcert configs! Aborting"
       exit 6
     else
@@ -203,7 +203,7 @@ EOF
 /opt/verb/serfs/inkvmailsysnextcloud
 
 # Verify ownership
-/bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}; wait
+/bin/chown -R www:www /srv/www/vapps/${cVappName}; wait
 
 # Set up bg jobs cron
 ## Nextcloud background jobs (manage the crontab files directly)

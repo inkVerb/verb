@@ -42,15 +42,15 @@ if [ -z "$1" ]; then
 fi
 
 # Domain
-DOMAIN="$1"
+domain="$1"
 
 # Already existing check
-if [ ! -f "/opt/verb/conf/inkdns/sdns/s.${DOMAIN}" ]; then
-  /bin/echo "No SDNS configuration for ${DOMAIN}, I quit."; exit 0
+if [ ! -f "/opt/verb/conf/inkdns/sdns/s.${domain}" ]; then
+  /bin/echo "No SDNS configuration for ${domain}, I quit."; exit 0
 fi
 
 # Display the info
-. /opt/verb/conf/inkdns/sdns/s.${DOMAIN}
+. /opt/verb/conf/inkdns/sdns/s.${domain}
 
 echo "Domain: ${sdnsDomain}
 IPv4: ${sdnsIPv4}

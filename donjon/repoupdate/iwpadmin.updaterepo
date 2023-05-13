@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #inkVerb! repo donjon dragon, verb.ink
 #set -e
 
@@ -17,36 +17,36 @@ if [ -z $1 ]; then
 exit 8; fi
 
 IWPEMAIL=$1
-CVAPPNAME=iwpadmin
+cVappName=iwpadmin
 # Include the config files
 . /opt/verb/conf/serverinkget
 . /opt/verb/conf/inklists/repoverlist
-DISTVER="${iwpadmin}"
+distVer="${iwpadmin}"
 
 if [ $InkGet_Method != "ZJZ" ]; then
   cd /opt/verb/repo; fi
 
 # Check current version
-for VERFILE in ${CVAPPNAME}.ver.*; do
-if [ "${DISTVER}" -le "$(cat ${VERFILE})" ]; then
+for VERFILE in ${cVappName}.ver.*; do
+if [ "${distVer}" -le "$(cat ${VERFILE})" ]; then
 /bin/echo "Current version in repo is up to date. Nothing to do."
 exit 0; fi; done
 
 # Announce
-/bin/echo "Updating the InfiniteWP-Admin package to v${DISTVER}..."
+/bin/echo "Updating the InfiniteWP-Admin package to v${distVer}..."
 
 # Get the package
 /usr/bin/wget https://infinitewp.com/iwp-admin-panel-download.php?installedEmail=${IWPEMAIL}
 # Fix the package
-/bin/mv iwp-admin-panel-download.php?installedEmail=${IWPEMAIL} iwpadmin-${DISTVER}.zip
-if [ ! -f "iwpadmin-${DISTVER}.zip" ]; then
-/bin/echo "Failed download."; touch "${CVAPPNAME}.failed"
+/bin/mv iwp-admin-panel-download.php?installedEmail=${IWPEMAIL} iwpadmin-${distVer}.zip
+if [ ! -f "iwpadmin-${distVer}.zip" ]; then
+/bin/echo "Failed download."; touch "${cVappName}.failed"
 exit 4; else
-/bin/rm -f ${CVAPPNAME}.failed; fi
+/bin/rm -f ${cVappName}.failed; fi
 ## Check the hash
 ### Every download is different, can't be checked
-#CHECKSHA=$(shasum -a 256 iwpadmin-${DISTVER}.zip)
-#if [ "${CHECKSHA}" = "${iwpadminsha}  iwpadmin-${DISTVER}.zip" ]; then
+#checksha=$(shasum -a 256 iwpadmin-${distVer}.zip)
+#if [ "${checksha}" = "${iwpadminsha}  iwpadmin-${distVer}.zip" ]; then
 #/bin/echo "Download checks out."
 #else
 #/bin/echo "SHA check failed. The downloaded file is not what was expected. Did you set both the IWPAdmin version AND the IWPAdmin SHA per instructions?"
@@ -55,21 +55,21 @@ exit 4; else
 
 if [ $InkGet_Method != "ZJZ" ]; then
   # Set it as the new package
-  /bin/rm -f ${CVAPPNAME}.legacy.txz
-  /usr/bin/touch ${CVAPPNAME}.txz
-  /bin/mv ${CVAPPNAME}.txz ${CVAPPNAME}.legacy.txz
+  /bin/rm -f ${cVappName}.legacy.txz
+  /usr/bin/touch ${cVappName}.txz
+  /bin/mv ${cVappName}.txz ${cVappName}.legacy.txz
 fi
 /usr/bin/echo "Extracting from vendor..."
-/usr/bin/unzip -q iwpadmin-${DISTVER}.zip
-/bin/rm iwpadmin-${DISTVER}.zip
-/bin/mv IWPAdminPanel_v${DISTVER} ${CVAPPNAME}
+/usr/bin/unzip -q iwpadmin-${distVer}.zip
+/bin/rm iwpadmin-${distVer}.zip
+/bin/mv IWPAdminPanel_v${distVer} ${cVappName}
 if [ $InkGet_Method != "ZJZ" ]; then
-  /opt/verb/serfs/txzin ${CVAPPNAME}; wait
-  /bin/rm -rf ${CVAPPNAME}
+  /opt/verb/serfs/txzin ${cVappName}; wait
+  /bin/rm -rf ${cVappName}
 
   # Make a record of current version
-  /bin/echo "${DISTVER}" > ${CVAPPNAME}.ver.${DISTVER}
+  /bin/echo "${distVer}" > ${cVappName}.ver.${distVer}
 fi
 
 # Finish
-/bin/echo "Downloaded InfiniteWP-Admin v${DISTVER}."
+/bin/echo "Downloaded InfiniteWP-Admin v${distVer}."

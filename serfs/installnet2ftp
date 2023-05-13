@@ -8,7 +8,7 @@
 ## ./installvsftpd
 
 
-CVAPPNAME=net2ftp
+cVappName=net2ftp
 
 # Include the configs
 . /opt/verb/conf/servernameip
@@ -22,11 +22,11 @@ fi
 
 # Download and unpack
 cd /srv/www/vapps || exit 6
-/opt/verb/serfs/inkget ${CVAPPNAME} check; wait
+/opt/verb/serfs/inkget ${cVappName} check; wait
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
-/opt/verb/serfs/setvapplinkon ${CVAPPNAME}; wait
-/bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}; wait
+/opt/verb/serfs/setvapplinkon ${cVappName}; wait
+/bin/chown -R www:www /srv/www/vapps/${cVappName}; wait
 /bin/chown -R www:www /srv/www/verb/vip.net2ftp; wait
 
 # Settings

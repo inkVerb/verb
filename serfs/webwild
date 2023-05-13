@@ -8,7 +8,7 @@
 ## ./webwild off [domain.tld or subdomain.domain.tld]
 
 
-DOMAIN=$2
+domain=$2
 
 . /opt/verb/conf/servertype
 
@@ -16,54 +16,54 @@ if [ "$1" = "on" ]; then
 
 	if [ ${ServerType} = "lemp" ]; then
 		# Check to see if "fixwildcard" has already been added
-		if /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf; then
+		if /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf; then
 			/bin/systemctl restart nginx; wait
-			/bin/echo "${DOMAIN} already has the wildcard subdomain fix. The server was just reloaded so the site should work."
+			/bin/echo "${domain} already has the wildcard subdomain fix. The server was just reloaded so the site should work."
 		else
 
 			# Adjust the server_name line
-			/bin/sed -i "s/server_name ${DOMAIN};/server_name ${DOMAIN} *.${DOMAIN};/" /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf
+			/bin/sed -i "s/server_name ${domain};/server_name ${domain} *.${domain};/" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
 
 			# Then add the fix config line
 			/bin/echo "##INKWILDFIX=fixed
-	" >> /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf
+	" >> /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
 			/bin/systemctl restart nginx; wait
 
-			/bin/echo "${DOMAIN} now has wildcard subdomain fix for subdomains and is ready to go."
+			/bin/echo "${domain} now has wildcard subdomain fix for subdomains and is ready to go."
 		fi
 
 	elif [ ${ServerType} = "lamp" ]; then
 		# Check to see if "fixwildcard" has already been added
-		if /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf; then
+		if /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf; then
 		/usr/bin/systemctl restart httpd
-			/bin/echo "${DOMAIN} already has the wildcard subdomain fix. The server was just reloaded so the site should work."
+			/bin/echo "${domain} already has the wildcard subdomain fix. The server was just reloaded so the site should work."
 		else
 
 			# Add the config line
-			/bin/sed -i "s/ServerName ${DOMAIN}/ServerName ${DOMAIN}\n  ServerAlias *.${DOMAIN}/" /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
+			/bin/sed -i "s/ServerName ${domain}/ServerName ${domain}\n  ServerAlias *.${domain}/" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
 
 			# Then add the fix config line.
 			/bin/echo "##INKWILDFIX=fixed
-	" >> /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
+	" >> /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
 			/usr/bin/systemctl restart httpd
 
-			/bin/echo "${DOMAIN} now has wildcard subdomain fix for subdomains and is ready to go."
+			/bin/echo "${domain} now has wildcard subdomain fix for subdomains and is ready to go."
 		fi
 
 	elif [ ${ServerType} = "laemp" ]; then
 		# Apache
 		## Check to see if "fixwildcard" has already been added
-		if /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf; then
+		if /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf; then
 		/usr/bin/systemctl restart httpd
-			/bin/echo "${DOMAIN} already has the wildcard subdomain fix. The server was just reloaded so the site should work."
+			/bin/echo "${domain} already has the wildcard subdomain fix. The server was just reloaded so the site should work."
 		else
 
 			## Add the config line
-			/bin/sed -i "s/ServerName ${DOMAIN}/ServerName ${DOMAIN}\n  ServerAlias *.${DOMAIN}/" /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
+			/bin/sed -i "s/ServerName ${domain}/ServerName ${domain}\n  ServerAlias *.${domain}/" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
 
 			## Then add the fix config line.
 			/bin/echo "##INKWILDFIX=fixed
-	" >> /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
+	" >> /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
 			/usr/bin/systemctl restart httpd; wait
 
 			justfixedhttpd="true"
@@ -71,17 +71,17 @@ if [ "$1" = "on" ]; then
 		fi
 	  # Nginx
 		## Check to see if "fixwildcard" has already been added
-		if /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf; then
+		if /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf; then
 			/bin/systemctl restart nginx; wait
-			/bin/echo "${DOMAIN} already has the wildcard subdomain fix. The server was just reloaded so the site should work."
+			/bin/echo "${domain} already has the wildcard subdomain fix. The server was just reloaded so the site should work."
 		else
 
 			## Adjust the server_name line
-			/bin/sed -i "s/server_name ${DOMAIN};/server_name ${DOMAIN} *.${DOMAIN};/" /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf
+			/bin/sed -i "s/server_name ${domain};/server_name ${domain} *.${domain};/" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
 
 			## Then add the fix config line
 			/bin/echo "##INKWILDFIX=fixed
-	" >> /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf
+	" >> /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
 			/bin/systemctl restart nginx; wait
 
 			justfixednginx="true"
@@ -90,9 +90,9 @@ if [ "$1" = "on" ]; then
 
 		# Finish
 		if [ "$justfixedhttpd" = "true" ] && [ "$justfixednginx" = "true" ]; then
-			/bin/echo "${DOMAIN} now has wildcard subdomain fix for subdomains and is ready to go."
+			/bin/echo "${domain} now has wildcard subdomain fix for subdomains and is ready to go."
 		else
-			/bin/echo "${DOMAIN} wildcard fix is half-ready at most, something's wrong."
+			/bin/echo "${domain} wildcard fix is half-ready at most, something's wrong."
 		fi
 
 	fi
@@ -101,44 +101,44 @@ elif [ "$1" = "off" ]; then
 
 	if [ ${ServerType} = "lemp" ]; then
 		# Verify that the "fixwildcard" has been added
-		if ! /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf; then
-			/bin/echo "${DOMAIN} doesn't have the wildcard subdomain fix. Nothing to do."
+		if ! /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf; then
+			/bin/echo "${domain} doesn't have the wildcard subdomain fix. Nothing to do."
 		else
 
 			# Remove the old settings
-			/bin/sed -i "s/server_name ${DOMAIN}.*/server_name ${DOMAIN};/" /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf
-			/bin/sed -i '/##INKWILDFIX/d' /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf
+			/bin/sed -i "s/server_name ${domain}.*/server_name ${domain};/" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
+			/bin/sed -i '/##INKWILDFIX/d' /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
 			/bin/systemctl restart nginx; wait
 
 			# Finish
-			/bin/echo "${DOMAIN} the wildcard subdomain fix has been removed."
+			/bin/echo "${domain} the wildcard subdomain fix has been removed."
 		fi
 
 	elif [ ${ServerType} = "lamp" ]; then
 		# Verify that the "fixwildcard" has been added
-		if ! /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf; then
-			/bin/echo "${DOMAIN} doesn't have the wildcard subdomain fix. Nothing to do."
+		if ! /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf; then
+			/bin/echo "${domain} doesn't have the wildcard subdomain fix. Nothing to do."
 		else
 
 			# Remove the old settings
-			/bin/sed -i "/ServerAlias \*.${DOMAIN}/d" /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
-			/bin/sed -i '/##INKWILDFIX/d' /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
+			/bin/sed -i "/ServerAlias \*.${domain}/d" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
+			/bin/sed -i '/##INKWILDFIX/d' /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
 			/usr/bin/systemctl restart httpd
 
 			# Finish
-			/bin/echo "${DOMAIN} the wildcard subdomain fix has been removed."
+			/bin/echo "${domain} the wildcard subdomain fix has been removed."
 		fi
 
 	elif [ ${ServerType} = "laemp" ]; then
 		# Apache
 		## Verify that the "fixwildcard" has been added
-		if ! /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf; then
-			/bin/echo "${DOMAIN} doesn't have the wildcard subdomain fix. Nothing to do."
+		if ! /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf; then
+			/bin/echo "${domain} doesn't have the wildcard subdomain fix. Nothing to do."
 		else
 
 			## Remove the old settings
-			/bin/sed -i "/ServerAlias \*.${DOMAIN}/d" /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
-			/bin/sed -i '/##INKWILDFIX/d' /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
+			/bin/sed -i "/ServerAlias \*.${domain}/d" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
+			/bin/sed -i '/##INKWILDFIX/d' /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
 			/usr/bin/systemctl restart httpd
 
 			justfixedhttpd="true"
@@ -146,13 +146,13 @@ elif [ "$1" = "off" ]; then
 		fi
 		# Nginx
 		## Verify that the "fixwildcard" has been added
-		if ! /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf; then
-			/bin/echo "${DOMAIN} doesn't have the wildcard subdomain fix. Nothing to do."
+		if ! /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf; then
+			/bin/echo "${domain} doesn't have the wildcard subdomain fix. Nothing to do."
 		else
 
 			# Remove the old settings
-			/bin/sed -i "s/server_name ${DOMAIN}.*/server_name ${DOMAIN};/" /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf
-			/bin/sed -i '/##INKWILDFIX/d' /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf
+			/bin/sed -i "s/server_name ${domain}.*/server_name ${domain};/" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
+			/bin/sed -i '/##INKWILDFIX/d' /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
 			/bin/systemctl restart nginx; wait
 
 			justfixednginx="true"
@@ -161,9 +161,9 @@ elif [ "$1" = "off" ]; then
 
 		# Finish
 		if [ "$justfixedhttpd" = "true" ] && [ "$justfixednginx" = "true" ]; then
-			/bin/echo "${DOMAIN} the wildcard subdomain fix has been removed."
+			/bin/echo "${domain} the wildcard subdomain fix has been removed."
 		else
-			/bin/echo "${DOMAIN} wildcard fix is half-removed at most, something's wrong."
+			/bin/echo "${domain} wildcard fix is half-removed at most, something's wrong."
 		fi
 
 	fi

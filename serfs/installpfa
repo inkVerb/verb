@@ -34,7 +34,7 @@ if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Mus
 if [ -e "/opt/verb/mods/installpfa.replace" ]; then . /opt/verb/mods/installpfa.replace; return 0; fi # Replaces this script
 if [ -e "/opt/verb/mods/installpfa.before" ]; then . /opt/verb/mods/installpfa.before; fi # Precedes this script
 
-CVAPPNAME="postfixadmin"
+cVappName="postfixadmin"
 
 # Include the config files
 . /opt/verb/conf/servertype
@@ -85,7 +85,7 @@ fi
 
 # Download from repo
 cd /srv/www/email || exit 6
-/opt/verb/serfs/inkget ${CVAPPNAME} check
+/opt/verb/serfs/inkget ${cVappName} check
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 if [ "$?" = 4 ]; then
   /bin/echo "Repo failed to retrieve the file."

@@ -12,7 +12,7 @@
 # How to use:
 ## ./installghostinkblog [emailusername] "[emailpassword]" [new ghost port]
 
-CVAPPNAME=ghost.inkblog
+cVappName=ghost.inkblog
 
 # Include the configs
 . /opt/verb/conf/servernameip
@@ -21,7 +21,7 @@ CVAPPNAME=ghost.inkblog
 EMAILUSER=$1
 EMAILPASS=$2
 NEWPORT=$3
-DOMAIN="i.${inkURI}"
+domain="i.${inkURI}"
 
 # Basic credential check
 if [ -z ${3} ]; then
@@ -58,7 +58,7 @@ npm install --production
 # Set up the Ghost config
 cd /srv/www/ghost/ghostblog || exit 6
 /bin/cp config.example.js config.js
-/bin/sed -i "s/url: 'http:\/\/my-ghost-blog.com'/url: 'http:\/\/${DOMAIN}\/ghost'/g" config.js
+/bin/sed -i "s/url: 'http:\/\/my-ghost-blog.com'/url: 'http:\/\/${domain}\/ghost'/g" config.js
 /bin/sed -i "s/host: '127.0.0.1'/host: '${SITEIP}'/g" config.js
 /bin/sed -i "s/2368/${NEWPORT}/g" config.js
 /bin/sed -i "s/mail: {}/mail: {transport: 'SMTP', options: {host: 'localhost', port: 25, service: 'dovecot', auth: {user: '${EMAILUSER}', pass: '${EMAILPASS}'}}}/g" config.js
@@ -69,15 +69,15 @@ cd /srv/www/ghost/ghostblog || exit 6
 # Reset all permissions
 /bin/rm -f /verb/ink.i/ghost
 /bin/echo "Ghost Site" > /verb/ink.i/ghost
-/bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}.${DOMAIN}
+/bin/chown -R www:www /srv/www/vapps/${cVappName}.${domain}
 
 # Web server
 . /opt/verb/conf/servertype
 if [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf
-  /bin/cp -f /opt/verb/conf/site-files/conf/newnginxghostinkblog.conf /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf
-  /bin/sed -i "s/ghostsite286/${DOMAIN}/g" /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf
-  /bin/sed -i "s/2368/${NEWPORT}/g" /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
+  /bin/cp -f /opt/verb/conf/site-files/conf/newnginxghostinkblog.conf /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
+  /bin/sed -i "s/ghostsite286/${domain}/g" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
+  /bin/sed -i "s/2368/${NEWPORT}/g" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
 elif [ ${ServerType} = "lamp" ]; then
   ## IP4?
   if [ "${ServerIPv4}" != "NOIP4" ]; then
@@ -86,34 +86,34 @@ elif [ ${ServerType} = "lamp" ]; then
   elif [ "${ServerIPv6}" != "NOIP6" ]; then
     SITEIP="[${ServerIPv6}]" # Brackets because we include a port number, and this is the proper format
   fi
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
-  /bin/cp -f /opt/verb/conf/site-files/conf/newghostinkblog.conf /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
-  /bin/sed -i "s/ghostsite286/${DOMAIN}/g" /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
-  /bin/sed -i "s/2368/${NEWPORT}/g" /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
-  /bin/sed -i "s/ipv4286/${SITEIP}/g" /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
+  /bin/cp -f /opt/verb/conf/site-files/conf/newghostinkblog.conf /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
+  /bin/sed -i "s/ghostsite286/${domain}/g" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
+  /bin/sed -i "s/2368/${NEWPORT}/g" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
+  /bin/sed -i "s/ipv4286/${SITEIP}/g" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
 fi
 
 ## inkCert SSL certs
 ### Not setup
-if /bin/grep -Fq "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN}; then
-/bin/echo "FYI: inkCert is not yet setup for ${DOMAIN}."
+if /bin/grep -Fq "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
+/bin/echo "FYI: inkCert is not yet setup for ${domain}."
 fi
 ### inkCert-LE DONE
-if /bin/grep -Fq "InkCerted=DONE_LE" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN}; then
-/bin/echo "inkCert-LE is already setup for ${DOMAIN}. Updating the Apache configs..."
-/opt/verb/serfs/inkcertaddle ${DOMAIN}
+if /bin/grep -Fq "InkCerted=DONE_LE" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
+/bin/echo "inkCert-LE is already setup for ${domain}. Updating the Apache configs..."
+/opt/verb/serfs/inkcertaddle ${domain}
 wait
 fi
 ### inkCert-CBSINGLE DONE
-if /bin/grep -Fq "InkCerted=DONE_CBSINGLE" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN}; then
-/bin/echo "inkCert-CBSINGLE is already setup for ${DOMAIN}. Updating the Apache configs..."
-/opt/verb/serfs/inkcertaddcbsingle ${DOMAIN}
+if /bin/grep -Fq "InkCerted=DONE_CBSINGLE" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
+/bin/echo "inkCert-CBSINGLE is already setup for ${domain}. Updating the Apache configs..."
+/opt/verb/serfs/inkcertaddcbsingle ${domain}
 wait
 fi
 ### inkCert-CB DONE
-if /bin/grep -Fq "InkCerted=DONE_CB" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN}; then
-/bin/echo "inkCert-CB is already setup for ${DOMAIN}. Updating the Apache configs..."
-/opt/verb/serfs/inkcertaddcb ${DOMAIN}
+if /bin/grep -Fq "InkCerted=DONE_CB" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
+/bin/echo "inkCert-CB is already setup for ${domain}. Updating the Apache configs..."
+/opt/verb/serfs/inkcertaddcb ${domain}
 wait
 fi
 
@@ -125,18 +125,18 @@ elif [ ${ServerType} = "lamp" ]; then
 fi
 
 # Make it a service at startup
-/bin/cp /opt/verb/conf/site-files/conf/ghostsite.conf /etc/init/ghostsite-${DOMAIN}.conf
-/bin/sed -i "s/ghostsite/ghostsite-${DOMAIN}/g" /etc/init/ghostsite-${DOMAIN}.conf
-/bin/sed -i "s/ghostdomain286/${DOMAIN}/g" /etc/init/ghostsite-${DOMAIN}.conf
+/bin/cp /opt/verb/conf/site-files/conf/ghostsite.conf /etc/init/ghostsite-${domain}.conf
+/bin/sed -i "s/ghostsite/ghostsite-${domain}/g" /etc/init/ghostsite-${domain}.conf
+/bin/sed -i "s/ghostdomain286/${domain}/g" /etc/init/ghostsite-${domain}.conf
 
 # Write the config for backup
 /bin/echo "#!/bin/bash
 GHOSTPORT=\"${NEWPORT}\"
 GHOSTEMAIL=\"${EMAILUSER}\"
-GHOSTEMLPAS=\"${EMAILPASS}\"" > /opt/verb/conf/vapp.${CVAPPNAME}
+GHOSTEMLPAS=\"${EMAILPASS}\"" > /opt/verb/conf/vapp.${cVappName}
 
 # Record the port in the Ghost port inklist
-/bin/echo "${DOMAIN} ${NEWPORT}" >> /opt/verb/conf/inklists/ghostserverports
+/bin/echo "${domain} ${NEWPORT}" >> /opt/verb/conf/inklists/ghostserverports
 
 # Set the site-wide inkblog config
 /bin/sed -i "s/INKblog=.*/INKblog=\"Ghost\"/g" /opt/verb/conf/inkinksiteinstallstatus
@@ -159,7 +159,7 @@ cd /srv/www/ghost/ghostblog && NODE_ENV=production forever start index.js || exi
 
 # Finish
 /bin/echo "Ghost is setup.
-Go to http://${DOMAIN}/ghost/ghost to install."
+Go to http://${domain}/ghost/ghost to install."
 
 
 

@@ -36,7 +36,7 @@ if [ -e "/opt/verb/mods/inkcertaddallcb.replace" ]; then . /opt/verb/mods/inkcer
 if [ -e "/opt/verb/mods/inkcertaddallcb.before" ]; then . /opt/verb/mods/inkcertaddallcb.before; fi # Precedes this script
 
 
-SITEDOMAIN=$1
+sitedomain=$1
 
 # Check inkCert installed
 if [ "${InkCertInstalled}" = "NOT_YET" ]; then
@@ -53,16 +53,16 @@ if [ -z ${1} ]; then
 fi
 
 # Get each subdomain from the cli-ini file that the domain-subdomain structure was based on from adddomain and newdomainshell
-domainlist=$(/usr/bin/grep 'domains = ' /opt/verb/conf/inkcert/cli-ini/cli.${CERTDOMAIN}.ini | sed 's/domains = //')
+domainlist=$(/usr/bin/grep 'domains = ' /opt/verb/conf/inkcert/cli-ini/cli.${certdomain}.ini | sed 's/domains = //')
 for eachsite in ${domainlist//,/ }; do
 ## Run inkCertAddLE per site config
- /opt/verb/serfs/inkcertaddle ${eachsite} ${CERTDOMAIN}
+ /opt/verb/serfs/inkcertaddle ${eachsite} ${certdomain}
  e="$?"; [[ "$e" = "0" ]] || exit "$e"
 done
 
 #DEV replaced with the above cli-ini script
 # # For the main domain first
-# /opt/verb/serfs/inkcertaddcb ${SITEDOMAIN}
+# /opt/verb/serfs/inkcertaddcb ${sitedomain}
 # wait
 #
 # # For any/all sub-domains
@@ -72,17 +72,17 @@ done
 #   cd /opt/verb/conf/webserver/sites-available/nginx
 # fi
 # ## Get the name of each subdomain .conf file available
-# find . -name "*.${SITEDOMAIN}.conf"|while read findsitesubdomain; do
+# find . -name "*.${sitedomain}.conf"|while read findsitesubdomain; do
 # ## Strip the .conf extension
 #  sitesubdomain=$(basename ${findsitesubdomain} .conf)
 # ## Run inkCertAddLE per site config
-#  /opt/verb/serfs/inkcertaddcb ${sitesubdomain} ${SITEDOMAIN}
+#  /opt/verb/serfs/inkcertaddcb ${sitesubdomain} ${sitedomain}
 # wait
 # done
 
 # Finish
 /bin/echo "
-Done. ${SITEDOMAIN} certs installed for ${SITEDOMAIN}.
+Done. ${sitedomain} certs installed for ${sitedomain}.
 "
 
 

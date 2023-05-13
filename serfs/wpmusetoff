@@ -12,20 +12,20 @@
 ## ./wpmusetoff mysubsite.inkisaverb.com
 
 
-WPDOMAIN=$1
+wpdomain=$1
 
 # Check if already set
-if /bin/grep -Fq "define( 'WP_ALLOW_MULTISITE', true );" /srv/www/html/${WPDOMAIN}/wp-config.php; then
+if /bin/grep -Fq "define( 'WP_ALLOW_MULTISITE', true );" /srv/www/html/${wpdomain}/wp-config.php; then
 /bin/echo "Proceeding..."; else
 /bin/echo "Multisite isn't even set, dufis. Set it on with: wpmuseton"
 exit 8; fi
 
 # Delete the lines
-/bin/sed -i "/* Multisite via inkVerb */d" /srv/www/html/${WPDOMAIN}/wp-config.php
-/bin/sed -i "/define( 'WP_ALLOW_MULTISITE', true );/d" /srv/www/html/${WPDOMAIN}/wp-config.php
+/bin/sed -i "/* Multisite via inkVerb */d" /srv/www/html/${wpdomain}/wp-config.php
+/bin/sed -i "/define( 'WP_ALLOW_MULTISITE', true );/d" /srv/www/html/${wpdomain}/wp-config.php
 
 # Finish
-/bin/echo "WP Multisite for http://${WPDOMAIN} is now disabled."
+/bin/echo "WP Multisite for http://${wpdomain} is now disabled."
 
 
 

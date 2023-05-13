@@ -42,11 +42,11 @@ if [ -z "$3" ]; then
 fi
 
 # Domain
-DOMAIN="$1"
+domain="$1"
 
 # Already existing check
-if [ -f "/opt/verb/conf/inkdns/sdns/s.${DOMAIN}" ]; then
-  /bin/echo "SDNS configuration for ${DOMAIN} already exists; doing nothing."; exit 0
+if [ -f "/opt/verb/conf/inkdns/sdns/s.${domain}" ]; then
+  /bin/echo "SDNS configuration for ${domain} already exists; doing nothing."; exit 0
 fi
 
 # IP4 ARPA
@@ -148,8 +148,8 @@ SIPV6CMP=$(compress_ipv6 ${SIPV6})
 SIPV6ARPA=$(rarpa_ipv6 ${SIPV6EXP})
 
 ## Create the config
-/usr/bin/cat <<EOF > /opt/verb/conf/inkdns/sdns/s.${DOMAIN}
-sdnsDomain="${DOMAIN}"
+/usr/bin/cat <<EOF > /opt/verb/conf/inkdns/sdns/s.${domain}
+sdnsDomain="${domain}"
 sdnsIPv4="${SIPV4}"
 sdnsIPv4ARPA="${SIPV4ARPA}"
 sdnsIPv6Exp="${SIPV6EXP}"
@@ -161,7 +161,7 @@ EOF
 /opt/verb/serfs/inkdnsrefreshbind
 
 # Finish
-/bin/echo "${DOMAIN} added to this DNS slave server."
+/bin/echo "${domain} added to this DNS slave server."
 
 
 

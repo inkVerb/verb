@@ -38,9 +38,9 @@ if [ -e "/opt/verb/mods/installwp.replace" ]; then . /opt/verb/mods/installwp.re
 if [ -e "/opt/verb/mods/installwp.before" ]; then . /opt/verb/mods/installwp.before; fi # Precedes this script
 
 
-CVAPPNAME=wp
+cVappName=wp
 
-DOMAIN=$1
+domain=$1
 DBASE=$2
 DBUSER=$3
 DBPASSWORD=$4
@@ -52,23 +52,23 @@ if [ -z ${1} ]; then
 exit 8; fi
 # Check if already installed
 ## Config
-if [ -f /opt/verb/conf/vapp.${CVAPPNAME}.${DOMAIN} ]; then
+if [ -f /opt/verb/conf/vapp.${cVappName}.${domain} ]; then
 /bin/echo "This is already installed."
 exit 0; fi
 ## Directory
-if [ -d /srv/www/vapps/${CVAPPNAME}.${DOMAIN} ]; then
+if [ -d /srv/www/vapps/${cVappName}.${domain} ]; then
 /bin/echo "That WordPress site already exists in the system. If it isn't working, look deeper on the server. For now, doing nothing."
 exit 0; fi
 
 # Domain presence check
-if [ ! -d "/srv/www/domains/${DOMAIN}" ]; then
-/opt/verb/serfs/adddomain ${DOMAIN}
+if [ ! -d "/srv/www/domains/${domain}" ]; then
+/opt/verb/serfs/adddomain ${domain}
 wait
 fi
 
 # Download and establish wordpress in the server to pre-created domain
 cd /srv/www/vapps || exit 6
-/opt/verb/serfs/inkget ${CVAPPNAME} check
+/opt/verb/serfs/inkget ${cVappName} check
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 # Auto database
@@ -79,12 +79,12 @@ DBASE=wp$(/bin/echo $CLEANNAME | cut -c1-24)$(/usr/bin/pwgen -s -1 6); fi
 if [ -z ${3} ]; then
 DBUSER=${DBASE}; fi
 
-/bin/mv ${CVAPPNAME} ${CVAPPNAME}.${DOMAIN}
-/bin/rm -f /srv/www/html/${DOMAIN}
-/bin/ln -sfn /srv/www/vapps/${CVAPPNAME}.${DOMAIN} /srv/www/html/${DOMAIN}
-/bin/ln -sfn /srv/www/vapps/${CVAPPNAME}.${DOMAIN} /srv/vip/_webapps/; wait
-/bin/chown -R www:www /srv/www/html/${DOMAIN}; wait
-/bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}.${DOMAIN}; wait
+/bin/mv ${cVappName} ${cVappName}.${domain}
+/bin/rm -f /srv/www/html/${domain}
+/bin/ln -sfn /srv/www/vapps/${cVappName}.${domain} /srv/www/html/${domain}
+/bin/ln -sfn /srv/www/vapps/${cVappName}.${domain} /srv/vip/_webapps/; wait
+/bin/chown -R www:www /srv/www/html/${domain}; wait
+/bin/chown -R www:www /srv/www/vapps/${cVappName}.${domain}; wait
 
 # Create the database and credentials
 /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
@@ -96,32 +96,32 @@ FLUSH PRIVILEGES;"
 /bin/echo "#!/bin/bash
 APPDBASE=${DBASE}
 APPDDBUSR=${DBUSER}
-APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.${CVAPPNAME}.${DOMAIN}
+APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.${cVappName}.${domain}
 
 # Put the settings in the WordPress config file
-cd wp.${DOMAIN} || exit 6
+cd wp.${domain} || exit 6
 /bin/cp wp-config-sample.php wp-config.php
 /bin/sed -i "s/database_name_here/${DBASE}/g" wp-config.php
 /bin/sed -i "s/username_here/${DBUSER}/g" wp-config.php
 /bin/sed -i "s/password_here/${DBPASSWORD}/g" wp-config.php
 /bin/echo "
 /** inkVerb Sets the URL */
-define( 'WP_SITEURL', 'https://${DOMAIN}' );
-define( 'WP_HOME', 'https://${DOMAIN}' );" >> wp-config.php
+define( 'WP_SITEURL', 'https://${domain}' );
+define( 'WP_HOME', 'https://${domain}' );" >> wp-config.php
 
 # Add the secure salt and key strings
-/opt/verb/serfs/setsecurewp ${DOMAIN}
+/opt/verb/serfs/setsecurewp ${domain}
 
 #### fixhttps already done?
-if /bin/grep -q '##INKHTTPSFIX=fixed' /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf; then
-/bin/sed -i "/WP_SITEURL/d" /srv/www/vapps/wp.${DOMAIN}/wp-config.php
-/bin/sed -i "/WP_HOME/d" /srv/www/vapps/wp.${DOMAIN}/wp-config.php
-/bin/echo "define( 'WP_SITEURL', 'https://${DOMAIN}' );
-define( 'WP_HOME', 'https://${DOMAIN}' );" >> /srv/www/vapps/wp.${DOMAIN}/wp-config.php
+if /bin/grep -q '##INKHTTPSFIX=fixed' /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf; then
+/bin/sed -i "/WP_SITEURL/d" /srv/www/vapps/wp.${domain}/wp-config.php
+/bin/sed -i "/WP_HOME/d" /srv/www/vapps/wp.${domain}/wp-config.php
+/bin/echo "define( 'WP_SITEURL', 'https://${domain}' );
+define( 'WP_HOME', 'https://${domain}' );" >> /srv/www/vapps/wp.${domain}/wp-config.php
 fi
 
 # Reset all permissions and restart webserver
-/bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}.${DOMAIN}
+/bin/chown -R www:www /srv/www/vapps/${cVappName}.${domain}
 . /opt/verb/conf/servertype
 if [ ${ServerType} = "lemp" ]; then
   /usr/bin/systemctl restart nginx
@@ -138,9 +138,9 @@ if [ -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
 fi
 if [ "${InkDriveWP}" != "off" ]; then
   /usr/bin/echo "Mounting 'wp-content' to a drive..."
-  /opt/verb/serfs/inkdriveapp "${CVAPPNAME}.${DOMAIN}" "${InkDriveWP}"
+  /opt/verb/serfs/inkdriveapp "${cVappName}.${domain}" "${InkDriveWP}"
   if [ "$?" = 0 ]; then
-    /usr/bin/echo "InkDrive=\"${InkDriveWP}\"" >> /opt/verb/conf/vapp.${CVAPPNAME}.${DOMAIN}
+    /usr/bin/echo "InkDrive=\"${InkDriveWP}\"" >> /opt/verb/conf/vapp.${cVappName}.${domain}
   fi
 fi
 
@@ -151,7 +151,7 @@ Database: ${DBASE}
 Database user: ${DBUSER}
 Database password: ${DBPASSWORD}
 
-Go to http://${DOMAIN}/wp-admin/index.php to install.
+Go to http://${domain}/wp-admin/index.php to install.
 "
 
 

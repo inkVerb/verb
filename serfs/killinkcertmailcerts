@@ -41,16 +41,16 @@ fi
 # Include the config
 . /opt/verb/conf/siteurilist
 
-DOMAIN="$1"
+domain="$1"
 
 # Make sure we don't kill a verb domain
-if /bin/grep -q "${DOMAIN}" /opt/verb/conf/siteurilist; then
+if /bin/grep -q "${domain}" /opt/verb/conf/siteurilist; then
   /usr/bin/echo "Can't kill a verber domain, I quit."; exit 9
 fi
 
 # Remove the inkCert-LE certs if they exist, otherwise use Snakeoil
-/bin/rm -f /etc/ssl/server/mail/${DOMAIN}.crt
-/bin/rm -f /etc/ssl/server/mail/${DOMAIN}.key
+/bin/rm -f /etc/ssl/server/mail/${domain}.crt
+/bin/rm -f /etc/ssl/server/mail/${domain}.key
 
 
 

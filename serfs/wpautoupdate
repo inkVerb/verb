@@ -9,16 +9,16 @@
 ## ./wpautoupdate [full domain of WP site]
 
 
-DOMAIN=$1
+domain=$1
 
 # Copy the folder
-/bin/cp -R /opt/verb/conf/lib/mu-plugins /srv/www/html/${DOMAIN}/wp-content
+/bin/cp -R /opt/verb/conf/lib/mu-plugins /srv/www/html/${domain}/wp-content
 
 # Own
-/bin/chown -R www:www /srv/www/html/${DOMAIN}/wp-content/mu-plugins
+/bin/chown -R www:www /srv/www/html/${domain}/wp-content/mu-plugins
 
 # Finished
-/bin/echo "inkVerb Auto-Update added to ${DOMAIN}. No further action is necessary."
+/bin/echo "inkVerb Auto-Update added to ${domain}. No further action is necessary."
 
 
 

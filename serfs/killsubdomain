@@ -33,40 +33,40 @@ if [ -e "/opt/verb/mods/killsubdomain.replace" ]; then . /opt/verb/mods/killsubd
 if [ -e "/opt/verb/mods/killsubdomain.before" ]; then . /opt/verb/mods/killsubdomain.before; fi # Precedes this script
 
 
-KILLSUB=$1
-KILLDOMAIN=$2
-KILLSUBDOMAIN=${KILLSUB}.${KILLDOMAIN}
+killsub=$1
+killdomain=$2
+killsubdomain=${killsub}.${killdomain}
 
 # Remove server configs and restart
 . /opt/verb/conf/servertype
 if [ ${ServerType} = "lemp" ]; then
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${KILLSUBDOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/nginx/${KILLSUBDOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${killsubdomain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/nginx/${killsubdomain}.conf
   /usr/bin/systemctl restart nginx
 elif [ ${ServerType} = "lamp" ]; then
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${KILLSUBDOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/${KILLSUBDOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${killsubdomain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/${killsubdomain}.conf
   /usr/bin/systemctl restart httpd
 elif [ ${ServerType} = "laemp" ]; then
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${KILLSUBDOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/${KILLSUBDOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${KILLSUBDOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/nginx/${KILLSUBDOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${killsubdomain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/${killsubdomain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${killsubdomain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/nginx/${killsubdomain}.conf
   /usr/bin/systemctl restart httpd
   /usr/bin/systemctl restart nginx
 fi
 
 # Remove from inkCert
-/bin/sed -i "s/, ${KILLSUBDOMAIN}//g" /opt/verb/conf/inkcert/cli-ini/cli.${KILLDOMAIN}.ini
+/bin/sed -i "s/, ${killsubdomain}//g" /opt/verb/conf/inkcert/cli-ini/cli.${killdomain}.ini
 
 # Remove http folder symlinks
-/bin/rm -f /srv/www/html/${KILLSUBDOMAIN}
+/bin/rm -f /srv/www/html/${killsubdomain}
 
 # inkDNS entry
-/opt/verb/serfs/killinkdnssub ${KILLSUB} ${KILLDOMAIN}
+/opt/verb/serfs/killinkdnssub ${killsub} ${killdomain}
 
 # Finish
-/bin/echo "${KILLSUBDOMAIN} has been removed. But, the folder in www/domains still exists for a VIP to access."
+/bin/echo "${killsubdomain} has been removed. But, the folder in www/domains still exists for a VIP to access."
 
 
 

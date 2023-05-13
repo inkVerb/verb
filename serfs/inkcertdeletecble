@@ -37,20 +37,20 @@ if [ -e "/opt/verb/mods/inkcertdeletecble.replace" ]; then . /opt/verb/mods/inkc
 if [ -e "/opt/verb/mods/inkcertdeletecble.before" ]; then . /opt/verb/mods/inkcertdeletecble.before; fi # Precedes this script
 
 
-DOMAIN=$1
+domain=$1
 
 # Include and check the inkCert domain config
 ## Verify that the domain is installed
-if [ ! -f /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN} ]; then
-/bin/echo "Sorry, Bucko. ${DOMAIN} is not even installed.
+if [ ! -f /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain} ]; then
+/bin/echo "Sorry, Bucko. ${domain} is not even installed.
 
 Why revoke a cert for a domain that isn't even installed here?
 "; exit 0
 fi
 ## Domain cert status
-. /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN}
+. /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}
 if [ "${InkCerted}" = "DONE_LE" ] || [ "${InkCerted}" = "DONE_CB" ] || [ "${InkCerted}" = "DONE_CBSINGLE" ]; then
-/bin/echo "Certs present for ${DOMAIN}, removing them..."
+/bin/echo "Certs present for ${domain}, removing them..."
 else
 /bin/echo "This only removes SSL certificates set up using Letsencrypt or Certbot.
 
@@ -59,25 +59,25 @@ Such certs aren't set up using those. You'll need a different tool for this job.
 fi
 
 # Remove archive on the server
-if [ -d /etc/inkcert/le/archive/${DOMAIN}/ ]; then
-/bin/echo "Removing the archive for ${DOMAIN}..."
-shred -f -x /etc/inkcert/le/archive/${DOMAIN}/*
-/bin/rm -rf /etc/inkcert/le/archive/${DOMAIN}/
+if [ -d /etc/inkcert/le/archive/${domain}/ ]; then
+/bin/echo "Removing the archive for ${domain}..."
+shred -f -x /etc/inkcert/le/archive/${domain}/*
+/bin/rm -rf /etc/inkcert/le/archive/${domain}/
 else
-/bin/echo "Archive for ${DOMAIN} not found. Nothing here to remove. All set."
+/bin/echo "Archive for ${domain} not found. Nothing here to remove. All set."
 fi
 
 # Remove live keys on the server
-if [ -d /etc/inkcert/le/live/${DOMAIN}/ ]; then
-/bin/echo "Removing the live keys for ${DOMAIN}..."
-/bin/rm -rf /etc/inkcert/le/live/${DOMAIN}/
+if [ -d /etc/inkcert/le/live/${domain}/ ]; then
+/bin/echo "Removing the live keys for ${domain}..."
+/bin/rm -rf /etc/inkcert/le/live/${domain}/
 else
-/bin/echo "Live keys for ${DOMAIN} not found. Nothing here to remove. All set."
+/bin/echo "Live keys for ${domain} not found. Nothing here to remove. All set."
 fi
 
 # Remove renewal config on the server
-/bin/echo "Removing the renewal config for ${DOMAIN}..."
-/bin/rm -f /etc/inkcert/le/renewal/${DOMAIN}.conf
+/bin/echo "Removing the renewal config for ${domain}..."
+/bin/rm -f /etc/inkcert/le/renewal/${domain}.conf
 
 # Echo alliswell
 /bin/echo "Unless there is an error message above, the certs should have been revoked from the CA, now uninstall them..."

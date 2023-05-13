@@ -9,7 +9,7 @@
 ## ./webhttps off [domain.tld or subdomain.domain.tld]
 
 
-DOMAIN=$2
+domain=$2
 
 . /opt/verb/conf/servertype
 
@@ -18,77 +18,77 @@ if [ "$1" = "on" ]; then
 	if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
 		# Nginx
 		## Check to see if "fixhttps" has already been added
-		if /bin/grep -q "##INKHTTPSFIX=fixed" /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf; then
+		if /bin/grep -q "##INKHTTPSFIX=fixed" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf; then
 			/bin/systemctl restart nginx; wait
-			/bin/echo "${DOMAIN} already has the https fix. The server was just reloaded so the site should work."
+			/bin/echo "${domain} already has the https fix. The server was just reloaded so the site should work."
 		else
-			if [ -f "/opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf.verbhttpsfixed" ]; then
+			if [ -f "/opt/verb/conf/webserver/sites-available/httpd/${domain}.conf.verbhttpsfixed" ]; then
 				/bin/echo "Something is wrong. The backup file for this https fix exists, but the config does not have the settings."
 				exit 6
 			fi
 
 			## Then set the new config if it doesn't.
 			### Back up the http declaration and remove it (this way, the actual Apache file stays small, without loads of commented lines)
-			/bin/sed -n '/##inkHTTPstart/,/##inkHTTPstop/p' /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf > /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf.verbhttpsfixed
-			/bin/sed -i '/^##inkHTTPstart/,/^##inkHTTPstop/{/^##inkHTTPstart/!{/^##inkHTTPstop/!d}}' /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf
-			/bin/sed -i '/##inkHTTPstart/d' /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf
-			/bin/sed -i 's/##inkHTTPstop/##inkHTTPremoved/' /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf
+			/bin/sed -n '/##inkHTTPstart/,/##inkHTTPstop/p' /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf > /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf.verbhttpsfixed
+			/bin/sed -i '/^##inkHTTPstart/,/^##inkHTTPstop/{/^##inkHTTPstart/!{/^##inkHTTPstop/!d}}' /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
+			/bin/sed -i '/##inkHTTPstart/d' /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
+			/bin/sed -i 's/##inkHTTPstop/##inkHTTPremoved/' /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
 			### Add the new lines
 			/bin/echo "##INKHTTPSFIX=fixed
 	# Fixes https
 	server {
 	  listen 80;
 	  listen [::]:80;
-	  server_name ${DOMAIN};
+	  server_name ${domain};
 
 	  return 301 https://\$host\$request_uri;
 	}
-	##verbFIXhttps" >> /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf
+	##verbFIXhttps" >> /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
 			/bin/systemctl restart nginx; wait
 
-			/bin/echo "${DOMAIN} now redirects all http traffic to SSL-secure https."
+			/bin/echo "${domain} now redirects all http traffic to SSL-secure https."
 		fi
 
 	elif [ ${ServerType} = "lamp" ]; then
 		# Check to see if "fixhttps" has already been added
-		if /bin/grep -q "##INKHTTPSFIX=fixed" /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf; then
+		if /bin/grep -q "##INKHTTPSFIX=fixed" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf; then
 			/usr/bin/systemctl restart httpd
-			/bin/echo "${DOMAIN} already has the https fix. The server was just reloaded so the site should work."
+			/bin/echo "${domain} already has the https fix. The server was just reloaded so the site should work."
 		else
-			if [ -f "/opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf.verbhttpsfixed" ]; then
+			if [ -f "/opt/verb/conf/webserver/sites-available/httpd/${domain}.conf.verbhttpsfixed" ]; then
 				/bin/echo "Something is wrong. The backup file for this https fix exists, but the config does not have the settings."
 				exit 6
 			fi
 
 			## Then set the new config if it doesn't.
 			### Back up the http declaration and remove it (this way, the actual Apache file stays small, without loads of commented lines)
-			/bin/sed -n '/##inkHTTPstart/,/##inkHTTPstop/p' /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf > /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf.verbhttpsfixed
-			/bin/sed -i '/^##inkHTTPstart/,/^##inkHTTPstop/{/^##inkHTTPstart/!{/^##inkHTTPstop/!d}}' /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
-			/bin/sed -i '/##inkHTTPstart/d' /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
-			/bin/sed -i 's/##inkHTTPstop/##inkHTTPremoved/' /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
+			/bin/sed -n '/##inkHTTPstart/,/##inkHTTPstop/p' /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf > /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf.verbhttpsfixed
+			/bin/sed -i '/^##inkHTTPstart/,/^##inkHTTPstop/{/^##inkHTTPstart/!{/^##inkHTTPstop/!d}}' /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
+			/bin/sed -i '/##inkHTTPstart/d' /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
+			/bin/sed -i 's/##inkHTTPstop/##inkHTTPremoved/' /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
 			### Add the new lines
 			/bin/echo "##INKHTTPSFIX=fixed
 	# Fixes https
 	<VirtualHost *:80>
-	  ServerName ${DOMAIN}
+	  ServerName ${domain}
 	  RewriteEngine On
 	  RewriteCond %{HTTP_HOST} ^(.*)$ [NC]
 	  RewriteRule ^ https://%1%{REQUEST_URI} [L,NE,R=301]
 	</VirtualHost>
-	##verbFIXhttps" >> /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
+	##verbFIXhttps" >> /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
 			/usr/bin/systemctl restart httpd
 
-			/bin/echo "${DOMAIN} now redirects all http traffic to SSL-secure https."
+			/bin/echo "${domain} now redirects all http traffic to SSL-secure https."
 		fi
 
 	fi
 
 	# WordPress?
-	if [ -d "/srv/www/vapps/wp.${DOMAIN}" ]; then
-		/bin/sed -i "/WP_SITEURL/d" /srv/www/vapps/wp.${DOMAIN}/wp-config.php
-		/bin/sed -i "/WP_HOME/d" /srv/www/vapps/wp.${DOMAIN}/wp-config.php
-		/bin/echo "define( 'WP_SITEURL', 'https://${DOMAIN}' );
-		define( 'WP_HOME', 'https://${DOMAIN}' );" >> /srv/www/vapps/wp.${DOMAIN}/wp-config.php
+	if [ -d "/srv/www/vapps/wp.${domain}" ]; then
+		/bin/sed -i "/WP_SITEURL/d" /srv/www/vapps/wp.${domain}/wp-config.php
+		/bin/sed -i "/WP_HOME/d" /srv/www/vapps/wp.${domain}/wp-config.php
+		/bin/echo "define( 'WP_SITEURL', 'https://${domain}' );
+		define( 'WP_HOME', 'https://${domain}' );" >> /srv/www/vapps/wp.${domain}/wp-config.php
 	fi
 
 elif [ "$1" = "off" ]; then
@@ -96,65 +96,65 @@ elif [ "$1" = "off" ]; then
 	if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
 	  # Nginx
 		## Verify that it has been fixed
-	  if /bin/grep -q "##INKHTTPSFIX=fixed" /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf; then
+	  if /bin/grep -q "##INKHTTPSFIX=fixed" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf; then
 
 	    # Replace it with the original file
 	    ## From the original file
-	    /bin/sed -i "/##inkHTTPremoved/r /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf.verbhttpsfixed" /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf
+	    /bin/sed -i "/##inkHTTPremoved/r /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf.verbhttpsfixed" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
 
 	    ## Remove the old marker
-	    /bin/sed -i '/##inkHTTPremoved/d' /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf
+	    /bin/sed -i '/##inkHTTPremoved/d' /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
 
 	    ## Remove the old settings
-	    /bin/sed -i '/^##INKHTTPSFIX=fixed/,/^##verbFIXhttps/{/^##INKHTTPSFIX=fixed/!{/^##verbFIXhttps/!d}}' /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf
-	    /bin/sed -i '/##INKHTTPSFIX=fixed/d' /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf
-	    /bin/sed -i '/##verbFIXhttps/d' /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf
-	    /bin/rm /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf.verbhttpsfixed
+	    /bin/sed -i '/^##INKHTTPSFIX=fixed/,/^##verbFIXhttps/{/^##INKHTTPSFIX=fixed/!{/^##verbFIXhttps/!d}}' /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
+	    /bin/sed -i '/##INKHTTPSFIX=fixed/d' /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
+	    /bin/sed -i '/##verbFIXhttps/d' /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
+	    /bin/rm /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf.verbhttpsfixed
 
 	    /bin/systemctl restart nginx; wait
 
 	  else
-	    /bin/echo "${DOMAIN} doesn't have the https fix. Doing nothing."
+	    /bin/echo "${domain} doesn't have the https fix. Doing nothing."
 	    exit 0
 	  fi
 
 	elif [ ${ServerType} = "lamp" ]; then
 	  # Verify that it has been fixed
-	  if /bin/grep -q "##INKHTTPSFIX=fixed" /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf; then
+	  if /bin/grep -q "##INKHTTPSFIX=fixed" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf; then
 
 	    # Replace it with the original file
 	    ## From the original file
-	    /bin/sed -i "/##inkHTTPremoved/r /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf.verbhttpsfixed" /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
+	    /bin/sed -i "/##inkHTTPremoved/r /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf.verbhttpsfixed" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
 
 	    ## Remove the old marker
-	    /bin/sed -i '/##inkHTTPremoved/d' /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
+	    /bin/sed -i '/##inkHTTPremoved/d' /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
 
 	    ## Remove the old settings
-	    /bin/sed -i '/^##INKHTTPSFIX=fixed/,/^##verbFIXhttps/{/^##INKHTTPSFIX=fixed/!{/^##verbFIXhttps/!d}}' /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
-	    /bin/sed -i '/##INKHTTPSFIX=fixed/d' /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
-	    /bin/sed -i '/##verbFIXhttps/d' /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
+	    /bin/sed -i '/^##INKHTTPSFIX=fixed/,/^##verbFIXhttps/{/^##INKHTTPSFIX=fixed/!{/^##verbFIXhttps/!d}}' /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
+	    /bin/sed -i '/##INKHTTPSFIX=fixed/d' /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
+	    /bin/sed -i '/##verbFIXhttps/d' /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
 
 	    ## Put the original settings back
-	    /bin/cat /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf.verbhttpsfixed >> /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf
-	    /bin/rm /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf.verbhttpsfixed
+	    /bin/cat /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf.verbhttpsfixed >> /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
+	    /bin/rm /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf.verbhttpsfixed
 
 	    /bin/systemctl restart httpd; wait
 	  else
-	    /bin/echo "${DOMAIN} doesn't have the https fix. Doing nothing."
+	    /bin/echo "${domain} doesn't have the https fix. Doing nothing."
 	    exit 0
 	  fi
 
 	fi
 
 	# Finish
-	/bin/echo "${DOMAIN} now accepts http traffic."
+	/bin/echo "${domain} now accepts http traffic."
 
 	# WordPress?
-	if [ -d "/srv/www/vapps/wp.${DOMAIN}" ]; then
-	  /bin/sed -i "/WP_SITEURL/d" /srv/www/vapps/wp.${DOMAIN}/wp-config.php
-	  /bin/sed -i "/WP_HOME/d" /srv/www/vapps/wp.${DOMAIN}/wp-config.php
-	  /bin/echo "define( 'WP_SITEURL', 'http://${DOMAIN}' );
-	  define( 'WP_HOME', 'http://${DOMAIN}' );" >> /srv/www/vapps/wp.${DOMAIN}/wp-config.php
+	if [ -d "/srv/www/vapps/wp.${domain}" ]; then
+	  /bin/sed -i "/WP_SITEURL/d" /srv/www/vapps/wp.${domain}/wp-config.php
+	  /bin/sed -i "/WP_HOME/d" /srv/www/vapps/wp.${domain}/wp-config.php
+	  /bin/echo "define( 'WP_SITEURL', 'http://${domain}' );
+	  define( 'WP_HOME', 'http://${domain}' );" >> /srv/www/vapps/wp.${domain}/wp-config.php
 	fi
 
 fi

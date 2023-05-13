@@ -12,9 +12,9 @@
 ## ./installiwpadmin [sub.domain.tld or domain.tld] [email for registration] [directory of domain.tld/directory] [dbase] [dbuser] [dbpassword]
 
 
-CVAPPNAME=iwpadmin
+cVappName=iwpadmin
 
-DOMAIN=$1
+domain=$1
 REMAIL=$2
 DIRECTORY=$3
 DBASE=$4
@@ -23,7 +23,7 @@ DBPASSWORD=$6
 CLEANNAME=$(/bin/echo $DOMAIN | sed -e 's/\.//g')
 
 # Check that the directory doesn't already exist
-if [ -d /srv/www/html/${DOMAIN}/${DIRECTORY} ]; then
+if [ -d /srv/www/html/${domain}/${DIRECTORY} ]; then
 /bin/echo "That directory already exists for that domain. Choose a different directory."
 exit 8; fi
 
@@ -43,7 +43,7 @@ exit 8; fi
 
 # Download and establish IWPAdmin in the server to pre-created domain
 cd /srv/www/vapps || exit 6
-/opt/verb/serfs/inkget ${CVAPPNAME} check
+/opt/verb/serfs/inkget ${cVappName} check
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 ## Auto options
@@ -56,9 +56,9 @@ DBASE=iwp$(/bin/echo $CLEANNAME | cut -c1-23)$(/usr/bin/pwgen -s -1 5); fi
 if [ -z ${5} ]; then
 DBUSER=${DBASE}; fi
 
-/bin/mv ${CVAPPNAME} ${DOMAIN}
-/bin/mv ${CVAPPNAME} ${CVAPPNAME}.${DOMAIN}
-/bin/ln -sfn /srv/www/vapps/${CVAPPNAME}.${DOMAIN} /srv/www/html/${DOMAIN}/${DIRECTORY}
+/bin/mv ${cVappName} ${domain}
+/bin/mv ${cVappName} ${cVappName}.${domain}
+/bin/ln -sfn /srv/www/vapps/${cVappName}.${domain} /srv/www/html/${domain}/${DIRECTORY}
 
 # Create the database and credentials
 /usr/bin/mysql --login-path=local -e "
@@ -71,12 +71,12 @@ FLUSH PRIVILEGES;"
 APPDBASE=${DBASE}
 APPDDBUSR=${DBUSER}
 APPDDBPAS=${DBPASSWORD}
-IWPADMIN_DIRECTORY=\"${DIRECTORY}\"" > /opt/verb/conf/vapp.${CVAPPNAME}.${DOMAIN}
+IWPADMIN_DIRECTORY=\"${DIRECTORY}\"" > /opt/verb/conf/vapp.${cVappName}.${domain}
 
 # Reset all permissions
-/bin/chown -R www:www /srv/www/html/${DOMAIN}/${DIRECTORY}; wait
+/bin/chown -R www:www /srv/www/html/${domain}/${DIRECTORY}; wait
 
-/bin/echo "${DOMAIN} now has the InfiniteWP Admin Panel.
+/bin/echo "${domain} now has the InfiniteWP Admin Panel.
 These are setup:
 
 Database: ${DBASE}
@@ -84,7 +84,7 @@ Database user: ${DBUSER}
 Database password: ${DBPASSWORD}
 Database port / prefix: DO NOT CHANGE
 
-Go to http://${DOMAIN}/${DIRECTORY} to install.
+Go to http://${domain}/${DIRECTORY} to install.
 "
 
 

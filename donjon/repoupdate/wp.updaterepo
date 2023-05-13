@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #inkVerb! repo donjon dragon, verb.ink
 #set -e
 
@@ -8,7 +8,7 @@
 ## ./wordpress.updaterepo
 
 
-CVAPPNAME=wp
+cVappName=wp
 # Include the config files
 . /opt/verb/conf/serverinkget
 
@@ -22,15 +22,15 @@ if [ $InkGet_Method != "ZJZ" ]; then
 /bin/rm -rf latest.tar.gz
 /usr/bin/wget https://wordpress.org/latest.tar.gz
 if [ ! -f "latest.tar.gz" ]; then
-/bin/echo "Failed download."; touch "${CVAPPNAME}.failed"
+/bin/echo "Failed download."; touch "${cVappName}.failed"
 exit 4; else
-/bin/rm -f ${CVAPPNAME}.failed; fi
+/bin/rm -f ${cVappName}.failed; fi
 ## Check the hash
 /bin/rm -rf latest.tar.gz.sha1
 /usr/bin/wget https://wordpress.org/latest.tar.gz.sha1
-CHECKSHA=$(sha1sum latest.tar.gz)
+checksha=$(sha1sum latest.tar.gz)
 READSHA=$(cat latest.tar.gz.sha1)
-if [ "${CHECKSHA}" = "${READSHA}  latest.tar.gz" ]; then
+if [ "${checksha}" = "${READSHA}  latest.tar.gz" ]; then
 /bin/echo "Download checks out."
 /bin/rm latest.tar.gz.sha1
 else
@@ -40,18 +40,18 @@ fi
 
 if [ $InkGet_Method != "ZJZ" ]; then
   # Set it as the new package
-  /bin/rm -f ${CVAPPNAME}.legacy.txz
-  /usr/bin/touch ${CVAPPNAME}.txz
-  /bin/mv ${CVAPPNAME}.txz ${CVAPPNAME}.legacy.txz
+  /bin/rm -f ${cVappName}.legacy.txz
+  /usr/bin/touch ${cVappName}.txz
+  /bin/mv ${cVappName}.txz ${cVappName}.legacy.txz
 fi
 /usr/bin/echo "Extracting from vendor..."
 /usr/bin/tar xf latest.tar.gz
 /bin/rm latest.tar.gz
 ## Note: "wordpress" goes by the nickname "wp" here
-/bin/mv wordpress ${CVAPPNAME}
+/bin/mv wordpress ${cVappName}
 if [ $InkGet_Method != "ZJZ" ]; then
-  /opt/verb/serfs/txzin ${CVAPPNAME}; wait
-  /bin/rm -rf ${CVAPPNAME}
+  /opt/verb/serfs/txzin ${cVappName}; wait
+  /bin/rm -rf ${cVappName}
 fi
 
 # Finish

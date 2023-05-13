@@ -38,14 +38,14 @@
 # Include config
 . /opt/verb/conf/inkcert/csr-inf/csr.${INFPROFILE}.inf
 
-DOMAIN=$1
+domain=$1
 COMMONNAME=$2
 INFPROFILE=$3
 PASSPHRASE=$(/usr/bin/pwgen -s -1 105)
 
 # Verify that the domain is installed
-if [ ! -f /opt/verb/conf/inkcert/cli-ini/siteinkcert-${DOMAIN} ]; then
-/bin/echo "Sorry, Bucko. ${DOMAIN} is not installed yet.
+if [ ! -f /opt/verb/conf/inkcert/cli-ini/siteinkcert-${domain} ]; then
+/bin/echo "Sorry, Bucko. ${domain} is not installed yet.
 
 Do that first, then get back to me.
 "; exit 0
@@ -54,41 +54,41 @@ fi
 # Make the SSL key & CSR (if they don't exist already)
 cd /etc/inkcert || exit 6
 ## Key
-if [ ! -d /etc/inkcert/csr/${DOMAIN} ]; then
-/bin/mkdir csr/${DOMAIN}
+if [ ! -d /etc/inkcert/csr/${domain} ]; then
+/bin/mkdir csr/${domain}
 fi
-if [ ! -f /etc/inkcert/csr/${DOMAIN}/${DOMAIN}.key.pem ]; then
-/bin/rm -rf /etc/inkcert/csr/${DOMAIN}/*
-/bin/echo "${PASSPHRASE}" > /etc/inkcert/csr/${DOMAIN}/pemfraez
+if [ ! -f /etc/inkcert/csr/${domain}/${domain}.key.pem ]; then
+/bin/rm -rf /etc/inkcert/csr/${domain}/*
+/bin/echo "${PASSPHRASE}" > /etc/inkcert/csr/${domain}/pemfraez
 /bin/chmod 600 pemfraez
-/bin/echo "Generating keys for ${DOMAIN}"
-/usr/bin/openssl genrsa -des3 -out csr/${DOMAIN}/${DOMAIN}.key.pem -passout pass:/etc/inkcert/csr/${DOMAIN}/pemfraez 2048
-/bin/chmod 600 csr/${DOMAIN}/${DOMAIN}.key.pem
+/bin/echo "Generating keys for ${domain}"
+/usr/bin/openssl genrsa -des3 -out csr/${domain}/${domain}.key.pem -passout pass:/etc/inkcert/csr/${domain}/pemfraez 2048
+/bin/chmod 600 csr/${domain}/${domain}.key.pem
 else
 /bin/echo "This key already exists. So, renewing the cert and creating links to the verb/req and vip/req folders for renewal...
 (To remove it and have a new cert, use you must revoke the old key and cert with inkcertrevoke or inkcertundo)
 "
 fi
 ## CSR
-if [ -f /etc/inkcert/csr/${DOMAIN}/${DOMAIN}.csr.pem ]; then
-/bin/rm -f csr/${DOMAIN}/${DOMAIN}.key.pem
+if [ -f /etc/inkcert/csr/${domain}/${domain}.csr.pem ]; then
+/bin/rm -f csr/${domain}/${domain}.key.pem
 fi
 /bin/echo "Creating CSR..."
 /usr/bin/openssl req -config client/openssl.cnf \
-	-key csr/${DOMAIN}/${DOMAIN}.key.pem \
-	-new -sha256 -out csr/${DOMAIN}/${DOMAIN}.csr.pem \
-	-passin pass:/etc/inkcert/csr/${DOMAIN}/pemfraez \
+	-key csr/${domain}/${domain}.key.pem \
+	-new -sha256 -out csr/${domain}/${domain}.csr.pem \
+	-passin pass:/etc/inkcert/csr/${domain}/pemfraez \
 	-subj "/C=${COUNTRY}/ST=${STATE}/L=${LOCALITY}/O=${ORGANIZATION}/OU=${ORGANIZATIONALUNIT}/CN=${COMMONNAME}/emailAddress=${EMAIL}/unstructuredName=${COMPANYNAME}/"
 
 # Link to accessible folder at verb/req and vip/req
-/bin/ln -s /etc/inkcert/csr/${DOMAIN}/${DOMAIN}.key.pem /etc/inkcert/req/
-/bin/ln -s /etc/inkcert/csr/${DOMAIN}/${DOMAIN}.csr.pem /etc/inkcert/req/
+/bin/ln -s /etc/inkcert/csr/${domain}/${domain}.key.pem /etc/inkcert/req/
+/bin/ln -s /etc/inkcert/csr/${domain}/${domain}.csr.pem /etc/inkcert/req/
 
 # Finish
 /bin/echo "
-All wrapped-up, key and csr for ${DOMAIN} be waitin' in verb/req/ and vip/req/ fer ye with ${INFPROFILE} info, cap'n.
+All wrapped-up, key and csr for ${domain} be waitin' in verb/req/ and vip/req/ fer ye with ${INFPROFILE} info, cap'n.
 
-If you plan to give your csr to another Authority than inkCert, you will need: 1. their Root CA & Intermediate CA certificate chain file, 2. your domain's CA-signed certificate named \"${DOMAIN}.cert.pem\", and 3. all three of these PEM encoded files!
+If you plan to give your csr to another Authority than inkCert, you will need: 1. their Root CA & Intermediate CA certificate chain file, 2. your domain's CA-signed certificate named \"${domain}.cert.pem\", and 3. all three of these PEM encoded files!
 "
 
 

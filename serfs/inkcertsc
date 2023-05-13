@@ -14,7 +14,7 @@
 ## ./inkcertsc somesub.inkisaverb.com
 
 
-DOMAIN="${1}"
+domain="${1}"
 
 # Include the configs
 . /opt/verb/conf/servernameip
@@ -31,8 +31,8 @@ exit 0; fi
 # Create the CA root key
 ## Note: omitting options like "-aes256" or "-des3" because they instruct openssl to encrypt the key with a passphrase, causing a prompt
 cd /etc/inkcert/sc/ca || exit 6
-/usr/bin/openssl genrsa -out priv/ca.${DOMAIN}.key.pem 4096
-/bin/chmod 400 priv/ca.${DOMAIN}.key.pem
+/usr/bin/openssl genrsa -out priv/ca.${domain}.key.pem 4096
+/bin/chmod 400 priv/ca.${domain}.key.pem
 
 # CA Subject details:
 country="US"
@@ -48,9 +48,9 @@ commonname="${nameURI}"
 ## Note: "-nodes" means there will be no password prompt
 cd /etc/inkcert/sc/ca || exit 6
 /usr/bin/openssl req -config /opt/verb/conf/inkcert/sc-ca-openssl.cnf \
-	-key priv/ca.${DOMAIN}.key.pem \
+	-key priv/ca.${domain}.key.pem \
 	-new -nodes -x509 -days 3650 -sha256 -extensions v3_ca \
-	-out certs/ca.${DOMAIN}.cert.pem
+	-out certs/ca.${domain}.cert.pem
 	-subj "/C=$country/ST=$state/L=$locality/O=$organization/OU=$organizationalunit/CN=$commonname/emailAddress=$email/unstructuredName=$companyname/"
 /bin/chmod 444 certs/ca.cert.pem
 
@@ -59,8 +59,8 @@ cd /etc/inkcert/sc/ca || exit 6
 # Create the intermediate key
 ## Note: omitting options like "-aes256" or "-des3" because they instruct openssl to encrypt the key with a passphrase, causing a prompt
 cd /etc/inkcert/sc/intrm || exit 6
-/usr/bin/openssl genrsa -out priv/intrm.${DOMAIN}.key.pem 4096
-/bin/chmod 400 priv/intrm.${DOMAIN}.key.pem
+/usr/bin/openssl genrsa -out priv/intrm.${domain}.key.pem 4096
+/bin/chmod 400 priv/intrm.${domain}.key.pem
 
 # Intermediate Subject details:
 country="US"
@@ -75,9 +75,9 @@ commonname="serve.${nameURI}"
 # Create the intermediate cert CSR
 cd /etc/inkcert/sc/intrm || exit 6
 /usr/bin/openssl req -config /opt/verb/conf/inkcert/sc-intrm-openssl.cnf \
-	-key priv/intrm.${DOMAIN}.key.pem \
+	-key priv/intrm.${domain}.key.pem \
 	-new -nodes -sha256
-	-out csr/intrm.${DOMAIN}.csr.pem
+	-out csr/intrm.${domain}.csr.pem
 	-subj "/C=$country/ST=$state/L=$locality/O=$organization/OU=$organizationalunit/CN=$commonname/emailAddress=$email/unstructuredName=$companyname/"
 
 # Sign the intermediate cert
@@ -85,27 +85,27 @@ cd /etc/inkcert/sc/intrm || exit 6
 cd /etc/inkcert/sc/ca || exit 6
 /usr/bin/openssl ca -config /opt/verb/conf/inkcert/sc-ca-openssl.cnf \
 	-extensions v3_intermediate_ca \
-	-CA /etc/inkcert/sc/ca/certs/ca.${DOMAIN}.cert.pem \
-	-CAkey /etc/inkcert/sc/ca/priv/ca.${DOMAIN}.key.pem \
+	-CA /etc/inkcert/sc/ca/certs/ca.${domain}.cert.pem \
+	-CAkey /etc/inkcert/sc/ca/priv/ca.${domain}.key.pem \
 	-days 3650 -notext -md sha256 \
-	-in /etc/inkcert/sc/intrm/csr/intrm.${DOMAIN}.csr.pem \
-	-out /etc/inkcert/sc/intrm/certs/intrm.${DOMAIN}.cert.pem
-/bin/chmod 444 /etc/inkcert/sc/intrm/certs/intrm.${DOMAIN}.cert.pem
+	-in /etc/inkcert/sc/intrm/csr/intrm.${domain}.csr.pem \
+	-out /etc/inkcert/sc/intrm/certs/intrm.${domain}.cert.pem
+/bin/chmod 444 /etc/inkcert/sc/intrm/certs/intrm.${domain}.cert.pem
 
 # Verify the signed intermediate cert
-/usr/bin/openssl verify -CAfile /etc/inkcert/sc/ca/certs/ca.cert.pem /etc/inkcert/sc/intrm/certs/intrm.${DOMAIN}.cert.pem
+/usr/bin/openssl verify -CAfile /etc/inkcert/sc/ca/certs/ca.cert.pem /etc/inkcert/sc/intrm/certs/intrm.${domain}.cert.pem
 
 # Create the intermediate chain
-/bin/cat /etc/inkcert/sc/intrm/certs/intrm.${DOMAIN}.cert.pem /etc/inkcert/sc/ca/certs/ca.${DOMAIN}.cert.pem > /etc/inkcert/sc/intrm/certs/ca-intrm.${DOMAIN}.chain.cert.pem
-/bin/chmod 444 /etc/inkcert/sc/intrm/certs/ca-intrm.${DOMAIN}.chain.cert.pem
+/bin/cat /etc/inkcert/sc/intrm/certs/intrm.${domain}.cert.pem /etc/inkcert/sc/ca/certs/ca.${domain}.cert.pem > /etc/inkcert/sc/intrm/certs/ca-intrm.${domain}.chain.cert.pem
+/bin/chmod 444 /etc/inkcert/sc/intrm/certs/ca-intrm.${domain}.chain.cert.pem
 
 # Client #
 
 # Create the client key
 ## Note: omitting options like "-aes256" or "-des3" because they instruct openssl to encrypt the key with a passphrase, causing a prompt
 cd /etc/inkcert/sc/cli || exit 6
-/usr/bin/openssl genrsa -out priv/${DOMAIN}.key.pem 2048
-/bin/chmod 400 priv/${DOMAIN}.key.pem
+/usr/bin/openssl genrsa -out priv/${domain}.key.pem 2048
+/bin/chmod 400 priv/${domain}.key.pem
 
 # Client Subject details:
 country="US"
@@ -115,52 +115,52 @@ organization="inkVerb Verber @ ${nameURI}"
 organizationalunit="inkCert Self-Cert"
 email="certmaster@${nameURI}"
 companyname="This is an autocert, not from another company."
-commonname="${DOMAIN}"
+commonname="${domain}"
 
 # Create the client CSR
 cd /etc/inkcert/sc/cli || exit 6
 /usr/bin/openssl req -config /opt/verb/conf/inkcert/sc-intrm-openssl.cnf \
-	-key priv/cli.${DOMAIN}.key.pem \
+	-key priv/cli.${domain}.key.pem \
 	-new -sha256 \
-	-out csr/cli.${DOMAIN}.csr.pem \
+	-out csr/cli.${domain}.csr.pem \
 	-subj "/C=$country/ST=$state/L=$locality/O=$organization/OU=$organizationalunit/CN=$commonname/emailAddress=$email/unstructuredName=$companyname/"
 
 # Sign the client cert
 cd /etc/inkcert/sc/intrm || exit 6
 /usr/bin/openssl ca -config /opt/verb/conf/inkcert/sc-intrm-openssl.cnf \
 	-extensions server_cert \
-	-CA /etc/inkcert/sc/intrm/certs/intrm.${DOMAIN}.cert.pem \
-	-CAkey /etc/inkcert/sc/intrm/priv/intrm.${DOMAIN}.key.pem \
+	-CA /etc/inkcert/sc/intrm/certs/intrm.${domain}.cert.pem \
+	-CAkey /etc/inkcert/sc/intrm/priv/intrm.${domain}.key.pem \
 	-days 3650 -notext -md sha256 \
-	-in /etc/inkcert/sc/cli/csr/cli.${DOMAIN}.csr.pem \
-	-out /etc/inkcert/sc/cli/certs/cli.${DOMAIN}.cert.pem
-/bin/chmod 444 /etc/inkcert/sc/cli/certs/cli.${DOMAIN}.cert.pem
+	-in /etc/inkcert/sc/cli/csr/cli.${domain}.csr.pem \
+	-out /etc/inkcert/sc/cli/certs/cli.${domain}.cert.pem
+/bin/chmod 444 /etc/inkcert/sc/cli/certs/cli.${domain}.cert.pem
 
 # Verify the signed intermediate cert
-/usr/bin/openssl verify -CAfile /etc/inkcert/sc/intrm/certs/ca-intrm.${DOMAIN}.chain.cert.pem /etc/inkcert/sc/cli/certs/cli.${DOMAIN}.cert.pem
+/usr/bin/openssl verify -CAfile /etc/inkcert/sc/intrm/certs/ca-intrm.${domain}.chain.cert.pem /etc/inkcert/sc/cli/certs/cli.${domain}.cert.pem
 
 # Create the full chain (CA - Intrm - Cli)
-/bin/cat /etc/inkcert/sc/cli/certs/cli.${DOMAIN}.cert.pem /etc/inkcert/sc/intrm/certs/ca-intrm.${DOMAIN}.chain.cert.pem > /etc/inkcert/sc/cli/certs/full.${DOMAIN}.chain.cert.pem
-/bin/chmod 444 /etc/inkcert/sc/cli/certs/full.${DOMAIN}.chain.cert.pem
+/bin/cat /etc/inkcert/sc/cli/certs/cli.${domain}.cert.pem /etc/inkcert/sc/intrm/certs/ca-intrm.${domain}.chain.cert.pem > /etc/inkcert/sc/cli/certs/full.${domain}.chain.cert.pem
+/bin/chmod 444 /etc/inkcert/sc/cli/certs/full.${domain}.chain.cert.pem
 
 # Delete the roots
-/bin/rm /etc/inkcert/sc/ca/priv/ca.${DOMAIN}.key.pem
-/bin/rm /etc/inkcert/sc/intrm/priv/intrm.${DOMAIN}.key.pem
-/bin/rm /etc/inkcert/sc/intrm/certs/intrm.${DOMAIN}.cert.pem
+/bin/rm /etc/inkcert/sc/ca/priv/ca.${domain}.key.pem
+/bin/rm /etc/inkcert/sc/intrm/priv/intrm.${domain}.key.pem
+/bin/rm /etc/inkcert/sc/intrm/certs/intrm.${domain}.cert.pem
 
 # Publish the root cert
-/bin/mv /etc/inkcert/sc/ca/certs/ca.${DOMAIN}.cert.pem /etc/inkcert/sc/rcinst/${DOMAIN}.rootcert.pem
+/bin/mv /etc/inkcert/sc/ca/certs/ca.${domain}.cert.pem /etc/inkcert/sc/rcinst/${domain}.rootcert.pem
 
 # Deploy to the server
-/bin/mv /etc/inkcert/sc/intrm/certs/ca-intrm.${DOMAIN}.chain.cert.pem /etc/inkcert/sc/pub/${DOMAIN}.chain.cert.pem
-/bin/mv /etc/inkcert/sc/cli/certs/full.${DOMAIN}.chain.cert.pem /etc/inkcert/sc/pub/${DOMAIN}.fullchain.cert.pem
-/bin/mv /etc/inkcert/sc/cli/certs/cli.${DOMAIN}.cert.pem /etc/inkcert/sc/pub/${DOMAIN}.cert.pem
-/bin/mv /etc/inkcert/sc/cli/priv/cli.${DOMAIN}.key.pem /etc/inkcert/sc/keys/${DOMAIN}.key.pem
-/bin/mkdir -p /etc/inkcert/sc/live/${DOMAIN}
-/bin/ln -sfn /etc/inkcert/sc/pub/${DOMAIN}.fullchain.cert.pem /etc/inkcert/sc/live/${DOMAIN}/fullchain.cert.pem
-/bin/ln -sfn /etc/inkcert/sc/pub/${DOMAIN}.chain.cert.pem /etc/inkcert/sc/live/${DOMAIN}/chain.cert.pem
-/bin/ln -sfn /etc/inkcert/sc/pub/${DOMAIN}.cert.pem /etc/inkcert/sc/live/${DOMAIN}/cert.pem
-/bin/ln -sfn /etc/inkcert/sc/keys/${DOMAIN}.key.pem /etc/inkcert/sc/live/${DOMAIN}/key.pem
+/bin/mv /etc/inkcert/sc/intrm/certs/ca-intrm.${domain}.chain.cert.pem /etc/inkcert/sc/pub/${domain}.chain.cert.pem
+/bin/mv /etc/inkcert/sc/cli/certs/full.${domain}.chain.cert.pem /etc/inkcert/sc/pub/${domain}.fullchain.cert.pem
+/bin/mv /etc/inkcert/sc/cli/certs/cli.${domain}.cert.pem /etc/inkcert/sc/pub/${domain}.cert.pem
+/bin/mv /etc/inkcert/sc/cli/priv/cli.${domain}.key.pem /etc/inkcert/sc/keys/${domain}.key.pem
+/bin/mkdir -p /etc/inkcert/sc/live/${domain}
+/bin/ln -sfn /etc/inkcert/sc/pub/${domain}.fullchain.cert.pem /etc/inkcert/sc/live/${domain}/fullchain.cert.pem
+/bin/ln -sfn /etc/inkcert/sc/pub/${domain}.chain.cert.pem /etc/inkcert/sc/live/${domain}/chain.cert.pem
+/bin/ln -sfn /etc/inkcert/sc/pub/${domain}.cert.pem /etc/inkcert/sc/live/${domain}/cert.pem
+/bin/ln -sfn /etc/inkcert/sc/keys/${domain}.key.pem /etc/inkcert/sc/live/${domain}/key.pem
 
 
 

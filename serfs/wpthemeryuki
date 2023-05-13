@@ -7,22 +7,22 @@
 ## ./wpthemeryuki [domain.tld or folder]
 
 
-DOMAIN=$1
+domain=$1
 
 
 # Check if installed
-if [ ! -d /srv/www/html/${DOMAIN}/wp-content ]; then
- if [ ! -d /srv/www/html/${DOMAIN} ]; then
- /bin/echo "${DOMAIN} is not even installed. That domain needs to be installed and have WordPress. Do those, then try again."
+if [ ! -d /srv/www/html/${domain}/wp-content ]; then
+ if [ ! -d /srv/www/html/${domain} ]; then
+ /bin/echo "${domain} is not even installed. That domain needs to be installed and have WordPress. Do those, then try again."
  exit 8
  else
- /bin/echo "${DOMAIN} is installed, but does not have WordPress. Install WordPress to that domain, then try again."
+ /bin/echo "${domain} is installed, but does not have WordPress. Install WordPress to that domain, then try again."
  exit 8
  fi
 fi
 
 # Do the Git clone
-cd /srv/www/html/${DOMAIN}/wp-content/themes || exit 6
+cd /srv/www/html/${domain}/wp-content/themes || exit 6
 git clone https://github.com/cfinke/Ryuki.git
 
 # Finish

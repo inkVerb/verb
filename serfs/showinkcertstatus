@@ -10,13 +10,13 @@
 ## ./showinkcertstatus inkisaverb.com
 
 
-DOMAIN=$1
+domain=$1
 
 # Include the config
-. /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN}
+. /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}
 
 # Display info
-/bin/echo "${DOMAIN} inkCert SSL status: ${InkCerted}"
+/bin/echo "${domain} inkCert SSL status: ${InkCerted}"
 
 
 

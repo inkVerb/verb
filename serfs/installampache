@@ -9,7 +9,7 @@
 ## ./installampache [dbase] [dbuser] [dbpassword]
 
 
-CVAPPNAME=ampache
+cVappName=ampache
 
 # Include the configs
 . /opt/verb/conf/servernameip
@@ -21,18 +21,18 @@ DBPASSWORD=$3
 
 # Install
 cd /srv/www/vapps || exit 6
-/opt/verb/serfs/inkget ${CVAPPNAME} check; wait
+/opt/verb/serfs/inkget ${cVappName} check; wait
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
-/opt/verb/serfs/setvapplinkon ${CVAPPNAME}; wait
+/opt/verb/serfs/setvapplinkon ${cVappName}; wait
 /bin/chown -R www:www /srv/www/verb/kiwi.ampache; wait
-/bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}; wait
+/bin/chown -R www:www /srv/www/vapps/${cVappName}; wait
 
 # Auto database
 if [ -z ${3} ]; then
 DBPASSWORD=$(/usr/bin/pwgen -s -1 10); fi
 if [ -z ${1} ]; then
-DBASE=${CVAPPNAME}$(/usr/bin/pwgen -s -1 6); fi
+DBASE=${cVappName}$(/usr/bin/pwgen -s -1 6); fi
 if [ -z ${2} ]; then
 DBUSER=${DBASE}; fi
 
@@ -55,7 +55,7 @@ FLUSH PRIVILEGES;"
 /bin/echo "#!/bin/bash
 APPDBASE=${DBASE}
 APPDDBUSR=${DBUSER}
-APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.${CVAPPNAME}
+APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.${cVappName}
 
 /bin/echo "These are setup:
 

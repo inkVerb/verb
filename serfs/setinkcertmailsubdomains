@@ -7,7 +7,7 @@
 # How to use:
 ## ./setinkcertmailsubdomains somedomain.tld
 
-DOMAIN="$1"
+domain="$1"
 
 # Include the config
 . /opt/verb/conf/siteurilist
@@ -15,12 +15,12 @@ DOMAIN="$1"
 
 # inkCert
 ## Ensure that you don't get double entries
-/bin/sed -i "s/, mail.${DOMAIN}//g" /opt/verb/conf/inkcert/cli-ini/cli.${DOMAIN}.ini
-/bin/sed -i "s/, smtp.${DOMAIN}//g" /opt/verb/conf/inkcert/cli-ini/cli.${DOMAIN}.ini
-/bin/sed -i "s/, imap.${DOMAIN}//g" /opt/verb/conf/inkcert/cli-ini/cli.${DOMAIN}.ini
-/bin/sed -i "s/, pop3.${DOMAIN}//g" /opt/verb/conf/inkcert/cli-ini/cli.${DOMAIN}.ini
+/bin/sed -i "s/, mail.${domain}//g" /opt/verb/conf/inkcert/cli-ini/cli.${domain}.ini
+/bin/sed -i "s/, smtp.${domain}//g" /opt/verb/conf/inkcert/cli-ini/cli.${domain}.ini
+/bin/sed -i "s/, imap.${domain}//g" /opt/verb/conf/inkcert/cli-ini/cli.${domain}.ini
+/bin/sed -i "s/, pop3.${domain}//g" /opt/verb/conf/inkcert/cli-ini/cli.${domain}.ini
 ## Add it to the cli-ini
-/bin/sed -i "/^domains =/ s/$/, mail.${DOMAIN}, smtp.${DOMAIN}, imap.${DOMAIN}, pop3.${DOMAIN}/" /opt/verb/conf/inkcert/cli-ini/cli.${DOMAIN}.ini
+/bin/sed -i "/^domains =/ s/$/, mail.${domain}, smtp.${domain}, imap.${domain}, pop3.${domain}/" /opt/verb/conf/inkcert/cli-ini/cli.${domain}.ini
 
 
 

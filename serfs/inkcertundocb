@@ -36,7 +36,7 @@ if [ -e "/opt/verb/mods/inkcertundocb.replace" ]; then . /opt/verb/mods/inkcertu
 if [ -e "/opt/verb/mods/inkcertundocb.before" ]; then . /opt/verb/mods/inkcertundocb.before; fi # Precedes this script
 
 
-DOMAIN=$1
+domain=$1
 
 # Check variables
 if [ -z ${1} ]; then
@@ -44,14 +44,14 @@ if [ -z ${1} ]; then
 fi
 
 # Request and get the certs
-/opt/verb/serfs/inkcertrevokecb ${DOMAIN}
+/opt/verb/serfs/inkcertrevokecb ${domain}
 
 # Install the certs
-/opt/verb/serfs/inkcertremoveallcb ${DOMAIN}
+/opt/verb/serfs/inkcertremoveallcb ${domain}
 
 # Remove mail certs
-/usr/bin/rm -f /etc/ssl/server/mail/${DOMAIN}.crt
-/usr/bin/rm -f /etc/ssl/server/mail/${DOMAIN}.key
+/usr/bin/rm -f /etc/ssl/server/mail/${domain}.crt
+/usr/bin/rm -f /etc/ssl/server/mail/${domain}.key
 
 
 

@@ -13,7 +13,7 @@
 ## ./installnextcloudrepo bestdbase bestdbuser besteverpass
 
 
-CVAPPNAME=nextcloud
+cVappName=nextcloud
 
 # Include the configs
 . /opt/verb/conf/servernameip
@@ -23,41 +23,41 @@ CVAPPNAME=nextcloud
 
 # Check if already installed
 ## Config
-if [ -f /opt/verb/conf/vapp.${CVAPPNAME} ]; then
+if [ -f /opt/verb/conf/vapp.${cVappName} ]; then
 /bin/echo "This is already installed."
 exit 0; fi
 ## Directory
-if [ -d /srv/www/vapps/${CVAPPNAME} ]; then
+if [ -d /srv/www/vapps/${cVappName} ]; then
 /bin/echo "Nextcloud already exists in the system. If it isn't working, look deeper on the server. For now, doing nothing."
 exit 8; fi
 
 DBASE=$1
 DBUSER=$2
 DBPASSWORD=$3
-CLEANNAME=$(/bin/echo $CVAPPNAME | sed -e 's/\.//g')
+CLEANNAME=$(/bin/echo $cVappName | sed -e 's/\.//g')
 
 ##DEV If as webapp
 # # Download as webapp
 # cd /srv/www/vapps
-# /opt/verb/serfs/inkget ${CVAPPNAME} check
+# /opt/verb/serfs/inkget ${cVappName} check
 # ## Check
 # if [ "$?" = 4 ]; then
 # /bin/echo "Repo failed to retrieve the file."
 # exit 4; fi
-# if [ ! -f ${CVAPPNAME}.txz ]; then
+# if [ ! -f ${cVappName}.txz ]; then
 # /bin/echo "Failed to retrieve from the repo."
 # exit 4; fi
 # ## Extract
-# /bin/rm -rf ${CVAPPNAME}
-# /opt/verb/serfs/vtxzout ${CVAPPNAME}; wait
+# /bin/rm -rf ${cVappName}
+# /opt/verb/serfs/vtxzout ${cVappName}; wait
 # ## Install it
-# /opt/verb/serfs/setvapplinkon ${CVAPPNAME}; wait
-# /bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}; wait
+# /opt/verb/serfs/setvapplinkon ${cVappName}; wait
+# /bin/chown -R www:www /srv/www/vapps/${cVappName}; wait
 # /bin/chown -R www:www /srv/www/verb/blue; wait
 # ## Run the Nextcloud script
 # /opt/verb/donjon/nextcloudprep.sh; wait
 # ## Verify ownership
-# /bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}; wait
+# /bin/chown -R www:www /srv/www/vapps/${cVappName}; wait
 
 # Install the package
 /usr/bin/pacman -Sy archlinux-keyring --noconfirm
@@ -72,8 +72,8 @@ if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: ls'; exit 4; fi
 #/usr/bin/su worker -c '/usr/bin/yay -S nextcloud-app-notify_push --noconfirm' # Broken package?
 
 # Links for vapps
-/usr/bin/mkdir /srv/www/vapps/${CVAPPNAME}
-/usr/bin/ln -sfn /var/lib/nextcloud/data /srv/www/vapps/${CVAPPNAME}/
+/usr/bin/mkdir /srv/www/vapps/${cVappName}
+/usr/bin/ln -sfn /var/lib/nextcloud/data /srv/www/vapps/${cVappName}/
 
 # Auto database
 if [ -z ${4} ]; then
@@ -92,7 +92,7 @@ FLUSH PRIVILEGES;"
 # Write the config for backup
 /bin/echo "APPDBASE=${DBASE}
 APPDDBUSR=${DBUSER}
-APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.${CVAPPNAME}
+APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.${cVappName}
 
 # php-fpm
 /usr/bin/cat <<'EOF' > /etc/php/php-fpm.d/nextcloud.conf
@@ -170,7 +170,7 @@ case ${InkCerted} in
     /bin/echo "Nextcloud is currently using Snakeoil certs, ready for inkCert"
   ;;
   *)
-    if ! /bin/grep -q "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN}; then
+    if ! /bin/grep -q "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
       /bin/echo "Something's wrong with the inkCert siteinkcert configs! Aborting"
       exit 6
     else

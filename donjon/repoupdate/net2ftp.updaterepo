@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #inkVerb! repo donjon dragon, verb.ink
 #set -e
 
@@ -8,27 +8,27 @@
 ## ./net2ftp.updaterepo
 
 
-CVAPPNAME=net2ftp
+cVappName=net2ftp
 # Include the config files
 . /opt/verb/conf/serverinkget
 . /opt/verb/conf/inklists/repoverlist
-DISTVER="${net2ftp}"
+distVer="${net2ftp}"
 
 if [ $InkGet_Method != "ZJZ" ]; then
   cd /opt/verb/repo; fi
 
 # Announce
-/bin/echo "Updating the net2ftp package to v${DISTVER}..."
+/bin/echo "Updating the net2ftp package to v${distVer}..."
 
 # Get the package
-/usr/bin/wget http://www.net2ftp.com/download/net2ftp_v${DISTVER}.zip
-if [ ! -f "net2ftp_v${DISTVER}.zip" ]; then
-/bin/echo "Failed download."; touch "${CVAPPNAME}.failed"
+/usr/bin/wget http://www.net2ftp.com/download/net2ftp_v${distVer}.zip
+if [ ! -f "net2ftp_v${distVer}.zip" ]; then
+/bin/echo "Failed download."; touch "${cVappName}.failed"
 exit 4; else
-/bin/rm -f ${CVAPPNAME}.failed; fi
+/bin/rm -f ${cVappName}.failed; fi
 ## Check the hash
-CHECKSHA=$(shasum -a 256 net2ftp_v${DISTVER}.zip)
-if [ "${CHECKSHA}" = "${net2ftpsha}  net2ftp_v${DISTVER}.zip" ]; then
+checksha=$(shasum -a 256 net2ftp_v${distVer}.zip)
+if [ "${checksha}" = "${net2ftpsha}  net2ftp_v${distVer}.zip" ]; then
 /bin/echo "Download checks out."
 else
 /bin/echo "SHA check failed. The downloaded file is not what was expected."
@@ -37,24 +37,24 @@ fi
 
 if [ $InkGet_Method != "ZJZ" ]; then
   # Set it as the new package
-  /bin/rm -f ${CVAPPNAME}.legacy.txz
-  /usr/bin/touch ${CVAPPNAME}.txz
-  /bin/mv ${CVAPPNAME}.txz ${CVAPPNAME}.legacy.txz
+  /bin/rm -f ${cVappName}.legacy.txz
+  /usr/bin/touch ${cVappName}.txz
+  /bin/mv ${cVappName}.txz ${cVappName}.legacy.txz
 fi
 /usr/bin/echo "Extracting from vendor..."
-/usr/bin/unzip -q net2ftp_v${DISTVER}.zip
-/bin/rm net2ftp_v${DISTVER}.zip
-cd net2ftp_v${DISTVER}
-/bin/mv files_to_upload ../${CVAPPNAME}
+/usr/bin/unzip -q net2ftp_v${distVer}.zip
+/bin/rm net2ftp_v${distVer}.zip
+cd net2ftp_v${distVer}
+/bin/mv files_to_upload ../${cVappName}
 cd ..
-/bin/rm -rf net2ftp_v${DISTVER}
+/bin/rm -rf net2ftp_v${distVer}
 if [ $InkGet_Method != "ZJZ" ]; then
-  /opt/verb/serfs/txzin ${CVAPPNAME}; wait
-  /bin/rm -rf ${CVAPPNAME}
+  /opt/verb/serfs/txzin ${cVappName}; wait
+  /bin/rm -rf ${cVappName}
 
   # Make a record of current version
-  /bin/echo "${DISTVER}" > ${CVAPPNAME}.ver.${DISTVER}
+  /bin/echo "${distVer}" > ${cVappName}.ver.${distVer}
 fi
 
 # Finish
-/bin/echo "Downloaded net2ftp v${DISTVER}."
+/bin/echo "Downloaded net2ftp v${distVer}."

@@ -23,7 +23,7 @@ if ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpat
   /usr/bin/echo "Install Postfix Vmail first, I quit."; exit 8
 fi
 
-DOMAIN="$1"
+domain="$1"
 
 # Include the config
 . /opt/verb/conf/siteurilist
@@ -31,7 +31,7 @@ DOMAIN="$1"
 
 # inkCert
 if [ "$2" != "verber" ]; then
-  /opt/verb/serfs/setinkcertmailsubdomains ${DOMAIN}
+  /opt/verb/serfs/setinkcertmailsubdomains ${domain}
 fi
 
 # Webserver directory (remake it everytime)
@@ -46,34 +46,34 @@ EOF
 /usr/bin/chown -R www:www /srv/www/mailcatch
 
 # Mail cert links
-/opt/verb/serfs/setinkcertmailcerts ${DOMAIN}
+/opt/verb/serfs/setinkcertmailcerts ${domain}
 
 # Dovecot
-/usr/bin/cat <<EOF > /etc/dovecot/crt.d/${DOMAIN}.conf
-local_name imap.${DOMAIN} {
-  ssl_cert = </etc/ssl/server/mail/${DOMAIN}.crt
-  ssl_key = </etc/ssl/server/mail/${DOMAIN}.key
+/usr/bin/cat <<EOF > /etc/dovecot/crt.d/${domain}.conf
+local_name imap.${domain} {
+  ssl_cert = </etc/ssl/server/mail/${domain}.crt
+  ssl_key = </etc/ssl/server/mail/${domain}.key
 }
 
-local_name pop3.${DOMAIN} {
-  ssl_cert = </etc/ssl/server/mail/${DOMAIN}.crt
-  ssl_key = </etc/ssl/server/mail/${DOMAIN}.key
+local_name pop3.${domain} {
+  ssl_cert = </etc/ssl/server/mail/${domain}.crt
+  ssl_key = </etc/ssl/server/mail/${domain}.key
 }
 
-local_name mail.${DOMAIN} {
-  ssl_cert = </etc/ssl/server/mail/${DOMAIN}.crt
-  ssl_key = </etc/ssl/server/mail/${DOMAIN}.key
+local_name mail.${domain} {
+  ssl_cert = </etc/ssl/server/mail/${domain}.crt
+  ssl_key = </etc/ssl/server/mail/${domain}.key
 }
 EOF
 ## Own
-/bin/chown vmail:dovecot /etc/dovecot/crt.d/${DOMAIN}.conf
-/bin/chmod o-rwx /etc/dovecot/crt.d/${DOMAIN}.conf
+/bin/chown vmail:dovecot /etc/dovecot/crt.d/${domain}.conf
+/bin/chmod o-rwx /etc/dovecot/crt.d/${domain}.conf
 
 # Postfix
-if ! /bin/grep -q "mail.${DOMAIN} /etc/ssl/server/mail/${DOMAIN}.key /etc/ssl/server/mail/${DOMAIN}.crt" /etc/postfix/virtual_ssl.map; then
+if ! /bin/grep -q "mail.${domain} /etc/ssl/server/mail/${domain}.key /etc/ssl/server/mail/${domain}.crt" /etc/postfix/virtual_ssl.map; then
   /usr/bin/cat <<EOF >> /etc/postfix/virtual_ssl.map
-mail.${DOMAIN} /etc/ssl/server/mail/${DOMAIN}.key /etc/ssl/server/mail/${DOMAIN}.crt
-smtp.${DOMAIN} /etc/ssl/server/mail/${DOMAIN}.key /etc/ssl/server/mail/${DOMAIN}.crt
+mail.${domain} /etc/ssl/server/mail/${domain}.key /etc/ssl/server/mail/${domain}.crt
+smtp.${domain} /etc/ssl/server/mail/${domain}.key /etc/ssl/server/mail/${domain}.crt
 EOF
 fi
 /usr/bin/postmap -F hash:/etc/postfix/virtual_ssl.map # Because we made an entry in this file and this is the only way to refresh that
@@ -81,35 +81,35 @@ fi
 # Webserver files so inkCert-LE checks work
 if [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
 
-  /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxmailcatch.conf /opt/verb/conf/webserver/sites-available/nginx/mail.${DOMAIN}.conf
-  /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxmailcatch.conf /opt/verb/conf/webserver/sites-available/nginx/smtp.${DOMAIN}.conf
-  /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxmailcatch.conf /opt/verb/conf/webserver/sites-available/nginx/imap.${DOMAIN}.conf
-  /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxmailcatch.conf /opt/verb/conf/webserver/sites-available/nginx/pop3.${DOMAIN}.conf
-  /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxmailcatch.conf /opt/verb/conf/webserver/sites-available/nginx/pop2.${DOMAIN}.conf
-  /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxmailcatch.conf /opt/verb/conf/webserver/sites-available/nginx/pop.${DOMAIN}.conf
-  /bin/sed -i "s/mailcatchdomain/mail.${DOMAIN}/g" /opt/verb/conf/webserver/sites-available/nginx/mail.${DOMAIN}.conf
-  /bin/sed -i "s/mailcatchdomain/smtp.${DOMAIN}/g" /opt/verb/conf/webserver/sites-available/nginx/smtp.${DOMAIN}.conf
-  /bin/sed -i "s/mailcatchdomain/imap.${DOMAIN}/g" /opt/verb/conf/webserver/sites-available/nginx/imap.${DOMAIN}.conf
-  /bin/sed -i "s/mailcatchdomain/pop3.${DOMAIN}/g" /opt/verb/conf/webserver/sites-available/nginx/pop3.${DOMAIN}.conf
-  /bin/sed -i "s/mailcatchdomain/pop2.${DOMAIN}/g" /opt/verb/conf/webserver/sites-available/nginx/pop2.${DOMAIN}.conf
-  /bin/sed -i "s/mailcatchdomain/pop.${DOMAIN}/g" /opt/verb/conf/webserver/sites-available/nginx/pop.${DOMAIN}.conf
-  /opt/verb/serfs/ensitenginx mail.${DOMAIN} smtp.${DOMAIN} imap.${DOMAIN} pop3.${DOMAIN} pop2.${DOMAIN} pop.${DOMAIN}
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxmailcatch.conf /opt/verb/conf/webserver/sites-available/nginx/mail.${domain}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxmailcatch.conf /opt/verb/conf/webserver/sites-available/nginx/smtp.${domain}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxmailcatch.conf /opt/verb/conf/webserver/sites-available/nginx/imap.${domain}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxmailcatch.conf /opt/verb/conf/webserver/sites-available/nginx/pop3.${domain}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxmailcatch.conf /opt/verb/conf/webserver/sites-available/nginx/pop2.${domain}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxmailcatch.conf /opt/verb/conf/webserver/sites-available/nginx/pop.${domain}.conf
+  /bin/sed -i "s/mailcatchdomain/mail.${domain}/g" /opt/verb/conf/webserver/sites-available/nginx/mail.${domain}.conf
+  /bin/sed -i "s/mailcatchdomain/smtp.${domain}/g" /opt/verb/conf/webserver/sites-available/nginx/smtp.${domain}.conf
+  /bin/sed -i "s/mailcatchdomain/imap.${domain}/g" /opt/verb/conf/webserver/sites-available/nginx/imap.${domain}.conf
+  /bin/sed -i "s/mailcatchdomain/pop3.${domain}/g" /opt/verb/conf/webserver/sites-available/nginx/pop3.${domain}.conf
+  /bin/sed -i "s/mailcatchdomain/pop2.${domain}/g" /opt/verb/conf/webserver/sites-available/nginx/pop2.${domain}.conf
+  /bin/sed -i "s/mailcatchdomain/pop.${domain}/g" /opt/verb/conf/webserver/sites-available/nginx/pop.${domain}.conf
+  /opt/verb/serfs/ensitenginx mail.${domain} smtp.${domain} imap.${domain} pop3.${domain} pop2.${domain} pop.${domain}
 
 elif [ ${ServerType} = "lamp" ]; then
 
-  /usr/bin/cp /opt/verb/conf/site-files/conf/newnapachemailcatch.conf /opt/verb/conf/webserver/sites-available/httpd/mail.${DOMAIN}.conf
-  /usr/bin/cp /opt/verb/conf/site-files/conf/newnapachemailcatch.conf /opt/verb/conf/webserver/sites-available/httpd/smtp.${DOMAIN}.conf
-  /usr/bin/cp /opt/verb/conf/site-files/conf/newnapachemailcatch.conf /opt/verb/conf/webserver/sites-available/httpd/imap.${DOMAIN}.conf
-  /usr/bin/cp /opt/verb/conf/site-files/conf/newnapachemailcatch.conf /opt/verb/conf/webserver/sites-available/httpd/pop3.${DOMAIN}.conf
-  /usr/bin/cp /opt/verb/conf/site-files/conf/newnapachemailcatch.conf /opt/verb/conf/webserver/sites-available/httpd/pop2.${DOMAIN}.conf
-  /usr/bin/cp /opt/verb/conf/site-files/conf/newnapachemailcatch.conf /opt/verb/conf/webserver/sites-available/httpd/pop.${DOMAIN}.conf
-  /bin/sed -i "s/mailcatchdomain/mail.${DOMAIN}/g" /opt/verb/conf/webserver/sites-available/httpd/mail.${DOMAIN}.conf
-  /bin/sed -i "s/mailcatchdomain/smtp.${DOMAIN}/g" /opt/verb/conf/webserver/sites-available/httpd/smtp.${DOMAIN}.conf
-  /bin/sed -i "s/mailcatchdomain/imap.${DOMAIN}/g" /opt/verb/conf/webserver/sites-available/httpd/imap.${DOMAIN}.conf
-  /bin/sed -i "s/mailcatchdomain/pop3.${DOMAIN}/g" /opt/verb/conf/webserver/sites-available/httpd/pop3.${DOMAIN}.conf
-  /bin/sed -i "s/mailcatchdomain/pop2.${DOMAIN}/g" /opt/verb/conf/webserver/sites-available/httpd/pop2.${DOMAIN}.conf
-  /bin/sed -i "s/mailcatchdomain/pop.${DOMAIN}/g" /opt/verb/conf/webserver/sites-available/httpd/pop.${DOMAIN}.conf
-  /opt/verb/serfs/ensiteapache mail.${DOMAIN} smtp.${DOMAIN} imap.${DOMAIN} pop3.${DOMAIN} pop2.${DOMAIN} pop.${DOMAIN}
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newnapachemailcatch.conf /opt/verb/conf/webserver/sites-available/httpd/mail.${domain}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newnapachemailcatch.conf /opt/verb/conf/webserver/sites-available/httpd/smtp.${domain}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newnapachemailcatch.conf /opt/verb/conf/webserver/sites-available/httpd/imap.${domain}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newnapachemailcatch.conf /opt/verb/conf/webserver/sites-available/httpd/pop3.${domain}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newnapachemailcatch.conf /opt/verb/conf/webserver/sites-available/httpd/pop2.${domain}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newnapachemailcatch.conf /opt/verb/conf/webserver/sites-available/httpd/pop.${domain}.conf
+  /bin/sed -i "s/mailcatchdomain/mail.${domain}/g" /opt/verb/conf/webserver/sites-available/httpd/mail.${domain}.conf
+  /bin/sed -i "s/mailcatchdomain/smtp.${domain}/g" /opt/verb/conf/webserver/sites-available/httpd/smtp.${domain}.conf
+  /bin/sed -i "s/mailcatchdomain/imap.${domain}/g" /opt/verb/conf/webserver/sites-available/httpd/imap.${domain}.conf
+  /bin/sed -i "s/mailcatchdomain/pop3.${domain}/g" /opt/verb/conf/webserver/sites-available/httpd/pop3.${domain}.conf
+  /bin/sed -i "s/mailcatchdomain/pop2.${domain}/g" /opt/verb/conf/webserver/sites-available/httpd/pop2.${domain}.conf
+  /bin/sed -i "s/mailcatchdomain/pop.${domain}/g" /opt/verb/conf/webserver/sites-available/httpd/pop.${domain}.conf
+  /opt/verb/serfs/ensiteapache mail.${domain} smtp.${domain} imap.${domain} pop3.${domain} pop2.${domain} pop.${domain}
 
 fi
 

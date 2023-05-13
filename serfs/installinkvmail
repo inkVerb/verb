@@ -50,37 +50,37 @@ if [ -e "/opt/verb/mods/installinkvmail.before" ]; then . /opt/verb/mods/install
 
 # BOX folder
 if [ -n "$1" ] && [ "$1" != "-n" ]; then
-  BOXFOLDER="$1"
+  boxfolder="$1"
 else
-  BOXFOLDER="$(/usr/bin/pwgen -0 5 1)"
+  boxfolder="$(/usr/bin/pwgen -0 5 1)"
 fi
 
 # PFA folder
 if [ -n "$2" ] && [ "$2" != "-n" ]; then
-  PFAFOLDER="$2"
+  pfafolder="$2"
 elif [ -n "$1" ] && [ "$1" != "-n" ]; then
-  PFAFOLDER="$1"
+  pfafolder="$1"
 else
-  PFAFOLDER="$(/usr/bin/pwgen -0 5 1)"
+  pfafolder="$(/usr/bin/pwgen -0 5 1)"
 fi
 
 # PFA install password
 if [ -n "$3" ] && [ "$3" != "-n" ]; then
-  PFAPASS="$3"
+  pfapass="$3"
 else
-  PFAPASS="$(pwgen -1Bcn 10)"
+  pfapass="$(pwgen -1Bcn 10)"
 fi
 
 # Postfix vmail
 /opt/verb/serfs/installpostfixvmail
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
-# Roundcube
-/opt/verb/serfs/installrc ${BOXFOLDER}
+# PostfixAdmin
+/opt/verb/serfs/installpfa ${pfafolder} ${pfapass}
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
-# PostfixAdmin
-/opt/verb/serfs/installpfa ${PFAFOLDER} ${PFAPASS}
+# Roundcube
+/opt/verb/serfs/installrc ${boxfolder}
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 # Backup
@@ -102,12 +102,12 @@ fi
 You must restart the server in order for email boxes to send and receive.
 
 Postfix Admin:
-- https://po.${emailTLDURI}/${PFAFOLDER}/setup.php
-- Use the install password '${PFAPASS}'
+- https://po.${emailTLDURI}/${pfafolder}/setup.php
+- Use the install password '${pfapass}'
 - Then run serfs/postinstallpfa
 
 Roundcube:
-- https://box.${emailTLDURI}/${BOXFOLDER}
+- https://box.${emailTLDURI}/${boxfolder}
 "
 
 

@@ -48,32 +48,32 @@ if ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpat
   /usr/bin/echo "Install Postfix Vmail first, I quit."; exit 8
 fi
 
-KILLDOMAIN=$1
+killdomain=$1
 
 # Remove webserver config files
 if [ ${ServerType} = "lemp" ]; then
-  /bin/rm -f /etc/nginx/sites-enabled/${KILLDOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${KILLDOMAIN}.conf
+  /bin/rm -f /etc/nginx/sites-enabled/${killdomain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${killdomain}.conf
   /usr/bin/systemctl restart nginx
 elif [ ${ServerType} = "lamp" ]; then
-  /bin/rm -f /etc/httpd/sites-enabled/${KILLDOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${KILLDOMAIN}.conf
+  /bin/rm -f /etc/httpd/sites-enabled/${killdomain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${killdomain}.conf
   /usr/bin/systemctl restart httpd
 elif [ ${ServerType} = "laemp" ]; then
-  /bin/rm -f /etc/httpd/sites-enabled/${KILLDOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${KILLDOMAIN}.conf
-  /bin/rm -f /etc/nginx/sites-enabled/${KILLDOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${KILLDOMAIN}.conf
+  /bin/rm -f /etc/httpd/sites-enabled/${killdomain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${killdomain}.conf
+  /bin/rm -f /etc/nginx/sites-enabled/${killdomain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${killdomain}.conf
   /usr/bin/systemctl restart httpd
   /usr/bin/systemctl restart nginx
 fi
 
 # Remove Root Site Defaults from inkDNS
-/bin/sed -i "/; Root Site Defaults/,/;; End Root Site Defaults/d" /opt/verb/conf/inkdns/zones/db.${KILLDOMAIN}
-/bin/echo ";;; Root Site Defauls removed" >> /opt/verb/conf/inkdns/zones/db.${KILLDOMAIN}
+/bin/sed -i "/; Root Site Defaults/,/;; End Root Site Defaults/d" /opt/verb/conf/inkdns/zones/db.${killdomain}
+/bin/echo ";;; Root Site Defauls removed" >> /opt/verb/conf/inkdns/zones/db.${killdomain}
 
 # Remove http folder symlinks
-/bin/rm -f /srv/www/html/${KILLDOMAIN}
+/bin/rm -f /srv/www/html/${killdomain}
 
 # Restart
 /usr/bin/systemctl restart postfix

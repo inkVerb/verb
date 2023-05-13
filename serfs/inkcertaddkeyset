@@ -13,27 +13,27 @@
 # How to use:
 ## ./inkcertaddkeyset [domain.tld] [req.domain.tld.filename.ict]
 
-DOMAIN=$1
+domain=$1
 ICTFILENAME=$2
 
 # Unpack the file
 cd /etc/inkcert || exit 6
-/bin/mv ${ICTFILENAME} ${DOMAIN}.txz
-/opt/verb/serfs/vtxzout ${DOMAIN}
-/bin/mv ${DOMAIN} req/
+/bin/mv ${ICTFILENAME} ${domain}.txz
+/opt/verb/serfs/vtxzout ${domain}
+/bin/mv ${domain} req/
 
 # Move files in place
-/bin/mkdir /etc/inkcert/live/${DOMAIN}
-/bin/cp csr/${DOMAIN}/${DOMAIN}.key.pem /etc/inkcert/live/${DOMAIN}/
-/bin/chmod 600 /etc/inkcert/live/${DOMAIN}/${DOMAIN}.key.pem
-/bin/cp req/${DOMAIN}/${DOMAIN}.cert.pem /etc/inkcert/live/${DOMAIN}/
-/bin/cp req/${DOMAIN}/ca-chain.cert.pem /etc/inkcert/live/${DOMAIN}/
-shred -f -x req/${DOMAIN}/${DOMAIN}.cert.pem
-shred -f -x req/${DOMAIN}/interm.inkcert.cert.pem
-shred -f -x req/${DOMAIN}/ca.inkcert.cert.pem
-shred -f -x req/${DOMAIN}/${DOMAIN}.chain.pem
-shred -f -x csr/${DOMAIN}/${DOMAIN}.key.pem
-/bin/rm -f req/${DOMAIN}.csr.pem
+/bin/mkdir /etc/inkcert/live/${domain}
+/bin/cp csr/${domain}/${domain}.key.pem /etc/inkcert/live/${domain}/
+/bin/chmod 600 /etc/inkcert/live/${domain}/${domain}.key.pem
+/bin/cp req/${domain}/${domain}.cert.pem /etc/inkcert/live/${domain}/
+/bin/cp req/${domain}/ca-chain.cert.pem /etc/inkcert/live/${domain}/
+shred -f -x req/${domain}/${domain}.cert.pem
+shred -f -x req/${domain}/interm.inkcert.cert.pem
+shred -f -x req/${domain}/ca.inkcert.cert.pem
+shred -f -x req/${domain}/${domain}.chain.pem
+shred -f -x csr/${domain}/${domain}.key.pem
+/bin/rm -f req/${domain}.csr.pem
 
 
 

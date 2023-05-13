@@ -49,35 +49,35 @@ if ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpat
   /usr/bin/echo "Install Postfix Vmail first, I quit."; exit 8
 fi
 
-KILLDOMAIN=$1
+killdomain=$1
 
 # Remove all config files, symlinks, and directories
 if [ ${ServerType} = "lemp" ]; then
-  /bin/rm -f /etc/nginx/sites-enabled/${KILLDOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${KILLDOMAIN}.conf
+  /bin/rm -f /etc/nginx/sites-enabled/${killdomain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${killdomain}.conf
   /usr/bin/systemctl restart nginx
 elif [ ${ServerType} = "lamp" ]; then
-  /bin/rm -f /etc/httpd/sites-enabled/${KILLDOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${KILLDOMAIN}.conf
+  /bin/rm -f /etc/httpd/sites-enabled/${killdomain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${killdomain}.conf
   /usr/bin/systemctl restart httpd
 elif [ ${ServerType} = "laemp" ]; then
-  /bin/rm -f /etc/httpd/sites-enabled/${KILLDOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${KILLDOMAIN}.conf
-  /bin/rm -f /etc/nginx/sites-enabled/${KILLDOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${KILLDOMAIN}.conf
+  /bin/rm -f /etc/httpd/sites-enabled/${killdomain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${killdomain}.conf
+  /bin/rm -f /etc/nginx/sites-enabled/${killdomain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${killdomain}.conf
   /usr/bin/systemctl restart httpd
   /usr/bin/systemctl restart nginx
 fi
-/bin/rm -f /srv/www/html/${KILLDOMAIN}
-/bin/rm -f /srv/www/html/*${KILLDOMAIN}
-/bin/rm -rf /srv/www/domains/${KILLDOMAIN}
-/bin/rm -rf /srv/www/domains/*${KILLDOMAIN}
+/bin/rm -f /srv/www/html/${killdomain}
+/bin/rm -f /srv/www/html/*${killdomain}
+/bin/rm -rf /srv/www/domains/${killdomain}
+/bin/rm -rf /srv/www/domains/*${killdomain}
 
 # Other services
-/opt/verb/serfs/killdomainshell ${KILLDOMAIN}; wait
+/opt/verb/serfs/killdomainshell ${killdomain}; wait
 
 # Finish
-/bin/echo "${KILLDOMAIN} is all gone, bye bye. Some vapps might remain.
+/bin/echo "${killdomain} is all gone, bye bye. Some vapps might remain.
 "
 
 

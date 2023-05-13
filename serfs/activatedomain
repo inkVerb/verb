@@ -32,18 +32,18 @@ if [ -e "/opt/verb/mods/activatedomain.replace" ]; then . /opt/verb/mods/activat
 if [ -e "/opt/verb/mods/activatedomain.before" ]; then . /opt/verb/mods/activatedomain.before; fi # Precedes this script
 
 
-DOMAIN=$1
+domain=$1
 VAPPNM=$2
 
 if [ -n ${2} ]; then
-    /bin/rm -rf /srv/www/html/${DOMAIN}
-    /bin/ln -sfn /srv/www/vapps/${VAPPNM} /srv/www/html/${DOMAIN}
-    /bin/echo "${VAPPNM} vapp active at ${DOMAIN}."
+    /bin/rm -rf /srv/www/html/${domain}
+    /bin/ln -sfn /srv/www/vapps/${VAPPNM} /srv/www/html/${domain}
+    /bin/echo "${VAPPNM} vapp active at ${domain}."
 
 elif [ -z ${2} ]; then
-    /bin/rm -rf /srv/www/html/${DOMAIN}
-    /bin/ln -sfn /srv/www/domains/${DOMAIN} /srv/www/html/
-    /bin/echo "${DOMAIN} domain active."
+    /bin/rm -rf /srv/www/html/${domain}
+    /bin/ln -sfn /srv/www/domains/${domain} /srv/www/html/
+    /bin/echo "${domain} domain active."
 
 fi
 

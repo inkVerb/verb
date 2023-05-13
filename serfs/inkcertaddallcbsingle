@@ -38,7 +38,7 @@ if [ -e "/opt/verb/mods/inkcertaddallcbsingle.replace" ]; then . /opt/verb/mods/
 if [ -e "/opt/verb/mods/inkcertaddallcbsingle.before" ]; then . /opt/verb/mods/inkcertaddallcbsingle.before; fi # Precedes this script
 
 
-SITEDOMAIN=$1
+sitedomain=$1
 
 # Check inkCert installed
 if [ "${InkCertInstalled}" = "NOT_YET" ]; then
@@ -56,7 +56,7 @@ fi
 
 
 # For the main domain first
-/opt/verb/serfs/inkcertaddcbsingle ${SITEDOMAIN}
+/opt/verb/serfs/inkcertaddcbsingle ${sitedomain}
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 # For any/all sub-domains
@@ -66,7 +66,7 @@ elif [ ${ServerType} = "lemp" ]; then
   cd /opt/verb/conf/webserver/sites-available/nginx
 fi
 ## Get the name of each subdomain .conf file available
-find . -name "*.${SITEDOMAIN}.conf"|while read findsitesubdomain; do
+find . -name "*.${sitedomain}.conf"|while read findsitesubdomain; do
 ## Strip the .conf extension
  sitesubdomain=$(basename ${findsitesubdomain} .conf)
 ## Run inkCertAddLE per site config
@@ -76,7 +76,7 @@ done
 
 # Finish
 /bin/echo "
-Done. Certs installed for ${SITEDOMAIN}.
+Done. Certs installed for ${sitedomain}.
 "
 
 

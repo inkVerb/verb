@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #inkVerb! repo donjon dragon, verb.ink
 #set -e
 
@@ -8,27 +8,27 @@
 ## ./suitecrm.updaterepo
 
 
-CVAPPNAME=suitecrm
+cVappName=suitecrm
 # Include the config files
 . /opt/verb/conf/serverinkget
 . /opt/verb/conf/inklists/repoverlist
-DISTVER="${suitecrm}"
+distVer="${suitecrm}"
 
 if [ $InkGet_Method != "ZJZ" ]; then
   cd /opt/verb/repo; fi
 
 # Announce
-/bin/echo "Updating the SuiteCRM package to v${DISTVER}..."
+/bin/echo "Updating the SuiteCRM package to v${distVer}..."
 
 # Get the package
-/usr/bin/wget https://sourceforge.net/projects/suitecrm/files/SuiteCRM-${DISTVER}.zip
-if [ ! -f "SuiteCRM-${DISTVER}.zip" ]; then
-/bin/echo "Failed download."; touch "${CVAPPNAME}.failed"
+/usr/bin/wget https://sourceforge.net/projects/suitecrm/files/SuiteCRM-${distVer}.zip
+if [ ! -f "SuiteCRM-${distVer}.zip" ]; then
+/bin/echo "Failed download."; touch "${cVappName}.failed"
 exit 4; else
-/bin/rm -f ${CVAPPNAME}.failed; fi
+/bin/rm -f ${cVappName}.failed; fi
 ## Check the hash
-CHECKSHA=$(sha1sum SuiteCRM-${DISTVER}.zip)
-if [ "${CHECKSHA}" = "${suitecrmsha}  SuiteCRM-${DISTVER}.zip" ]; then
+checksha=$(sha1sum SuiteCRM-${distVer}.zip)
+if [ "${checksha}" = "${suitecrmsha}  SuiteCRM-${distVer}.zip" ]; then
 /bin/echo "Download checks out."
 else
 /bin/echo "SHA check failed. The downloaded file is not what was expected."
@@ -37,21 +37,21 @@ fi
 
 if [ $InkGet_Method != "ZJZ" ]; then
   # Set it as the new package
-  /bin/rm -f ${CVAPPNAME}.legacy.txz
-  /usr/bin/touch ${CVAPPNAME}.txz
-  /bin/mv ${CVAPPNAME}.txz ${CVAPPNAME}.legacy.txz
+  /bin/rm -f ${cVappName}.legacy.txz
+  /usr/bin/touch ${cVappName}.txz
+  /bin/mv ${cVappName}.txz ${cVappName}.legacy.txz
 fi
 /usr/bin/echo "Extracting from vendor..."
-/usr/bin/unzip -q SuiteCRM-${DISTVER}.zip
-/bin/rm SuiteCRM-${DISTVER}.zip
-/bin/mv SuiteCRM-${DISTVER} ${CVAPPNAME}
+/usr/bin/unzip -q SuiteCRM-${distVer}.zip
+/bin/rm SuiteCRM-${distVer}.zip
+/bin/mv SuiteCRM-${distVer} ${cVappName}
 if [ $InkGet_Method != "ZJZ" ]; then
-  /opt/verb/serfs/txzin ${CVAPPNAME}; wait
-  /bin/rm -rf ${CVAPPNAME}
+  /opt/verb/serfs/txzin ${cVappName}; wait
+  /bin/rm -rf ${cVappName}
 
   # Make a record of current version
-  /bin/echo "${DISTVER}" > ${CVAPPNAME}.ver.${DISTVER}
+  /bin/echo "${distVer}" > ${cVappName}.ver.${distVer}
 fi
 
 # Finish
-/bin/echo "Downloaded SuiteCRM v${DISTVER}."
+/bin/echo "Downloaded SuiteCRM v${distVer}."

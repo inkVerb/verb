@@ -38,34 +38,34 @@ if ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpat
   /usr/bin/echo "Install Postfix Vmail first, I quit."; exit 8
 fi
 
-DOMAIN="$1"
+domain="$1"
 
 # Include the config
 . /opt/verb/conf/siteurilist
 . /opt/verb/conf/servertype
 
 # Make sure we don't kill a verb domain
-if /bin/grep -q "${DOMAIN}" /opt/verb/conf/siteurilist; then
+if /bin/grep -q "${domain}" /opt/verb/conf/siteurilist; then
   /usr/bin/echo "Can't kill a verber domain, I quit."; exit 9
 fi
 
 # inkCert
-/opt/verb/serfs/killinkcertmailsubdomains ${DOMAIN}
+/opt/verb/serfs/killinkcertmailsubdomains ${domain}
 
 # Mail cert links
-/opt/verb/serfs/killinkcertmailcerts ${DOMAIN}
+/opt/verb/serfs/killinkcertmailcerts ${domain}
 
 # Mail DNS zone entries
-/opt/verb/serfs/killinkdnsmail ${DOMAIN}
+/opt/verb/serfs/killinkdnsmail ${domain}
 
 # OpenDKIM Mail DNS zone entries
-/opt/verb/serfs/killinkdkim ${DOMAIN}
+/opt/verb/serfs/killinkdkim ${domain}
 
 # Dovecot
-/bin/rm -f /etc/dovecot/crt.d/${DOMAIN}.conf
+/bin/rm -f /etc/dovecot/crt.d/${domain}.conf
 
 # Postfix
-/bin/sed -i "/^mail.${DOMAIN}/d" /etc/postfix/virtual_ssl.map
+/bin/sed -i "/^mail.${domain}/d" /etc/postfix/virtual_ssl.map
 
 /usr/bin/postmap -F hash:/etc/postfix/virtual_ssl.map
 
@@ -76,34 +76,34 @@ fi
 # Webserver files so inkCert-LE checks work
 if [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
 
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/mail.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/smtp.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/imap.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/pop3.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/pop2.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/pop.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/nginx/mail.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/nginx/smtp.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/nginx/imap.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/nginx/pop3.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/nginx/pop2.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/nginx/pop.${DOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/mail.${domain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/smtp.${domain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/imap.${domain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/pop3.${domain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/pop2.${domain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/pop.${domain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/nginx/mail.${domain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/nginx/smtp.${domain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/nginx/imap.${domain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/nginx/pop3.${domain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/nginx/pop2.${domain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/nginx/pop.${domain}.conf
   /bin/systemctl restart nginx
 
 elif [ ${ServerType} = "lamp" ]; then
 
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/mail.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/smtp.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/imap.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/pop3.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/pop2.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/pop.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/mail.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/smtp.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/imap.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/pop3.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/pop2.${DOMAIN}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/pop.${DOMAIN}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/mail.${domain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/smtp.${domain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/imap.${domain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/pop3.${domain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/pop2.${domain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/pop.${domain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/mail.${domain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/smtp.${domain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/imap.${domain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/pop3.${domain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/pop2.${domain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/pop.${domain}.conf
   /bin/systemctl restart httpd
 
 fi

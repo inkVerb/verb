@@ -8,7 +8,7 @@
 ## ./installcollaboraonline [port - optional, if other than 9980]
 
 
-CVAPPNAME=collaboraonline
+cVappName=collaboraonline
 
 # Include the configs
 . /opt/verb/conf/servernameip
@@ -22,7 +22,7 @@ PORT=$1
 fi
 
 # Check if already installed
-if [ -f /opt/verb/conf/vapp.${CVAPPNAME} ]; then
+if [ -f /opt/verb/conf/vapp.${cVappName} ]; then
 /bin/echo "This is already installed. I quit."
 exit 0; fi
 
@@ -38,7 +38,7 @@ docker run -t -d -p 127.0.0.1:${PORT}:${PORT} -e "domain=b.${blueURI}" --restart
 /usr/bin/ufw allow ${PORT}
 
 # Reset all permissions and restart webserver
-/bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}.${DOMAIN}
+/bin/chown -R www:www /srv/www/vapps/${cVappName}.${domain}
 . /opt/verb/conf/servertype
 if [ ${ServerType} = "lemp" ]; then
   /usr/bin/systemctl restart nginx
@@ -58,7 +58,7 @@ fi
 /bin/echo "#!/bin/bash
 COVAPPSTATUS=\"INSTALLED\"
 COPORT=${PORT}
-COHOST=\"b.${blueURI}\"" > /opt/verb/conf/vapp.${CVAPPNAME}
+COHOST=\"b.${blueURI}\"" > /opt/verb/conf/vapp.${cVappName}
 
 /bin/echo "Collabora Online is now installed...
 

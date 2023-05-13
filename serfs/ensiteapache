@@ -13,12 +13,12 @@
 
 # Run as a loop so multiple sites can be enabled in one command, just like a2ensite
 for DOMAIN in $@; do
-  if [ "${DOMAIN}" = "-r" ]; then
+  if [ "${domain}" = "-r" ]; then
     continue
-  elif [ -e "/etc/httpd/sites-available/${DOMAIN}.conf" ] && [ -f "/opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf" ]; then
-    /usr/bin/ln -sfn /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf /opt/verb/conf/webserver/sites-enabled/httpd/${DOMAIN}.conf
+  elif [ -e "/etc/httpd/sites-available/${domain}.conf" ] && [ -f "/opt/verb/conf/webserver/sites-available/httpd/${domain}.conf" ]; then
+    /usr/bin/ln -sfn /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf /opt/verb/conf/webserver/sites-enabled/httpd/${domain}.conf
   else
-    /usr/bin/echo "${DOMAIN} Apache config does not exist at /etc/httpd/sites-available/${DOMAIN}.conf, cannot enable"
+    /usr/bin/echo "${domain} Apache config does not exist at /etc/httpd/sites-available/${domain}.conf, cannot enable"
   fi
 done
 

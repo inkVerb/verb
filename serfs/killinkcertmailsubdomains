@@ -27,25 +27,25 @@ if [ -e "/opt/verb/mods/killinkcertmailsubdomains.replace" ]; then . /opt/verb/m
 if [ -e "/opt/verb/mods/killinkcertmailsubdomains.before" ]; then . /opt/verb/mods/killinkcertmailsubdomains.before; fi # Precedes this script
 
 
-DOMAIN="$1"
+domain="$1"
 
 # Include the config
 . /opt/verb/conf/siteurilist
 . /opt/verb/conf/servertype
 
 # Make sure we don't kill a verb domain
-if /bin/grep -q "${DOMAIN}" /opt/verb/conf/siteurilist; then
+if /bin/grep -q "${domain}" /opt/verb/conf/siteurilist; then
   /usr/bin/echo "Can't kill a verber domain, I quit."; exit 9
 fi
 
 # inkCert
 ## Delete the mail entries entries
-/bin/sed -i "s/, mail.${DOMAIN}//g" /opt/verb/conf/inkcert/cli-ini/cli.${DOMAIN}.ini
-/bin/sed -i "s/, smtp.${DOMAIN}//g" /opt/verb/conf/inkcert/cli-ini/cli.${DOMAIN}.ini
-/bin/sed -i "s/, imap.${DOMAIN}//g" /opt/verb/conf/inkcert/cli-ini/cli.${DOMAIN}.ini
-/bin/sed -i "s/, pop3.${DOMAIN}//g" /opt/verb/conf/inkcert/cli-ini/cli.${DOMAIN}.ini
-/bin/sed -i "s/, pop2.${DOMAIN}//g" /opt/verb/conf/inkcert/cli-ini/cli.${DOMAIN}.ini
-/bin/sed -i "s/, pop.${DOMAIN}//g" /opt/verb/conf/inkcert/cli-ini/cli.${DOMAIN}.ini
+/bin/sed -i "s/, mail.${domain}//g" /opt/verb/conf/inkcert/cli-ini/cli.${domain}.ini
+/bin/sed -i "s/, smtp.${domain}//g" /opt/verb/conf/inkcert/cli-ini/cli.${domain}.ini
+/bin/sed -i "s/, imap.${domain}//g" /opt/verb/conf/inkcert/cli-ini/cli.${domain}.ini
+/bin/sed -i "s/, pop3.${domain}//g" /opt/verb/conf/inkcert/cli-ini/cli.${domain}.ini
+/bin/sed -i "s/, pop2.${domain}//g" /opt/verb/conf/inkcert/cli-ini/cli.${domain}.ini
+/bin/sed -i "s/, pop.${domain}//g" /opt/verb/conf/inkcert/cli-ini/cli.${domain}.ini
 
 
 

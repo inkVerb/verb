@@ -30,11 +30,11 @@ if [ -e "/opt/verb/mods/inkcertremoveallcbsingle.before" ]; then . /opt/verb/mod
 
 
 # For the domain
-/opt/verb/serfs/inkcertremovecbsingle ${DOMAIN}
+/opt/verb/serfs/inkcertremovecbsingle ${domain}
 
 # For any/all sub-domains
 ## Get the name of each subdomain .conf file available
-find . -name "*.${DOMAIN}.conf" | while read findsitesubdomain; do
+find . -name "*.${domain}.conf" | while read findsitesubdomain; do
   ## Strip the .conf extension
   sitesubdomain=$(basename ${findsitesubdomain} .conf)
   ## Run inkCertAddLE per site config

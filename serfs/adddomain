@@ -46,7 +46,7 @@ fi
 . /opt/verb/conf/servertype
 . /opt/verb/conf/inkcertstatus
 
-NEWDOMAIN=$1
+NEWdomain=$1
 
 # Check if it already exists
 if [ ${ServerType} = "lemp" ]; then

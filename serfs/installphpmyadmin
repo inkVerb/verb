@@ -7,7 +7,7 @@
 ## ./installphpmyadmin [directory] [dbuser] [dbpassword]
 
 
-CVAPPNAME=phpmyadmin
+cVappName=phpmyadmin
 
 # Options
 if [ -z ${1} ]; then
@@ -28,17 +28,17 @@ DBUSER=phpmy$(/usr/bin/pwgen -s -1 15); fi
 
 # Check if already installed
 ## Config
-if [ -f /opt/verb/conf/vapp.${CVAPPNAME} ]; then
+if [ -f /opt/verb/conf/vapp.${cVappName} ]; then
 /bin/echo "This is already installed."
 exit 0; fi
 ## Directory
-if [ -d /srv/www/vapps/${CVAPPNAME} ]; then
+if [ -d /srv/www/vapps/${cVappName} ]; then
 /bin/echo "phpMyAdmin already exists in the system. If it isn't working, look deeper on the server. For now, doing nothing."
 exit 8; fi
 
 # Download and establish Drupal in the server to pre-created domain
 cd /srv/www/vapps || exit 6
-/opt/verb/serfs/inkget ${CVAPPNAME} check; wait
+/opt/verb/serfs/inkget ${cVappName} check; wait
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 # Create the boss user
@@ -47,15 +47,15 @@ e="$?"; [[ "$e" = "0" ]] || exit "$e"
 # Write the config for backup
 /bin/echo "SUBDIR=${DIRECTRY}
 APPDDBUSR=${DBUSER}
-APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.${CVAPPNAME}
+APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.${cVappName}
 
 # Prepare the config and web directory
-/bin/cp /srv/www/vapps/${CVAPPNAME}/config.sample.inc.php /srv/www/vapps/${CVAPPNAME}/config.inc.php
+/bin/cp /srv/www/vapps/${cVappName}/config.sample.inc.php /srv/www/vapps/${cVappName}/config.inc.php
 BLOWFISH=$(/usr/bin/pwgen -c -1 32)
-/bin/sed -i "s/cfg\['blowfish_secret'\] = '';/cfg\['blowfish_secret'\] = '$BLOWFISH';/" /srv/www/vapps/${CVAPPNAME}/config.inc.php
-/bin/ln -sfn /srv/www/vapps/${CVAPPNAME} /srv/www/verb/${itsqlTLD}.sql/${DIRECTRY}; wait
+/bin/sed -i "s/cfg\['blowfish_secret'\] = '';/cfg\['blowfish_secret'\] = '$BLOWFISH';/" /srv/www/vapps/${cVappName}/config.inc.php
+/bin/ln -sfn /srv/www/vapps/${cVappName} /srv/www/verb/${itsqlTLD}.sql/${DIRECTRY}; wait
 /bin/chown -R www:www /srv/www/verb/${itsqlTLD}.sql; wait
-/bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}; wait
+/bin/chown -R www:www /srv/www/vapps/${cVappName}; wait
 
 # Restart server
 . /opt/verb/conf/servertype

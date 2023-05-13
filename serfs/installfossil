@@ -10,7 +10,7 @@
 ## ./installfossil adam adam@verb.ink Adamp4$$w0RD
 
 
-CVAPPNAME=fossil
+cVappName=fossil
 
 # Include the configs
 . /opt/verb/conf/servernameip
@@ -22,7 +22,7 @@ NEWPASS=$3
 
 
 cd /srv/www/vapps || exit 6
-/opt/verb/serfs/inkget ${CVAPPNAME} check
+/opt/verb/serfs/inkget ${cVappName} check
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 /bin/rm -f /usr/bin/fossil
@@ -31,7 +31,7 @@ fossil all rebuild
 
 # Install and set up directories
 /bin/mkdir -p /srv/www/vip/fossil
-/opt/verb/serfs/setvapplinkon ${CVAPPNAME}
+/opt/verb/serfs/setvapplinkon ${cVappName}
 /bin/chown -R www:www  /srv/www/verb/vip.fossil
 /bin/chown -R www:www /srv/www/vip
 

@@ -15,7 +15,7 @@
 ## ./wpmuhtaccess mysubsite.inkisaverb.com dir    # will install to mysubsite.inkisaverb.com as the base, using directories of mysubsite.inkisaverb.com
 
 
-WPDOMAIN=$1
+wpdomain=$1
 INSTTYPE=$2
 
 # Set the default setting
@@ -23,7 +23,7 @@ if [ "${INSTTYPE}" != "dir" ]; then
 INSTTYPE="sub"; fi
 
 # Remove the old WordPress declarations
-/bin/sed -i '/^# BEGIN WordPress*/,/^# END WordPress/d' /srv/www/vapps/wp.${WPDOMAIN}/.htaccess
+/bin/sed -i '/^# BEGIN WordPress*/,/^# END WordPress/d' /srv/www/vapps/wp.${wpdomain}/.htaccess
 
 # Add the settings
 ## Subdomain install
@@ -43,10 +43,10 @@ RewriteRule ^ - [L]
 RewriteRule ^(wp-(content|admin|includes).*) $1 [L]
 RewriteRule ^(.*\.php)$ $1 [L]
 RewriteRule . index.php [L]
-# END WordPress' >> /srv/www/vapps/wp.${WPDOMAIN}/.htaccess
+# END WordPress' >> /srv/www/vapps/wp.${wpdomain}/.htaccess
 
 ## Finish
-/bin/echo ".htaccess file is set for http://${WPDOMAIN} multisite."
+/bin/echo ".htaccess file is set for http://${wpdomain} multisite."
 fi
 
 ## Directory install
@@ -66,10 +66,10 @@ RewriteRule ^ - [L]
 RewriteRule ^([_0-9a-zA-Z-]+/)?(wp-(content|admin|includes).*) $2 [L]
 RewriteRule ^([_0-9a-zA-Z-]+/)?(.*\.php)$ $2 [L]
 RewriteRule . index.php [L]
-# END WordPress' >> /srv/www/vapps/wp.${WPDOMAIN}/.htaccess
+# END WordPress' >> /srv/www/vapps/wp.${wpdomain}/.htaccess
 
 ## Finish
-/bin/echo ".htaccess file is set for http://${WPDOMAIN} multisite."
+/bin/echo ".htaccess file is set for http://${wpdomain} multisite."
 fi
 
 

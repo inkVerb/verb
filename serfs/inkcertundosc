@@ -17,7 +17,7 @@
 ## ./inkcertundosc owncloud.YOURNAME.verb.blue
 
 
-DOMAIN=$1
+domain=$1
 
 # Check variables
 if [ -z ${1} ]; then
@@ -25,14 +25,14 @@ if [ -z ${1} ]; then
 fi
 
 # Request and get the certs
-/opt/verb/serfs/inkcertrevokesc ${DOMAIN}
+/opt/verb/serfs/inkcertrevokesc ${domain}
 
 # Install the certs
-/opt/verb/serfs/inkcertremovesc ${DOMAIN}
+/opt/verb/serfs/inkcertremovesc ${domain}
 
 # Remove mail certs
-/usr/bin/rm -f /etc/ssl/server/mail/${DOMAIN}.crt
-/usr/bin/rm -f /etc/ssl/server/mail/${DOMAIN}.key
+/usr/bin/rm -f /etc/ssl/server/mail/${domain}.crt
+/usr/bin/rm -f /etc/ssl/server/mail/${domain}.key
 
 
 

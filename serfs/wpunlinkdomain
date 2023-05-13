@@ -9,11 +9,11 @@
 ## ./wpunlinkdomain [full domain of WP site]
 
 
-DOMAIN=$1
+domain=$1
 
-/bin/rm -f /srv/www/html/${DOMAIN}
-/bin/ln -s /srv/www/domains/${DOMAIN} /srv/www/html/${DOMAIN}
-/bin/chown -R www:www /srv/www/html/${DOMAIN}
+/bin/rm -f /srv/www/html/${domain}
+/bin/ln -s /srv/www/domains/${domain} /srv/www/html/${domain}
+/bin/chown -R www:www /srv/www/html/${domain}
 
 
 

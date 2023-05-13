@@ -34,23 +34,23 @@ if [ -e "/opt/verb/mods/newverbdkim.before" ]; then . /opt/verb/mods/newverbdkim
 # Include the config
 . /opt/verb/conf/servernameip
 
-VERBDOMAIN=$1
+verbdomain=$1
 
 # OpenDKIM
 ## This creates the declared domain key
-/bin/mkdir -p /etc/opendkim/keys/${VERBDOMAIN}
-cd /etc/opendkim/keys/${VERBDOMAIN} || exit 6
-/usr/bin/opendkim-genkey -r -d ${VERBDOMAIN}
+/bin/mkdir -p /etc/opendkim/keys/${verbdomain}
+cd /etc/opendkim/keys/${verbdomain} || exit 6
+/usr/bin/opendkim-genkey -r -d ${verbdomain}
 /bin/chown -R opendkim:opendkim /etc/opendkim
 ## This adds the new domain key to the config files
-/bin/echo "inkdkim._domainkey.${VERBDOMAIN} ${VERBDOMAIN}:inkdkim:/etc/opendkim/keys/${VERBDOMAIN}/inkdkim.private" >> /etc/opendkim/KeyTable
-/bin/echo "${VERBDOMAIN} inkdkim._domainkey.${VERBDOMAIN}" >> /etc/opendkim/SigningTable
-/bin/echo "${VERBDOMAIN}" >> /etc/opendkim/TrustedHosts
+/bin/echo "inkdkim._domainkey.${verbdomain} ${verbdomain}:inkdkim:/etc/opendkim/keys/${verbdomain}/inkdkim.private" >> /etc/opendkim/KeyTable
+/bin/echo "${verbdomain} inkdkim._domainkey.${verbdomain}" >> /etc/opendkim/SigningTable
+/bin/echo "${verbdomain}" >> /etc/opendkim/TrustedHosts
 /etc/init.d/opendkim restart
 /etc/init.d/postfix reload
 /etc/init.d/postfix restart
 
-/bin/echo "Great! With no error messages, ${VERBDOMAIN} has an OpenDKIM key. Use showdkim to get it."
+/bin/echo "Great! With no error messages, ${verbdomain} has an OpenDKIM key. Use showdkim to get it."
 
 
 

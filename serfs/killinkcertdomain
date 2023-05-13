@@ -37,16 +37,16 @@ if ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpat
   /usr/bin/echo "Install Postfix Vmail first, I quit."; exit 8
 fi
 
-KILLDOMAIN=$1
+killdomain=$1
 
 # Remove inkCert configs
 /bin/rm -f /opt/verb/conf/inkcert/cli-ini/cli.${KILLDOMSHELL}.ini
 /bin/rm -f /opt/verb/conf/inkcert/cli-ini/siteinkcert.${KILLDOMSHELL}
-/bin/rm -f /etc/inkcert/cli.${KILLDOMAIN}.ini
-/bin/rm -rf /etc/inkcert/le/live/${KILLDOMAIN}
-/bin/rm -rf /etc/inkcert/live/${KILLDOMAIN}
-/bin/rm -f /etc/ssl/server/mail/${KILLDOMAIN}.crt
-/bin/rm -f /etc/ssl/server/mail/${KILLDOMAIN}.key
+/bin/rm -f /etc/inkcert/cli.${killdomain}.ini
+/bin/rm -rf /etc/inkcert/le/live/${killdomain}
+/bin/rm -rf /etc/inkcert/live/${killdomain}
+/bin/rm -f /etc/ssl/server/mail/${killdomain}.crt
+/bin/rm -f /etc/ssl/server/mail/${killdomain}.key
 
 
 

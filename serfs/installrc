@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #inkVerbSerf! verb.ink
 
 # This installs Roundcube
@@ -38,7 +38,7 @@ if [ -e "/opt/verb/mods/installrc.replace" ]; then . /opt/verb/mods/installrc.re
 if [ -e "/opt/verb/mods/installrc.before" ]; then . /opt/verb/mods/installrc.before; fi # Precedes this script
 
 
-CVAPPNAME="roundcube"
+cVappName="roundcube"
 
 # Include the config files
 . /opt/verb/conf/servertype
@@ -91,7 +91,7 @@ fi
 
 # Get inkVerb's latest and install
 cd /srv/www/email
-/opt/verb/serfs/inkget ${CVAPPNAME} check
+/opt/verb/serfs/inkget ${cVappName} check
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 ### Check
 if [ "$?" = 4 ]; then

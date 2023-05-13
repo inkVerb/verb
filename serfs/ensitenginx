@@ -13,12 +13,12 @@
 
 # Run as a loop so multiple sites can be enabled in one command, just like a2ensite
 for DOMAIN in $@; do
-  if [ "${DOMAIN}" = "-r" ]; then
+  if [ "${domain}" = "-r" ]; then
     continue
-  elif [ -e "/etc/nginx/sites-available/${DOMAIN}.conf" ] && [ -f "/opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf" ]; then
-    /usr/bin/ln -sfn /opt/verb/conf/webserver/sites-available/nginx/${DOMAIN}.conf /opt/verb/conf/webserver/sites-enabled/nginx/${DOMAIN}.conf
+  elif [ -e "/etc/nginx/sites-available/${domain}.conf" ] && [ -f "/opt/verb/conf/webserver/sites-available/nginx/${domain}.conf" ]; then
+    /usr/bin/ln -sfn /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf /opt/verb/conf/webserver/sites-enabled/nginx/${domain}.conf
   else
-    /usr/bin/echo "${DOMAIN} Nginx config does not exist at /etc/nginx/sites-available/${DOMAIN}.conf, cannot enable"
+    /usr/bin/echo "${domain} Nginx config does not exist at /etc/nginx/sites-available/${domain}.conf, cannot enable"
   fi
 done
 

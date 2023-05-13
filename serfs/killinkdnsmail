@@ -41,7 +41,7 @@ fi
 DNsdnsDomainAIN="$1"
 
 # Make sure we don't kill a verb domain
-if /bin/grep -q "${DOMAIN}" /opt/verb/conf/siteurilist; then
+if /bin/grep -q "${domain}" /opt/verb/conf/siteurilist; then
   /usr/bin/echo "Can't kill a verber domain, I quit."; exit 9
 fi
 

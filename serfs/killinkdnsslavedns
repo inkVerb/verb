@@ -46,7 +46,7 @@ fi
 # Rink
 RINK="$1"
 # Domain
-DOMAIN="$2"
+domain="$2"
 
 # Rink user check
 if [ ! -d "/srv/sns/${RINK}" ]; then
@@ -59,8 +59,8 @@ if [ ! -f "/srv/sns/${RINK}/servertldstatus" ] || [ ! -f "/srv/sns/${RINK}/conf"
 fi
 
 # Does the rink user own the domain?
-if [ ! -f "/srv/sns/${RINK}/domains/${DOMAIN}" ]; then
-  /bin/echo "This rink user ${RINK} does not own domain ${DOMAIN}, I quit."; exit 0
+if [ ! -f "/srv/sns/${RINK}/domains/${domain}" ]; then
+  /bin/echo "This rink user ${RINK} does not own domain ${domain}, I quit."; exit 0
 fi
 
 . /srv/sns/${RINK}/servertldstatus
@@ -68,12 +68,12 @@ fi
 . /srv/sns/${RINK}/conf
 
 # Already existing check
-if [ ! -f "/opt/verb/conf/inkdns/sdns/s.${DOMAIN}" ]; then
-  /bin/echo "No SDNS configuration for ${DOMAIN}, I quit."; exit 0
+if [ ! -f "/opt/verb/conf/inkdns/sdns/s.${domain}" ]; then
+  /bin/echo "No SDNS configuration for ${domain}, I quit."; exit 0
 fi
 
 # Remove the config
-/usr/bin/rm -f /opt/verb/conf/inkdns/sdns/s.${DOMAIN}
+/usr/bin/rm -f /opt/verb/conf/inkdns/sdns/s.${domain}
 
 # Refresh Bind?
 ## When run repeatedly, such as in some rink or "allverb" serfs, this creates systemctl errors "Start request repeated too quickly." & "Failed with result 'start-limit-hit'."
@@ -82,7 +82,7 @@ if [ -z "$3" ] || [ "$3" != "-n" ]; then
 fi
 
 # Finish
-/bin/echo "${DOMAIN} removed from this DNS server."
+/bin/echo "${domain} removed from this DNS server."
 
 
 

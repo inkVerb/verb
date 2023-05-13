@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #inkVerb! repo donjon dragon, verb.ink
 #set -e
 
@@ -8,27 +8,27 @@
 ## ./postfixadmin.updaterepo
 
 
-CVAPPNAME=postfixadmin
+cVappName=postfixadmin
 # Include the config files
 . /opt/verb/conf/serverinkget
 . /opt/verb/conf/inklists/repoverlist
-DISTVER="${postfixadmin}"
+distVer="${postfixadmin}"
 
 if [ $InkGet_Method != "ZJZ" ]; then
   cd /opt/verb/repo; fi
 
 # Announce
-/bin/echo "Updating the PostfixAdmin package to v${DISTVER}..."
+/bin/echo "Updating the PostfixAdmin package to v${distVer}..."
 
 # Get the package
-/usr/bin/wget -O postfixadmin-${DISTVER}.tar.gz https://sourceforge.net/projects/postfixadmin/files/postfixadmin-${DISTVER}/PostfixAdmin%20${DISTVER}.tar.gz
-if [ ! -f "postfixadmin-${DISTVER}.tar.gz" ]; then
-/bin/echo "Failed download."; touch "${CVAPPNAME}.failed"
+/usr/bin/wget -O postfixadmin-${distVer}.tar.gz https://sourceforge.net/projects/postfixadmin/files/postfixadmin-${distVer}/PostfixAdmin%20${distVer}.tar.gz
+if [ ! -f "postfixadmin-${distVer}.tar.gz" ]; then
+/bin/echo "Failed download."; touch "${cVappName}.failed"
 exit 4; else
-/bin/rm -f ${CVAPPNAME}.failed; fi
+/bin/rm -f ${cVappName}.failed; fi
 ## Check the hash
-CHECKSHA=$(sha1sum postfixadmin-${DISTVER}.tar.gz)
-if [ "${CHECKSHA}" = "${postfixadminsha}  postfixadmin-${DISTVER}.tar.gz" ]; then
+checksha=$(sha1sum postfixadmin-${distVer}.tar.gz)
+if [ "${checksha}" = "${postfixadminsha}  postfixadmin-${distVer}.tar.gz" ]; then
 /bin/echo "Download checks out."
 else
 /bin/echo "SHA check failed. The downloaded file is not what was expected."
@@ -37,21 +37,21 @@ fi
 
 if [ $InkGet_Method != "ZJZ" ]; then
   # Set it as the new package
-  /bin/rm -f ${CVAPPNAME}.legacy.txz
-  /usr/bin/touch ${CVAPPNAME}.txz
-  /bin/mv ${CVAPPNAME}.txz ${CVAPPNAME}.legacy.txz
+  /bin/rm -f ${cVappName}.legacy.txz
+  /usr/bin/touch ${cVappName}.txz
+  /bin/mv ${cVappName}.txz ${cVappName}.legacy.txz
 fi
 /usr/bin/echo "Extracting from vendor..."
-/usr/bin/tar xf postfixadmin-${DISTVER}.tar.gz
-/bin/rm postfixadmin-${DISTVER}.tar.gz
-/bin/mv postfixadmin-postfixadmin-* ${CVAPPNAME}
+/usr/bin/tar xf postfixadmin-${distVer}.tar.gz
+/bin/rm postfixadmin-${distVer}.tar.gz
+/bin/mv postfixadmin-postfixadmin-* ${cVappName}
 if [ $InkGet_Method != "ZJZ" ]; then
-  /opt/verb/serfs/txzin ${CVAPPNAME}; wait
-  /bin/rm -rf ${CVAPPNAME}
+  /opt/verb/serfs/txzin ${cVappName}; wait
+  /bin/rm -rf ${cVappName}
 
   # Make a record of current version
-  /bin/echo "${DISTVER}" > ${CVAPPNAME}.ver.${DISTVER}
+  /bin/echo "${distVer}" > ${cVappName}.ver.${distVer}
 fi
 
 # Finish
-/bin/echo "Downloaded PostfixAdmin v${DISTVER}."
+/bin/echo "Downloaded PostfixAdmin v${distVer}."

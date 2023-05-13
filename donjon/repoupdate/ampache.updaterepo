@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #inkVerb! repo donjon dragon, verb.ink
 #set -e
 
@@ -8,28 +8,28 @@
 ## ./ampache.updaterepo
 
 
-CVAPPNAME=ampache
+cVappName=ampache
 # Include the config files
 . /opt/verb/conf/serverinkget
 . /opt/verb/conf/inklists/repoverlist
-DISTVER="${ampache}"
+distVer="${ampache}"
 
 if [ $InkGet_Method != "ZJZ" ]; then
   cd /opt/verb/repo; fi
 
 # Announce
-/bin/echo "Updating the Ampache package to v${DISTVER}..."
+/bin/echo "Updating the Ampache package to v${distVer}..."
 
 # Get the package
 ## Ampache downloads slowly and won't work with curl, it needs wget
-/usr/bin/wget https://github.com/ampache/ampache/releases/download/${DISTVER}/ampache-${DISTVER}_all_php8.1.zip
-if [ ! -f "ampache-${DISTVER}_all_php8.1.zip" ]; then
-/bin/echo "Failed download."; touch "${CVAPPNAME}.failed"
+/usr/bin/wget https://github.com/ampache/ampache/releases/download/${distVer}/ampache-${distVer}_all_php8.1.zip
+if [ ! -f "ampache-${distVer}_all_php8.1.zip" ]; then
+/bin/echo "Failed download."; touch "${cVappName}.failed"
 exit 4; else
-/bin/rm -f ${CVAPPNAME}.failed; fi
+/bin/rm -f ${cVappName}.failed; fi
 ## Check the hash
-CHECKSHA=$(md5sum ampache-${DISTVER}_all_php8.1.zip)
-if [ "${CHECKSHA}" = "${ampachesha}  ampache-${DISTVER}_all_php8.1.zip" ]; then
+checksha=$(md5sum ampache-${distVer}_all_php8.1.zip)
+if [ "${checksha}" = "${ampachesha}  ampache-${distVer}_all_php8.1.zip" ]; then
 /bin/echo "Download checks out."
 else
 /bin/echo "MD5 check failed. The downloaded file is not what was expected."
@@ -38,26 +38,26 @@ fi
 
 if [ $InkGet_Method != "ZJZ" ]; then
   # Set it as the new package
-  /bin/rm -f ${CVAPPNAME}.legacy.txz
-  /usr/bin/touch ${CVAPPNAME}.txz
-  /bin/mv ${CVAPPNAME}.txz ${CVAPPNAME}.legacy.txz
+  /bin/rm -f ${cVappName}.legacy.txz
+  /usr/bin/touch ${cVappName}.txz
+  /bin/mv ${cVappName}.txz ${cVappName}.legacy.txz
 fi
-/usr/bin/mkdir ${CVAPPNAME}
-/bin/mv ampache-${DISTVER}_all_php8.1.zip ${CVAPPNAME}
+/usr/bin/mkdir ${cVappName}
+/bin/mv ampache-${distVer}_all_php8.1.zip ${cVappName}
 if [ $InkGet_Method != "ZJZ" ]; then
-  cd ${CVAPPNAME}
+  cd ${cVappName}
 fi
 /usr/bin/echo "Extracting from vendor..."
-/usr/bin/unzip -q ampache-${DISTVER}_all_php8.1.zip
-/bin/rm ampache-${DISTVER}_all_php8.1.zip
+/usr/bin/unzip -q ampache-${distVer}_all_php8.1.zip
+/bin/rm ampache-${distVer}_all_php8.1.zip
 if [ $InkGet_Method != "ZJZ" ]; then
   cd ..
-  /opt/verb/serfs/txzin ${CVAPPNAME}; wait
-  /bin/rm -rf ${CVAPPNAME}
+  /opt/verb/serfs/txzin ${cVappName}; wait
+  /bin/rm -rf ${cVappName}
 
   # Make a record of current version
-  /bin/echo "${DISTVER}" > ${CVAPPNAME}.ver.${DISTVER}
+  /bin/echo "${distVer}" > ${cVappName}.ver.${distVer}
 fi
 
 # Finish
-/bin/echo "Downloaded Ampache v${DISTVER}."
+/bin/echo "Downloaded Ampache v${distVer}."

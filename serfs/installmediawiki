@@ -9,7 +9,7 @@
 ## ./installmediawiki [dbase] [dbuser] [dbpassword]
 
 
-CVAPPNAME=mediawiki
+cVappName=mediawiki
 
 # Include the configs
 . /opt/verb/conf/servernameip
@@ -18,21 +18,21 @@ CVAPPNAME=mediawiki
 DBASE=$1
 DBUSER=$2
 DBPASSWORD=$3
-CLEANNAME=$(/bin/echo $CVAPPNAME | sed -e 's/\.//g')
+CLEANNAME=$(/bin/echo $cVappName | sed -e 's/\.//g')
 
 # Check if already installed
-if [-f /opt/verb/conf/vapp.${CVAPPNAME} ]; then
+if [-f /opt/verb/conf/vapp.${cVappName} ]; then
 /bin/echo "This is already installed. I quit."
 exit 0; fi
 
 # Download and establish mediawiki from the inkVerb repo
 cd /srv/www/vapps || exit 6
-/opt/verb/serfs/inkget ${CVAPPNAME} check
+/opt/verb/serfs/inkget ${cVappName} check
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
-/opt/verb/serfs/setvapplinkon ${CVAPPNAME}; wait
+/opt/verb/serfs/setvapplinkon ${cVappName}; wait
 /bin/chown -R www:www /srv/www/verb/ink.wiki; wait
-/bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}; wait
+/bin/chown -R www:www /srv/www/vapps/${cVappName}; wait
 
 # Auto database
 if [ -z ${3} ]; then
@@ -52,7 +52,7 @@ FLUSH PRIVILEGES;"
 /bin/echo "#!/bin/bash
 APPDBASE=${DBASE}
 APPDDBUSR=${DBUSER}
-APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.${CVAPPNAME}
+APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.${cVappName}
 
 /bin/echo "These are setup:
 

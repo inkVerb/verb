@@ -8,9 +8,9 @@
 ## ./showinkdkim [domain.tld]
 
 
-DOMAIN=$1
+domain=$1
 
-/bin/echo $(/bin/cat /etc/opendkim/keys/${DOMAIN}/inkdkim.txt)
+/bin/echo $(/bin/cat /etc/opendkim/keys/${domain}/inkdkim.txt)
 
 
 

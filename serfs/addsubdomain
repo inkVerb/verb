@@ -41,8 +41,8 @@ fi
 # Include the config
 . /opt/verb/conf/servertype
 
-SUBDOMAIN=$1
-OLDDOMAIN=$2
+SUBdomain=$1
+OLDdomain=$2
 
 # Check if it already exists
 if [ -f /opt/verb/conf/webserver/sites-available/httpd/${SUBDOMAIN}.${OLDDOMAIN}.conf ]; then

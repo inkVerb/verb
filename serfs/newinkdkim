@@ -30,7 +30,7 @@ if [ -e "/opt/verb/mods/newinkdkim.replace" ]; then . /opt/verb/mods/newinkdkim.
 if [ -e "/opt/verb/mods/newinkdkim.before" ]; then . /opt/verb/mods/newinkdkim.before; fi # Precedes this script
 
 
-DKIMDOMAIN=$1
+DKIMdomain=$1
 
 # See if already added
 if [ -d "/etc/opendkim/keys/${DKIMDOMAIN}" ]; then

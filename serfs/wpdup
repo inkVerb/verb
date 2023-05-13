@@ -13,8 +13,8 @@
 ## ./wpdup inkisaverb.com poetryiscode.com
 
 
-oDOMAIN="$1"
-nDOMAIN="$2"
+odomain="$1"
+ndomain="$2"
 
 # Check if the new WP site already exists
 if [ -e "/srv/www/vapps/wp.${nDOMAIN}" ]; then
@@ -100,7 +100,7 @@ NONCE_SALT=$(/usr/bin/pwgen -s -1 27)
 /bin/sed -i "s/define('NONCE_SALT',       'put your unique phrase here');/define('NONCE_SALT',       '${NONCE_SALT}');/g" wp-config.php
 
 # Reset all permissions and restart server
-/bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}.${DOMAIN}
+/bin/chown -R www:www /srv/www/vapps/${cVappName}.${domain}
 . /opt/verb/conf/servertype
 if [ ${ServerType} = "lemp" ]; then
   /usr/bin/systemctl restart nginx

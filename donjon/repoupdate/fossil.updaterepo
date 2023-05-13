@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #inkVerb! repo donjon dragon, verb.ink
 #set -e
 
@@ -8,27 +8,27 @@
 ## ./fossil.updaterepo
 
 
-CVAPPNAME=fossil
+cVappName=fossil
 # Include the config files
 . /opt/verb/conf/serverinkget
 . /opt/verb/conf/inklists/repoverlist
-DISTVER="${fossil}"
+distVer="${fossil}"
 
 if [ $InkGet_Method != "ZJZ" ]; then
   cd /opt/verb/repo; fi
 
 # Announce
-/bin/echo "Updating the Fossil package to v${DISTVER}..."
+/bin/echo "Updating the Fossil package to v${distVer}..."
 
 # Get the package
-/usr/bin/wget https://www.fossil-scm.org/fossil/uv/fossil-linux-x64-${DISTVER}.tar.gz
-if [ ! -f "fossil-linux-x64-${DISTVER}.tar.gz" ]; then
-/bin/echo "Failed download."; touch "${CVAPPNAME}.failed"
+/usr/bin/wget https://www.fossil-scm.org/fossil/uv/fossil-linux-x64-${distVer}.tar.gz
+if [ ! -f "fossil-linux-x64-${distVer}.tar.gz" ]; then
+/bin/echo "Failed download."; touch "${cVappName}.failed"
 exit 4; else
-/bin/rm -f ${CVAPPNAME}.failed; fi
+/bin/rm -f ${cVappName}.failed; fi
 ## Check the hash
-CHECKSHA=$(shasum -a 256 fossil-linux-x64-${DISTVER}.tar.gz)
-if [ "${CHECKSHA}" = "${fossilsha}  fossil-linux-x64-${DISTVER}.tar.gz" ]; then
+checksha=$(shasum -a 256 fossil-linux-x64-${distVer}.tar.gz)
+if [ "${checksha}" = "${fossilsha}  fossil-linux-x64-${distVer}.tar.gz" ]; then
 /bin/echo "Download checks out."
 else
 /bin/echo "SHA check failed. The downloaded file is not what was expected."
@@ -37,20 +37,20 @@ fi
 
 if [ $InkGet_Method != "ZJZ" ]; then
   # Set it as the new package
-  /bin/rm -f ${CVAPPNAME}.legacy.txz
-  /usr/bin/touch ${CVAPPNAME}.txz
-  /bin/mv ${CVAPPNAME}.txz ${CVAPPNAME}.legacy.txz
+  /bin/rm -f ${cVappName}.legacy.txz
+  /usr/bin/touch ${cVappName}.txz
+  /bin/mv ${cVappName}.txz ${cVappName}.legacy.txz
 fi
 /usr/bin/echo "Extracting from vendor..."
-/usr/bin/tar xf fossil-linux-x64-${DISTVER}.tar.gz
-/bin/rm fossil-linux-x64-${DISTVER}.tar.gz
+/usr/bin/tar xf fossil-linux-x64-${distVer}.tar.gz
+/bin/rm fossil-linux-x64-${distVer}.tar.gz
 if [ $InkGet_Method != "ZJZ" ]; then
-  /opt/verb/serfs/txzin ${CVAPPNAME}; wait
-  /bin/rm -rf ${CVAPPNAME}
+  /opt/verb/serfs/txzin ${cVappName}; wait
+  /bin/rm -rf ${cVappName}
 
   # Make a record of current version
-  /bin/echo "${DISTVER}" > ${CVAPPNAME}.ver.${DISTVER}
+  /bin/echo "${distVer}" > ${cVappName}.ver.${distVer}
 fi
 
 # Finish
-/bin/echo "Downloaded Fossil v${DISTVER}."
+/bin/echo "Downloaded Fossil v${distVer}."

@@ -26,9 +26,9 @@ if [ -e "/opt/verb/mods/inkcertlist.replace" ]; then . /opt/verb/mods/inkcertlis
 if [ -e "/opt/verb/mods/inkcertlist.before" ]; then . /opt/verb/mods/inkcertlist.before; fi # Precedes this script
 
 
-DOMAIN=$1
+domain=$1
 
-/usr/bin/grep '^domains = ' /opt/verb/conf/inkcert/cli-ini/cli.${DOMAIN}.ini | /usr/bin/sed 's/domains = //'
+/usr/bin/grep '^domains = ' /opt/verb/conf/inkcert/cli-ini/cli.${domain}.ini | /usr/bin/sed 's/domains = //'
 
 
 

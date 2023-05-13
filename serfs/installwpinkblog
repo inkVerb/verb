@@ -10,7 +10,7 @@
 ## ./installwpinkblog [dbase] [dbuser] [dbpassword]
 
 
-CVAPPNAME=wp.inkblog
+cVappName=wp.inkblog
 # "wp" is the normal app, so it must be specified when retrieving from the repo
 
 # Include the config
@@ -19,7 +19,7 @@ CVAPPNAME=wp.inkblog
 DBASE=$1
 DBUSER=$2
 DBPASSWORD=$3
-CLEANNAME=$(/bin/echo $CVAPPNAME | sed -e 's/\.//g')
+CLEANNAME=$(/bin/echo $cVappName | sed -e 's/\.//g')
 
 # Check for existing inkblog
 . /opt/verb/conf/inkinksiteinstallstatus
@@ -43,11 +43,11 @@ DBASE=${CLEANNAME}$(/usr/bin/pwgen -s -1 6); fi
 if [ -z ${3} ]; then
 DBUSER=${DBASE}; fi
 
-/bin/mv wp ${CVAPPNAME}; wait
-/opt/verb/serfs/setvapplinkon ${CVAPPNAME}; wait
-/bin/ln -sfn /srv/www/vapps/${CVAPPNAME} /srv/vip/_webapps/; wait
+/bin/mv wp ${cVappName}; wait
+/opt/verb/serfs/setvapplinkon ${cVappName}; wait
+/bin/ln -sfn /srv/www/vapps/${cVappName} /srv/vip/_webapps/; wait
 /bin/chown -R www:www /srv/www/verb/ink.i/blog; wait
-/bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}; wait
+/bin/chown -R www:www /srv/www/vapps/${cVappName}; wait
 
 # Create the database and credentials
 /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
@@ -59,13 +59,13 @@ FLUSH PRIVILEGES;"
 /bin/echo "#!/bin/bash
 APPDBASE=${DBASE}
 APPDDBUSR=${DBUSER}
-APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.${CVAPPNAME}
+APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.${cVappName}
 
 # VIP domain
 /bin/ln -s /srv/www/verb/ink.i/blog /srv/vip/_domains/
 
 # Put the settings in the WordPress config file
-cd ${CVAPPNAME} || exit 6
+cd ${cVappName} || exit 6
 /bin/cp wp-config-sample.php wp-config.php
 /bin/sed -i "s/database_name_here/${DBASE}/g" wp-config.php
 /bin/sed -i "s/username_here/${DBUSER}/g" wp-config.php
@@ -90,23 +90,23 @@ NONCE_SALT=$(/usr/bin/pwgen -s -1 27)
 /bin/sed -i "s/define( 'NONCE_SALT',       .*/define( 'NONCE_SALT',       '${NONCE_SALT}' );/g" wp-config.php
 
 #### fixhttps already done?
-if /bin/grep -q '##INKHTTPSFIX=fixed' /opt/verb/conf/webserver/sites-available/httpd/${DOMAIN}.conf; then
-/bin/sed -i "/WP_SITEURL/d" /srv/www/vapps/wp.${DOMAIN}/wp-config.php
-/bin/sed -i "/WP_HOME/d" /srv/www/vapps/wp.${DOMAIN}/wp-config.php
-/bin/echo "define( 'WP_SITEURL', 'https://${DOMAIN}' );
-define( 'WP_HOME', 'https://${DOMAIN}' );" >> /srv/www/vapps/wp.${DOMAIN}/wp-config.php
+if /bin/grep -q '##INKHTTPSFIX=fixed' /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf; then
+/bin/sed -i "/WP_SITEURL/d" /srv/www/vapps/wp.${domain}/wp-config.php
+/bin/sed -i "/WP_HOME/d" /srv/www/vapps/wp.${domain}/wp-config.php
+/bin/echo "define( 'WP_SITEURL', 'https://${domain}' );
+define( 'WP_HOME', 'https://${domain}' );" >> /srv/www/vapps/wp.${domain}/wp-config.php
 fi
 
 # Reset all permissions
 /bin/chmod -R 440 wp-config.php
-/bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}
+/bin/chown -R www:www /srv/www/vapps/${cVappName}
 
 
 # Set the site-wide inkblog config
 /bin/sed -i "s/INKblog=.*/INKblog=\"WordPress\"/g" /opt/verb/conf/inkinksiteinstallstatus
 
 # Reset all permissions
-/bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}
+/bin/chown -R www:www /srv/www/vapps/${cVappName}
 
 # Finish
 /bin/echo "These are setup:

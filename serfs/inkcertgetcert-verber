@@ -13,11 +13,11 @@
 
 
 INFPROFILE=$1
-DOMAIN=$2
+domain=$2
 
 # Verify that the domain is installed
-if [ ! -f /opt/verb/conf/inkcert/cli-ini/siteinkcert-${DOMAIN} ]; then
-/bin/echo "Sorry, Bucko. ${DOMAIN} is not installed yet.
+if [ ! -f /opt/verb/conf/inkcert/cli-ini/siteinkcert-${domain} ]; then
+/bin/echo "Sorry, Bucko. ${domain} is not installed yet.
 
 Do that first, then get back to me.
 "; exit 0

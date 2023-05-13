@@ -33,40 +33,40 @@ if [ -e "/opt/verb/mods/inkcertrevokecbsingle.replace" ]; then . /opt/verb/mods/
 if [ -e "/opt/verb/mods/inkcertrevokecbsingle.before" ]; then . /opt/verb/mods/inkcertrevokecbsingle.before; fi # Precedes this script
 
 
-DOMAIN=$1
+domain=$1
 
 # Include and check the inkCert domain config
 ## Verify that the domain is installed
-if [ ! -f /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN} ]; then
-/bin/echo "Sorry, ${DOMAIN} is not even installed.
+if [ ! -f /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain} ]; then
+/bin/echo "Sorry, ${domain} is not even installed.
 Why revoke a cert for a domain that isn't even installed here?
 "; exit 0
 fi
 ## Domain cert status
-. /opt/verb/conf/inkcert/cli-ini/siteinkcert.${DOMAIN}
+. /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}
 if [ "${InkCerted}" != "DONE_CB" ]; then
   if [ "${InkCerted}" = "DONE_LE" ]; then
-    /bin/echo "inkCert used inkCert-Letsencrypt for ${DOMAIN}. This is for inkCert Certbot.
+    /bin/echo "inkCert used inkCert-Letsencrypt for ${domain}. This is for inkCert Certbot.
 Instead use: inkcertundole (or, individually: inkcertrevokele, inkcertremovele)
 "; exit 0
   elif [ "${InkCerted}" = "DONE_SC" ]; then
-    /bin/echo "inkCert used inkCert Self-Cert for ${DOMAIN}. This is for inkCert Certbot.
+    /bin/echo "inkCert used inkCert Self-Cert for ${domain}. This is for inkCert Certbot.
 Instead use: inkcertundosc (or, individually: inkcertrevokesc, inkcertremovesc)
 "; exit 0
   fi
-  /bin/echo "inkCert is not setup for ${DOMAIN}, it only has Snakeoil.
+  /bin/echo "inkCert is not setup for ${domain}, it only has Snakeoil.
 There is nothing to revoke until you run inkcertdo or inkcertdole... And then, certs are cool. Why would you want to revoke them? Are you just revoking stuff at random?
 "; exit 0
 fi
 
 # Run the LE revoke
-/usr/bin/certbot revoke --cert-path /etc/inkcert/le/live/${DOMAIN}/cert.pem
+/usr/bin/certbot revoke --cert-path /etc/inkcert/le/live/${domain}/cert.pem
 # Additional options if not doing certonly: --no-redirect --no-hsts --no-uir
 # https://certbot.eff.org/docs/using.html#command-line
 # https://certbot.eff.org/#ubuntuxenial-apache
 
 ## Remove the certs
-/opt/verb/serfs/inkcertdeletecble ${DOMAIN}
+/opt/verb/serfs/inkcertdeletecble ${domain}
 
 # Echo alliswell
 /bin/echo "Unless there is an error message above, the certs should have been revoked from the CA, now uninstall them..."
