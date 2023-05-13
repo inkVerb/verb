@@ -36,7 +36,7 @@ if [ -e "/opt/verb/mods/inkcertaddcb.before" ]; then . /opt/verb/mods/inkcertadd
 
 
 sitedomain=$1
-PARENTdomain=$2
+parentdomain=$2
 
 # Include the configs
 . /opt/verb/conf/servernameip
@@ -60,7 +60,7 @@ fi
 
 # Set variable for same certificate as domain (most all scenarios)
 if [ -z ${2} ]; then
-PARENTdomain=$1
+parentdomain=$1
 fi
 
 # Certs should already be in place from inkcertreqle

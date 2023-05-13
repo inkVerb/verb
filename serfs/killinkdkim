@@ -37,7 +37,7 @@ if ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpat
   /usr/bin/echo "Install Postfix Vmail first, I quit."; exit 8
 fi
 
-KILLDKIMdomain=$1
+KILLdkimdomain=$1
 
 # Delete domain key from the config files
 /bin/sed -i "/inkdkim\._domainkey\.${KILLDKIMDOMAIN} ${KILLDKIMDOMAIN}:inkdkim:\/etc\/opendkim\/keys\/${KILLDKIMDOMAIN}\/inkdkim\.private/d" /etc/opendkim/KeyTable

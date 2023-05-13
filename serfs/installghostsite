@@ -132,7 +132,7 @@ fi
 
 # Write the config for backup
 /bin/echo "#!/bin/bash
-GHOSTdomain=\"${domain}\"
+ghostdomain=\"${domain}\"
 GHOSTPORT=\"${NEWPORT}\"
 GHOSTEMAIL=\"${EMAILUSER}\"
 GHOSTEMLPAS=\"${EMAILPASS}\"" > /opt/verb/conf/vapp.${cVappName}.${domain}

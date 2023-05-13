@@ -26,7 +26,7 @@ if [ -e "/opt/verb/mods/killdomainfiler.replace" ]; then . /opt/verb/mods/killdo
 if [ -e "/opt/verb/mods/killdomainfiler.before" ]; then . /opt/verb/mods/killdomainfiler.before; fi # Precedes this script
 
 
-OLDdomain=$1
+olddomain=$1
 FILER=$2
 
 /bin/rm -f /srv/vip/filers/${FILER}/domains/${OLDDOMAIN}
