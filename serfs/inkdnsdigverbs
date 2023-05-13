@@ -28,15 +28,15 @@ if [ -e "/opt/verb/mods/inkdnsdigverbs.replace" ]; then . /opt/verb/mods/inkdnsd
 if [ -e "/opt/verb/mods/inkdnsdigverbs.before" ]; then . /opt/verb/mods/inkdnsdigverbs.before; fi # Precedes this script
 
 
-# Include the configs
-. /opt/verb/conf/inkdnsconf
-. /opt/verb/conf/siteurilist
-. /opt/verb/conf/servertldstatus
-
 # Config check
 if ! /bin/grep -q 'InkDNSStat="INSTALLED"' /opt/verb/conf/inkdnsconf; then
   /usr/bin/echo "Install inkDNS first, I quit."; exit 8
 fi
+
+# Include the configs
+. /opt/verb/conf/inkdnsconf
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/servertldstatus
 
 # Primary VPS host
 /opt/verb/serfs/inkdnsdigverbs ${nameURI} mail; e="$?"; [[ "$e" = "0" ]] || exit "$e"
