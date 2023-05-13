@@ -27,7 +27,7 @@ if [ ! -f "${distVer}.tar.gz" ]; then
 exit 4; else
 /bin/rm -f ${cVappName}.failed; fi
 ## Check the hash
-checksha=$(shasum -a 256 ${distVer}.tar.gz)
+checksha=$(sha256sum ${distVer}.tar.gz)
 if [ "${checksha}" = "${owasha}  ${distVer}.tar.gz" ]; then
 /bin/echo "Download checks out."
 else

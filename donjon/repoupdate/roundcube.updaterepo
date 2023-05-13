@@ -28,7 +28,7 @@ exit 4; else
 /bin/rm -f ${cVappName}.failed; fi
 
 ## Check the hash
-checksha=$(shasum -a 256 roundcubemail-${distVer}-complete.tar.gz)
+checksha=$(sha256sum roundcubemail-${distVer}-complete.tar.gz)
 
 if [ "${checksha}" = "${roundcubesha}  roundcubemail-${distVer}-complete.tar.gz" ]; then
   /bin/echo "Download checks out."

@@ -27,7 +27,7 @@ if [ ! -f "phpMyAdmin-${distVer}-all-languages.zip" ]; then
 exit 4; else
 /bin/rm -f ${cVappName}.failed; fi
 ## Check the hash
-checksha=$(shasum -a 256 phpMyAdmin-${distVer}-all-languages.zip)
+checksha=$(sha256sum phpMyAdmin-${distVer}-all-languages.zip)
 if [ "${checksha}" = "${phpmyadminsha}  phpMyAdmin-${distVer}-all-languages.zip" ]; then
 /bin/echo "Download checks out."
 else

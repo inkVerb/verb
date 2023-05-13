@@ -45,7 +45,7 @@ exit 4; else
 /bin/rm -f ${cVappName}.failed; fi
 ## Check the hash
 ### Every download is different, can't be checked
-#checksha=$(shasum -a 256 iwpadmin-${distVer}.zip)
+#checksha=$(sha256sum iwpadmin-${distVer}.zip)
 #if [ "${checksha}" = "${iwpadminsha}  iwpadmin-${distVer}.zip" ]; then
 #/bin/echo "Download checks out."
 #else

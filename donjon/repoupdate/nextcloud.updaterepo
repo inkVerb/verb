@@ -26,7 +26,7 @@ exit 4; else
 /bin/rm -f ${cVappName}.failed; fi
 ## Check the hash
 /usr/bin/wget https://download.nextcloud.com/server/releases/latest.tar.bz2.sha256
-checksha=$(shasum -a 256 -c latest.tar.bz2.sha256 < latest.tar.bz2)
+checksha=$(sha256sum -c latest.tar.bz2.sha256 < latest.tar.bz2)
 if [ "${checksha}" = "latest.tar.bz2: OK" ]; then
 /bin/echo "Download checks out."
 /bin/rm latest.tar.bz2.sha256
