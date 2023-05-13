@@ -48,7 +48,7 @@ fi
 /bin/rm mediawiki-${DISTVER}.tar.gz
 /bin/mv mediawiki-${DISTVER} ${CVAPPNAME}
 if [ $InkGet_Method != "ZJZ" ]; then
-  /opt/verb/serfs.txzin ${CVAPPNAME}; wait
+  /opt/verb/serfs/txzin ${CVAPPNAME}; wait
   /bin/rm -rf ${CVAPPNAME}
 
   # Make a record of current version

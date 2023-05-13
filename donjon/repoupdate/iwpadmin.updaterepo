@@ -64,7 +64,7 @@ fi
 /bin/rm iwpadmin-${DISTVER}.zip
 /bin/mv IWPAdminPanel_v${DISTVER} ${CVAPPNAME}
 if [ $InkGet_Method != "ZJZ" ]; then
-  /opt/verb/serfs.txzin ${CVAPPNAME}; wait
+  /opt/verb/serfs/txzin ${CVAPPNAME}; wait
   /bin/rm -rf ${CVAPPNAME}
 
   # Make a record of current version

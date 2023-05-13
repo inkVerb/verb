@@ -31,11 +31,9 @@ if [ -d /srv/www/vapps/${CVAPPNAME} ]; then
 exit 8; fi
 
 # Download and unpack the latest checked version from inkisaverb.com/repo
-cd /srv/www/vapps || exit 0
+cd /srv/www/vapps || exit 6
 /opt/verb/serfs/inkget ${CVAPPNAME} check; wait
-if [ "$?" = 4 ]; then
-/bin/echo "Repo failed to retrieve the file."
-exit 4; fi
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 /bin/mkdir -p /srv/www/vapps/${CVAPPNAME}/lib/logs
 /bin/mkdir -p /srv/www/vapps/${CVAPPNAME}/symfony/cache

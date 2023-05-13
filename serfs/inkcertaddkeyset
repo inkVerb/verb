@@ -17,7 +17,7 @@ DOMAIN=$1
 ICTFILENAME=$2
 
 # Unpack the file
-cd /etc/inkcert || exit 0
+cd /etc/inkcert || exit 6
 /bin/mv ${ICTFILENAME} ${DOMAIN}.txz
 /opt/verb/serfs/vtxzout ${DOMAIN}
 /bin/mv ${DOMAIN} req/

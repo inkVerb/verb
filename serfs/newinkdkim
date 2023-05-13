@@ -39,7 +39,7 @@ exit 0; fi
 
 # Create the declared domain key
 /bin/mkdir -p /etc/opendkim/keys/${DKIMDOMAIN}
-cd /etc/opendkim/keys/${DKIMDOMAIN} || exit 0
+cd /etc/opendkim/keys/${DKIMDOMAIN} || exit 6
 /usr/bin/opendkim-genkey -r -S -s inkdkim -d ${DKIMDOMAIN}
 /bin/chmod 660 inkdkim.private
 /bin/chown -R opendkim:opendkim /etc/opendkim

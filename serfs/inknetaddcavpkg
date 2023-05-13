@@ -14,7 +14,7 @@ SECPATH=$1
 . /opt/verb/conf/inknet/rink.client.cnf
 
 # Verify working home directory
-cd ~/ || exit 0
+cd ~/ || exit 6
 
 # If sec path not specified in command line
 if [ -z ${1} ]; then

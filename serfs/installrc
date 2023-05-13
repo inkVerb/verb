@@ -91,7 +91,8 @@ fi
 
 # Get inkVerb's latest and install
 cd /srv/www/email
-/opt/verb/serfs/inkget ${CVAPPNAME} check; wait
+/opt/verb/serfs/inkget ${CVAPPNAME} check
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 ### Check
 if [ "$?" = 4 ]; then
   /bin/echo "Repo failed to retrieve the file."

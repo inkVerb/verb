@@ -21,27 +21,27 @@ exit 0; fi
 ## inkCert proper
 /usr/bin/apt-get install -y openssl
 /bin/mkdir -p /etc/inkcert
-cd /etc/inkcert || exit 0
+cd /etc/inkcert || exit 6
 /bin/mkdir -p client live csr req
 /bin/cp /opt/verb/conf/inkcert/verber-openssl.cnf /etc/inkcert/client/openssl.cnf
 ## inkCertSC
 /bin/mkdir -p /etc/inkcert/sc
-cd /etc/inkcert/sc || exit 0
+cd /etc/inkcert/sc || exit 6
 /bin/mkdir -p ca intrm cli pub keys rcinst live
 /bin/chmod 444 pub
 /bin/chmod 400 keys
 /bin/chmod 444 rcinst
-cd /etc/inkcert/sc/ca || exit 0
+cd /etc/inkcert/sc/ca || exit 6
 /bin/mkdir -p priv newcerts certs crl
 /bin/chmod -R 700 /etc/inkcert/sc/ca/priv
 /usr/bin/touch /etc/inkcert/sc/ca/index.txt
 /bin/echo 1000 > /etc/inkcert/sc/ca/serial
-cd /etc/inkcert/sc/intrm/ || exit 0
+cd /etc/inkcert/sc/intrm/ || exit 6
 /bin/mkdir -p priv newcerts certs crl csr
 /bin/chmod -R 700 /etc/inkcert/sc/intrm/priv
 /usr/bin/touch /etc/inkcert/sc/intrm/index.txt
 /bin/echo 1000 > /etc/inkcert/sc/intrm/serial
-cd /etc/inkcert/sc/cli || exit 0
+cd /etc/inkcert/sc/cli || exit 6
 /bin/mkdir -p priv certs csr
 /bin/chmod -R 700 /etc/inkcert/sc/cli/priv
 

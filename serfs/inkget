@@ -23,7 +23,8 @@ exit 8; fi
 
 # zjz
 if [ $InkGet_Method = "ZJZ" ]; then
-  /opt/verb/donjon/repoupdate/${APPNAME}.updaterepo; wait
+  /opt/verb/donjon/repoupdate/${APPNAME}.updaterepo
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
   ## Check repo for failed DL
   if [ "$2" = "check" ] && [ -f "/opt/verb/donjon/repoupdate/${APPNAME}.failed" ]; then
   exit 4; fi
@@ -34,6 +35,7 @@ fi
 # wget
 if [ $InkGet_Method = "USE_WGET" ]; then
   /usr/bin/wget https://${InkGet_Repo}/repo/${APPNAME}.txz --no-check-certificate
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 
 # rink

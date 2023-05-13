@@ -24,7 +24,7 @@ fi
 . /opt/verb/conf/inknet/ca.verber.cnf
 
 # CA Client signing keys
-cd ~/.ssh/inknet/ca/ || exit 0
+cd ~/.ssh/inknet/ca/ || exit 6
 /bin/rm -f in_ca_${IAMCANAME}_key
 ssh-keygen -N "" -f in_ca_${IAMCANAME}_key
 ## Link to the download web folder

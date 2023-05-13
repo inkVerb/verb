@@ -16,7 +16,7 @@ SECPATH=$2
 . /opt/verb/conf/inknet/2cav.${CA2VNAME}.cnf
 
 # Verify working home directory
-cd ~/ || exit 0
+cd ~/ || exit 6
 
 # If sec path not specified in command line
 if [ -z ${2} ]; then

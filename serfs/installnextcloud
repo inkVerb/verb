@@ -50,12 +50,9 @@ DBUSER=$2
 fi
 
 # Download as webapp
-cd /srv/www/vapps || exit 0
+cd /srv/www/vapps || exit 6
 /opt/verb/serfs/inkget ${CVAPPNAME} check
-## Check
-if [ "$?" = 4 ]; then
-/bin/echo "Repo failed to retrieve the file."
-exit 4; fi
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 ## Install it
 /opt/verb/serfs/setvapplinkon ${CVAPPNAME}; wait

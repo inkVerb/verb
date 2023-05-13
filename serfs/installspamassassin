@@ -90,11 +90,11 @@ EOF
 # Razor
 /usr/bin/mkdir -p /etc/mail/spamassassin/razor
 /usr/bin/chown spamd:spamd /etc/mail/spamassassin/razor
-cd /etc/mail/spamassassin/razor || exit 0
+cd /etc/mail/spamassassin/razor || exit 6
 /usr/bin/sudo -u spamd razor-admin -home=/etc/mail/spamassassin/razor -register
 /usr/bin/sudo -u spamd razor-admin -home=/etc/mail/spamassassin/razor -create
 /usr/bin/sudo -u spamd razor-admin -home=/etc/mail/spamassassin/razor -discover
-cd $OLDPWD || exit 0
+cd $OLDPWD || exit 6
 
 # Finish
 /bin/echo "SpamAssassinStatus=\"INSTALLED\"" >> /opt/verb/conf/servermailpath
@@ -102,6 +102,7 @@ cd $OLDPWD || exit 0
 # ClamAV?
 if [ -n "$2" ] && [ "$2" = "clamav" ]; then
   /opt/verb/serfs/installclamav
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 
 # Remove unneeded packages

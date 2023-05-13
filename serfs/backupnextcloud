@@ -31,14 +31,14 @@ exit 0; fi
 . /opt/verb/conf/vapp.nextcloud
 
 # Export the database
-cd /srv/www/vapps/nextcloud/data || exit 0
+cd /srv/www/vapps/nextcloud/data || exit 6
 /opt/verb/serfs/mysqlvappex vapp.nextcloud; wait
 
 # Backup the config
 /bin/cp /opt/verb/conf/vapp.nextcloud /srv/www/vapps/nextcloud/data/
 
 # Pack the data directory
-cd /srv/www/vapps/nextcloud || exit 0
+cd /srv/www/vapps/nextcloud || exit 6
 /opt/verb/serfs/vtxzin data
 /bin/mv data.txz verb.nextcloud.${SECNAME}.vbak
 /bin/mv verb.nextcloud.${SECNAME}.vbak /srv/www/vip/

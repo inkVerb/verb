@@ -72,18 +72,22 @@ else
 fi
 
 # Postfix vmail
-/opt/verb/serfs/installpostfixvmail; wait
+/opt/verb/serfs/installpostfixvmail
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 # Roundcube
-/opt/verb/serfs/installrc ${BOXFOLDER}; wait
+/opt/verb/serfs/installrc ${BOXFOLDER}
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 # PostfixAdmin
-/opt/verb/serfs/installpfa ${PFAFOLDER} ${PFAPASS}; wait
+/opt/verb/serfs/installpfa ${PFAFOLDER} ${PFAPASS}
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 # Backup
 if [ -n "$4" ]; then
   BACKUPRESTORE=$4
-  /opt/verb/serfs/backupinkvmailrestore ${BACKUPRESTORE}; wait
+  /opt/verb/serfs/backupinkvmailrestore ${BACKUPRESTORE}
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 
 # inkCert check and FYI

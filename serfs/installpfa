@@ -84,11 +84,13 @@ else
 fi
 
 # Download from repo
-cd /srv/www/email || exit 0
-/opt/verb/serfs/inkget ${CVAPPNAME} check; wait
+cd /srv/www/email || exit 6
+/opt/verb/serfs/inkget ${CVAPPNAME} check
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 if [ "$?" = 4 ]; then
   /bin/echo "Repo failed to retrieve the file."
-  exit 4; fi
+  exit 4
+fi
 
 ## Fix a bug
 /bin/mkdir -p /srv/www/email/postfixadmin/templates_c

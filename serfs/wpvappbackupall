@@ -7,7 +7,7 @@
 ## ./wpvappbackupall
 
 
-cd /srv/www/vapps || exit 0
+cd /srv/www/vapps || exit 6
 for vapp in wp.*; do
 /opt/verb/serfs/backup $vapp 123 -nl
 done

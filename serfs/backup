@@ -35,7 +35,7 @@ exit 0; fi
 . /opt/verb/conf/vapp.${APPNAME}
 
 # Export the database
-cd /srv/www/vapps/${APPNAME}/ || exit 0
+cd /srv/www/vapps/${APPNAME}/ || exit 6
 /opt/verb/serfs/mysqlvappex vapp.${APPNAME}; wait
 /bin/cp /srv/vip/sql/${APPDBASE}.sql /srv/www/vapps/${APPNAME}/ || exit 4
 
@@ -43,7 +43,7 @@ cd /srv/www/vapps/${APPNAME}/ || exit 0
 /bin/cp /opt/verb/conf/vapp.${APPNAME} /srv/www/vapps/${APPNAME}/
 
 # Pack the directory
-cd /srv/www/vapps || exit 0
+cd /srv/www/vapps || exit 6
 /opt/verb/serfs/vtxzin ${APPNAME}
 /bin/mv ${APPNAME}.txz verb.${APPNAME}.${SECNAME}.vbak
 /bin/mv verb.${APPNAME}.${SECNAME}.vbak /srv/www/vip/

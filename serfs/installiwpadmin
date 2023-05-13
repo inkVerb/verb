@@ -42,13 +42,9 @@ exit 8; fi
 . /opt/verb/conf/servernameip
 
 # Download and establish IWPAdmin in the server to pre-created domain
-cd /srv/www/vapps || exit 0
-/opt/verb/serfs/inkget ${CVAPPNAME} ${REMAIL}; wait
-### Check
+cd /srv/www/vapps || exit 6
 /opt/verb/serfs/inkget ${CVAPPNAME} check
-if [ "$?" = 4 ]; then
-/bin/echo "Repo failed to retrieve the file."
-exit 4; fi
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 ## Auto options
 if [ -z ${3} ]; then

@@ -16,7 +16,7 @@ PFAPASS=$1
 . /opt/verb/conf/servermailpath
 
 # Download and unpack
-cd /srv/www/email || exit 0
+cd /srv/www/email || exit 6
 if [ -d /srv/www/email/postfixadmin.vbak ]; then
   /bin/rm -rf /srv/www/email/postfixadmin.vbak; fi
 /bin/mv /srv/www/email/postfixadmin /srv/www/email/postfixadmin.vbak

@@ -50,7 +50,7 @@ exit 0; fi
 
 ## inkCert proper
 /bin/mkdir -p /etc/inkcert
-cd /etc/inkcert || exit 0
+cd /etc/inkcert || exit 6
 /bin/mkdir -p client live csr req
 /bin/cp -f /opt/verb/conf/inkcert/verber-openssl.cnf /etc/inkcert/client/openssl.cnf
 ## Symlinks for Letsencrypt

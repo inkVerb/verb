@@ -43,7 +43,7 @@ fi
 
 # Install
 /usr/bin/pacman -S --noconfirm --needed clamav perl-cpanplus-dist-arch
-if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 # Remove unneeded packages
 /usr/bin/pacman -Qdt --noconfirm

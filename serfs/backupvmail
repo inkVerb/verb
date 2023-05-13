@@ -22,7 +22,7 @@ fi
 . /opt/verb/conf/siteurilist
 
 # Export the database
-cd /srv/vmail || exit 0
+cd /srv/vmail || exit 6
 /opt/verb/serfs/mysqlex mail; wait
 
 # Copy the config
@@ -31,7 +31,7 @@ cd /srv/vmail || exit 0
 /bin/cp /opt/verb/conf/servernameip /srv/vmail/servernameip-old
 
 # Zip the directory
-cd /var || exit 0
+cd /var || exit 6
 /opt/verb/serfs/vtxzin inkvmail
 /bin/mv inkvmail.txz verb.inkvmail.${SECNAME}.vbak
 

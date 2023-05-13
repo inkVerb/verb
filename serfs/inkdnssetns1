@@ -52,7 +52,7 @@ if [ -e "/opt/verb/mods/inkdnssetns1.before" ]; then . /opt/verb/mods/inkdnssetn
 . /opt/verb/conf/inklists/inkdnsnameservers
 if [ -z "$1" ] && [ -z "$CustomNS" ] || [ "$CustomNS" != "true" ]; then
   . /opt/verb/conf/servernameip
-  cd /opt/verb/ || exit 0
+  cd /opt/verb/ || exit 6
   /usr/bin/git clone https://github.com/${ServerUpdateOrg}/verb
   /usr/bin/cp -f /opt/verb/verb/conf/inklists/inkdnsnameservers /opt/verb/conf/inklists/
   /usr/bin/rm -rf /opt/verb/verb

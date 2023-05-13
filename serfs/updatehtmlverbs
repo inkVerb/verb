@@ -16,7 +16,7 @@
 
 # Make the commute to where we will work
 /bin/mkdir -p /srv/www/verb
-cd /srv/www/verb || exit 0
+cd /srv/www/verb || exit 6
 
 # Remove broken links
 /usr/bin/find -L . -name . -o -type d -prune -o -type l -exec rm {} +

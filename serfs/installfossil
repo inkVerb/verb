@@ -21,13 +21,9 @@ NEWEMAIL=$2
 NEWPASS=$3
 
 
-cd /srv/www/vapps || exit 0
-/opt/verb/serfs/inkget ${CVAPPNAME}; wait
-### Check
+cd /srv/www/vapps || exit 6
 /opt/verb/serfs/inkget ${CVAPPNAME} check
-if [ "$?" = 4 ]; then
-/bin/echo "Repo failed to retrieve the file."
-exit 4; fi
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 /bin/rm -f /usr/bin/fossil
 /bin/mv /srv/www/vapps/fossil /usr/bin
@@ -40,7 +36,7 @@ fossil all rebuild
 /bin/chown -R www:www /srv/www/vip
 
 # Create the first default fossil
-cd /srv/www/vip/fossil || exit 0
+cd /srv/www/vip/fossil || exit 6
 fossil new index.fossil; wait
 /bin/chown www:www index.fossil; wait
 /bin/echo "#!/usr/bin/fossil
@@ -52,7 +48,7 @@ repository: /fossil/index.fossil
 /bin/chmod 750 index.cgi
 
 # Create a second demo fossil, dinosaur
-cd /srv/www/vip/fossil || exit 0
+cd /srv/www/vip/fossil || exit 6
 fossil new dinosaur.fossil
 /bin/echo "#!/usr/bin/fossil
 repository: /fossil/dinosaur.fossil" > dinosaur.cgi

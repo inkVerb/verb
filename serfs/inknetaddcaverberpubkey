@@ -42,7 +42,7 @@ if [ ! -d "/etc/ssh/inknet" ]; then
 /bin/echo "inkNet doesn't have a folder in /etc/ssh/ So, I quit."
 exit 8; fi
 ## Get to the directory
-cd /etc/ssh/inknet || exit 0
+cd /etc/ssh/inknet || exit 6
 ## Backup any existing key
 if [ -f /etc/ssh/inknet/in_ca_${CAVERBERNAME}_key.pub ]; then
 /bin/echo "A key from this inkNet CA is already installed. Fine, getting the new one..."

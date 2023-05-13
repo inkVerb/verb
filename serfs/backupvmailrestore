@@ -30,7 +30,7 @@ FILENAME=$1
 tbrSMPAPG=${ServerMailPassApg}
 
 # Unpack the file
-cd /srv/www/vip || exit 0
+cd /srv/www/vip || exit 6
 /bin/mv ${FILENAME} inkvmail.txz
 /opt/verb/serfs/vtxzout inkvmail
 
@@ -43,13 +43,13 @@ cd /srv/www/vip || exit 0
 /opt/verb/serfs/mysqlkilldb mail; wait
 /opt/verb/serfs/mysqlkilluser mail; wait
 /opt/verb/serfs/mysqlnewdb mail mail mailpass${ServerMailPassApg}; wait
-cd inkvmail || exit 0
+cd inkvmail || exit 6
 /opt/verb/serfs/mysqlin mail; wait
 /bin/rm -f mail.sql
 /bin/rm -f servermailpass-old
 /bin/rm -f servermailpath-old
 /bin/rm -f servernameip-old
-cd .. || exit 0
+cd .. || exit 6
 
 # Move the inkvmail directory into place
 /bin/mv /srv/vmail /srv/vmail-backup 2> /dev/null
@@ -86,9 +86,6 @@ if [ -e "/etc/httpd/sites-enabled/po.${emailTLDURI}.conf" ] && [ -f "/srv/www/em
 /bin/echo "
 The email server data has been restored from the backup and all its backup files removed from this server.
 "
-
-
-
 
 
 if [ -e "/opt/verb/mods/backupinkvmailrestore.after" ]; then . /opt/verb/mods/backupinkvmailrestore.after; fi # Follows this script

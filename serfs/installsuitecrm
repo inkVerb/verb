@@ -35,13 +35,11 @@ exit 8; fi
 # This does not create a database, only an administrator since suiteCRM will create that automatically
 
 # Download and unpack the latest checked version from inkisaverb.com/repo
-cd /srv/www/vapps || exit 0
+cd /srv/www/vapps || exit 6
 /opt/verb/serfs/inkget ${CVAPPNAME} check; wait
-if [ "$?" = 4 ]; then
-/bin/echo "Repo failed to retrieve the file."
-exit 4; fi
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
-cd /srv/www/html || exit 0
+cd /srv/www/html || exit 6
 /opt/verb/serfs/setvapplinkon ${CVAPPNAME}; wait
 /bin/chown -R www:www /srv/www/verb/red.crm; wait
 /bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}; wait

@@ -12,7 +12,7 @@
 . /opt/verb/conf/servernameip
 
 # Download and unpack
-cd /srv/www || exit 0
+cd /srv/www || exit 6
 ## Remove any existing roundcube folder
 if [ -d roundcube ]; then
 /bin/rm -rf roundcube; fi
@@ -28,7 +28,7 @@ wait
 ## Disable the installer
 /bin/sed -i "s/\$config\['enable_installer'\].*/\$config\['enable_installer'\] = false;/g" /srv/www/email/roundcube/config/config.inc.php
 ## Remove the updater
-cd /srv/www || exit 0
+cd /srv/www || exit 6
 /usr/bin/rm -rf /srv/www/roundcube
 
 # Copy the branding files
@@ -53,7 +53,7 @@ Now updating plugins with Composer...
 "
 
 # Composer Plugins update
-cd /srv/www/email/roundcube || exit 0
+cd /srv/www/email/roundcube || exit 6
 ## Ignore requirements that trip false warnings: --ignore-platform-req=
 ## Use the www user so changes can be made to the web directory
 /usr/bin/su www -c 'php composer.phar update -n --ignore-platform-req=php --ignore-platform-req=ext-gd --ignore-platform-req=ext-ldap --ignore-platform-req=ext-iconv'

@@ -48,7 +48,7 @@ fi
 MYSQLBossPASS=$(/usr/bin/pwgen -s -1 10)
 
 # Verify SSH Directory
-cd ~ || exit 0
+cd ~ || exit 6
 if [ ! -d ~/.ssh ]; then
 /usr/bin/mkdir .ssh
 fi
@@ -90,7 +90,7 @@ fi
 
 ## Snakeoil install (small file just so the server works)
 /usr/bin/mkdir -p /etc/ssl/server
-cd /etc/ssl/server || exit 0
+cd /etc/ssl/server || exit 6
 /usr/bin/rm -f server.key
 /usr/bin/openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:512 -out server.key
 /usr/bin/chmod 400 server.key
@@ -104,7 +104,7 @@ cd /etc/ssl/server || exit 0
 /usr/bin/rm -f /etc/ssl/server/dhparams.pem
 /usr/bin/openssl dhparam -out /etc/ssl/server/dhparams.pem 512
 /usr/bin/chmod 600 /etc/ssl/server/dhparams.pem
-cd $OLDPWD || exit 0
+cd $OLDPWD || exit 6
 
 ## Apache
 /usr/bin/pacman -S --noconfirm --needed apache

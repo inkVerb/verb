@@ -73,7 +73,7 @@ if [ "${VTYPE}" = "verber" ]; then
 /bin/echo "#!/bin/bash
 VERBERNAME=${IAMCANAME}" > ~/.ssh/inknet/${VCNAME}/verbername
 fi
-cd ~/.ssh/inknet/ || exit 0
+cd ~/.ssh/inknet/ || exit 6
 /opt/verb/serfs/vtxzin ${VCNAME}
 /bin/rm -rf ${VCNAME}
 /bin/mkdir /srv/www/html/${IAMCAHOST}/inknet/${SECPATH}

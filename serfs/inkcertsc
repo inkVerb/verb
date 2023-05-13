@@ -30,7 +30,7 @@ exit 0; fi
 
 # Create the CA root key
 ## Note: omitting options like "-aes256" or "-des3" because they instruct openssl to encrypt the key with a passphrase, causing a prompt
-cd /etc/inkcert/sc/ca || exit 0
+cd /etc/inkcert/sc/ca || exit 6
 /usr/bin/openssl genrsa -out priv/ca.${DOMAIN}.key.pem 4096
 /bin/chmod 400 priv/ca.${DOMAIN}.key.pem
 
@@ -46,7 +46,7 @@ commonname="${nameURI}"
 
 # Create the CA root cert
 ## Note: "-nodes" means there will be no password prompt
-cd /etc/inkcert/sc/ca || exit 0
+cd /etc/inkcert/sc/ca || exit 6
 /usr/bin/openssl req -config /opt/verb/conf/inkcert/sc-ca-openssl.cnf \
 	-key priv/ca.${DOMAIN}.key.pem \
 	-new -nodes -x509 -days 3650 -sha256 -extensions v3_ca \
@@ -58,7 +58,7 @@ cd /etc/inkcert/sc/ca || exit 0
 
 # Create the intermediate key
 ## Note: omitting options like "-aes256" or "-des3" because they instruct openssl to encrypt the key with a passphrase, causing a prompt
-cd /etc/inkcert/sc/intrm || exit 0
+cd /etc/inkcert/sc/intrm || exit 6
 /usr/bin/openssl genrsa -out priv/intrm.${DOMAIN}.key.pem 4096
 /bin/chmod 400 priv/intrm.${DOMAIN}.key.pem
 
@@ -73,7 +73,7 @@ companyname="This is an autocert, not from another company."
 commonname="serve.${nameURI}"
 
 # Create the intermediate cert CSR
-cd /etc/inkcert/sc/intrm || exit 0
+cd /etc/inkcert/sc/intrm || exit 6
 /usr/bin/openssl req -config /opt/verb/conf/inkcert/sc-intrm-openssl.cnf \
 	-key priv/intrm.${DOMAIN}.key.pem \
 	-new -nodes -sha256
@@ -82,7 +82,7 @@ cd /etc/inkcert/sc/intrm || exit 0
 
 # Sign the intermediate cert
 ## Note: "CA" & "CAkey" override the "certificate" & "private_key" settings in the .cnf file
-cd /etc/inkcert/sc/ca || exit 0
+cd /etc/inkcert/sc/ca || exit 6
 /usr/bin/openssl ca -config /opt/verb/conf/inkcert/sc-ca-openssl.cnf \
 	-extensions v3_intermediate_ca \
 	-CA /etc/inkcert/sc/ca/certs/ca.${DOMAIN}.cert.pem \
@@ -103,7 +103,7 @@ cd /etc/inkcert/sc/ca || exit 0
 
 # Create the client key
 ## Note: omitting options like "-aes256" or "-des3" because they instruct openssl to encrypt the key with a passphrase, causing a prompt
-cd /etc/inkcert/sc/cli || exit 0
+cd /etc/inkcert/sc/cli || exit 6
 /usr/bin/openssl genrsa -out priv/${DOMAIN}.key.pem 2048
 /bin/chmod 400 priv/${DOMAIN}.key.pem
 
@@ -118,7 +118,7 @@ companyname="This is an autocert, not from another company."
 commonname="${DOMAIN}"
 
 # Create the client CSR
-cd /etc/inkcert/sc/cli || exit 0
+cd /etc/inkcert/sc/cli || exit 6
 /usr/bin/openssl req -config /opt/verb/conf/inkcert/sc-intrm-openssl.cnf \
 	-key priv/cli.${DOMAIN}.key.pem \
 	-new -sha256 \
@@ -126,7 +126,7 @@ cd /etc/inkcert/sc/cli || exit 0
 	-subj "/C=$country/ST=$state/L=$locality/O=$organization/OU=$organizationalunit/CN=$commonname/emailAddress=$email/unstructuredName=$companyname/"
 
 # Sign the client cert
-cd /etc/inkcert/sc/intrm || exit 0
+cd /etc/inkcert/sc/intrm || exit 6
 /usr/bin/openssl ca -config /opt/verb/conf/inkcert/sc-intrm-openssl.cnf \
 	-extensions server_cert \
 	-CA /etc/inkcert/sc/intrm/certs/intrm.${DOMAIN}.cert.pem \

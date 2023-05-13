@@ -17,7 +17,7 @@ if [ ! -d "/opt/openvpn/certificates" ]; then
 /bin/echo "The OpenVPN \"certificates\" directory does not exist, something's wrong. Bye."; exit 0; fi
 
 # Remove keys and start everything over
-cd /opt/openvpn/certificates || exit 0
+cd /opt/openvpn/certificates || exit 6
 source vars
 ./clean-all && ./build-ca --batch
 ./build-key-server --batch server

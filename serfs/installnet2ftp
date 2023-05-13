@@ -21,18 +21,16 @@ if [ "${ServerIPv4}" = "NOIP4" ]; then
 fi
 
 # Download and unpack
-cd /srv/www/vapps || exit 0
+cd /srv/www/vapps || exit 6
 /opt/verb/serfs/inkget ${CVAPPNAME} check; wait
-if [ "$?" = 4 ]; then
-/bin/echo "Repo failed to retrieve the file."
-exit 4; fi
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 /opt/verb/serfs/setvapplinkon ${CVAPPNAME}; wait
 /bin/chown -R www:www /srv/www/vapps/${CVAPPNAME}; wait
 /bin/chown -R www:www /srv/www/verb/vip.net2ftp; wait
 
 # Settings
-cd net2ftp || exit 0
+cd net2ftp || exit 6
 /bin/cp settings.inc.php settings.inc.php.dist
 /bin/cp settings_authorizations.inc.php settings_authorizations.inc.php.dist
 /bin/cp settings_screens.inc.php settings_screens.inc.php.dist

@@ -52,7 +52,7 @@ fi
 /bin/rm ampache-${DISTVER}_all_php8.1.zip
 if [ $InkGet_Method != "ZJZ" ]; then
   cd ..
-  /opt/verb/serfs.txzin ${CVAPPNAME}; wait
+  /opt/verb/serfs/txzin ${CVAPPNAME}; wait
   /bin/rm -rf ${CVAPPNAME}
 
   # Make a record of current version

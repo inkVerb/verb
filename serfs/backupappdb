@@ -29,7 +29,7 @@ fi
 . /opt/verb/conf/vapp.${APPNAME}
 
 # Export the database
-cd /srv/www/vip || exit 0
+cd /srv/www/vip || exit 6
 /opt/verb/serfs/mysqlex ${APPDBASE}; wait
 /bin/mv /srv/www/vip/sql/${APPDBASE}.sql /srv/www/vip/sql/verb.${APPDBASE}.${SECNAME}.vbak.sql
 

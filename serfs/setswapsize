@@ -13,7 +13,7 @@ SWAPSIZENO=$1
 # Prepare
 ## Make sure it's off, quietly
 swapoff /var/swap.img 2>/dev/null
-cd /var || exit 0
+cd /var || exit 6
 /usr/bin/touch swap.img
 /bin/chmod 600 swap.img
 

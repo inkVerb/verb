@@ -46,7 +46,7 @@ fi
 /bin/rm ${DISTVER}.tar.gz
 /bin/mv Open-Web-Analytics-${DISTVER} ${CVAPPNAME}
 if [ $InkGet_Method != "ZJZ" ]; then
-  /opt/verb/serfs.txzin ${CVAPPNAME}; wait
+  /opt/verb/serfs/txzin ${CVAPPNAME}; wait
   /bin/rm -rf ${CVAPPNAME}
 
   # Make a record of current version

@@ -71,7 +71,7 @@ APPDDBUSR=${DBUSER}
 APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.wp.${nDOMAIN}
 
 ## Put the settings in the WordPress config file
-cd /srv/www/vapps/wp.${nDOMAIN} || exit 0
+cd /srv/www/vapps/wp.${nDOMAIN} || exit 6
 /bin/cp wp-config-sample.php wp-config.php
 /bin/sed -i "s/database_name_here/${DBASE}/g" wp-config.php
 /bin/sed -i "s/username_here/${DBUSER}/g" wp-config.php

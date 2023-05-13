@@ -47,7 +47,7 @@ fi
 /bin/mv orangehrm-${DISTVER} ${CVAPPNAME}
 /bin/rm orangehrm-quick-start-guide.html
 if [ $InkGet_Method != "ZJZ" ]; then
-  /opt/verb/serfs.txzin ${CVAPPNAME}; wait
+  /opt/verb/serfs/txzin ${CVAPPNAME}; wait
   /bin/rm -rf ${CVAPPNAME}
 
   # Make a record of current version

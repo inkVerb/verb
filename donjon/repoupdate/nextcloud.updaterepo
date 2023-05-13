@@ -45,7 +45,7 @@ fi
 /usr/bin/tar xf latest.tar.bz2
 /bin/rm latest.tar.bz2
 if [ $InkGet_Method != "ZJZ" ]; then
-  /opt/verb/serfs.txzin ${CVAPPNAME}; wait
+  /opt/verb/serfs/txzin ${CVAPPNAME}; wait
   /bin/rm -rf ${CVAPPNAME}
 fi
 

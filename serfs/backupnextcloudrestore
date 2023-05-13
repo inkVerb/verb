@@ -24,10 +24,10 @@ FILENAME=$1
 # Backup whatever the original status is
 if [ -e "/opt/verb/conf/vapp.nextcloud" ]; then
 . /opt/verb/conf/vapp.nextcloud
-cd /srv/www/vapps/nextcloud/data || exit 0
+cd /srv/www/vapps/nextcloud/data || exit 6
 /opt/verb/serfs/mysqlvappex vapp.nextcloud; wait
 /bin/cp /opt/verb/conf/vapp.nextcloud .
-cd /srv/www/vapps/nextcloud || exit 0
+cd /srv/www/vapps/nextcloud || exit 6
 /opt/verb/serfs/vtxzin data
 /bin/mv data.txz verb.nextcloud.restore-originalbackedup.vbak
 /bin/mv verb.nextcloud.restore-originalbackedup.vbak /srv/www/vip/
@@ -35,14 +35,14 @@ cd /srv/www/vapps/nextcloud || exit 0
 fi
 
 # Unpack the file
-cd /srv/www/vip || exit 0
+cd /srv/www/vip || exit 6
 /bin/mv ${FILENAME} data.txz
 /opt/verb/serfs/vtxzout data
-cd data || exit 0
+cd data || exit 6
 /bin/rm -f index.html
 /bin/rm -f nextcloud.log
 /bin/rm -rf updater-data
-cd .. || exit 0
+cd .. || exit 6
 /bin/cp /srv/www/vapps/nextcloud/data/index.html data/
 /bin/cp /srv/www/vapps/nextcloud/data/nextcloud.log data/
 /bin/rm -rf /srv/www/vapps/nextcloud/data
@@ -54,7 +54,7 @@ OLDDBASE="${APPDBASE}"
 . /opt/verb/conf/vapp.nextcloud
 
 # Restore the database
-cd /srv/www/vapps/nextcloud/data || exit 0
+cd /srv/www/vapps/nextcloud/data || exit 6
 /bin/mv ${OLDDBASE}.sql ${APPDBASE}.sql; wait
 /opt/verb/serfs/mysqlin ${APPDBASE}; wait
 /bin/rm -f ${APPDBASE}.sql

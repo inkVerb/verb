@@ -39,7 +39,7 @@ VERBDOMAIN=$1
 # OpenDKIM
 ## This creates the declared domain key
 /bin/mkdir -p /etc/opendkim/keys/${VERBDOMAIN}
-cd /etc/opendkim/keys/${VERBDOMAIN} || exit 0
+cd /etc/opendkim/keys/${VERBDOMAIN} || exit 6
 /usr/bin/opendkim-genkey -r -d ${VERBDOMAIN}
 /bin/chown -R opendkim:opendkim /etc/opendkim
 ## This adds the new domain key to the config files

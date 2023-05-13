@@ -508,7 +508,7 @@ fi
 
 # Snakeoil cert (larger file for production)
 /usr/bin/mkdir -p /etc/ssl/server
-cd /etc/ssl/server || exit 0
+cd /etc/ssl/server || exit 6
 /usr/bin/rm -f server.key
 /usr/bin/openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out server.key
 /usr/bin/chmod 400 server.key
@@ -531,7 +531,7 @@ companyname="${nameURI}"
 #/usr/bin/openssl dhparam -out /etc/ssl/server/dhparams.pem 4096
 /usr/bin/openssl dhparam -out /etc/ssl/server/dhparams.pem 2048
 /bin/chmod 600 /etc/ssl/server/dhparams.pem
-cd $OLDPWD || exit 0
+cd $OLDPWD || exit 6
 
 # Site name & IP
 serveDIR="$(/usr/bin/pwgen -s -1 6)"
@@ -1090,12 +1090,12 @@ fi
 /usr/bin/mv /opt/verb/conf/inkdns/inkzones/nv.kiwi /opt/verb/conf/inkdns/inkzones/nv.${kiwiURI}
 /usr/bin/mv /opt/verb/conf/inkdns/inkzones/nv.red /opt/verb/conf/inkdns/inkzones/nv.${redURI}
 ## Serial Nos
-cd /opt/verb/conf/inkdns/inkzones || exit 0
+cd /opt/verb/conf/inkdns/inkzones || exit 6
 for inkZoneDB in db.*; do
 inkZone="$(/usr/bin/echo ${inkZoneDB} | /usr/bin/sed 's/db\.//' )"
 /opt/verb/serfs/inkdnsserial ${inkZone} verber
 done
-cd $OLDPWD || exit 0
+cd $OLDPWD || exit 6
 
 # Set NS domain for this verber (will also be used if this is a slave DNS)
 # if [ -f "/opt/verb/conf/inkdns/sdns/dnshost" ] && [ ! -e "/opt/verb/conf/inkdns/zones/db.${hostURI}" ] && [ "${hostURI}" != "${emailURI}" ] && [ "${hostURI}" != "${oneURI}" ] && [ "${hostURI}" != "${inkURI}" ] && [ "${hostURI}" != "${blueURI}" ] && [ "${hostURI}" != "${vipURI}" ] && [ "${hostURI}" != "${kiwiURI}" ] && [ "${hostURI}" != "${redURI}" ]; then

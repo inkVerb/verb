@@ -22,10 +22,10 @@ if [ "${InkVPNInstalled}" != "NOT_YET" ]; then
 # Install
 /usr/bin/apt-get install -y openvpn easy-rsa
 /bin/mkdir -p /opt/openvpn
-cd /opt/openvpn || exit 0
+cd /opt/openvpn || exit 6
 make-cadir certificates
 #/bin/ln -sfn /opt/openvpn/certificates /opt/verb/conf/inkvpn/ # Before this was commented, all other instances of '/opt/openvpn/certificates' was '/opt/verb/conf/inkvpn/certificates', changed due to security concerns of permissions
-cd /opt/openvpn/certificates || exit 0
+cd /opt/openvpn/certificates || exit 6
 
 # Locale & config settings
 /bin/sed -i "s/export KEY_ConfIG=/#export KEY_ConfIG=/" /opt/openvpn/certificates/vars

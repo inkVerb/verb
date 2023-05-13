@@ -45,7 +45,7 @@ fi
 /usr/bin/tar xf fossil-linux-x64-${DISTVER}.tar.gz
 /bin/rm fossil-linux-x64-${DISTVER}.tar.gz
 if [ $InkGet_Method != "ZJZ" ]; then
-  /opt/verb/serfs.txzin ${CVAPPNAME}; wait
+  /opt/verb/serfs/txzin ${CVAPPNAME}; wait
   /bin/rm -rf ${CVAPPNAME}
 
   # Make a record of current version

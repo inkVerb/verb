@@ -67,11 +67,9 @@ wait
 fi
 
 # Download and establish wordpress in the server to pre-created domain
-cd /srv/www/vapps || exit 0
-/opt/verb/serfs/inkget ${CVAPPNAME} check; wait
-if [ "$?" = 4 ]; then
-/bin/echo "Repo failed to retrieve the file."
-exit 4; fi
+cd /srv/www/vapps || exit 6
+/opt/verb/serfs/inkget ${CVAPPNAME} check
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 # Auto database
 if [ -z ${4} ]; then
@@ -101,7 +99,7 @@ APPDDBUSR=${DBUSER}
 APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.${CVAPPNAME}.${DOMAIN}
 
 # Put the settings in the WordPress config file
-cd wp.${DOMAIN} || exit 0
+cd wp.${DOMAIN} || exit 6
 /bin/cp wp-config-sample.php wp-config.php
 /bin/sed -i "s/database_name_here/${DBASE}/g" wp-config.php
 /bin/sed -i "s/username_here/${DBUSER}/g" wp-config.php

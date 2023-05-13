@@ -23,9 +23,8 @@ if [ $InkGet_Method != "ZJZ" ]; then
 # Get the package
 /usr/bin/wget https://github.com/roundcube/roundcubemail/releases/download/${DISTVER}/roundcubemail-${DISTVER}-complete.tar.gz
 if [ ! -f "roundcubemail-${DISTVER}-complete.tar.gz" ]; then
-  /bin/echo "Failed download."; touch "${CVAPPNAME}.failed"
-  exit 4; else
-
+/bin/echo "Failed download."; touch "${CVAPPNAME}.failed"
+exit 4; else
 /bin/rm -f ${CVAPPNAME}.failed; fi
 
 ## Check the hash
@@ -49,7 +48,7 @@ fi
   /bin/rm roundcubemail-${DISTVER}-complete.tar.gz
   /bin/mv roundcubemail-${DISTVER} ${CVAPPNAME}
 if [ $InkGet_Method != "ZJZ" ]; then
-  /opt/verb/serfs.txzin ${CVAPPNAME}; wait
+  /opt/verb/serfs/txzin ${CVAPPNAME}; wait
   /bin/rm -rf ${CVAPPNAME}
 
   # Make a record of current version

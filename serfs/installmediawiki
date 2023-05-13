@@ -26,11 +26,9 @@ if [-f /opt/verb/conf/vapp.${CVAPPNAME} ]; then
 exit 0; fi
 
 # Download and establish mediawiki from the inkVerb repo
-cd /srv/www/vapps || exit 0
-/opt/verb/serfs/inkget ${CVAPPNAME} check; wait
-if [ "$?" = 4 ]; then
-/bin/echo "Repo failed to retrieve the file."
-exit 4; fi
+cd /srv/www/vapps || exit 6
+/opt/verb/serfs/inkget ${CVAPPNAME} check
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 /opt/verb/serfs/setvapplinkon ${CVAPPNAME}; wait
 /bin/chown -R www:www /srv/www/verb/ink.wiki; wait

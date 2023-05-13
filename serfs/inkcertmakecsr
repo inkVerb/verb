@@ -52,7 +52,7 @@ Do that first, then get back to me.
 fi
 
 # Make the SSL key & CSR (if they don't exist already)
-cd /etc/inkcert || exit 0
+cd /etc/inkcert || exit 6
 ## Key
 if [ ! -d /etc/inkcert/csr/${DOMAIN} ]; then
 /bin/mkdir csr/${DOMAIN}

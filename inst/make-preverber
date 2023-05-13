@@ -32,7 +32,7 @@ exit 8; fi
 /usr/bin/pacman -Syyu --noconfirm --needed
 
 # Install tools
-/usr/bin/pacman -S --noconfirm --needed ntp pwgen zip unzip htop which vim curl wget make cronie gcc autoconf imagemagick git parted net-tools inetutils man sudo
+/usr/bin/pacman -S --noconfirm --needed ntp pwgen zip unzip htop which vim curl wget make cronie gcc autoconf imagemagick git parted perl net-tools inetutils man sudo
 if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 
 # Enable NTP for accurate time (the standard service is commented below)
@@ -96,11 +96,11 @@ sed -i "s/#PermitRootLogin.*/PermitRootLogin prohibit-password/" /etc/ssh/sshd_c
 # AUR package manager
 /usr/bin/pacman -S --noconfirm --needed base-devel # Dependencies
 if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
-cd /opt/verb/worker || exit 0
+cd /opt/verb/worker || exit 6
 /usr/bin/su worker -c '/usr/bin/git clone https://aur.archlinux.org/yay.git'
-cd yay || exit 0
+cd yay || exit 6
 /usr/bin/su worker -c '/usr/bin/makepkg -si --noconfirm'
-cd .. || exit 0
+cd .. || exit 6
 /usr/bin/rm -rf yay
 
 # Update yay

@@ -37,11 +37,9 @@ if [ -d /srv/www/vapps/${CVAPPNAME} ]; then
 exit 8; fi
 
 # Download and establish Drupal in the server to pre-created domain
-cd /srv/www/vapps || exit 0
+cd /srv/www/vapps || exit 6
 /opt/verb/serfs/inkget ${CVAPPNAME} check; wait
-if [ "$?" = 4 ]; then
-/bin/echo "Repo failed to retrieve the file."
-exit 4; fi
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 # Create the boss user
 /opt/verb/serfs/mysqlnewboss "${DBUSER}" "${DBPASSWORD}"

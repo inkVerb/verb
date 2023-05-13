@@ -11,7 +11,7 @@
 
 
 # Download and unpack the latest checked version from the Inkver repo
-cd /opt/verb/ || exit 0
+cd /opt/verb/ || exit 6
 /opt/verb/serfs/inkget verber.update.legacy; wait
 /opt/verb/serfs/vtxzout verber.update.legacy; wait
 

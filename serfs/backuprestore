@@ -30,10 +30,10 @@ FILENAME=$2
 # Backup and remove whatever the original status is
 if [ -e "/opt/verb/conf/vapp.${APPNAME}" ]; then
 . /opt/verb/conf/vapp.${APPNAME}
-cd /srv/www/vapps/${APPNAME}/ || exit 0
+cd /srv/www/vapps/${APPNAME}/ || exit 6
 /opt/verb/serfs/mysqlvappex vapp.${APPNAME}; wait
 /bin/mv /opt/verb/conf/vapp.${APPNAME} .
-cd /srv/www/vapps/ || exit 0
+cd /srv/www/vapps/ || exit 6
 /opt/verb/serfs/vtxzin ${APPNAME}
 /bin/mv ${APPNAME}.txz verb.${APPNAME}.restore-originalbackedup.vbak
 /bin/mv verb.${APPNAME}.restore-originalbackedup.vbak /srv/www/vip/
@@ -43,7 +43,7 @@ cd /srv/www/vapps/ || exit 0
 fi
 
 # Unpack the file
-cd /srv/www/vip || exit 0
+cd /srv/www/vip || exit 6
 /bin/mv ${FILENAME} ${APPNAME}.txz
 /opt/verb/serfs/vtxzout ${APPNAME}; wait
 /bin/mv ${APPNAME} /srv/www/vapps/
@@ -62,7 +62,7 @@ GRANT ALL PRIVILEGES ON ${APPDBASE}.* TO '${APPDDBUSR}'@'localhost' IDENTIFIED B
 FLUSH PRIVILEGES;"
 
 # Restore the database
-cd /srv/www/vapps/${APPNAME} || exit 0
+cd /srv/www/vapps/${APPNAME} || exit 6
 /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${APPDBASE} < ${APPDBASE}.sql; wait
 /bin/rm -f ${APPDBASE}.sql
 /bin/rm -f servernameip*

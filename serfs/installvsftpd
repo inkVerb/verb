@@ -16,7 +16,7 @@
 
 # Install
 /usr/bin/pacman -S --noconfirm --needed vsftpd
-if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 /usr/bin/systemctl enable vsftpd.service
 # Learn more https://wiki.archlinux.org/title/Very_Secure_FTP_Daemon#Installation
 

@@ -17,7 +17,7 @@ if [ ! -d "/opt/openvpn/certificates" ]; then
 . /opt/verb/conf/inkvpn/inkvpnstatus
 
 # Remove keys and start everything over
-cd /opt/openvpn/certificates || exit 0
+cd /opt/openvpn/certificates || exit 6
 ## Delete every .pem but dh2048.pem
 /bin/mv /opt/openvpn/certificates/keys/dh2048.pem /opt/openvpn/certificates/keys/dh2048.pem.save
 /bin/rm -f /opt/openvpn/certificates/keys/*.pem

@@ -45,17 +45,18 @@ if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
 source /usr/share/nvm/init-nvm.sh
 
 # Install Ghost
-cd /srv/www/ghost || exit 0
+cd /srv/www/ghost || exit 6
 /usr/bin/curl -L https://ghost.org/zip/ghost-latest.zip -o ghost.zip
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 /usr/bin/unzip -uo ghost.zip -d ghostblog
 /bin/rm -f ghost.zip
 
 ## Now install it with npm
-cd /srv/www/ghost/ghostblog || exit 0
+cd /srv/www/ghost/ghostblog || exit 6
 npm install --production
 
 # Set up the Ghost config
-cd /srv/www/ghost/ghostblog || exit 0
+cd /srv/www/ghost/ghostblog || exit 6
 /bin/cp config.example.js config.js
 /bin/sed -i "s/url: 'http:\/\/my-ghost-blog.com'/url: 'http:\/\/${DOMAIN}\/ghost'/g" config.js
 /bin/sed -i "s/host: '127.0.0.1'/host: '${SITEIP}'/g" config.js
@@ -144,7 +145,7 @@ GHOSTEMLPAS=\"${EMAILPASS}\"" > /opt/verb/conf/vapp.${CVAPPNAME}
 # Run Ghost with Forever
 npm install -g forever
 ## Production forever
-cd /srv/www/ghost/ghostblog && NODE_ENV=production forever start index.js || exit 0
+cd /srv/www/ghost/ghostblog && NODE_ENV=production forever start index.js || exit 6
 ## Non-production / developer forever
 #forever start index.js
 ## If you want, stop Forever with:
