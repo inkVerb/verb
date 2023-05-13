@@ -87,7 +87,7 @@ if [ -f "/opt/verb/conf/inkdns/sdns/dnshost" ]; then
   . /opt/verb/conf/inkdns/sdns/dnshost
   if [ "${Hostname}" = "$5" ]; then
     vName="$1"
-    HOSTURI="${DNSSlave}"
+    hosturi="${DNSSlave}"
   else
     /usr/bin/echo "Argued host is not the same as the host in the DNS preconfig, I quit."
     exit 8
@@ -451,14 +451,14 @@ fi
 if [ -f "/opt/verb/inst/domain.mod.conf" ]; then
   Hostname="${DModHost}"
   ## Is the host already set as a slave server?
-  if [ -n "${HOSTURI}" ] && [ "${HOSTURI}" != "${Hostname}.${DModBase}" ]; then
+  if [ -n "${hosturi}" ] && [ "${hosturi}" != "${Hostname}.${DModBase}" ]; then
     /usr/bin/echo "Because this is an NS server, the NS host must be agree with the domain mod host
-    NS server host URI: ${HOSTURI}
+    NS server host URI: ${hosturi}
     Domainmod host URI: ${Hostname}.${DModBase}
     Re-start the installation and use the same host when running make-dns & make-dommod"
     exit 5
   else
-    HOSTURI="${Hostname}.${DModBase}"
+    hosturi="${Hostname}.${DModBase}"
   fi
 /usr/bin/cat <<EOF > /opt/verb/conf/siteurilist
 #!/bin/sh
@@ -467,7 +467,7 @@ nameTLD="${serverTLD}"
 emailTLD="${SvMailTLD}"
 itsqlTLD="${ITsqlTLD}"
 nameURI="${serverTLD}.${baseDOM}"
-hostURI="${HOSTURI}"
+hostURI="${hosturi}"
 serveURI="serve.${serverTLD}.${baseDOM}"
 emailTLDURI="${SvMailTLD}.${baseDOM}"
 itsqlTLDURI="${ITsqlTLD}.${baseDOM}"
@@ -482,8 +482,8 @@ EOF
 ## Normal verb domains
 else
   ## Is the host already set as a slave server?
-  if [ -z "${HOSTURI}" ]; then
-    HOSTURI="${Hostname}.${vName}.verb.${serverTLD}"
+  if [ -z "${hosturi}" ]; then
+    hosturi="${Hostname}.${vName}.verb.${serverTLD}"
   fi
 /usr/bin/cat <<EOF > /opt/verb/conf/siteurilist
 #!/bin/sh
@@ -491,7 +491,7 @@ nameTLD="${serverTLD}"
 emailTLD="${SvMailTLD}"
 itsqlTLD="${ITsqlTLD}"
 nameURI="${vName}.verb.${serverTLD}"
-hostURI="${HOSTURI}"
+hostURI="${hosturi}"
 serveURI="serve.${vName}.verb.${serverTLD}"
 emailTLDURI="${vName}.verb.${SvMailTLD}"
 itsqlTLDURI="${vName}.verb.${ITsqlTLD}"
