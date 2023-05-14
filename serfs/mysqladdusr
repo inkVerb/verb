@@ -30,27 +30,27 @@ if [ -e "/opt/verb/mods/mysqladdusr.replace" ]; then . /opt/verb/mods/mysqladdus
 if [ -e "/opt/verb/mods/mysqladdusr.before" ]; then . /opt/verb/mods/mysqladdusr.before; fi # Precedes this script
 
 
-OLDDBASE="${1}"
+oldDBase="${1}"
 if [ -z "${2}" ]; then
-DBUSER=$(/usr/bin/pwgen -s -1 10)
-DBPASSWORD=$(/usr/bin/pwgen -s -1 10)
-serfOUT="New User: ${DBUSER}
-New Password: ${DBPASSWORD}"
+dBaseUser=$(/usr/bin/pwgen -s -1 10)
+dBPassword=$(/usr/bin/pwgen -s -1 10)
+serfOUT="New User: ${dBaseUser}
+New Password: ${dBPassword}"
 elif [ -z "${3}" ]; then
-DBUSER="${2}"
-  if [ -f "/opt/verb/conf/mysqldb.${DBUSER}" ]; then
-  . /opt/verb/conf/mysqldb.${DBUSER}
+dBaseUser="${2}"
+  if [ -f "/opt/verb/conf/mysqldb.${dBaseUser}" ]; then
+  . /opt/verb/conf/mysqldb.${dBaseUser}
   else
-  DBPASSWORD=$(/usr/bin/pwgen -s -1 10)
-  serfOUT="New Password: ${DBPASSWORD}"
+  dBPassword=$(/usr/bin/pwgen -s -1 10)
+  serfOUT="New Password: ${dBPassword}"
   fi
 echo ${serfOUT}
 else
-DBPASSWORD="${3}"
+dBPassword="${3}"
 fi
 
 /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
-GRANT ALL PRIVILEGES ON ${OLDDBASE}.* TO '${DBUSER}'@'localhost' IDENTIFIED BY '${DBPASSWORD}';
+GRANT ALL PRIVILEGES ON ${oldDBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '${dBPassword}';
 FLUSH PRIVILEGES;"
 
 

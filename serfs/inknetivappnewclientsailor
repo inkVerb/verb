@@ -12,27 +12,27 @@
 
 
 CA2URICFG=$1
-SECONDARYCACFG="$(/bin/echo ${CA2URICFG} | sed 's/\./_/g')"
+secondaryCAcfg="$(/bin/echo ${CA2URICFG} | sed 's/\./_/g')"
 
 # Set the Client config
 if [ -z ${1} ]; then
-CLIENTCFG=/opt/verb/conf/inknet/rink.client.cnf
+clientCfg=/opt/verb/conf/inknet/rink.client.cnf
 else
-CLIENTCFG=/opt/verb/conf/inknet/2cav.${SECONDARYCACFG}.cnf
+clientCfg=/opt/verb/conf/inknet/2cav.${secondaryCAcfg}.cnf
 fi
 
 # Include the Client config
-. ${CLIENTCFG}
+. ${clientCfg}
 
 # Generate Sailor name
-NEWINIVSAILORNAME=sail$(/usr/bin/pwgen -s -1 -A 14)
+newInivSailorName=sail$(/usr/bin/pwgen -s -1 -A 14)
 
 # Add the Sailor
-/opt/verb/serfs/inknetivappaddsailor ${NEWINIVSAILORNAME}
+/opt/verb/serfs/inknetivappaddsailor ${newInivSailorName}
 wait
 
 # Set Sailor name in the config
-/bin/sed -i "s/CLIENTSAILOR=.*/CLIENTSAILOR=\"${NEWINIVSAILORNAME}\"/g" ${CLIENTCFG}
+/bin/sed -i "s/clientSailor=.*/clientSailor=\"${newInivSailorName}\"/g" ${clientCfg}
 
 # Get the CA Public key for this Client
 ## Based on primary or secondary

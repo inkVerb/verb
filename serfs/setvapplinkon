@@ -11,83 +11,83 @@
 . /opt/verb/conf/serverport
 . /opt/verb/conf/siteurilist
 
-VAPPNAME=$1
+vAppName=$1
 
-case ${VAPPNAME} in
+case ${vAppName} in
 
 fossil)
 /bin/rm -rf /srv/www/verb/${itsqlTLD}/fossil
-/bin/ln -sfn /srv/www/vip/${VAPPNAME} /srv/www/verb/${itsqlTLD}/fossil
-/bin/echo "${VAPPNAME} symlink is set."
+/bin/ln -sfn /srv/www/vip/${vAppName} /srv/www/verb/${itsqlTLD}/fossil
+/bin/echo "${vAppName} symlink is set."
 ;;
 
 net2ftp)
 /bin/rm -rf /srv/www/verb/${itsqlTLD}/net2ftp
-/bin/ln -sfn /srv/www/vapps/${VAPPNAME} /srv/www/verb/${itsqlTLD}/net2ftp
-/bin/echo "${VAPPNAME} symlink is set."
+/bin/ln -sfn /srv/www/vapps/${vAppName} /srv/www/verb/${itsqlTLD}/net2ftp
+/bin/echo "${vAppName} symlink is set."
 ;;
 
 ampache)
 /bin/rm -rf /srv/www/verb/kiwi.k/ampache
-/bin/ln -sfn /srv/www/vapps/${VAPPNAME} /srv/www/verb/kiwi.k/ampache
-/bin/echo "${VAPPNAME} symlink is set."
+/bin/ln -sfn /srv/www/vapps/${vAppName} /srv/www/verb/kiwi.k/ampache
+/bin/echo "${vAppName} symlink is set."
 ;;
 
 mediawiki)
 /bin/rm -rf /srv/www/verb/ink.i/wiki
-/bin/ln -sfn /srv/www/vapps/${VAPPNAME} /srv/www/verb/ink.i/wiki
-/bin/echo "${VAPPNAME} symlink is set."
+/bin/ln -sfn /srv/www/vapps/${vAppName} /srv/www/verb/ink.i/wiki
+/bin/echo "${vAppName} symlink is set."
 ;;
 
 nextcloud)
 /bin/rm -rf /srv/www/verb/blue.cloud
-/bin/ln -sfn /srv/www/vapps/${VAPPNAME} /srv/www/verb/blue.cloud
-/bin/echo "${VAPPNAME} symlink is set."
+/bin/ln -sfn /srv/www/vapps/${vAppName} /srv/www/verb/blue.cloud
+/bin/echo "${vAppName} symlink is set."
 ;;
 
 orangehrm)
 /bin/rm -rf /srv/www/verb/red.r/hrm
-/bin/ln -sfn /srv/www/vapps/${VAPPNAME} /srv/www/verb/red.r/hrm
-/bin/echo "${VAPPNAME} symlink is set."
+/bin/ln -sfn /srv/www/vapps/${vAppName} /srv/www/verb/red.r/hrm
+/bin/echo "${vAppName} symlink is set."
 ;;
 
 owa)
 /bin/rm -rf /srv/www/verb/red.r/owa
-/bin/ln -sfn /srv/www/vapps/${VAPPNAME} /srv/www/verb/red.r/owa
-/bin/echo "${VAPPNAME} symlink is set."
+/bin/ln -sfn /srv/www/vapps/${vAppName} /srv/www/verb/red.r/owa
+/bin/echo "${vAppName} symlink is set."
 ;;
 
 suitecrm)
 /bin/rm -rf /srv/www/verb/red
-/bin/ln -sfn /srv/www/vapps/${VAPPNAME} /srv/www/verb/red
-/bin/echo "${VAPPNAME} symlink is set."
+/bin/ln -sfn /srv/www/vapps/${vAppName} /srv/www/verb/red
+/bin/echo "${vAppName} symlink is set."
 ;;
 
 october.inkblog)
 /bin/rm -rf /srv/www/verb/ink.i/blog
-/bin/ln -sfn /srv/www/vapps/${VAPPNAME} /srv/www/verb/ink.i/blog
-/bin/echo "${VAPPNAME} symlink is set."
+/bin/ln -sfn /srv/www/vapps/${vAppName} /srv/www/verb/ink.i/blog
+/bin/echo "${vAppName} symlink is set."
 ;;
 
 wp.inkbb)
 /bin/rm -rf /srv/www/verb/ink.i/bb
-/bin/ln -sfn /srv/www/vapps/${VAPPNAME} /srv/www/verb/ink.i/bb
-/bin/echo "${VAPPNAME} symlink is set."
+/bin/ln -sfn /srv/www/vapps/${vAppName} /srv/www/verb/ink.i/bb
+/bin/echo "${vAppName} symlink is set."
 ;;
 
 wp.inkblog)
 /bin/rm -rf /srv/www/verb/ink.i/blog
-/bin/ln -sfn /srv/www/vapps/${VAPPNAME} /srv/www/verb/ink.i/blog
-/bin/echo "${VAPPNAME} symlink is set."
+/bin/ln -sfn /srv/www/vapps/${vAppName} /srv/www/verb/ink.i/blog
+/bin/echo "${vAppName} symlink is set."
 ;;
 
 *)
-VAPPdomain=$(echo "${VAPPNAME}" | sed 's/wp.//')
-if [ -d "/srv/www/domains/${VAPPDOMAIN}" ]; then
-	/bin/ln -sfn /srv/www/vapps/${VAPPNAME} /srv/www/html/${VAPPDOMAIN}
-	/bin/echo "${VAPPNAME} symlink is set."
+VAPPdomain=$(echo "${vAppName}" | sed 's/wp.//')
+if [ -d "/srv/www/domains/${vappdomain}" ]; then
+	/bin/ln -sfn /srv/www/vapps/${vAppName} /srv/www/html/${vappdomain}
+	/bin/echo "${vAppName} symlink is set."
 else
-	/bin/echo "Domain '${VAPPDOMAIN}' is not yet ready for ${VAPPNAME}. Do that first."
+	/bin/echo "Domain '${vappdomain}' is not yet ready for ${vAppName}. Do that first."
 	exit 0
 fi
 ;;

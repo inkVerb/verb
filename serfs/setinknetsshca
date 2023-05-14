@@ -11,9 +11,9 @@
 ## ./setinknetsshca sshca.inkisaverb.com
 
 
-INKSSHCA=$1
+inkSSHca=$1
 
-/bin/sed -i "s/InkNetSSHCA=.*/InkNetSSHCA=\"${INKSSHCA}\"/g" /opt/verb/conf/inknet/inknetinfo
+/bin/sed -i "s/InkNetSSHCA=.*/InkNetSSHCA=\"${inkSSHca}\"/g" /opt/verb/conf/inknet/inknetinfo
 
 
 

@@ -25,11 +25,11 @@ fi
 
 # CA Client signing keys
 cd ~/.ssh/inknet/ca/ || exit 6
-/bin/rm -f in_ca_${IAMCANAME}_key
-ssh-keygen -N "" -f in_ca_${IAMCANAME}_key
+/bin/rm -f in_ca_${iamCAname}_key
+ssh-keygen -N "" -f in_ca_${iamCAname}_key
 ## Link to the download web folder
-/bin/cp -f in_ca_${IAMCANAME}_key.pub /srv/www/html/${IAMCAHOST}/inknet/
-/bin/chown -R www:www /srv/www/html/${IAMCAHOST}/inknet/
+/bin/cp -f in_ca_${iamCAname}_key.pub /srv/www/html/${iamCAhost}/inknet/
+/bin/chown -R www:www /srv/www/html/${iamCAhost}/inknet/
 
 # Finish
 /bin/echo "Go change the world! New master keys have been created for this CA Verber."

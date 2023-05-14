@@ -33,29 +33,29 @@ if [ -e "/opt/verb/mods/killvapp.before" ]; then . /opt/verb/mods/killvapp.befor
 
 # Include the configs
 . /opt/verb/conf/servernameip
-. /opt/verb/conf/vapp.${APPNAME}
+. /opt/verb/conf/vapp.${appName}
 
-APPNAME=$1
+appName=$1
 
 # Kill the database and user
 /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
-DROP DATABASE ${APPDBASE};
-DROP USER ${APPDDBUSR}@localhost;
+DROP DATABASE ${appDBase};
+DROP USER ${appDDBUsr}@localhost;
 FLUSH PRIVILEGES;"
 
 # Kill the config
-/bin/rm -f /opt/verb/conf/vapp.${APPNAME}
+/bin/rm -f /opt/verb/conf/vapp.${appName}
 
 # Kill the directories
-/bin/rm -rf /srv/www/vapps/${APPNAME}
-/bin/rm -rf /srv/vip/_webapps/${APPNAME}
-/bin/rm -rf /srv/www/html/*.${APPNAME}
+/bin/rm -rf /srv/www/vapps/${appName}
+/bin/rm -rf /srv/vip/_webapps/${appName}
+/bin/rm -rf /srv/www/html/*.${appName}
 /opt/verb/serfs/updatehtmlverbs
 
 # Finish
 /bin/echo "Taps...
 
-${APPNAME} is now dead.
+${appName} is now dead.
 "
 
 

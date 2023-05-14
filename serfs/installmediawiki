@@ -15,10 +15,10 @@ cVappName=mediawiki
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/siteurilist
 
-DBASE=$1
-DBUSER=$2
-DBPASSWORD=$3
-CLEANNAME=$(/bin/echo $cVappName | sed -e 's/\.//g')
+dBase=$1
+dBaseUser=$2
+dBPassword=$3
+cleanName=$(/bin/echo $cVappName | sed -e 's/\.//g')
 
 # Check if already installed
 if [-f /opt/verb/conf/vapp.${cVappName} ]; then
@@ -36,30 +36,30 @@ e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 # Auto database
 if [ -z ${3} ]; then
-DBPASSWORD=$(/usr/bin/pwgen -s -1 10); fi
+dBPassword=$(/usr/bin/pwgen -s -1 10); fi
 if [ -z ${1} ]; then
-DBASE=${CLEANNAME}$(/usr/bin/pwgen -s -1 6); fi
+dBase=${cleanName}$(/usr/bin/pwgen -s -1 6); fi
 if [ -z ${2} ]; then
-DBUSER=${DBASE}; fi
+dBaseUser=${dBase}; fi
 
 # Create the database and credentials
 /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
-CREATE DATABASE  ${DBASE};
-GRANT ALL PRIVILEGES ON ${DBASE}.* TO '${DBUSER}'@'localhost' IDENTIFIED BY '${DBPASSWORD}';
+CREATE DATABASE  ${dBase};
+GRANT ALL PRIVILEGES ON ${dBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '${dBPassword}';
 FLUSH PRIVILEGES;"
 
 # Write the config for backup
 /bin/echo "#!/bin/bash
-APPDBASE=${DBASE}
-APPDDBUSR=${DBUSER}
-APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.${cVappName}
+APPdBase=${dBase}
+appDDBUsr=${dBaseUser}
+appDDBPass=${dBPassword}" > /opt/verb/conf/vapp.${cVappName}
 
 /bin/echo "These are setup:
 
 Host: localhost
-Database name: ${DBASE}
-Database username: ${DBUSER} (NOT root)
-Database password: ${DBPASSWORD}
+Database name: ${dBase}
+Database username: ${dBaseUser} (NOT root)
+Database password: ${dBPassword}
 Storage engine: InnoDB
 Character Set: UTF-8
 Return email address: use anything real, maybe yourname@${inkURI}, NOT something@wiki.${inkURI}

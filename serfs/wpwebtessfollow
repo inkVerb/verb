@@ -8,11 +8,11 @@
 ## ./wpfixtessfollow [wordpress domain] [replaced contend]
 
 
-WPSITE=$1
-CONTENT=$2
+wpSite=$1
+content=$2
 
-/bin/sed -i "s/Follow Us on/${CONTENT}/g" /srv/www/html/${WPSITE}/wp-content/themes/tesseract-free-theme/inc/customizer-frontend-functions.php
-/bin/sed -i "s/Follow Us on/${CONTENT}/g" /srv/www/html/${WPSITE}/wp-content/themes/tesseract-free-theme/languages/tesseract.pot
+/bin/sed -i "s/Follow Us on/${content}/g" /srv/www/html/${wpSite}/wp-content/themes/tesseract-free-theme/inc/customizer-frontend-functions.php
+/bin/sed -i "s/Follow Us on/${content}/g" /srv/www/html/${wpSite}/wp-content/themes/tesseract-free-theme/languages/tesseract.pot
 
 
 

@@ -8,7 +8,7 @@
 ## ./updatepfa
 
 
-PFAPASS=$1
+pfaPass=$1
 
 # Include the config file
 . /opt/verb/conf/servernameip
@@ -36,13 +36,13 @@ if [ -d /srv/www/email/postfixadmin.vbak ]; then
 /usr/bin/chown -R www:www /srv/www/email/postfixadmin
 
 # Setup password
-if [ "${PFAPASS}" != "secure" ]
+if [ "${pfaPass}" != "secure" ]
 then
 /bin/sed -i "s/\$Conf\['setup_password'\] = .*/\$Conf\['setup_password'\] = '6eb7d8657903da15ba69349209a1c4f9:4b0f638a1fc2788682cee2f1c7416c883cfa33e9';/g" /srv/www/email/postfixadmin/config.local.php
 fi
 
 # Finish
-if [ "${PFAPASS}" = "secure" ]
+if [ "${pfaPass}" = "secure" ]
 then
 /bin/echo "
 Postfix Admin update complete.

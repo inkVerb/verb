@@ -26,15 +26,15 @@ if [ -e "/opt/verb/mods/killftpuser.replace" ]; then . /opt/verb/mods/killftpuse
 if [ -e "/opt/verb/mods/killftpuser.before" ]; then . /opt/verb/mods/killftpuser.before; fi # Precedes this script
 
 
-DELFTPUSER=$1
+DELFTPuser=$1
 
 # Delete the user
-/usr/bin/userdel ${DELFTPUSER}
+/usr/bin/userdel ${delFTPuser}
 
 # Remove directories and ftpuers/ symlink
-/bin/rm -rf /srv/vsftpd/${DELFTPUSER}
-/bin/rm -rf /home/${DELFTPUSER}
-/bin/rm -f /srv/www/vip/ftpusers/${NEWFTPUSER}
+/bin/rm -rf /srv/vsftpd/${delFTPuser}
+/bin/rm -rf /home/${delFTPuser}
+/bin/rm -f /srv/www/vip/ftpusers/${newFTPUser}
 
 
 

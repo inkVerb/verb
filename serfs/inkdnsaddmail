@@ -30,16 +30,16 @@ if [ -e "/opt/verb/mods/inkdnsaddmail.before" ]; then . /opt/verb/mods/inkdnsadd
 
 DNsdnsDomainAIN="$1"
 if [ -n $2 ] && [ "$2" = "verber" ]; then
-  ZONEDIR="inkzones"
+  ZONEdir="inkzones"
 else
-  ZONEDIR="zones"
+  ZONEdir="zones"
 fi
 
 # Include the configs
 . /opt/verb/conf/servernameip
 
 # Check if already added
-if /bin/grep -Fq "; Hostname Mail Record Defaults" /opt/verb/conf/inkdns/${ZONEDIR}/db.${DNsdnsDomainAIN}; then
+if /bin/grep -Fq "; Hostname Mail Record Defaults" /opt/verb/conf/inkdns/${zonedir}/db.${DNsdnsDomainAIN}; then
 /bin/echo "Mail Record Defaults already added to . Use killinkdnsmail to remove them."
 exit 0; fi
 
@@ -60,8 +60,8 @@ imap.${DNsdnsDomainAIN}.  IN  AAAA 	${ServerIPv6}
 pop3.${DNsdnsDomainAIN}.  IN  AAAA 	${ServerIPv6}
 pop2.${DNsdnsDomainAIN}.  IN  AAAA 	${ServerIPv6}
 pop.${DNsdnsDomainAIN}.   IN  AAAA 	${ServerIPv6}
-;; End Mail Defaults" >> /opt/verb/conf/inkdns/${ZONEDIR}/db.${DNsdnsDomainAIN}
-/bin/sed -i "s/; Text Record Defaults/; Text Record Defaults\n${DNsdnsDomainAIN}.	\tIN  TXT	\t\"v=spf1 a mx a:${DNsdnsDomainAIN} ip4:${ServerIPv4} ip6:${ServerIPv6} -all\"\n_dmarc.${DNsdnsDomainAIN}.	\tIN  TXT	\t\"v=DMABOX1; p=reject; fo=0; aspf=r; adkim=r; pct=100; ri=86400; rua=mailto:dmark@${DNsdnsDomainAIN};\"/" /opt/verb/conf/inkdns/${ZONEDIR}/db.${DNsdnsDomainAIN}
+;; End Mail Defaults" >> /opt/verb/conf/inkdns/${zonedir}/db.${DNsdnsDomainAIN}
+/bin/sed -i "s/; Text Record Defaults/; Text Record Defaults\n${DNsdnsDomainAIN}.	\tIN  TXT	\t\"v=spf1 a mx a:${DNsdnsDomainAIN} ip4:${ServerIPv4} ip6:${ServerIPv6} -all\"\n_dmarc.${DNsdnsDomainAIN}.	\tIN  TXT	\t\"v=DMABOX1; p=reject; fo=0; aspf=r; adkim=r; pct=100; ri=86400; rua=mailto:dmark@${DNsdnsDomainAIN};\"/" /opt/verb/conf/inkdns/${zonedir}/db.${DNsdnsDomainAIN}
 
 ## nv.DOM
 /bin/echo "; PTR Hostname Mail Record Defaults
@@ -77,12 +77,12 @@ ${ServerARPAIPv6}		IN  PTR  imap.${DNsdnsDomainAIN}.
 ${ServerARPAIPv6}		IN  PTR  pop3.${DNsdnsDomainAIN}.
 ${ServerARPAIPv6}		IN  PTR  pop2.${DNsdnsDomainAIN}.
 ${ServerARPAIPv6}		IN  PTR   pop.${DNsdnsDomainAIN}.
-;; End Mail Defaults" >> /opt/verb/conf/inkdns/${ZONEDIR}/nv.${DNsdnsDomainAIN}
+;; End Mail Defaults" >> /opt/verb/conf/inkdns/${zonedir}/nv.${DNsdnsDomainAIN}
 
 # Set the Serial No
-if [ "${ZONEDIR}" = "inkzones" ]; then
+if [ "${zonedir}" = "inkzones" ]; then
   /opt/verb/serfs/inkdnsserial ${DNsdnsDomainAIN} verber
-elif [ "${ZONEDIR}" = "zones" ]; then
+elif [ "${zonedir}" = "zones" ]; then
   /opt/verb/serfs/inkdnsserial ${DNsdnsDomainAIN}
 fi
 

@@ -27,19 +27,19 @@ if [ -e "/opt/verb/mods/mysqlinstall.replace" ]; then . /opt/verb/mods/mysqlinst
 if [ -e "/opt/verb/mods/mysqlinstall.before" ]; then . /opt/verb/mods/mysqlinstall.before; fi # Precedes this script
 
 
-MYSQLPASS=$(/usr/bin/pwgen -0 -1 -A -B 11)
+mySQLpass=$(/usr/bin/pwgen -0 -1 -A -B 11)
 MYSQLBossPASS=$(/usr/bin/pwgen -s -1 10)
 
 # Record the MySQL root password
-/bin/echo "${MYSQLPASS}" > /opt/verb/inst/mysqlrootpassword
-/bin/echo "mysql-server mysql-server/root_password password ${MYSQLPASS}" | debconf-set-selections
-/bin/echo "mysql-server mysql-server/root_password_again password ${MYSQLPASS}" | debconf-set-selections
+/bin/echo "${mySQLpass}" > /opt/verb/inst/mysqlrootpassword
+/bin/echo "mysql-server mysql-server/root_password password ${mySQLpass}" | debconf-set-selections
+/bin/echo "mysql-server mysql-server/root_password_again password ${mySQLpass}" | debconf-set-selections
 
 # Install MySQL
 /usr/bin/apt-get -y install mysql-server mysql-client
 
 # MySQL superuser to auto-create databases
-/usr/bin/mysql -uroot -p${MYSQLPASS} -e "
+/usr/bin/mysql -uroot -p${mySQLpass} -e "
 CREATE USER mysqlboss@localhost;
 SET PASSWORD FOR mysqlboss@localhost=PASSWORD('${MYSQLBossPASS}');
 GRANT ALL PRIVILEGES ON *.* TO 'mysqlboss'@'localhost' IDENTIFIED BY '${MYSQLBossPASS}' WITH GRANT OPTION;

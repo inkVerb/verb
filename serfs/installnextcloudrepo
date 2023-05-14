@@ -31,10 +31,10 @@ if [ -d /srv/www/vapps/${cVappName} ]; then
 /bin/echo "Nextcloud already exists in the system. If it isn't working, look deeper on the server. For now, doing nothing."
 exit 8; fi
 
-DBASE=$1
-DBUSER=$2
-DBPASSWORD=$3
-CLEANNAME=$(/bin/echo $cVappName | sed -e 's/\.//g')
+dBase=$1
+dBaseUser=$2
+dBPassword=$3
+cleanName=$(/bin/echo $cVappName | sed -e 's/\.//g')
 
 ##DEV If as webapp
 # # Download as webapp
@@ -77,22 +77,22 @@ if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: ls'; exit 4; fi
 
 # Auto database
 if [ -z ${4} ]; then
-DBPASSWORD=$(/usr/bin/pwgen -s -1 10); fi
+dBPassword=$(/usr/bin/pwgen -s -1 10); fi
 if [ -z ${2} ]; then
-DBASE=${CLEANNAME}$(/usr/bin/pwgen -s -1 6); fi
+dBase=${cleanName}$(/usr/bin/pwgen -s -1 6); fi
 if [ -z ${3} ]; then
-DBUSER=${DBASE}; fi
+dBaseUser=${dBase}; fi
 
 # Create the database and credentials
 /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
-CREATE DATABASE ${DBASE} DEFAULT CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_general_ci';
-GRANT ALL PRIVILEGES ON ${DBASE}.* TO '${DBUSER}'@'localhost' IDENTIFIED BY '${DBPASSWORD}';
+CREATE DATABASE ${dBase} DEFAULT CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_general_ci';
+GRANT ALL PRIVILEGES ON ${dBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '${dBPassword}';
 FLUSH PRIVILEGES;"
 
 # Write the config for backup
-/bin/echo "APPDBASE=${DBASE}
-APPDDBUSR=${DBUSER}
-APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.${cVappName}
+/bin/echo "APPdBase=${dBase}
+appDDBUsr=${dBaseUser}
+appDDBPass=${dBPassword}" > /opt/verb/conf/vapp.${cVappName}
 
 # php-fpm
 /usr/bin/cat <<'EOF' > /etc/php/php-fpm.d/nextcloud.conf
@@ -193,7 +193,7 @@ fi
 sed -i "s/if (PHP_VERSION_ID >=.*/if (PHP_VERSION_ID >= 90000) {/" /usr/share/webapps/nextcloud/lib/versioncheck.php
 
 # Set the database and credentials for Nextcloud from the command line
-#/usr/bin/su www -c 'php /usr/share/webapps/nextcloud/occ maintenance:install --database mysql --database-name ${DBASE} --database-host localhost --database-user ${DBUSER} --database-pass=${DBPASSWORD} --data-dir /var/lib/nextcloud/data/'
+#/usr/bin/su www -c 'php /usr/share/webapps/nextcloud/occ maintenance:install --database mysql --database-name ${dBase} --database-host localhost --database-user ${dBaseUser} --database-pass=${dBPassword} --data-dir /var/lib/nextcloud/data/'
 #/usr/bin/su www -c 'php /usr/share/webapps/nextcloud/occ maintenance:install --database mysql --database-name nextcloudlG49P6 --database-host localhost --database-user nextcloudlG49P6 --database-pass=x870WeniU0 --data-dir /var/lib/nextcloud/data/'
 
 # Apps
@@ -214,9 +214,9 @@ fi
 # Finish
 /bin/echo "These are setup:
 
-Database user: ${DBUSER}
-Database password: ${DBPASSWORD}
-Database name: ${DBASE}
+Database user: ${dBaseUser}
+Database password: ${dBPassword}
+Database name: ${dBase}
 Host: localhost
 
 *Don't make any other changes during the install!

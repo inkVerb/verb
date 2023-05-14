@@ -26,10 +26,10 @@ if [ -e "/opt/verb/mods/mysqlkilluser.replace" ]; then . /opt/verb/mods/mysqlkil
 if [ -e "/opt/verb/mods/mysqlkilluser.before" ]; then . /opt/verb/mods/mysqlkilluser.before; fi # Precedes this script
 
 
-DBUSER=$1
+dBaseUser=$1
 
 /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
-DROP USER ${DBUSER}@localhost;"
+DROP USER ${dBaseUser}@localhost;"
 
 
 

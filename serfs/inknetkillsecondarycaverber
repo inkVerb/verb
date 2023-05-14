@@ -13,12 +13,12 @@
 
 
 FULLKILLNAME=$1
-KILLCAVERBERNAME=$(/bin/echo $FULLKILLNAME | cut -c1-18)
+killCAVerberName=$(/bin/echo $FULLKILLNAME | cut -c1-18)
 
-/bin/rm /opt/verb/conf/inknet/2cav.${KILLCAVERBERNAME}.cnf
+/bin/rm /opt/verb/conf/inknet/2cav.${killCAVerberName}.cnf
 
 # Finish
-/bin/echo "The secondary CA Verber credentials for ${KILLCAVERBERNAME} have been deleted."
+/bin/echo "The secondary CA Verber credentials for ${killCAVerberName} have been deleted."
 
 
 

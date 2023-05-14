@@ -44,28 +44,28 @@ if [ -z "$1" ]; then
 fi
 
 # Rink
-RINK="$1"
+rink="$1"
 # Domain
 domain="$2"
 
 # Rink user check
-if [ ! -d "/srv/sns/${RINK}" ]; then
-  /bin/echo "This server does not supply rink user ${RINK}, I quit."; exit 0
+if [ ! -d "/srv/sns/${rink}" ]; then
+  /bin/echo "This server does not supply rink user ${rink}, I quit."; exit 0
 fi
 
 # Rink user settings check
-if [ ! -f "/srv/sns/${RINK}/servertldstatus" ] || [ ! -f "/srv/sns/${RINK}/conf" ] || [ ! -f "/srv/sns/${RINK}/siteurilist" ]; then
-  /bin/echo "Rink user ${RINK} not properly configured, this shouldn't be possible. I quit."; exit 0
+if [ ! -f "/srv/sns/${rink}/servertldstatus" ] || [ ! -f "/srv/sns/${rink}/conf" ] || [ ! -f "/srv/sns/${rink}/siteurilist" ]; then
+  /bin/echo "Rink user ${rink} not properly configured, this shouldn't be possible. I quit."; exit 0
 fi
 
 # Does the rink user own the domain?
-if [ ! -f "/srv/sns/${RINK}/domains/${domain}" ]; then
-  /bin/echo "This rink user ${RINK} does not own domain ${domain}, I quit."; exit 0
+if [ ! -f "/srv/sns/${rink}/domains/${domain}" ]; then
+  /bin/echo "This rink user ${rink} does not own domain ${domain}, I quit."; exit 0
 fi
 
-. /srv/sns/${RINK}/servertldstatus
-. /srv/sns/${RINK}/siteurilist
-. /srv/sns/${RINK}/conf
+. /srv/sns/${rink}/servertldstatus
+. /srv/sns/${rink}/siteurilist
+. /srv/sns/${rink}/conf
 
 # Already existing check
 if [ ! -f "/opt/verb/conf/inkdns/sdns/s.${domain}" ]; then

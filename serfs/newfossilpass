@@ -33,15 +33,15 @@ if [ -e "/opt/verb/mods/newfossilpass.before" ]; then . /opt/verb/mods/newfossil
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/siteurilist
 
-OLDFOSSIL=$1
-OLDUSER=$2
-NEWPASS=$3
+oldFossil=$1
+oldUser=$2
+newPass=$3
 
 # Change the password
-/srv/www/vip/fossil user password ${OLDUSER} ${NEWPASS} --repository ${OLDFOSSIL}.fossil
+/srv/www/vip/fossil user password ${oldUser} ${newPass} --repository ${oldFossil}.fossil
 
-/bin/echo "New ${OLDFOSSIL}.fossil password set for ${OLDUSER}.
-Available on web at fossil.${vipURI}/${OLDFOSSIL}.cgi"
+/bin/echo "New ${oldFossil}.fossil password set for ${oldUser}.
+Available on web at fossil.${vipURI}/${oldFossil}.cgi"
 
 
 

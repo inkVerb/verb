@@ -15,15 +15,15 @@
 cVappName=iwpadmin
 
 domain=$1
-REMAIL=$2
-DIRECTORY=$3
-DBASE=$4
-DBUSER=$5
-DBPASSWORD=$6
-CLEANNAME=$(/bin/echo $DOMAIN | sed -e 's/\.//g')
+remail=$2
+directory=$3
+dBase=$4
+dBaseUser=$5
+dBPassword=$6
+cleanName=$(/bin/echo ${domain} | sed -e 's/\.//g')
 
 # Check that the directory doesn't already exist
-if [ -d /srv/www/html/${domain}/${DIRECTORY} ]; then
+if [ -d /srv/www/html/${domain}/${directory} ]; then
 /bin/echo "That directory already exists for that domain. Choose a different directory."
 exit 8; fi
 
@@ -48,43 +48,43 @@ e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 ## Auto options
 if [ -z ${3} ]; then
-DIRECTORY=iwp$(/usr/bin/pwgen -s -1 1); fi
+directory=iwp$(/usr/bin/pwgen -s -1 1); fi
 if [ -z ${6} ]; then
-DBPASSWORD=$(/usr/bin/pwgen -s -1 10); fi
+dBPassword=$(/usr/bin/pwgen -s -1 10); fi
 if [ -z ${4} ]; then
-DBASE=iwp$(/bin/echo $CLEANNAME | cut -c1-23)$(/usr/bin/pwgen -s -1 5); fi
+dBase=iwp$(/bin/echo $CLEANNAME | cut -c1-23)$(/usr/bin/pwgen -s -1 5); fi
 if [ -z ${5} ]; then
-DBUSER=${DBASE}; fi
+dBaseUser=${dBase}; fi
 
 /bin/mv ${cVappName} ${domain}
 /bin/mv ${cVappName} ${cVappName}.${domain}
-/bin/ln -sfn /srv/www/vapps/${cVappName}.${domain} /srv/www/html/${domain}/${DIRECTORY}
+/bin/ln -sfn /srv/www/vapps/${cVappName}.${domain} /srv/www/html/${domain}/${directory}
 
 # Create the database and credentials
 /usr/bin/mysql --login-path=local -e "
-CREATE DATABASE  ${DBASE};
-GRANT ALL PRIVILEGES ON ${DBASE}.* TO '${DBUSER}'@'localhost' IDENTIFIED BY '${DBPASSWORD}';
+CREATE DATABASE  ${dBase};
+GRANT ALL PRIVILEGES ON ${dBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '${dBPassword}';
 FLUSH PRIVILEGES;"
 
 # Write the config for backup
 /bin/echo "#!/bin/bash
-APPDBASE=${DBASE}
-APPDDBUSR=${DBUSER}
-APPDDBPAS=${DBPASSWORD}
-IWPADMIN_DIRECTORY=\"${DIRECTORY}\"" > /opt/verb/conf/vapp.${cVappName}.${domain}
+APPdBase=${dBase}
+appDDBUsr=${dBaseUser}
+appDDBPass=${dBPassword}
+IWPADMIN_directory=\"${directory}\"" > /opt/verb/conf/vapp.${cVappName}.${domain}
 
 # Reset all permissions
-/bin/chown -R www:www /srv/www/html/${domain}/${DIRECTORY}; wait
+/bin/chown -R www:www /srv/www/html/${domain}/${directory}; wait
 
 /bin/echo "${domain} now has the InfiniteWP Admin Panel.
 These are setup:
 
-Database: ${DBASE}
-Database user: ${DBUSER}
-Database password: ${DBPASSWORD}
+Database: ${dBase}
+Database user: ${dBaseUser}
+Database password: ${dBPassword}
 Database port / prefix: DO NOT CHANGE
 
-Go to http://${domain}/${DIRECTORY} to install.
+Go to http://${domain}/${directory} to install.
 "
 
 

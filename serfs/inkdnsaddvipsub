@@ -26,39 +26,39 @@ if [ -e "/opt/verb/mods/inkdnsaddvipsub.replace" ]; then . /opt/verb/mods/inkdns
 if [ -e "/opt/verb/mods/inkdnsaddvipsub.before" ]; then . /opt/verb/mods/inkdnsaddvipsub.before; fi # Precedes this script
 
 
-DNSSUBDOM="$1"
-ZONEDIR="inkzones"
+dnsSubDom="$1"
+ZONEdir="inkzones"
 
 # Include the configs
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/siteurilist
 
 # Check if already added
-if /bin/grep -Fq "${DNSSUBDOM}.${vipURI}" /opt/verb/conf/inkdns/${ZONEDIR}/db.${vipURI}; then
-/bin/echo "The subdomain ${DNSSUBDOM} has already been added to ${vipURI}. Use killinkdnssub to remove it."
+if /bin/grep -Fq "${dnsSubDom}.${vipURI}" /opt/verb/conf/inkdns/${zonedir}/db.${vipURI}; then
+/bin/echo "The subdomain ${dnsSubDom} has already been added to ${vipURI}. Use killinkdnssub to remove it."
 exit 0; fi
 
 # Echo the record
 ## db.DOM
-/bin/echo "; Subdomain Records Added by inkDNS ${DNSSUBDOM}.${vipURI}" >> /opt/verb/conf/inkdns/${ZONEDIR}/db.${vipURI}
+/bin/echo "; Subdomain Records Added by inkDNS ${dnsSubDom}.${vipURI}" >> /opt/verb/conf/inkdns/${zonedir}/db.${vipURI}
 ### IP4?
 if [ "${ServerIPv4}" != "NOIP4" ]; then
-  /bin/echo "${DNSSUBDOM}.${vipURI}   IN  A   ${ServerIPv4}" >> /opt/verb/conf/inkdns/${ZONEDIR}/db.${vipURI}
+  /bin/echo "${dnsSubDom}.${vipURI}   IN  A   ${ServerIPv4}" >> /opt/verb/conf/inkdns/${zonedir}/db.${vipURI}
 fi
 ### IP6?
 if [ "${ServerIPv6}" != "NOIP6" ]; then
-  /bin/echo "${DNSSUBDOM}.${vipURI}   IN  AAAA   ${ServerIPv6}" >> /opt/verb/conf/inkdns/${ZONEDIR}/db.${vipURI}
+  /bin/echo "${dnsSubDom}.${vipURI}   IN  AAAA   ${ServerIPv6}" >> /opt/verb/conf/inkdns/${zonedir}/db.${vipURI}
 fi
 
 ## nv.DOM
-/bin/echo "; PTR Subdomain Records Added by inkDNS ${DNSSUBDOM}.${vipURI}" >> /opt/verb/conf/inkdns/${ZONEDIR}/nv.${vipURI}
+/bin/echo "; PTR Subdomain Records Added by inkDNS ${dnsSubDom}.${vipURI}" >> /opt/verb/conf/inkdns/${zonedir}/nv.${vipURI}
 ### IP4?
 if [ "${ServerIPv4}" != "NOIP4" ]; then
-  /bin/echo "${ServerARPAIPv4}		IN  PTR  ${DNSSUBDOM}.${vipURI}" >> /opt/verb/conf/inkdns/${ZONEDIR}/nv.${vipURI}
+  /bin/echo "${ServerARPAIPv4}		IN  PTR  ${dnsSubDom}.${vipURI}" >> /opt/verb/conf/inkdns/${zonedir}/nv.${vipURI}
 fi
 ### IP6?
 if [ "${ServerIPv6}" != "NOIP6" ]; then
-  /bin/echo "${ServerARPAIPv6}		IN  PTR  ${DNSSUBDOM}.${vipURI}" >> /opt/verb/conf/inkdns/${ZONEDIR}/nv.${vipURI}
+  /bin/echo "${ServerARPAIPv6}		IN  PTR  ${dnsSubDom}.${vipURI}" >> /opt/verb/conf/inkdns/${zonedir}/nv.${vipURI}
 fi
 
 # Set the Serial No
@@ -71,7 +71,7 @@ if [ -f "/opt/verb/conf/inkdnsconf" ]; then
 /opt/verb/serfs/inkdnsrefreshbind; fi; fi
 
 # Finish
-/bin/echo "The GURU subdomain ${DNSSUBDOM} has been added to the DNS zone file."
+/bin/echo "The GURU subdomain ${dnsSubDom} has been added to the DNS zone file."
 
 
 

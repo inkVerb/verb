@@ -29,12 +29,12 @@ if [ -e "/opt/verb/mods/mysqlin.before" ]; then . /opt/verb/mods/mysqlin.before;
 
 
 INPUT=$1
-DBASE=${INPUT%.sql}
+dBase=${INPUT%.sql}
 
-/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${DBASE} < /srv/vip/sql/${DBASE}.sql
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${dBase} < /srv/vip/sql/${dBase}.sql
 
 if [ $? = "0" ]; then
-  echo "${DBASE} database restored."
+  echo "${dBase} database restored."
 fi
 
 

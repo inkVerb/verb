@@ -34,11 +34,11 @@ if [ "$1" = "verb.one" ]; then
 exit 0
 fi
 
-NEWONESUB=$1
+newONEsub=$1
 
     cp /srv/www/verb/one/index-newonesub.php /srv/www/html/one/index.php
-    sed -i "s/newonesub/${NEWONESUB}/g" /srv/www/verb/one/index.php
-    /bin/echo "Pointing to http://${NEWONESUB}.${oneURI}, done."
+    sed -i "s/newonesub/${newONEsub}/g" /srv/www/verb/one/index.php
+    /bin/echo "Pointing to http://${newONEsub}.${oneURI}, done."
 exit 0
 
 

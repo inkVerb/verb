@@ -28,23 +28,23 @@ if [ -e "/opt/verb/mods/newftpfiler.replace" ]; then . /opt/verb/mods/newftpfile
 if [ -e "/opt/verb/mods/newftpfiler.before" ]; then . /opt/verb/mods/newftpfiler.before; fi # Precedes this script
 
 
-NEWFTPFILER=$1
-NEWUSERPASS=$2
+NEWFTPfiler=$1
+appDBase=$2
 
 # Create the user with vsftpd
-/opt/verb/serfs/newftpuser ${NEWFTPUSER} ${NEWUSERPASS}
+/opt/verb/serfs/newftpuser ${newFTPUser} ${newUserPass}
 
 # Create a filer _domains directory
-/bin/mkdir -p /srv/vsftpd/${NEWFTPUSER}/_domains
+/bin/mkdir -p /srv/vsftpd/${newFTPUser}/_domains
 
 # Let the filer have a vip/_filecabinet link
-/bin/ln -sfn /srv/vip/_filecabinet /srv/vsftpd/${NEWFTPUSER}/
+/bin/ln -sfn /srv/vip/_filecabinet /srv/vsftpd/${newFTPUser}/
 
 # Let the filer have a vip/sql link
-/bin/ln -sfn /srv/vip/sql /srv/vsftpd/${NEWFTPFILER}/
+/bin/ln -sfn /srv/vip/sql /srv/vsftpd/${newFTPfiler}/
 
 # Own the user's web accessible symlink folder
-/bin/chown -R www:www /srv/www/vip/files/${NEWFTPFILER}
+/bin/chown -R www:www /srv/www/vip/files/${newFTPfiler}
 
 
 

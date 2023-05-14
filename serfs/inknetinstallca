@@ -7,8 +7,8 @@
 
 # DEV NOTE:
 ## There are two CA keys
-### in_ca_${CAVERBERNAME}_key to sign the host key on the same CA Verber itself, which authenticates this server to Clients
-### in_cav_${CAVERBERNAME}_key gets signed
+### in_ca_${caVerberName}_key to sign the host key on the same CA Verber itself, which authenticates this server to Clients
+### in_cav_${caVerberName}_key gets signed
 
 # How to use:
 ## ./inknetinstallca
@@ -33,10 +33,10 @@ fi
 . /opt/verb/conf/inknet/ca.verber.cnf
 
 # Check if already installed or correctly ready
-if [ "${INKNETSTATUS}" = "INSTALLED" ]; then
+if [ "${inkNetStatus}" = "INSTALLED" ]; then
 /bin/echo "inkNet is already installed, dude. Don't mess."
 exit 0; fi
-if [ "${INKNETSTATUS}" != "MADE_INSTALL_READY" ]; then
+if [ "${inkNetStatus}" != "MADE_INSTALL_READY" ]; then
 /bin/echo "Catostrophic failure. inkNetStatus should be MADE_INSTALL_READY or INSTALLED, but isn't either one.
 Look at ca.verber.cnf to see what's up.
 "
@@ -55,7 +55,7 @@ wait
 wait
 
 # Set the inkNet config
-/bin/sed -i "s/INKNETSTATUS=\"MADE_INSTALL_READY\"/INKNETSTATUS=\"INSTALLED\"/g" /opt/verb/conf/inknet/ca.verber.cnf
+/bin/sed -i "s/inkNetStatus=\"MADE_INSTALL_READY\"/inkNetStatus=\"INSTALLED\"/g" /opt/verb/conf/inknet/ca.verber.cnf
 
 # Finish
 /bin/echo "

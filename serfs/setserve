@@ -22,7 +22,7 @@ if [ -z "${1}" ]; then
 else
   vTLD="${1}"
 fi
-sDIR="$(/usr/bin/pwgen -s -1 128)"
+sdir="$(/usr/bin/pwgen -s -1 128)"
 nServeURI="${vTLD}URI"
 CHECKtld="VERB${vTLD}"
 

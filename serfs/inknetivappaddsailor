@@ -8,17 +8,17 @@
 ## ./inknetivappaddsailor [user]
 
 
-ADDINIVSAILOR=$1
+addInivSailor=$1
 
 # Add the user
-/opt/verb/donjon/ivapp/ivappaddsailor ${ADDINIVSAILOR} /opt/verb/conf/inknet/ivinknet-sail.conf
+/opt/verb/donjon/ivapp/ivappaddsailor ${addInivSailor} /opt/verb/conf/inknet/ivinknet-sail.conf
 wait
 
 # Create the inkNet Client tool links
-/bin/rm -rf /opt/ivapp/inknet/sailor/${ADDINIVSAILOR}/tools
-/bin/ln -sfn /opt/verb/tools/sailor /opt/ivapp/inknet/sailor/${ADDINIVSAILOR}/tools
-/bin/mkdir -p /opt/ivapp/inknet/sailor/${ADDINIVSAILOR}/.ssh
-/bin/chown -R ${ADDINIVSAILOR}:${ADDINIVSAILOR} /opt/ivapp/inknet/sailor/${ADDINIVSAILOR}
+/bin/rm -rf /opt/ivapp/inknet/sailor/${addInivSailor}/tools
+/bin/ln -sfn /opt/verb/tools/sailor /opt/ivapp/inknet/sailor/${addInivSailor}/tools
+/bin/mkdir -p /opt/ivapp/inknet/sailor/${addInivSailor}/.ssh
+/bin/chown -R ${addInivSailor}:${addInivSailor} /opt/ivapp/inknet/sailor/${addInivSailor}
 
 
 

@@ -28,7 +28,7 @@ if [ -e "/opt/verb/mods/killdomainvip.before" ]; then . /opt/verb/mods/killdomai
 
 olddomain=$1
 
-/bin/rm -f /srv/vip/_domains/${OLDDOMAIN}
+/bin/rm -f /srv/vip/_domains/${olddomain}
 
 
 

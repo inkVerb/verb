@@ -16,7 +16,7 @@
 ## ./backupappdb wp-inkisaverb.com 555
 
 
-APPNAME=$1
+appName=$1
 if [ -z "$2" ] || [ "$2" = "-nl" ]; then
 SECNAME=$(/usr/bin/pwgen -s -1 12)
 else
@@ -26,27 +26,27 @@ fi
 # Include the configs
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/siteurilist
-. /opt/verb/conf/vapp.${APPNAME}
+. /opt/verb/conf/vapp.${appName}
 
 # Export the database
 cd /srv/www/vip || exit 6
-/opt/verb/serfs/mysqlex ${APPDBASE}; wait
-/bin/mv /srv/www/vip/sql/${APPDBASE}.sql /srv/www/vip/sql/verb.${APPDBASE}.${SECNAME}.vbak.sql
+/opt/verb/serfs/mysqlex ${appDBase}; wait
+/bin/mv /srv/www/vip/sql/${appDBase}.sql /srv/www/vip/sql/verb.${appDBase}.${SECNAME}.vbak.sql
 
 # Finish
 if [ "$3" = "-nl" ] || [ "$2" = "-nl" ]; then
-/bin/echo "The database for ${APPNAME} has been backed up to the 'vip/sql/' folder.
+/bin/echo "The database for ${appName} has been backed up to the 'vip/sql/' folder.
 
 Note that the app remains live.
 "
 exit 0
 fi
 
-/bin/ln -sfn /srv/www/vip/sql/verb.${APPDBASE}.${SECNAME}.vbak.sql /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/
-/bin/chown -R www:www /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/verb.${APPDBASE}.${SECNAME}.vbak.sql
-/bin/echo "The database for ${APPNAME} has been backed up and can be downloaded at:
+/bin/ln -sfn /srv/www/vip/sql/verb.${appDBase}.${SECNAME}.vbak.sql /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/
+/bin/chown -R www:www /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/verb.${appDBase}.${SECNAME}.vbak.sql
+/bin/echo "The database for ${appName} has been backed up and can be downloaded at:
 
-https://${ServerServePath}/verb.${APPDBASE}.${SECNAME}.vbak.sql
+https://${ServerServePath}/verb.${appDBase}.${SECNAME}.vbak.sql
 
 Note that the app remains live.
 "

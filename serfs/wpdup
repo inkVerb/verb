@@ -39,7 +39,7 @@ fi
 . /opt/verb/conf/vapp.wp.${oDOMAIN}
 
 ## Export the database
-/usr/bin/mysqldump --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${APPDBASE} > ${APPDBASE}.sql
+/usr/bin/mysqldump --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${appDBase} > ${appDBase}.sql
 
 # Setup the new WP site
 ## Set the vapp in its directory
@@ -51,31 +51,31 @@ fi
 /bin/chown -R www:www /srv/www/vapps/wp.${nDOMAIN}; wait
 
 ## Auto database
-DBPASSWORD=$(/usr/bin/pwgen -s -1 10)
-DBASE=wp$(/bin/echo "wp" | cut -c1-24)$(/usr/bin/pwgen -s -1 6)
-DBUSER=${DBASE}
+dBPassword=$(/usr/bin/pwgen -s -1 10)
+dBase=wp$(/bin/echo "wp" | cut -c1-24)$(/usr/bin/pwgen -s -1 6)
+dBaseUser=${dBase}
 /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
-CREATE DATABASE  ${DBASE};
-GRANT ALL PRIVILEGES ON ${DBASE}.* TO '${DBUSER}'@'localhost' IDENTIFIED BY '${DBPASSWORD}';
+CREATE DATABASE  ${dBase};
+GRANT ALL PRIVILEGES ON ${dBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '${dBPassword}';
 FLUSH PRIVILEGES;"
 
 ## Move & import the old database to the new one
-/bin/mv ${APPDBASE}.sql ${DBASE}.sql
-/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${DBASE} < ${DBASE}.sql
-/bin/rm ${DBASE}.sql
+/bin/mv ${appDBase}.sql ${dBase}.sql
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${dBase} < ${dBase}.sql
+/bin/rm ${dBase}.sql
 
 ## Write the config for backup
 /bin/echo "#!/bin/bash
-APPDBASE=${DBASE}
-APPDDBUSR=${DBUSER}
-APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.wp.${nDOMAIN}
+APPdBase=${dBase}
+appDDBUsr=${dBaseUser}
+appDDBPass=${dBPassword}" > /opt/verb/conf/vapp.wp.${nDOMAIN}
 
 ## Put the settings in the WordPress config file
 cd /srv/www/vapps/wp.${nDOMAIN} || exit 6
 /bin/cp wp-config-sample.php wp-config.php
-/bin/sed -i "s/database_name_here/${DBASE}/g" wp-config.php
-/bin/sed -i "s/username_here/${DBUSER}/g" wp-config.php
-/bin/sed -i "s/password_here/${DBPASSWORD}/g" wp-config.php
+/bin/sed -i "s/database_name_here/${dBase}/g" wp-config.php
+/bin/sed -i "s/username_here/${dBaseUser}/g" wp-config.php
+/bin/sed -i "s/password_here/${dBPassword}/g" wp-config.php
 /bin/echo "
 /** inkVerb Sets the URL */
 define( 'WP_SITEURL', 'http://${nDOMAIN}' );

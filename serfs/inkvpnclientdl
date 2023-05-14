@@ -13,7 +13,7 @@
 . /opt/verb/conf/siteurilist
 
 # Set the link names
-cDIR="$(/usr/bin/pwgen -s -1 128)"
+cdir="$(/usr/bin/pwgen -s -1 128)"
 /bin/mkdir -p /srv/www/verb/ink.serve/${ServerServeDir}/${cDIR}
 
 # Link it to the Serve folder

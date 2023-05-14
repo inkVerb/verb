@@ -16,18 +16,18 @@
 
 
 wpdomain=$1
-INSTTYPE=$2
+instType=$2
 
 # Set the default setting
-if [ "${INSTTYPE}" != "dir" ]; then
-INSTTYPE="sub"; fi
+if [ "${instType}" != "dir" ]; then
+instType="sub"; fi
 
 # Remove the old WordPress declarations
 /bin/sed -i '/^# BEGIN WordPress*/,/^# END WordPress/d' /srv/www/vapps/wp.${wpdomain}/.htaccess
 
 # Add the settings
 ## Subdomain install
-if [ "${INSTTYPE}" = "sub" ]; then
+if [ "${instType}" = "sub" ]; then
 # Put in the new .htaccess settings
 /bin/echo '# BEGIN WordPress ##inkVerb
 RewriteEngine On
@@ -50,7 +50,7 @@ RewriteRule . index.php [L]
 fi
 
 ## Directory install
-if [ "${INSTTYPE}" = "dir" ]; then
+if [ "${instType}" = "dir" ]; then
 # Put in the new .htaccess settings
 /bin/echo '# BEGIN WordPress ##inkVerb
 RewriteEngine On

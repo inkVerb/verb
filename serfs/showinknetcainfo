@@ -10,7 +10,7 @@
 # Check & include the config
 if [ -f /opt/verb/conf/inknet/ca.verber.cnf ]; then
 . /opt/verb/conf/inknet/ca.verber.cnf
- if [ -n "${IAMCAHOST}" ]; then
+ if [ -n "${iamCAhost}" ]; then
  /bin/echo "Here's the info for this CA Verber..."
  else
  /bin/echo "This is not a CA. No info to show.
@@ -30,9 +30,9 @@ fi
 
 # Display info
 /bin/echo "
-Host: ${IAMCAHOST}
+Host: ${iamCAhost}
 URI:  ${IAMCAURI}
-Name: ${IAMCANAME}
+Name: ${iamCAname}
 IPv4: ${ServerIPv4}
 IPv6: ${ServerIPv6}
 "

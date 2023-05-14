@@ -8,7 +8,7 @@
 ## ./inknetaddcavpkg [sec path code from CA Verber - optional, will prompt if not entered here]
 
 
-SECPATH=$1
+secpath=$1
 
 # Include the config
 . /opt/verb/conf/inknet/rink.client.cnf
@@ -21,23 +21,23 @@ if [ -z ${1} ]; then
 /bin/echo "Please copy-paste the code the CA Verber gave you, then press Enter."
 read SECPATH
 fi
-if [ -z "$SECPATH" ]; then
+if [ -z "${secpath}" ]; then
 /bin/echo "Please copy-paste the code the CA Verber gave you, then press Enter."
 read SECPATH
 fi
-if [ -z "$SECPATH" ]; then
+if [ -z "${secpath}" ]; then
 /bin/echo "You aren't entering the path. I quit."; exit 5; fi
 
 # Download the package
-/usr/bin/wget -q https://${CAVERBERHOST}/inknet/${SECPATH}/${CLIENTNAME}.ink --no-check-certificate
+/usr/bin/wget -q https://${CAVERBERHOST}/inknet/${secpath}/${clientName}.ink --no-check-certificate
 
 # Unpack
-/bin/mv ${CLIENTNAME}.ink ${CLIENTNAME}.txz
-/opt/verb/serfs/vtxzout ${CLIENTNAME}
-/bin/rm -f ${CLIENTNAME}.txz
-. ~/${CLIENTNAME}/verbername
-/bin/cp ~/${CLIENTNAME}/client.verber.${CLIENTNAME}.cnf /opt/verb/conf/inknet/client.${VERBERNAME}.rink.login.cnf
-/bin/rm -rf ${CLIENTNAME}
+/bin/mv ${clientName}.ink ${clientName}.txz
+/opt/verb/serfs/vtxzout ${clientName}
+/bin/rm -f ${clientName}.txz
+. ~/${clientName}/verbername
+/bin/cp ~/${clientName}/client.verber.${clientName}.cnf /opt/verb/conf/inknet/client.${VERBERNAME}.rink.login.cnf
+/bin/rm -rf ${clientName}
 
 # Finish
 /bin/echo "The CA-signed cert for this Verber has been installed. This Verber may now use inkNet to connect to the Inker for other services, such as inkCert."

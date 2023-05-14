@@ -9,7 +9,7 @@
 ## ./inknetivappadduser [user] [password] [usertype]
 
 
-ADDINIVUSER=$1
+ADDINIVuser=$1
 ADDINIVPASS=$2
 ADDINIVConf=$3
 
@@ -18,17 +18,17 @@ if [ ! -d "/opt/ivapp/inknet" ]; then
 /bin/echo "ivApp is not instlled yet. I quit."; exit 8; fi
 
 # Add the user
-/opt/verb/donjon/ivapp/ivappadduser ${ADDINIVUSER} ${ADDINIVPASS} /opt/verb/conf/inknet/ivinknet-${ADDINIVConf}.conf
+/opt/verb/donjon/ivapp/ivappadduser ${addInivUser} ${ADDINIVPASS} /opt/verb/conf/inknet/ivinknet-${ADDINIVConf}.conf
 wait
 
 # Include the user type config
 . /opt/verb/conf/inknet/ivinknet-${ADDINIVConf}.conf
 
 # Create the inkNet Client tool links
-/bin/rm -rf /opt/ivapp/inknet/${IvappGroupDir}/${ADDINIVUSER}/tools
-/bin/ln -sfn /opt/verb/tools/${IvappGroupDir} /opt/ivapp/inknet/${IvappGroupDir}/${ADDINIVUSER}/tools
-/bin/mkdir -p /opt/ivapp/inknet/${IvappGroupDir}/${ADDINIVUSER}/.ssh
-/bin/chown -R ${ADDINIVUSER}:${ADDINIVUSER} /opt/ivapp/inknet/${IvappGroupDir}/${ADDINIVUSER}
+/bin/rm -rf /opt/ivapp/inknet/${IvappGroupDir}/${addInivUser}/tools
+/bin/ln -sfn /opt/verb/tools/${IvappGroupDir} /opt/ivapp/inknet/${IvappGroupDir}/${addInivUser}/tools
+/bin/mkdir -p /opt/ivapp/inknet/${IvappGroupDir}/${addInivUser}/.ssh
+/bin/chown -R ${addInivUser}:${addInivUser} /opt/ivapp/inknet/${IvappGroupDir}/${addInivUser}
 
 
 

@@ -33,24 +33,24 @@ if [ -e "/opt/verb/mods/newinkdkim.before" ]; then . /opt/verb/mods/newinkdkim.b
 dkimdomain=$1
 
 # See if already added
-if [ -d "/etc/opendkim/keys/${DKIMDOMAIN}" ]; then
+if [ -d "/etc/opendkim/keys/${dkimdomain}" ]; then
 /bin/echo "Those DKIM keys already exist, doing nothing."
 exit 0; fi
 
 # Create the declared domain key
-/bin/mkdir -p /etc/opendkim/keys/${DKIMDOMAIN}
-cd /etc/opendkim/keys/${DKIMDOMAIN} || exit 6
-/usr/bin/opendkim-genkey -r -S -s inkdkim -d ${DKIMDOMAIN}
+/bin/mkdir -p /etc/opendkim/keys/${dkimdomain}
+cd /etc/opendkim/keys/${dkimdomain} || exit 6
+/usr/bin/opendkim-genkey -r -S -s inkdkim -d ${dkimdomain}
 /bin/chmod 660 inkdkim.private
 /bin/chown -R opendkim:opendkim /etc/opendkim
 
 # Add the new domain key to the config files, if it doesn't exist already
-if ! /bin/grep -q "inkdkim._domainkey.${DKIMDOMAIN} ${DKIMDOMAIN}:inkdkim:/etc/opendkim/keys/${DKIMDOMAIN}/inkdkim.private" /etc/opendkim/KeyTable; then
-  /bin/echo "inkdkim._domainkey.${DKIMDOMAIN} ${DKIMDOMAIN}:inkdkim:/etc/opendkim/keys/${DKIMDOMAIN}/inkdkim.private" >> /etc/opendkim/KeyTable; fi
-if ! /bin/grep -q "${DKIMDOMAIN} inkdkim._domainkey.${DKIMDOMAIN}" /etc/opendkim/SigningTable; then
-  /bin/echo "${DKIMDOMAIN} inkdkim._domainkey.${DKIMDOMAIN}" >> /etc/opendkim/SigningTable; fi
-if ! /bin/grep -q "${DKIMDOMAIN}" /etc/opendkim/TrustedHosts; then
-  /bin/echo "${DKIMDOMAIN}" >> /etc/opendkim/TrustedHosts; fi
+if ! /bin/grep -q "inkdkim._domainkey.${dkimdomain} ${dkimdomain}:inkdkim:/etc/opendkim/keys/${dkimdomain}/inkdkim.private" /etc/opendkim/KeyTable; then
+  /bin/echo "inkdkim._domainkey.${dkimdomain} ${dkimdomain}:inkdkim:/etc/opendkim/keys/${dkimdomain}/inkdkim.private" >> /etc/opendkim/KeyTable; fi
+if ! /bin/grep -q "${dkimdomain} inkdkim._domainkey.${dkimdomain}" /etc/opendkim/SigningTable; then
+  /bin/echo "${dkimdomain} inkdkim._domainkey.${dkimdomain}" >> /etc/opendkim/SigningTable; fi
+if ! /bin/grep -q "${dkimdomain}" /etc/opendkim/TrustedHosts; then
+  /bin/echo "${dkimdomain}" >> /etc/opendkim/TrustedHosts; fi
 
 /bin/systemctl restart opendkim
 /bin/systemctl restart postfix

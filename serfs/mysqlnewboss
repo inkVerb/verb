@@ -27,27 +27,27 @@ if [ -e "/opt/verb/mods/mysqlnewboss.replace" ]; then . /opt/verb/mods/mysqlnewb
 if [ -e "/opt/verb/mods/mysqlnewboss.before" ]; then . /opt/verb/mods/mysqlnewboss.before; fi # Precedes this script
 
 
-DBBUSER=$1
+DBBuser=$1
 if [ -z ${2} ]; then
-DBBPASSWORD=$(/usr/bin/pwgen -s -1 10)
-serfOUT="New Password: ${DBPASSWORD}"
+dbPassword=$(/usr/bin/pwgen -s -1 10)
+serfOUT="New Password: ${dBPassword}"
 else
-DBBPASSWORD=$2
+dbPassword=$2
 fi
 
-if [ -f "/opt/verb/conf/mysqlnewboss.${DBBUSER}.cnf" ]; then
+if [ -f "/opt/verb/conf/mysqlnewboss.${dbBUser}.cnf" ]; then
   echo " already exists."; exit 0
 fi
 
 /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
-GRANT ALL PRIVILEGES ON *.* TO '${DBBUSER}'@'localhost' IDENTIFIED BY '${DBBPASSWORD}' WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON *.* TO '${dbBUser}'@'localhost' IDENTIFIED BY '${dbPassword}' WITH GRANT OPTION;
 FLUSH PRIVILEGES;"
 
 /bin/echo "[client]
-user = ${DBBUSER}
-password = ${DBBPASSWORD}
+user = ${dbBUser}
+password = ${dbPassword}
 host = localhost
-" > /opt/verb/conf/mysqlnewboss.${DBBUSER}.cnf
+" > /opt/verb/conf/mysqlnewboss.${dbBUser}.cnf
 
 
 

@@ -15,16 +15,16 @@
 # Set the email variable
 if [ -z "$1" ]; then
  /bin/echo "Option not specified, OK, using default..."
- NEWEMAILADDR="vpn@${nameURI}"
+ newEmailAddr="vpn@${nameURI}"
 else
- NEWEMAILADDR="$1"
+ newEmailAddr="$1"
 fi
 
 # Do it
-/bin/sed -i "s/InkVPNClientEmail=.*/InkVPNClientEmail=${NEWEMAILADDR}/" /opt/verb/conf/inkvpn/inkvpnstatus
+/bin/sed -i "s/InkVPNClientEmail=.*/InkVPNClientEmail=${newEmailAddr}/" /opt/verb/conf/inkvpn/inkvpnstatus
 
 #Finish
-/bin/echo "inkVPN email now set to: ${NEWEMAILADDR}"
+/bin/echo "inkVPN email now set to: ${newEmailAddr}"
 
 
 

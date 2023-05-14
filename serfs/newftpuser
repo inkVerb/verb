@@ -27,8 +27,8 @@ if [ -e "/opt/verb/mods/newftpuser.replace" ]; then . /opt/verb/mods/newftpuser.
 if [ -e "/opt/verb/mods/newftpuser.before" ]; then . /opt/verb/mods/newftpuser.before; fi # Precedes this script
 
 
-NEWFTPUSER=$1
-NEWUSERPASS=$2
+newFTPUser=$1
+appDBase=$2
 
 # Check if vsftpd is installed
 if [ ! -d "/srv/vsftpd" ]; then
@@ -37,29 +37,29 @@ if [ ! -d "/srv/vsftpd" ]; then
 fi
 
 # Check for an existing vsftp dir
-if [ -e "/srv/vsftpd/${NEWFTPUSER}" ]; then
+if [ -e "/srv/vsftpd/${newFTPUser}" ]; then
   echo "That user already esists."
   exit 0
 fi
 
 # Create the user with password
-/usr/bin/groupadd ${NEWFTPUSER}
-/usr/bin/useradd -g ${NEWFTPUSER} ${NEWFTPUSER}
-/bin/echo "${NEWFTPUSER}:${NEWUSERPASS}" | chpasswd
+/usr/bin/groupadd ${newFTPUser}
+/usr/bin/useradd -g ${newFTPUser} ${newFTPUser}
+/bin/echo "${newFTPUser}:${newUserPass}" | chpasswd
 
 # Change the user's directory to the vsftpd vips directory
-/bin/mkdir /srv/vsftpd/${NEWFTPUSER}/files.vip
-/usr/bin/usermod -d /srv/vsftpd/${NEWFTPUSER} ${NEWFTPUSER}
+/bin/mkdir /srv/vsftpd/${newFTPUser}/files.vip
+/usr/bin/usermod -d /srv/vsftpd/${newFTPUser} ${newFTPUser}
 restart vsftpd
 
 # Link to the vip/ftpusers/ folder
-/bin/ln -sfn /srv/vsftpd/${NEWFTPUSER} /srv/www/vip/ftpusers/
+/bin/ln -sfn /srv/vsftpd/${newFTPUser} /srv/www/vip/ftpusers/
 
 # Create the link to access the folder via web
-/bin/ln -sfn /srv/vsftpd/${NEWFTPUSER}/files.vip /srv/www/vip/files/${NEWFTPUSER}
+/bin/ln -sfn /srv/vsftpd/${newFTPUser}/files.vip /srv/www/vip/files/${newFTPUser}
 
 # Own the user's web accessible symlink folder
-/bin/chown -R www:www /srv/www/vip/files/${NEWFTPUSER}
+/bin/chown -R www:www /srv/www/vip/files/${newFTPUser}
 
 
 

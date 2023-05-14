@@ -27,14 +27,14 @@ if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Mus
 if [ -e "/opt/verb/mods/newftpvip.replace" ]; then . /opt/verb/mods/newftpvip.replace; return 0; fi # Replaces this script
 if [ -e "/opt/verb/mods/newftpvip.before" ]; then . /opt/verb/mods/newftpvip.before; fi # Precedes this script
 
-NEWFTPUSER=$1
-NEWUSERPASS=$2
+newFTPUser=$1
+appDBase=$2
 
 # Create the user with vsftpd
-/opt/verb/serfs/newftpuser ${NEWFTPUSER} ${NEWUSERPASS}
+/opt/verb/serfs/newftpuser ${newFTPUser} ${newUserPass}
 
 # Change the vsftpd vip directory to the user's directory
-/bin/ln -sfn /srv/vip /srv/vsftpd/${NEWFTPUSER}/
+/bin/ln -sfn /srv/vip /srv/vsftpd/${newFTPUser}/
 
 
 

@@ -35,19 +35,19 @@ VAPPConf=$1
 . /opt/verb/conf/${VAPPConf}
 
 # Check if the database file exists
-if [ ! -f "/srv/vip/sql/${APPDBASE}.sql" ]; then
-	echo "Database file must be in vip/sql/${APPDBASE}.sql"
+if [ ! -f "/srv/vip/sql/${appDBase}.sql" ]; then
+	echo "Database file must be in vip/sql/${appDBase}.sql"
 	exit 0
 fi
 
 # Create a dummy database as a frame
 /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
-CREATE DATABASE ${APPDBASE};
-GRANT ALL PRIVILEGES ON ${APPDBASE}.* TO '${APPDDBUSR}'@'localhost' IDENTIFIED BY '${APPDDBPAS}';
+CREATE DATABASE ${appDBase};
+GRANT ALL PRIVILEGES ON ${appDBase}.* TO '${appDDBUsr}'@'localhost' IDENTIFIED BY '${appDDBPass}';
 FLUSH PRIVILEGES;"
 
 # Import the database
-/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${APPDBASE} < /srv/vip/sql/${APPDBASE}.sql
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${appDBase} < /srv/vip/sql/${appDBase}.sql
 
 
 

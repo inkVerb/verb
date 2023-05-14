@@ -12,7 +12,7 @@
 
 # DEV: This needs to be rebuilt with donjon/wpaddsites and tar.xz
 
-WPADDNAME=$1
+wpAddName=$1
 domain=$2
 
 # Check domain
@@ -28,16 +28,16 @@ fi
 cd /srv/www/html/${domain}/wp-content || exit 6
 
 # Download and establish wordpress in the server to pre-created domain
-/opt/verb/serfs/inkget wp.${WPADDNAME}
-if [ ! -f wp.${WPADDNAME}.zip ]; then
-/bin/echo "Can't download wp.${WPADDNAME}.zip. But, not quitting."
+/opt/verb/serfs/inkget wp.${wpAddName}
+if [ ! -f wp.${wpAddName}.zip ]; then
+/bin/echo "Can't download wp.${wpAddName}.zip. But, not quitting."
 exit 0; fi
-/usr/bin/unzip -o wp.${WPADDNAME}.zip
-/bin/rm -f wp.${WPADDNAME}.zip
+/usr/bin/unzip -o wp.${wpAddName}.zip
+/bin/rm -f wp.${wpAddName}.zip
 /bin/chown -R www:www /srv/www/html/${domain}/wp-content
 
 /bin/echo "
-${domain} now has the ${WPADDNAME} pack."
+${domain} now has the ${wpAddName} pack."
 
 
 

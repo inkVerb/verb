@@ -14,10 +14,10 @@ cVappName=suitecrm
 # Include the config
 . /opt/verb/conf/siteurilist
 
-DBASE=$1
-DBUSER=$2
-DBPASSWORD=$3
-CLEANNAME=$(/bin/echo $cVappName | sed -e 's/\.//g')
+dBase=$1
+dBaseUser=$2
+dBPassword=$3
+cleanName=$(/bin/echo $cVappName | sed -e 's/\.//g')
 
 # Check if already installed
 ## Config
@@ -46,30 +46,30 @@ cd /srv/www/html || exit 6
 
 # Auto database
 if [ -z ${3} ]; then
-DBPASSWORD=$(/usr/bin/pwgen -s -1 10); fi
+dBPassword=$(/usr/bin/pwgen -s -1 10); fi
 if [ -z ${1} ]; then
-DBASE=${CLEANNAME}$(/usr/bin/pwgen -s -1 6); fi
+dBase=${cleanName}$(/usr/bin/pwgen -s -1 6); fi
 if [ -z ${2} ]; then
-DBUSER=${DBASE}; fi
+dBaseUser=${dBase}; fi
 
 # Create the database user and credentials
 /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
-CREATE DATABASE  ${DBASE};
-GRANT ALL PRIVILEGES ON *.* TO '${DBUSER}'@'localhost' IDENTIFIED BY '${DBPASSWORD}' WITH GRANT OPTION;
+CREATE DATABASE  ${dBase};
+GRANT ALL PRIVILEGES ON *.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '${dBPassword}' WITH GRANT OPTION;
 FLUSH PRIVILEGES;"
 
 # Write the config for backup
 /bin/echo "#!/bin/bash
-APPDBASE=${DBASE}
-APPDDBUSR=${DBUSER}
-APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.${cVappName}
+APPdBase=${dBase}
+appDDBUsr=${dBaseUser}
+appDDBPass=${dBPassword}" > /opt/verb/conf/vapp.${cVappName}
 
 /bin/echo "These are setup:
 
-Database: ${DBASE}
+Database: ${dBase}
 Host Name: localhost (do not use crm....verb.red)
-Database user: ${DBUSER}
-Database password: ${DBPASSWORD}
+Database user: ${dBaseUser}
+Database password: ${dBPassword}
 
 *The SuiteCRM installer can be finicky. Be mindful of all details. Copy-paste into fields whenever possible.
 

@@ -14,9 +14,9 @@
 # Set the default port
 if [ -z "$1" ]; then
  /bin/echo "Option not specified, OK, using default..."
- NEWPORTADDR="1194"
+ newPortAddr="1194"
 else
- NEWPORTADDR="$1"
+ newPortAddr="$1"
 fi
 
 # Disable the old port
@@ -24,7 +24,7 @@ fi
 /usr/bin/ufw deny ${InkVPNPort}
 
 # Implement the new port
-/bin/sed -i "s/InkVPNPort=.*/InkVPNPort=${NEWPORTADDR}/" /opt/verb/conf/inkvpn/inkvpnstatus
+/bin/sed -i "s/InkVPNPort=.*/InkVPNPort=${newPortAddr}/" /opt/verb/conf/inkvpn/inkvpnstatus
 . /opt/verb/conf/inkvpn/inkvpnstatus
 /bin/sed -i "s/^port.*/port ${InkVPNPort}/" /etc/openvpn/server.conf
 /usr/bin/ufw allow from any to any port ${InkVPNPort} proto udp
@@ -46,7 +46,7 @@ fi
 
 #Finish
 /opt/verb/serfs/inkvpnclientdl
-/bin/echo "inkVPN port now set to: ${NEWPORTADDR}"
+/bin/echo "inkVPN port now set to: ${newPortAddr}"
 
 
 

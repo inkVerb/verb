@@ -18,9 +18,9 @@ DIRECTRY=${1}
 
 # Auto database
 if [ -z ${3} ]; then
-DBPASSWORD=$(/usr/bin/pwgen -c -1 20); fi
+dBPassword=$(/usr/bin/pwgen -c -1 20); fi
 if [ -z ${2} ]; then
-DBUSER=phpmy$(/usr/bin/pwgen -s -1 15); fi
+dBaseUser=phpmy$(/usr/bin/pwgen -s -1 15); fi
 
 # Include the configs
 . /opt/verb/conf/servernameip
@@ -42,12 +42,12 @@ cd /srv/www/vapps || exit 6
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 # Create the boss user
-/opt/verb/serfs/mysqlnewboss "${DBUSER}" "${DBPASSWORD}"
+/opt/verb/serfs/mysqlnewboss "${dBaseUser}" "${dBPassword}"
 
 # Write the config for backup
-/bin/echo "SUBDIR=${DIRECTRY}
-APPDDBUSR=${DBUSER}
-APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.${cVappName}
+/bin/echo "SUBdir=${DIRECTRY}
+appDDBUsr=${dBaseUser}
+appDDBPass=${dBPassword}" > /opt/verb/conf/vapp.${cVappName}
 
 # Prepare the config and web directory
 /bin/cp /srv/www/vapps/${cVappName}/config.sample.inc.php /srv/www/vapps/${cVappName}/config.inc.php
@@ -71,8 +71,8 @@ fi
 /bin/echo "
 PHP My Admin now active & this MySQL admin is setup:
 
-Username: ${DBUSER}
-Password: ${DBPASSWORD}
+Username: ${dBaseUser}
+Password: ${dBPassword}
 
 Use these credentials to log in at https://sql.${vipURI}/${DIRECTRY}
 "

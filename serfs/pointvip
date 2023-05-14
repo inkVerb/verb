@@ -69,11 +69,11 @@ if [ "$1" = "repo" ]; then
 exit 0
 fi
 
-NEWONESUB=$1
+newONEsub=$1
 
     cp /srv/www/verb/vip/index-newvipsub.php /srv/www/html/vip/index.php
-    sed -i "s/newvipsub/${NEWONESUB}/g" /srv/www/verb/vip/index.php
-    /bin/echo "Pointing to http://${NEWONESUB}.${vipURI}, done."
+    sed -i "s/newvipsub/${newONEsub}/g" /srv/www/verb/vip/index.php
+    /bin/echo "Pointing to http://${newONEsub}.${vipURI}, done."
 exit 0
 
 

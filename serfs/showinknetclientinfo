@@ -32,7 +32,7 @@ fi
 /bin/echo " Your Client info:
 
 Host: ${CLIENTHOST}
-Name: ${CLIENTNAME}
+Name: ${clientName}
 IPv4: ${ServerIPv4}
 IPv6: ${ServerIPv6}
 Type: \"verber\"

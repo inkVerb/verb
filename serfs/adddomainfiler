@@ -26,9 +26,9 @@ if [ -e "/opt/verb/mods/adddomainfiler.replace" ]; then . /opt/verb/mods/adddoma
 if [ -e "/opt/verb/mods/adddomainfiler.before" ]; then . /opt/verb/mods/adddomainfiler.before; fi # Precedes this script
 
 olddomain=$1
-FILER=$2
+filer=$2
 
-/bin/ln -s /srv/www/domains/${OLDDOMAIN} /srv/vsftpd/${FILER}/_domains/${OLDDOMAIN}
+/bin/ln -s /srv/www/domains/${olddomain} /srv/vsftpd/${filer}/_domains/${olddomain}
 
 
 

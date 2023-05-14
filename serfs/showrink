@@ -19,9 +19,9 @@ fi
 
 # Display info
 /bin/echo "Here you go. This Verber's Inker info...
-IP: ${CAVERBERIP}
-Name: ${CAVERBERNAME}
-URI: ${CAVERBERURI}
+IP: ${caVerberIP}
+Name: ${caVerberName}
+URI: ${caVerberURI}
 "
 
 

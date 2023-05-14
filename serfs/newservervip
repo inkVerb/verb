@@ -27,26 +27,26 @@ if [ -e "/opt/verb/mods/newservervip.replace" ]; then . /opt/verb/mods/newserver
 if [ -e "/opt/verb/mods/newservervip.before" ]; then . /opt/verb/mods/newservervip.before; fi # Precedes this script
 
 
-NEWFILEUSER=$1
-NEWUSERPASS=$2
+newFileUser=$1
+appDBase=$2
 
 # Create the user with password
-/usr/bin/groupadd ${NEWFILEUSER}
-/usr/bin/useradd -g ${NEWFILEUSER} ${NEWFILEUSER}
-/bin/echo "${NEWFILEUSER}:${NEWUSERPASS}" | chpasswd
-/usr/bin/usermod -a -G sudo ${NEWFILEUSER}
-/usr/bin/usermod -a -G www ${NEWFILEUSER}
-/usr/bin/mkdir -p /home/${NEWFILEUSER}
-/bin/ln -sfn /opt/verb/boss /home/${NEWFILEUSER}/
+/usr/bin/groupadd ${newFileUser}
+/usr/bin/useradd -g ${newFileUser} ${newFileUser}
+/bin/echo "${newFileUser}:${newUserPass}" | chpasswd
+/usr/bin/usermod -a -G sudo ${newFileUser}
+/usr/bin/usermod -a -G www ${newFileUser}
+/usr/bin/mkdir -p /home/${newFileUser}
+/bin/ln -sfn /opt/verb/boss /home/${newFileUser}/
 ## User privilege specification
-/usr/bin/setfacl -R -m user:${NEWFILEUSER}:rwx /home/${NEWFILEUSER}  # DEV see if this line works
+/usr/bin/setfacl -R -m user:${newFileUser}:rwx /home/${newFileUser}  # DEV see if this line works
 
 ## This was created with the following base script
 # sudo /usr/sbin/adduser myuser --gecos "First Last,RoomNumber,WorkPhone,HomePhone" --disabled-password
 # /bin/echo "myuser:password" | sudo chpasswd
 
 # Create the www symlink
-/bin/ln -s /srv/www/vip /home/${NEWFILEUSER}/vip
+/bin/ln -s /srv/www/vip /home/${newFileUser}/vip
 
 
 

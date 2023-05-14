@@ -8,10 +8,10 @@
 ## ./setpfapass [rawpassword]
 
 
-PFAPASS=$1
+pfaPass=$1
 
 # Replace whatever current hash settings with the hash
-INSTHASH="$(php -r "echo password_hash('${PFAPASS}', PASSWORD_DEFAULT);")"
+instHashDir="$(php -r "echo password_hash('${pfaPass}', PASSWORD_DEFAULT);")"
 /bin/sed -i "s/\$Conf\['configured'\] = .*/\$Conf\['configured'\] = true;/g" /srv/www/email/postfixadmin/config.local.php
 /bin/sed -i "/setup_password/d" /srv/www/email/postfixadmin/config.local.php
 /bin/sed -i "/setup_password/d" /srv/www/email/postfixadmin/config.inc.php
@@ -20,7 +20,7 @@ INSTHASH="$(php -r "echo password_hash('${PFAPASS}', PASSWORD_DEFAULT);")"
 EOF
 
 # Make a record so it can be called
-/usr/bin/echo "PFASETUPTPASS=\"${PFAPASS}\"" > /opt/verb/conf/pfasetuppass
+/usr/bin/echo "pfaSetupTPass=\"${pfaPass}\"" > /opt/verb/conf/pfasetuppass
 
 
 

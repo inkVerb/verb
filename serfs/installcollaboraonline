@@ -16,9 +16,9 @@ cVappName=collaboraonline
 
 ## Set the port
 if [ -z ${1} ]; then
-PORT=9980
+port=9980
 else
-PORT=$1
+port=$1
 fi
 
 # Check if already installed
@@ -32,10 +32,10 @@ wait
 
 # Install it
 docker pull collabora/code
-docker run -t -d -p 127.0.0.1:${PORT}:${PORT} -e "domain=b.${blueURI}" --restart always --cap-add MKNOD collabora/code
+docker run -t -d -p 127.0.0.1:${port}:${port} -e "domain=b.${blueURI}" --restart always --cap-add MKNOD collabora/code
 
 # Firewall
-/usr/bin/ufw allow ${PORT}
+/usr/bin/ufw allow ${port}
 
 # Reset all permissions and restart webserver
 /bin/chown -R www:www /srv/www/vapps/${cVappName}.${domain}
@@ -57,14 +57,14 @@ fi
 # Write the config for status
 /bin/echo "#!/bin/bash
 COVAPPSTATUS=\"INSTALLED\"
-COPORT=${PORT}
+COport=${port}
 COHOST=\"b.${blueURI}\"" > /opt/verb/conf/vapp.${cVappName}
 
 /bin/echo "Collabora Online is now installed...
 
 Next:
 1. Login as an admin to https://${blueURI} to enable the Collabora Online office app.
-2. Finish the settings: Settings > Administration > Collabora Online > Collabora Online server: https://b.${blueURI}:${PORT}
+2. Finish the settings: Settings > Administration > Collabora Online > Collabora Online server: https://b.${blueURI}:${port}
 "
 
 

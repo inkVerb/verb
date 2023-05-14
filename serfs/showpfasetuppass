@@ -10,7 +10,7 @@
 . /opt/verb/conf/pfasetuppass
 
 # Show the info
-/usr/bin/echo "${PFASETUPTPASS}"
+/usr/bin/echo "${pfaSetupTPass}"
 
 
 

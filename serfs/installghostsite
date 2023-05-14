@@ -18,9 +18,9 @@
 cVappName=ghost
 
 domain=$1
-EMAILUSER=$2
-EMAILPASS=$3
-NEWPORT=$4
+EMAILuser=$2
+emailPass=$3
+newport=$4
 
 # Basic credential check
 if [ -z ${4} ]; then
@@ -58,12 +58,12 @@ npm install --production
 cd /srv/www/ghost/ghostsite-${domain} || exit 6
 /bin/cp config.example.js config.js
 /bin/sed -i "s/url: 'http:\/\/my-ghost-blog.com'/url: 'http:\/\/${domain}'/g" config.js
-/bin/sed -i "s/host: '127.0.0.1'/host: '${SITEIP}'/g" config.js
-/bin/sed -i "s/2368/${NEWPORT}/g" config.js
-/bin/sed -i "s/mail: {}/mail: {transport: 'SMTP', options: {host: 'localhost', port: 25, service: 'dovecot', auth: {user: '${EMAILUSER}', pass: '${EMAILPASS}'}}}/g" config.js
+/bin/sed -i "s/host: '127.0.0.1'/host: '${siteIP}'/g" config.js
+/bin/sed -i "s/2368/${newport}/g" config.js
+/bin/sed -i "s/mail: {}/mail: {transport: 'SMTP', options: {host: 'localhost', port: 25, service: 'dovecot', auth: {user: '${emailUser}', pass: '${emailPass}'}}}/g" config.js
 
 # Set UFW to allow the Ghost port
-/usr/bin/ufw allow ${NEWPORT}
+/usr/bin/ufw allow ${newport}
 
 # Reset all permissions
 /bin/rm -f /srv/www/html/${domain}
@@ -76,21 +76,21 @@ if [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
   /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
   /bin/cp -f /opt/verb/conf/site-files/conf/newnginxghostsite.conf /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
   /bin/sed -i "s/ghostsite286/${domain}/g" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
-  /bin/sed -i "s/2368/${NEWPORT}/g" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
+  /bin/sed -i "s/2368/${newport}/g" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
   /usr/bin/systemctl restart nginx
 elif [ ${ServerType} = "lamp" ]; then
   ## IP4?
   if [ "${ServerIPv4}" != "NOIP4" ]; then
-    SITEIP="${ServerIPv4}"
+    siteIP="${ServerIPv4}"
   ## IP6?
   elif [ "${ServerIPv6}" != "NOIP6" ]; then
-    SITEIP="[${ServerIPv6}]" # Brackets because we include a port number, and this is the proper format
+    siteIP="[${ServerIPv6}]" # Brackets because we include a port number, and this is the proper format
   fi
   /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
   /bin/cp -f /opt/verb/conf/site-files/conf/newghostsite.conf /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
   /bin/sed -i "s/ghostsite286/${domain}/g" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
-  /bin/sed -i "s/2368/${NEWPORT}/g" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
-  /bin/sed -i "s/ipv4286/${SITEIP}/g" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
+  /bin/sed -i "s/2368/${newport}/g" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
+  /bin/sed -i "s/ipv4286/${siteIP}/g" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
   /usr/bin/systemctl restart httpd
 fi
 
@@ -133,12 +133,12 @@ fi
 # Write the config for backup
 /bin/echo "#!/bin/bash
 ghostdomain=\"${domain}\"
-GHOSTPORT=\"${NEWPORT}\"
-GHOSTEMAIL=\"${EMAILUSER}\"
-GHOSTEMLPAS=\"${EMAILPASS}\"" > /opt/verb/conf/vapp.${cVappName}.${domain}
+ghostport=\"${newport}\"
+ghostemail=\"${emailUser}\"
+ghostemailpas=\"${emailPass}\"" > /opt/verb/conf/vapp.${cVappName}.${domain}
 
 # Record the port in the Ghost port inklist
-/bin/echo "${domain} ${NEWPORT}" >> /opt/verb/conf/inklists/ghostserverports
+/bin/echo "${domain} ${newport}" >> /opt/verb/conf/inklists/ghostserverports
 
 ### Below (Forever) is expirimental on inkVerb, but working, and should be replaced with a way to run Ghost as a proper service at startup
 # Run Ghost with Forever

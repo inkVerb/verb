@@ -15,10 +15,10 @@ cVappName=orangehrm
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/siteurilist
 
-DBASE=$1
-DBUSER=$2
-DBPASSWORD=$3
-CLEANNAME=$(/bin/echo $cVappName | sed -e 's/\.//g')
+dBase=$1
+dBaseUser=$2
+dBPassword=$3
+cleanName=$(/bin/echo $cVappName | sed -e 's/\.//g')
 
 # Check if already installed
 ## Config
@@ -44,40 +44,40 @@ e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 # Auto database
 if [ -z ${3} ]; then
-DBPASSWORD=$(/usr/bin/pwgen -s -1 10); fi
+dBPassword=$(/usr/bin/pwgen -s -1 10); fi
 if [ -z ${1} ]; then
-DBASE=${CLEANNAME}$(/usr/bin/pwgen -s -1 6); fi
+dBase=${cleanName}$(/usr/bin/pwgen -s -1 6); fi
 if [ -z ${2} ]; then
-DBUSER=${DBASE}; fi
+dBaseUser=${dBase}; fi
 
 # Create the database and credentials
 /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
-CREATE DATABASE  ${DBASE};
-GRANT ALL PRIVILEGES ON ${DBASE}.* TO '${DBUSER}'@'localhost' IDENTIFIED BY '${DBPASSWORD}';
+CREATE DATABASE  ${dBase};
+GRANT ALL PRIVILEGES ON ${dBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '${dBPassword}';
 FLUSH PRIVILEGES;"
 
 # Config files
 ## Preconfig setup is currently disabled until OrangeHRM installation allows, but this would be a start:
 #cp /srv/www/vapps/orangehrm/lib/confs/Conf.php-distribution /srv/www/vapps/orangehrm/lib/confs/Conf.php
-#sed -i "s/dbname   = 'hr_mysql'/dbname   = '${DBASE}'/g" /srv/www/vapps/orangehrm/lib/confs/Conf.php
-#sed -i "s/dbuser   = 'root'/dbuser   = '${DBUSER}'/g" /srv/www/vapps/orangehrm/lib/confs/Conf.php
-#sed -i "s/dbpass   = 'orangehrm'/dbpass   = '${DBPASSWORD}'/g" /srv/www/vapps/orangehrm/lib/confs/Conf.php
+#sed -i "s/dbname   = 'hr_mysql'/dbname   = '${dBase}'/g" /srv/www/vapps/orangehrm/lib/confs/Conf.php
+#sed -i "s/dbuser   = 'root'/dbuser   = '${dBaseUser}'/g" /srv/www/vapps/orangehrm/lib/confs/Conf.php
+#sed -i "s/dbpass   = 'orangehrm'/dbpass   = '${dBPassword}'/g" /srv/www/vapps/orangehrm/lib/confs/Conf.php
 
 # Firewall
 /usr/bin/ufw allow 3306
 
 # Write the config for backup
 /bin/echo "#!/bin/bash
-APPDBASE=${DBASE}
-APPDDBUSR=${DBUSER}
-APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.${cVappName}
+APPdBase=${dBase}
+appDDBUsr=${dBaseUser}
+appDDBPass=${dBPassword}" > /opt/verb/conf/vapp.${cVappName}
 
 /bin/echo "These are setup:
 
 Database Host Name: localhost
-Database: ${DBASE}
-OrangeHRM Database user (and Privileged user if applicable, use the same): ${DBUSER}
-Database user password: ${DBPASSWORD}
+Database: ${dBase}
+OrangeHRM Database user (and Privileged user if applicable, use the same): ${dBaseUser}
+Database user password: ${dBPassword}
 
 *Select \"Existing database\" in setup to make life easier, if you want.
 *Enable Data Encryption? - Probably NOT!

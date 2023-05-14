@@ -7,13 +7,13 @@
 # How to use:
 ## ./inknetaddca2vpkg [CA2 Host/Name] [sec path code from CA Verber - optional, will prompt if not entered here]
 
-ICA2V=$1
-CA2VNAME="$(/bin/echo ${ICA2V} | sed 's/\./_/g')"
-CA2VHOST="$(/bin/echo ${ICA2V} | sed 's/\_/./g')"
-SECPATH=$2
+iCA2v=$1
+ca2vName="$(/bin/echo ${iCA2v} | sed 's/\./_/g')"
+ca2vHost="$(/bin/echo ${iCA2v} | sed 's/\_/./g')"
+secpath=$2
 
 # Include the config
-. /opt/verb/conf/inknet/2cav.${CA2VNAME}.cnf
+. /opt/verb/conf/inknet/2cav.${ca2vName}.cnf
 
 # Verify working home directory
 cd ~/ || exit 6
@@ -21,25 +21,25 @@ cd ~/ || exit 6
 # If sec path not specified in command line
 if [ -z ${2} ]; then
 /bin/echo "Please copy-paste the code the CA Verber gave you, then press Enter."
-read SECPATH
+read secpath
 fi
-if [ -z "$SECPATH" ]; then
+if [ -z "$secpath" ]; then
 /bin/echo "Please copy-paste the code the CA Verber gave you, then press Enter."
-read SECPATH
+read secpath
 fi
-if [ -z "$SECPATH" ]; then
+if [ -z "$secpath" ]; then
 /bin/echo "You aren't entering the path. I quit."; exit 5; fi
 
 # Download the package
-/usr/bin/wget -q https://${CAVERBERHOST}/inknet/${SECPATH}/${CLIENTNAME}.ink --no-check-certificate
+/usr/bin/wget -q https://${caVerberHost}/inknet/${secpath}/${clientName}.ink --no-check-certificate
 
 # Unpack
-/bin/mv ${CLIENTNAME}.ink ${CLIENTNAME}.txz
-/opt/verb/serfs/vtxzout ${CLIENTNAME}
-/bin/rm -f ${CLIENTNAME}.txz
-. ~/${CLIENTNAME}/verbername
-/bin/cp ~/${CLIENTNAME}/client.verber.${CLIENTNAME}.cnf /opt/verb/conf/inknet/client.${VERBERNAME}.rink.login.cnf
-/bin/rm -rf ${CLIENTNAME}
+/bin/mv ${clientName}.ink ${clientName}.txz
+/opt/verb/serfs/vtxzout ${clientName}
+/bin/rm -f ${clientName}.txz
+. ~/${clientName}/verbername
+/bin/cp ~/${clientName}/client.verber.${clientName}.cnf /opt/verb/conf/inknet/client.${VerberName}.rink.login.cnf
+/bin/rm -rf ${clientName}
 
 # Finish
 /bin/echo "The CA-signed cert for this Verber has been installed. This Verber may now use inkNet to connect to the Inker for other services, such as inkCert."

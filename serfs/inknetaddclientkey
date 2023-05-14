@@ -21,41 +21,41 @@
 ## ./inknetaddclientkey vrk joey@gCodingStationJoey "ssh-rsa AAAAOmIOMIWhfsdfENFSDFaffJLKfsSDJsdSDKjWdsfsadfOkEjMCAfdSDKFLOIjhWESF.....WWLKqhOIMhgbSDF joey@gCodingStationJoey"
 
 
-VTYPE=$1
+Vtype=$1
 VINAME=$2
-VCKEY=$3
+vcKey=$3
 # Determine vrk or verber
-if [ "${VTYPE}" = "vrk" ]; then
-VCNAME="$(/bin/echo ${VINAME} | sed 's/\./_/g' | sed 's/@/_/g' )"
+if [ "${Vtype}" = "vrk" ]; then
+vcname="$(/bin/echo ${VINAME} | sed 's/\./_/g' | sed 's/@/_/g' )"
 fi
-if [ "${VTYPE}" = "verber" ]; then
-VCNAME="$(/bin/echo ${VINAME} | sed 's/\./_/g')"
+if [ "${Vtype}" = "verber" ]; then
+vcname="$(/bin/echo ${VINAME} | sed 's/\./_/g')"
 VCHOST="$(/bin/echo ${VINAME} | sed 's/_/\./g')"
 VCURI="$(/bin/echo ${VCHOST} | rev | cut -d'.' -f-3 | rev)"
 fi
 
-if [ "${VTYPE}" != "vrk" ] && [ "${VTYPE}" != "verber" ] ; then
+if [ "${Vtype}" != "vrk" ] && [ "${Vtype}" != "verber" ] ; then
 /bin/echo "You need to specify \"vrk\" or \"verber\". Read the instructions."; exit 8; fi
 
 # Check if the Client has been added
-if [ "${VTYPE}" = "vrk" ]; then
- if [ ! -e "/opt/verb/conf/inknet/vrk/client.vrk.${VCNAME}.cnf" ]; then
+if [ "${Vtype}" = "vrk" ]; then
+ if [ ! -e "/opt/verb/conf/inknet/vrk/client.vrk.${vcname}.cnf" ]; then
  /bin/echo "You must add the Client first using: inknetaddvrkclient."; exit 8; fi
 fi
-if [ "${VTYPE}" = "verber" ]; then
- if [ ! -e "/opt/verb/conf/inknet/verber/client.verber.${VCNAME}.cnf" ]; then
+if [ "${Vtype}" = "verber" ]; then
+ if [ ! -e "/opt/verb/conf/inknet/verber/client.verber.${vcname}.cnf" ]; then
  /bin/echo "You must add the Client first using: inknetaddverberclient."; exit 8; fi
 fi
 
 # Include the configs
-if [ "${VTYPE}" = "vrk" ]; then
-. /opt/verb/conf/inknet/vrk/client.vrk.${VCNAME}.cnf; fi
-if [ "${VTYPE}" = "verber" ]; then
-. /opt/verb/conf/inknet/verber/client.verber.${VCNAME}.cnf; fi
+if [ "${Vtype}" = "vrk" ]; then
+. /opt/verb/conf/inknet/vrk/client.vrk.${vcname}.cnf; fi
+if [ "${Vtype}" = "verber" ]; then
+. /opt/verb/conf/inknet/verber/client.verber.${vcname}.cnf; fi
 . /opt/verb/conf/inknet/ca.verber.cnf
 
 # Prompt for the copy-paste
-if [ -z "${VCKEY}" ]; then
+if [ -z "${vcKey}" ]; then
 /bin/echo "
  Activate Client key area...
 
@@ -65,9 +65,9 @@ ssh-rsa AAAAOmIOMIWhWESF.....WWLKqIMhgbSDF joey@gCodingStationJoey
 Please copy and paste the entire contents of the Client public key, then press <Enter>...
 "
 read CPKEY
-VCKEY="${CPKEY}"
+vcKey="${cpKey}"
 fi
-if [ -z "${VCKEY}" ]; then
+if [ -z "${vcKey}" ]; then
 /bin/echo "
  Activate Client key area...
 
@@ -77,23 +77,23 @@ ssh-rsa AAAAOmIOMIWhWESF.....WWLKqIMhgbSDF joey@gCodingStationJoey
 Please copy and paste the entire contents of the Client public key, then press <Enter>...
 "
 read CPKEY
-VCKEY="${CPKEY}"
+vcKey="${cpKey}"
 fi
-if [ -z "${VCKEY}" ]; then
+if [ -z "${vcKey}" ]; then
 /bin/echo "You aren't entering a key. I quit."; exit 5; fi
 
 # Add the key
-if [ "${VTYPE}" = "vrk" ]; then
-/bin/echo "${VCKEY}" >> /opt/ivapp/inknet/vrker/${CLIENTUSERNAME}/.ssh/authorized_keys
+if [ "${Vtype}" = "vrk" ]; then
+/bin/echo "${vcKey}" >> /opt/ivapp/inknet/vrker/${clientUsername}/.ssh/authorized_keys
 fi
-if [ "${VTYPE}" = "verber" ]; then
-/bin/echo "${VCKEY}.${VCURI}" >> /opt/ivapp/inknet/verber/${CLIENTUSERNAME}/.ssh/authorized_keys
+if [ "${Vtype}" = "verber" ]; then
+/bin/echo "${vcKey}.${VCURI}" >> /opt/ivapp/inknet/verber/${clientUsername}/.ssh/authorized_keys
 ## Remove any duplication of the URI
-/bin/sed -i "s/${VCURI}\.${VCURI}/${VCURI}/" /opt/ivapp/inknet/verber/${CLIENTUSERNAME}/.ssh/authorized_keys
+/bin/sed -i "s/${VCURI}\.${VCURI}/${VCURI}/" /opt/ivapp/inknet/verber/${clientUsername}/.ssh/authorized_keys
 fi
 
 # Finish
-/bin/echo "Success! The Client key for ${CLIENTURI} has been added."
+/bin/echo "Success! The Client key for ${clientURI} has been added."
 
 ## Serf message
 /bin/echo "

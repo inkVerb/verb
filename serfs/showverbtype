@@ -7,7 +7,7 @@
 ## ./showverbtype
 
 . /opt/verb/conf/inklists/verberverno
-/bin/echo "${VTYPE}"
+/bin/echo "${Vtype}"
 
 
 

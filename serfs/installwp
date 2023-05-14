@@ -41,10 +41,10 @@ if [ -e "/opt/verb/mods/installwp.before" ]; then . /opt/verb/mods/installwp.bef
 cVappName=wp
 
 domain=$1
-DBASE=$2
-DBUSER=$3
-DBPASSWORD=$4
-CLEANNAME=$(/bin/echo $DOMAIN | sed -e 's/\.//g')
+dBase=$2
+dBaseUser=$3
+dBPassword=$4
+cleanName=$(/bin/echo ${domain} | sed -e 's/\.//g')
 
 # Basic credential check
 if [ -z ${1} ]; then
@@ -73,11 +73,11 @@ e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 # Auto database
 if [ -z ${4} ]; then
-DBPASSWORD=$(/usr/bin/pwgen -s -1 10); fi
+dBPassword=$(/usr/bin/pwgen -s -1 10); fi
 if [ -z ${2} ]; then
-DBASE=wp$(/bin/echo $CLEANNAME | cut -c1-24)$(/usr/bin/pwgen -s -1 6); fi
+dBase=wp$(/bin/echo ${cleanName} | cut -c1-24)$(/usr/bin/pwgen -s -1 6); fi
 if [ -z ${3} ]; then
-DBUSER=${DBASE}; fi
+dBaseUser=${dBase}; fi
 
 /bin/mv ${cVappName} ${cVappName}.${domain}
 /bin/rm -f /srv/www/html/${domain}
@@ -88,22 +88,22 @@ DBUSER=${DBASE}; fi
 
 # Create the database and credentials
 /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
-CREATE DATABASE  ${DBASE};
-GRANT ALL PRIVILEGES ON ${DBASE}.* TO '${DBUSER}'@'localhost' IDENTIFIED BY '${DBPASSWORD}';
+CREATE DATABASE  ${dBase};
+GRANT ALL PRIVILEGES ON ${dBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '${dBPassword}';
 FLUSH PRIVILEGES;"
 
 # Write the config for backup
 /bin/echo "#!/bin/bash
-APPDBASE=${DBASE}
-APPDDBUSR=${DBUSER}
-APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.${cVappName}.${domain}
+APPdBase=${dBase}
+appDDBUsr=${dBaseUser}
+appDDBPass=${dBPassword}" > /opt/verb/conf/vapp.${cVappName}.${domain}
 
 # Put the settings in the WordPress config file
 cd wp.${domain} || exit 6
 /bin/cp wp-config-sample.php wp-config.php
-/bin/sed -i "s/database_name_here/${DBASE}/g" wp-config.php
-/bin/sed -i "s/username_here/${DBUSER}/g" wp-config.php
-/bin/sed -i "s/password_here/${DBPASSWORD}/g" wp-config.php
+/bin/sed -i "s/database_name_here/${dBase}/g" wp-config.php
+/bin/sed -i "s/username_here/${dBaseUser}/g" wp-config.php
+/bin/sed -i "s/password_here/${dBPassword}/g" wp-config.php
 /bin/echo "
 /** inkVerb Sets the URL */
 define( 'WP_SITEURL', 'https://${domain}' );
@@ -147,9 +147,9 @@ fi
 # Finish
 /usr/bin/echo "These are setup:
 
-Database: ${DBASE}
-Database user: ${DBUSER}
-Database password: ${DBPASSWORD}
+Database: ${dBase}
+Database user: ${dBaseUser}
+Database password: ${dBPassword}
 
 Go to http://${domain}/wp-admin/index.php to install.
 "

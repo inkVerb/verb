@@ -26,7 +26,7 @@ if [ -f "/opt/verb/conf/inknet/inknetrmcertdldirs.sh" ]; then
 # Create cron to delete inkNet download directories
 /bin/echo "#!/bin/bash
 # inkNet cron, verb.ink
-find /srv/www/html/${IAMCAHOST}/inknet/* -type d -mmin +30 -exec rm -rf {} \;
+find /srv/www/html/${iamCAhost}/inknet/* -type d -mmin +30 -exec rm -rf {} \;
 " > /opt/verb/conf/inknet/inknetrmcertdldirs.sh
 /bin/chmod 750 /opt/verb/conf/inknet/inknetrmcertdldirs.sh
 /bin/echo '14,44 * * * * root /opt/verb/conf/inknet/inknetrmcertdldirs.sh > /dev/null 2>&1' > /etc/cron.d/inknetsecdldir

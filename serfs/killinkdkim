@@ -40,12 +40,12 @@ fi
 KILLdkimdomain=$1
 
 # Delete domain key from the config files
-/bin/sed -i "/inkdkim\._domainkey\.${KILLDKIMDOMAIN} ${KILLDKIMDOMAIN}:inkdkim:\/etc\/opendkim\/keys\/${KILLDKIMDOMAIN}\/inkdkim\.private/d" /etc/opendkim/KeyTable
-/bin/sed -i "/${KILLDKIMDOMAIN} inkdkim\._domainkey\.${KILLDKIMDOMAIN}/d" /etc/opendkim/SigningTable
-/bin/sed -i "/${KILLDKIMDOMAIN}/d" /etc/opendkim/TrustedHosts
+/bin/sed -i "/inkdkim\._domainkey\.${killdkimdomain} ${killdkimdomain}:inkdkim:\/etc\/opendkim\/keys\/${killdkimdomain}\/inkdkim\.private/d" /etc/opendkim/KeyTable
+/bin/sed -i "/${killdkimdomain} inkdkim\._domainkey\.${killdkimdomain}/d" /etc/opendkim/SigningTable
+/bin/sed -i "/${killdkimdomain}/d" /etc/opendkim/TrustedHosts
 
 # Delete the declared domain key
-/bin/rm -rf /etc/opendkim/keys/${KILLDKIMDOMAIN}
+/bin/rm -rf /etc/opendkim/keys/${killdkimdomain}
 
 # Restart
 /usr/bin/systemctl restart opendkim

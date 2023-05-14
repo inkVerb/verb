@@ -16,10 +16,10 @@ cVappName=wp.inkbb
 # Include the config
 . /opt/verb/conf/siteurilist
 
-DBASE=$1
-DBUSER=$2
-DBPASSWORD=$3
-CLEANNAME=$(/bin/echo $cVappName | sed -e 's/\.//g')
+dBase=$1
+dBaseUser=$2
+dBPassword=$3
+cleanName=$(/bin/echo $cVappName | sed -e 's/\.//g')
 
 # Check for existing inkbb
 . /opt/verb/conf/inkinksiteinstallstatus
@@ -37,11 +37,11 @@ e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 # Auto database
 if [ -z ${3} ]; then
-DBPASSWORD=$(/usr/bin/pwgen -s -1 10); fi
+dBPassword=$(/usr/bin/pwgen -s -1 10); fi
 if [ -z ${1} ]; then
-DBASE=${CLEANNAME}$(/usr/bin/pwgen -s -1 6); fi
+dBase=${cleanName}$(/usr/bin/pwgen -s -1 6); fi
 if [ -z ${2} ]; then
-DBUSER=${DBASE}; fi
+dBaseUser=${dBase}; fi
 
 /bin/mv wp ${cVappName}; wait
 /opt/verb/serfs/setvapplinkon ${cVappName}; wait
@@ -51,22 +51,22 @@ DBUSER=${DBASE}; fi
 
 # Create the database and credentials
 /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
-CREATE DATABASE  ${DBASE};
-GRANT ALL PRIVILEGES ON ${DBASE}.* TO '${DBUSER}'@'localhost' IDENTIFIED BY '${DBPASSWORD}';
+CREATE DATABASE  ${dBase};
+GRANT ALL PRIVILEGES ON ${dBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '${dBPassword}';
 FLUSH PRIVILEGES;"
 
 # Write the config for backup
 /bin/echo "#!/bin/bash
-APPDBASE=${DBASE}
-APPDDBUSR=${DBUSER}
-APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.${cVappName}
+APPdBase=${dBase}
+appDDBUsr=${dBaseUser}
+appDDBPass=${dBPassword}" > /opt/verb/conf/vapp.${cVappName}
 
 # Put the settings in the WordPress config file
 cd ${cVappName} || exit 6
 /bin/cp wp-config-sample.php wp-config.php
-/bin/sed -i "s/database_name_here/${DBASE}/g" wp-config.php
-/bin/sed -i "s/username_here/${DBUSER}/g" wp-config.php
-/bin/sed -i "s/password_here/${DBPASSWORD}/g" wp-config.php
+/bin/sed -i "s/database_name_here/${dBase}/g" wp-config.php
+/bin/sed -i "s/username_here/${dBaseUser}/g" wp-config.php
+/bin/sed -i "s/password_here/${dBPassword}/g" wp-config.php
 
 # Add the secure salt and key strings
 AUTH_KEY=$(/usr/bin/pwgen -s -1 27)
@@ -114,9 +114,9 @@ wait
 # Finish
 /bin/echo "These are setup:
 
-Database: ${DBASE}
-Database user: ${DBUSER}
-Database password: ${DBPASSWORD}
+Database: ${dBase}
+Database user: ${dBaseUser}
+Database password: ${dBPassword}
 
 Go to http://${domain}/wp-admin/index.php to install.
 "

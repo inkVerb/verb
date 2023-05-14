@@ -37,7 +37,7 @@ VAPPConf=$1
 . /opt/verb/conf/${VAPPConf}
 
 # Export the database
-/usr/bin/mysqldump --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${APPDBASE} > /srv/vip/sql/${APPDBASE}.sql
+/usr/bin/mysqldump --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${appDBase} > /srv/vip/sql/${appDBase}.sql
 
 
 

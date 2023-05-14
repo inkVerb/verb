@@ -34,16 +34,16 @@ if [ -e "/opt/verb/mods/newfossiluser.before" ]; then . /opt/verb/mods/newfossil
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/siteurilist
 
-OLDFOSSIL=$1
-NEWUSER=$2
-NEWEMAIL=$3
-NEWPASS=$4
+oldFossil=$1
+NEWuser=$2
+newEmail=$3
+newPass=$4
 
 # Add the user
-/srv/www/vip/fossil user new ${NEWUSER} ${NEWEMAIL} ${NEWPASS} --repository ${OLDFOSSIL}.fossil
+/srv/www/vip/fossil user new ${newUser} ${newEmail} ${newPass} --repository ${oldFossil}.fossil
 
-/bin/echo "New user ${NEWUSER} added to ${OLDFOSSIL}.fossil.
-Available on web at fossil.${vipURI}/${OLDFOSSIL}.cgi"
+/bin/echo "New user ${newUser} added to ${oldFossil}.fossil.
+Available on web at fossil.${vipURI}/${oldFossil}.cgi"
 
 
 

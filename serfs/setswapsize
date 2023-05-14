@@ -8,7 +8,7 @@
 ## ./setswapsize [swap-size, choose 1, 2, 4, 8, 16, 32, 64]
 
 
-SWAPSIZENO=$1
+swapSizeNo=$1
 
 # Prepare
 ## Make sure it's off, quietly
@@ -18,7 +18,7 @@ cd /var || exit 6
 /bin/chmod 600 swap.img
 
 # Options from command parameters
-if [ "${SWAPSIZENO}" = "1" ]; then
+if [ "${swapSizeNo}" = "1" ]; then
 ## 1GB
 dd if=/dev/zero of=/var/swap.img bs=1024k count=1000
 ### Should display something like:
@@ -28,7 +28,7 @@ dd if=/dev/zero of=/var/swap.img bs=1024k count=1000
 ###
 fi
 
-if [ "${SWAPSIZENO}" = "2" ]; then
+if [ "${swapSizeNo}" = "2" ]; then
 ## 2GB
 dd if=/dev/zero of=/var/swap.img bs=2048k count=1000
 ### Should display something like:
@@ -38,7 +38,7 @@ dd if=/dev/zero of=/var/swap.img bs=2048k count=1000
 ###
 fi
 
-if [ "${SWAPSIZENO}" = "4" ]; then
+if [ "${swapSizeNo}" = "4" ]; then
 ## 4GB
 dd if=/dev/zero of=/var/swap.img bs=4096k count=1000
 ### Should display something like:
@@ -48,7 +48,7 @@ dd if=/dev/zero of=/var/swap.img bs=4096k count=1000
 ###
 fi
 
-if [ "${SWAPSIZENO}" = "8" ]; then
+if [ "${swapSizeNo}" = "8" ]; then
 ## 8GB
 dd if=/dev/zero of=/var/swap.img bs=8192k count=1000
 ### Should display something like:
@@ -58,7 +58,7 @@ dd if=/dev/zero of=/var/swap.img bs=8192k count=1000
 ###
 fi
 
-if [ "${SWAPSIZENO}" = "16" ]; then
+if [ "${swapSizeNo}" = "16" ]; then
 ## 16GB
 dd if=/dev/zero of=/var/swap.img bs=16384k count=1000
 ### Should display something like:
@@ -68,7 +68,7 @@ dd if=/dev/zero of=/var/swap.img bs=16384k count=1000
 ###
 fi
 
-if [ "${SWAPSIZENO}" = "32" ]; then
+if [ "${swapSizeNo}" = "32" ]; then
 ## 32GB
 dd if=/dev/zero of=/var/swap.img bs=32768k count=1000
 ### Should display something like:
@@ -78,7 +78,7 @@ dd if=/dev/zero of=/var/swap.img bs=32768k count=1000
 ###
 fi
 
-if [ "${SWAPSIZENO}" = "64" ]; then
+if [ "${swapSizeNo}" = "64" ]; then
 ## 64GB
 dd if=/dev/zero of=/var/swap.img bs=65536k count=1000
 ### Should display something like:

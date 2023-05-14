@@ -26,7 +26,7 @@ if [ -e "/opt/verb/mods/killboss.replace" ]; then . /opt/verb/mods/killboss.repl
 if [ -e "/opt/verb/mods/killboss.before" ]; then . /opt/verb/mods/killboss.before; fi # Precedes this script
 
 
-DELBossUSER=$1
+DELBossuser=$1
 
 # Delete the user
 /usr/bin/userdel ${DELBossUSER}

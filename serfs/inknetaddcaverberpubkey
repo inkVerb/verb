@@ -32,7 +32,7 @@ else
 fi
 
 # Check to acknowledge if already added
-if [ -f /etc/ssh/inknet/in_ca_${CAVERBERNAME}_key.pub ]; then
+if [ -f /etc/ssh/inknet/in_ca_${caVerberName}_key.pub ]; then
 /bin/echo "This Inker CA key is already installed. Updating it..."
 fi
 
@@ -44,20 +44,20 @@ exit 8; fi
 ## Get to the directory
 cd /etc/ssh/inknet || exit 6
 ## Backup any existing key
-if [ -f /etc/ssh/inknet/in_ca_${CAVERBERNAME}_key.pub ]; then
+if [ -f /etc/ssh/inknet/in_ca_${caVerberName}_key.pub ]; then
 /bin/echo "A key from this inkNet CA is already installed. Fine, getting the new one..."
- if [ -f /etc/ssh/inknet/in_ca_${CAVERBERNAME}_key-vbak.pub ]; then
- rm /etc/ssh/inknet/in_ca_${CAVERBERNAME}_key-vbak.pub
+ if [ -f /etc/ssh/inknet/in_ca_${caVerberName}_key-vbak.pub ]; then
+ rm /etc/ssh/inknet/in_ca_${caVerberName}_key-vbak.pub
  fi
-/bin/mv /etc/ssh/inknet/in_ca_${CAVERBERNAME}_key.pub /etc/ssh/inknet/in_ca_${CAVERBERNAME}_key-vbak.pub
+/bin/mv /etc/ssh/inknet/in_ca_${caVerberName}_key.pub /etc/ssh/inknet/in_ca_${caVerberName}_key-vbak.pub
 fi
 ## Get the new key
-/usr/bin/wget -q https://${CAVERBERHOST}/inknet/in_ca_${CAVERBERNAME}_key.pub --no-check-certificate
+/usr/bin/wget -q https://${CAVERBERHOST}/inknet/in_ca_${caVerberName}_key.pub --no-check-certificate
 ## Check if done correctly 
-if [ -f in_ca_${CAVERBERNAME}_key.pub ]; then
-/bin/rm -f /etc/ssh/inknet/in_ca_${CAVERBERNAME}_key-vbak.pub
+if [ -f in_ca_${caVerberName}_key.pub ]; then
+/bin/rm -f /etc/ssh/inknet/in_ca_${caVerberName}_key-vbak.pub
 else
-/bin/mv /etc/ssh/inknet/in_ca_${CAVERBERNAME}_key-vbak.pub /etc/ssh/inknet/in_ca_${CAVERBERNAME}_key.pub
+/bin/mv /etc/ssh/inknet/in_ca_${caVerberName}_key-vbak.pub /etc/ssh/inknet/in_ca_${caVerberName}_key.pub
 /bin/echo "Can't download CA key. You're using the old one. I quit."
 exit 4
 fi
@@ -66,20 +66,20 @@ fi
 ## Make sure known_hosts exists
 #if [ ! -f ~/.ssh/known_hosts ];then
 #touch ~/.ssh/known_hosts; fi
-if [ ! -f "/opt/ivapp/inknet/sailor/${CLIENTSAILOR}/.ssh/known_hosts" ];then
-/usr/bin/touch /opt/ivapp/inknet/sailor/${CLIENTSAILOR}/.ssh/known_hosts; fi
+if [ ! -f "/opt/ivapp/inknet/sailor/${clientSailor}/.ssh/known_hosts" ];then
+/usr/bin/touch /opt/ivapp/inknet/sailor/${clientSailor}/.ssh/known_hosts; fi
 ## Remove any previous keys for this CA (sed delete the line with the pattern)
-/bin/sed -i "/@cert-authority \*\.${CAVERBERURI}.*.${CAVERBERURI}/d" /opt/ivapp/inknet/sailor/${CLIENTSAILOR}/.ssh/known_hosts
+/bin/sed -i "/@cert-authority \*\.${caVerberURI}.*.${caVerberURI}/d" /opt/ivapp/inknet/sailor/${clientSailor}/.ssh/known_hosts
 ## Include this new CA key
-/bin/echo "@cert-authority *.${CAVERBERURI} $(/bin/cat /etc/ssh/inknet/in_ca_${CAVERBERNAME}_key.pub).${CAVERBERURI}"  >> /opt/ivapp/inknet/sailor/${CLIENTSAILOR}/.ssh/known_hosts
+/bin/echo "@cert-authority *.${caVerberURI} $(/bin/cat /etc/ssh/inknet/in_ca_${caVerberName}_key.pub).${caVerberURI}"  >> /opt/ivapp/inknet/sailor/${clientSailor}/.ssh/known_hosts
 #######OR THIS: (add URI to the end, but as of 2017 makes no difference)
 ### Remove any previous keys for this CA (sed delete the line with the pattern)
-#sed -i "/@cert-authority \*\.${CAVERBERURI}.*.${CAVERBERURI}/d" /opt/ivapp/inknet/sailor/${CLIENTSAILOR}/.ssh/known_hosts
+#sed -i "/@cert-authority \*\.${caVerberURI}.*.${caVerberURI}/d" /opt/ivapp/inknet/sailor/${clientSailor}/.ssh/known_hosts
 ### Include this new CA key
-#/bin/echo "@cert-authority *.${CAVERBERURI} $(/bin/cat /etc/ssh/inknet/in_ca_${CAVERBERNAME}_key.pub)"  >> /opt/ivapp/inknet/sailor/${CLIENTSAILOR}/.ssh/known_hosts
+#/bin/echo "@cert-authority *.${caVerberURI} $(/bin/cat /etc/ssh/inknet/in_ca_${caVerberName}_key.pub)"  >> /opt/ivapp/inknet/sailor/${clientSailor}/.ssh/known_hosts
 
 # Finish
-/bin/echo "Inker CA key from ${CAVERBERURI} has been added and is up to date."
+/bin/echo "Inker CA key from ${caVerberURI} has been added and is up to date."
 
 
 

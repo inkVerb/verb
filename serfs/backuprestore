@@ -21,59 +21,59 @@
 ## ./backuprestore wp.inkisaverb.com verb.wp.inkisaverb.com.ftU8.vbak
 
 
-APPNAME=$1
+appName=$1
 FILENAME=$2
 
 # Include the site config
 . /opt/verb/conf/servernameip
 
 # Backup and remove whatever the original status is
-if [ -e "/opt/verb/conf/vapp.${APPNAME}" ]; then
-. /opt/verb/conf/vapp.${APPNAME}
-cd /srv/www/vapps/${APPNAME}/ || exit 6
-/opt/verb/serfs/mysqlvappex vapp.${APPNAME}; wait
-/bin/mv /opt/verb/conf/vapp.${APPNAME} .
+if [ -e "/opt/verb/conf/vapp.${appName}" ]; then
+. /opt/verb/conf/vapp.${appName}
+cd /srv/www/vapps/${appName}/ || exit 6
+/opt/verb/serfs/mysqlvappex vapp.${appName}; wait
+/bin/mv /opt/verb/conf/vapp.${appName} .
 cd /srv/www/vapps/ || exit 6
-/opt/verb/serfs/vtxzin ${APPNAME}
-/bin/mv ${APPNAME}.txz verb.${APPNAME}.restore-originalbackedup.vbak
-/bin/mv verb.${APPNAME}.restore-originalbackedup.vbak /srv/www/vip/
-/opt/verb/serfs/mysqlkilldb ${APPDBASE}; wait
-/opt/verb/serfs/mysqlkilluser ${APPDDBUSR}; wait
-/bin/rm -rf ${APPNAME}
+/opt/verb/serfs/vtxzin ${appName}
+/bin/mv ${appName}.txz verb.${appName}.restore-originalbackedup.vbak
+/bin/mv verb.${appName}.restore-originalbackedup.vbak /srv/www/vip/
+/opt/verb/serfs/mysqlkilldb ${appDBase}; wait
+/opt/verb/serfs/mysqlkilluser ${appDDBUsr}; wait
+/bin/rm -rf ${appName}
 fi
 
 # Unpack the file
 cd /srv/www/vip || exit 6
-/bin/mv ${FILENAME} ${APPNAME}.txz
-/opt/verb/serfs/vtxzout ${APPNAME}; wait
-/bin/mv ${APPNAME} /srv/www/vapps/
+/bin/mv ${FILENAME} ${appName}.txz
+/opt/verb/serfs/vtxzout ${appName}; wait
+/bin/mv ${appName} /srv/www/vapps/
 
 # Set up the vapp symlink
-/opt/verb/serfs/setvapplinkon ${APPNAME}
+/opt/verb/serfs/setvapplinkon ${appName}
 
 # Restore and include the app config
-/bin/mv /srv/www/vapps/${APPNAME}/vapp.${APPNAME} /opt/verb/conf/
-. /opt/verb/conf/vapp.${APPNAME}
+/bin/mv /srv/www/vapps/${appName}/vapp.${appName} /opt/verb/conf/
+. /opt/verb/conf/vapp.${appName}
 
 # Create the SQL database
 /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
-CREATE DATABASE ${APPDBASE} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-GRANT ALL PRIVILEGES ON ${APPDBASE}.* TO '${APPDDBUSR}'@'localhost' IDENTIFIED BY '${APPDDBPAS}';
+CREATE DATABASE ${appDBase} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+GRANT ALL PRIVILEGES ON ${appDBase}.* TO '${appDDBUsr}'@'localhost' IDENTIFIED BY '${appDDBPass}';
 FLUSH PRIVILEGES;"
 
 # Restore the database
-cd /srv/www/vapps/${APPNAME} || exit 6
-/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${APPDBASE} < ${APPDBASE}.sql; wait
-/bin/rm -f ${APPDBASE}.sql
+cd /srv/www/vapps/${appName} || exit 6
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${appDBase} < ${appDBase}.sql; wait
+/bin/rm -f ${appDBase}.sql
 /bin/rm -f servernameip*
 
 # Own
-/bin/chown -R www:www /srv/www/vapps/${APPNAME}
+/bin/chown -R www:www /srv/www/vapps/${appName}
 
 # Finish
-/bin/echo "${APPNAME} has been restored and all its backup files removed from this server.
+/bin/echo "${appName} has been restored and all its backup files removed from this server.
 
-A backup of the previous ${APPNAME} on this server has been saved in the vip folder just in case.
+A backup of the previous ${appName} on this server has been saved in the vip folder just in case.
 "
 
 

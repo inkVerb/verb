@@ -9,30 +9,30 @@
 ## The forwarded domain can be any domain or subdomain created with adddomain or addsubdomain (and -cgi)
 
 
-FWDDOM=$1
+fwdDom=$1
 
 # Verify it was created by the pointdomain serf
-if [ ! -f /srv/www/forwards/${FWDDOM}/config ]; then
+if [ ! -f /srv/www/forwards/${fwdDom}/config ]; then
 /bin/echo "This domain's destination is not forwarded by pointdomain. Doing nothing."
 exit 0
 else
-. /srv/www/forwards/${FWDDOM}/config
+. /srv/www/forwards/${fwdDom}/config
 fi
 
 # Check for wild forwarding
-if [ "${FORWARD}" = "${OLD_DEST}" ] && [ -f "/srv/www/forwards/${FORWARD}/.htaccess" ] && [ -f "/srv/www/forwards/${FORWARD}/index.php" ]; then
-  /bin/rm -f /srv/www/forwards/${FORWARD}/.htaccess
-  /bin/echo "${FWDDOM} is no longer forwarding wildly to ${OLD_DEST}, back to normal forwarding to ${OLD_DEST}."
+if [ "${forward}" = "${oldDest}" ] && [ -f "/srv/www/forwards/${forward}/.htaccess" ] && [ -f "/srv/www/forwards/${forward}/index.php" ]; then
+  /bin/rm -f /srv/www/forwards/${forward}/.htaccess
+  /bin/echo "${fwdDom} is no longer forwarding wildly to ${oldDest}, back to normal forwarding to ${oldDest}."
 else
 
 # Unset and own
-/bin/rm -f /srv/www/html/${FWDDOM}
-/bin/ln -sfn "${OLD_DEST}" /srv/www/html/${FWDDOM}
-/bin/chown -R www:www "${OLD_DEST}"
-/bin/rm -rf /srv/www/forwards/${FWDDOM}
+/bin/rm -f /srv/www/html/${fwdDom}
+/bin/ln -sfn "${oldDest}" /srv/www/html/${fwdDom}
+/bin/chown -R www:www "${oldDest}"
+/bin/rm -rf /srv/www/forwards/${fwdDom}
 
 # Finish
-/bin/echo "${FWDDOM} is no longer forwarding to ${FORWARD}, back to ${OLD_DEST}."
+/bin/echo "${fwdDom} is no longer forwarding to ${forward}, back to ${oldDest}."
 
 fi
 

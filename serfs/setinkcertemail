@@ -8,9 +8,9 @@
 ## ./setinkcertemail [email address]
 
 
-NEWEMAIL=$1
+newEmail=$1
 
-/bin/sed -i "s/InkCertEmail=.*/InkCertEmail=${NEWEMAIL}/g" /opt/verb/conf/inkcertstatus
+/bin/sed -i "s/InkCertEmail=.*/InkCertEmail=${newEmail}/g" /opt/verb/conf/inkcertstatus
 
 
 

@@ -10,15 +10,15 @@
 # Eg:
 ## ./postinstallmysqlfix ampache
 
-APPNAME=$1
+appName=$1
 
 # Include the config
-. /opt/verb/conf/vapp.${APPNAME}
+. /opt/verb/conf/vapp.${appName}
 
 /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
-REVOKE ALL PRIVILEGES ON *.* FROM '${APPDDBUSR}'@'localhost';
-REVOKE GRANT OPTION ON *.* FROM '${APPDDBUSR}'@'localhost';
-GRANT ALL PRIVILEGES ON ${APPDBASE}.* TO '${APPDDBUSR}'@'localhost' IDENTIFIED BY '${APPDDBPAS}';
+REVOKE ALL PRIVILEGES ON *.* FROM '${appDDBUsr}'@'localhost';
+REVOKE GRANT OPTION ON *.* FROM '${appDDBUsr}'@'localhost';
+GRANT ALL PRIVILEGES ON ${appDBase}.* TO '${appDDBUsr}'@'localhost' IDENTIFIED BY '${appDDBPass}';
 FLUSH PRIVILEGES;"
 
 # Finish

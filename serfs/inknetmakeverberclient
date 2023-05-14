@@ -25,8 +25,8 @@
 . /opt/verb/conf/siteurilist
 
 # Set variables
-NEWCLIENTURI="${nameURI}"
-NEWCLIENTNAME="$(/bin/echo ${hostURI} | sed 's/\./_/g')"
+newClientURI="${nameURI}"
+newClientName="$(/bin/echo ${hostURI} | sed 's/\./_/g')"
 ## Check that URI matches host
 if [ "${hostURI}" = "$(hostname -f)" ];
 then
@@ -45,11 +45,11 @@ if [ "${1}" = "I_AM_RINK" ]; then
  exit 8
  fi
 ### Set special Inker settings
-NEWCAVERBERHOST="I_AM_RINK"
-NEWCAVERBERURI="I_AM_RINK"
-NEWCAVERBERNAME="I_AM_RINK"
-NEWCAVERBERIP="I_AM_RINK"
-NEWINIVSAILORNAME="I_AM_RINK"
+newCAverberHost="I_AM_RINK"
+NEWcaVerberURI="I_AM_RINK"
+NEWcaVerberName="I_AM_RINK"
+NEWcaVerberIP="I_AM_RINK"
+newInivSailorName="I_AM_RINK"
 /opt/verb/serfs/setinkcertsslca "I_AM_RINK"
 wait
 /opt/verb/serfs/setinkcertsshca "I_AM_RINK"
@@ -67,22 +67,22 @@ else
 
 ## To make this a standard CA Verber
 ### Variables
-NEWCAVERBERHOST=$1
-NEWCAVERBERURI="$(/bin/echo ${NEWCAVERBERHOST} | rev | cut -d'.' -f-3 | rev)"
-NEWCAVERBERNAME="$(/bin/echo ${NEWCAVERBERHOST} | sed 's/\./_/g')"
-NEWCAVERBERIP=$2
+newCAverberHost=$1
+NEWcaVerberURI="$(/bin/echo ${newCAverberHost} | rev | cut -d'.' -f-3 | rev)"
+NEWcaVerberName="$(/bin/echo ${newCAverberHost} | sed 's/\./_/g')"
+NEWcaVerberIP=$2
 ### Settings
-/opt/verb/serfs/setinkcertsslca ${NEWCAVERBERHOST}
+/opt/verb/serfs/setinkcertsslca ${newCAverberHost}
 wait
-/opt/verb/serfs/setinkcertsshca ${NEWCAVERBERHOST}
+/opt/verb/serfs/setinkcertsshca ${newCAverberHost}
 wait
-/opt/verb/serfs/setinkgetrepo ${NEWCAVERBERHOST}
+/opt/verb/serfs/setinkgetrepo ${newCAverberHost}
 wait
-/opt/verb/serfs/setinknetsslca ${NEWCAVERBERHOST}
+/opt/verb/serfs/setinknetsslca ${newCAverberHost}
 wait
-/opt/verb/serfs/setinknetsshca ${NEWCAVERBERHOST}
+/opt/verb/serfs/setinknetsshca ${newCAverberHost}
 wait
-/opt/verb/serfs/setinknetrepo ${NEWCAVERBERHOST}
+/opt/verb/serfs/setinknetrepo ${newCAverberHost}
 wait
 fi
 
@@ -92,14 +92,14 @@ fi
 # inkNet config, verb.ink
 ## This contains information about this Client Verber's credentials used in signing SSH keys for inkNet on another CA Verber
 
-CAVERBERHOST=\"${NEWCAVERBERHOST}\"
-CAVERBERURI=\"${NEWCAVERBERURI}\"
-CAVERBERNAME=\"${NEWCAVERBERNAME}\"
-CAVERBERIP=\"${NEWCAVERBERIP}\"
+CAVERBERHOST=\"${newCAverberHost}\"
+caVerberURI=\"${newCAverberURI}\"
+caVerberName=\"${newCAverberName}\"
+caVerberIP=\"${newCAverberIP}\"
 CLIENTHOST=\"${NEWCLIENTHOST}\"
-CLIENTURI=\"${NEWCLIENTURI}\"
-CLIENTNAME=\"${NEWCLIENTNAME}\"
-CLIENTSAILOR=\"NOT_SET\"
+clientURI=\"${newClientURI}\"
+clientName=\"${newClientName}\"
+clientSailor=\"NOT_SET\"
 " > /opt/verb/conf/inknet/rink.client.cnf
 ## For the system
 ### Prepare /etc/ssh/ssh_config
@@ -108,7 +108,7 @@ if [ ! -d /etc/ssh/inknet ]; then
 /bin/echo "
 ## Added by inkNet ##
 Host *
- IdentityFile ~/.ssh/in_cli_${NEWCLIENTNAME}_key
+ IdentityFile ~/.ssh/in_cli_${newClientName}_key
 ##
 " >> /etc/ssh/ssh_config
 

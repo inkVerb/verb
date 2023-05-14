@@ -27,7 +27,7 @@ if [ -e "/opt/verb/mods/adddomainvip.before" ]; then . /opt/verb/mods/adddomainv
 
 olddomain=$1
 
-/bin/ln -s /srv/www/domains/${OLDDOMAIN} /srv/vip/_domains/${OLDDOMAIN}
+/bin/ln -s /srv/www/domains/${olddomain} /srv/vip/_domains/${olddomain}
 
 
 

@@ -20,7 +20,7 @@
 # Prerequesites
 if [ -f /opt/verb/conf/inknet/ca.verber.cnf ]; then
 . /opt/verb/conf/inknet/ca.verber.cnf
- if [ "${INKNETSTATUS}" != "INSTALLED" ]; then
+ if [ "${inkNetStatus}" != "INSTALLED" ]; then
 /bin/echo "inkNet not quite installed. First, run inknetinstallca"
 exit 0
  fi
@@ -29,32 +29,32 @@ else
 exit 0
 fi
 
-ADDUSER="$1"
-ICMACHINE="$2"
-ADDMACHINE="$(/bin/echo ${ICMACHINE} | sed 's/_/\./g')"
-SCRMACHINE="$(/bin/echo ${ICMACHINE} | sed 's/\./_/g')"
-ADDCLIENTNAME="${ADDUSER}_${SCRMACHINE}"
+ADDuser="$1"
+icMachine="$2"
+addMachine="$(/bin/echo ${icMachine} | sed 's/_/\./g')"
+scrMachine="$(/bin/echo ${icMachine} | sed 's/\./_/g')"
+addClientName="${addUser}_${scrMachine}"
 if [ -z ${3} ]; then
-ADDIP="NOT_SET"
+addIP="NOT_SET"
 else
-ADDIP="$3"
+addIP="$3"
 fi
-ADDAPG=$(/usr/bin/pwgen -1 -0 -A 4)
+addApg=$(/usr/bin/pwgen -1 -0 -A 4)
 # New username based on user, random appendage, and computer name
-FULLUSERNAME=${ADDUSER}${ADDAPG}${SCRMACHINE}
+fullUsername=${addUser}${addApg}${scrMachine}
 ## Truncate the new username to the 32 character limit
-ADDUSERNAME=$(/bin/echo $FULLUSERNAME | cut -c1-32)
-ADDPASSWORD=$(/usr/bin/pwgen -1 -s 15)
+addUsername=$(/bin/echo ${fullUsername} | cut -c1-32)
+addPassword=$(/usr/bin/pwgen -1 -s 15)
 
 # Just in case user already exists
-if [ -f /opt/verb/conf/inknet/vrk/client.vrk.${ADDCLIENTNAME}.cnf ]; then
+if [ -f /opt/verb/conf/inknet/vrk/client.vrk.${addClientName}.cnf ]; then
 /bin/echo "Umm... How do I say this...
 
 A config already exists for that Vrk Station name.
 
-Note: Your name \"${FULLCLIENTNAME}\" is cut to 18 characters at \"${ADDCLIENTNAME}\" because of system filename limits. Even if your full \"computer name\" is different, this could create a conflict, in theory. If that's the case, create a different user on your Vrk Station computer, re-install Vrk again for that user, then try again from that user.
+Note: Your name \"${fullClientName}\" is cut to 18 characters at \"${addClientName}\" because of system filename limits. Even if your full \"computer name\" is different, this could create a conflict, in theory. If that's the case, create a different user on your Vrk Station computer, re-install Vrk again for that user, then try again from that user.
 
-If you really need to continue and replace the existing profile by this name, first delete the profile for ${ADDCLIENTNAME} at inknet/clients/client.vrk.${ADDCLIENTNAME}.cnf in configs on the Verber
+If you really need to continue and replace the existing profile by this name, first delete the profile for ${addClientName} at inknet/clients/client.vrk.${addClientName}.cnf in configs on the Verber
 ...then run this again.
 "
 exit 0
@@ -62,32 +62,32 @@ fi
 
 # Create the config
 . /opt/verb/conf/serverport
-ADDLOGINPORT=${ServerPort}
+ADDLOGINport=${ServerPort}
 /bin/echo "#!/bin/bash
 # inkNet config, verb.ink
 ## This contains information about a Vrk Client's credentials used in signing SSH keys for inkNet on this CA Verber
 ## Note that a local Vrk Station only uses the local username as the URI for SSH key and cert purposes
 
-CLIENTUSER=\"${ADDUSER}\"
-CLIENTURI=\"${ADDMACHINE}\"
-CLIENTNAME=\"${ADDCLIENTNAME}\"
-CLIENTIP=\"${ADDIP}\"
-CLIENTUSERNAME=\"${ADDUSERNAME}\"
-CLIENTPASSWORD=\"${ADDPASSWORD}\"
-CLIENTPORT=\"${ADDLOGINPORT}\"
-" > /opt/verb/conf/inknet/vrk/client.vrk.${ADDCLIENTNAME}.cnf
+CLIENTuser=\"${addUser}\"
+clientURI=\"${addMachine}\"
+clientName=\"${addClientName}\"
+CLIENTIP=\"${addIP}\"
+clientUsername=\"${addUsername}\"
+CLIENTPASSWORD=\"${addPassword}\"
+CLIENTport=\"${addLoginPort}\"
+" > /opt/verb/conf/inknet/vrk/client.vrk.${addClientName}.cnf
 
 # Create the IVapp user
-/opt/verb/serfs/inknetivappadduser ${ADDUSERNAME} ${ADDPASSWORD} vrk
+/opt/verb/serfs/inknetivappadduser ${addUsername} ${addPassword} vrk
 wait
 
 # Create the inkNet Client tool links
-/bin/ln -sfn /opt/verb/tools/vrker /opt/ivapp/inknet/vrker/${ADDUSERNAME}/tools
+/bin/ln -sfn /opt/verb/tools/vrker /opt/ivapp/inknet/vrker/${addUsername}/tools
 
 # FInish
 /bin/echo "All set. Your Vrk Station has been added as a Client to this Verber.
 
-That machine's user account will be known here as: ${ADDCLIENTNAME}"
+That machine's user account will be known here as: ${addClientName}"
 
 ## Serf message
 /bin/echo "

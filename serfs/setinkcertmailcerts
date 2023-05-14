@@ -25,34 +25,34 @@ fi
 domain="$1"
 
 if [ -n "$2" ] && [ "$2" = "inkvmail" ]; then
-  DEST="vmail"
+  dest="vmail"
 else
-  DEST="$1"
+  dest="$1"
 fi
 
 # Link the inkCert-LE certs if they exist, otherwise use Snakeoil
 if [ -f "/etc/inkcert/le/live/${domain}/fullchain.pem" ] && [ -f "/etc/inkcert/le/live/${domain}/privkey.pem" ]; then
-  /usr/bin/ln -sfn /etc/inkcert/le/live/${domain}/fullchain.pem /etc/ssl/server/mail/${DEST}.crt
-  /usr/bin/chmod 0444 /etc/ssl/server/mail/${DEST}.crt
+  /usr/bin/ln -sfn /etc/inkcert/le/live/${domain}/fullchain.pem /etc/ssl/server/mail/${dest}.crt
+  /usr/bin/chmod 0444 /etc/ssl/server/mail/${dest}.crt
   /usr/bin/sed -i "s?^#smtpd_tls_chain_files = /etc/ssl/server/mail/vmail.key?smtpd_tls_chain_files = /etc/ssl/server/mail/vmail.key?" /etc/postfix/main.cf
   /usr/bin/sed -i "s?^#smtp_sender_dependent_authentication = yes?smtp_sender_dependent_authentication = yes?" /etc/postfix/main.cf
   /usr/bin/sed -i "s?^#ssl_cert = </etc/ssl/server/mail/vmail.crt?ssl_cert = </etc/ssl/server/mail/vmail.crt?" /etc/dovecot/conf.d/10-ssl.conf
   /usr/bin/sed -i "s?^#ssl_dh = </etc/dovecot/dh.pem?ssl_dh = </etc/dovecot/dh.pem?" /etc/dovecot/conf.d/10-ssl.conf
   /usr/bin/sed -i "s?^smtpd_tls_chain_files = /etc/ssl/server/server.key?#smtpd_tls_chain_files = /etc/ssl/server/server.key?" /etc/postfix/main.cf
   /usr/bin/sed -i "s?^ssl_cert = </etc/ssl/server/server.crt?#ssl_cert = </etc/ssl/server/server.crt?" /etc/dovecot/conf.d/10-ssl.conf
-  /usr/bin/ln -sfn /etc/inkcert/le/live/${domain}/privkey.pem /etc/ssl/server/mail/${DEST}.key
-  /usr/bin/chmod 0400 /etc/ssl/server/mail/${DEST}.key
+  /usr/bin/ln -sfn /etc/inkcert/le/live/${domain}/privkey.pem /etc/ssl/server/mail/${dest}.key
+  /usr/bin/chmod 0400 /etc/ssl/server/mail/${dest}.key
   /usr/bin/sed -i "s?^#ssl_key = </etc/ssl/server/mail/vmail.key?ssl_key = </etc/ssl/server/mail/vmail.key?" /etc/dovecot/conf.d/10-ssl.conf
   /usr/bin/sed -i "s?^ssl_key = </etc/ssl/server/server.key?#ssl_key = </etc/ssl/server/server.key?" /etc/dovecot/conf.d/10-ssl.conf
 else
-  /usr/bin/rm -f /etc/ssl/server/mail/${DEST}.crt
+  /usr/bin/rm -f /etc/ssl/server/mail/${dest}.crt
   /usr/bin/sed -i "s?^#smtpd_tls_chain_files = /etc/ssl/server/server.key?smtpd_tls_chain_files = /etc/ssl/server/server.key?" /etc/postfix/main.cf
   /usr/bin/sed -i "s?^#ssl_cert = </etc/ssl/server/server.crt?ssl_cert = </etc/ssl/server/server.crt?" /etc/dovecot/conf.d/10-ssl.conf
   /usr/bin/sed -i "s?^smtpd_tls_chain_files = /etc/ssl/server/mail/vmail.key?#smtpd_tls_chain_files = /etc/ssl/server/mail/vmail.key?" /etc/postfix/main.cf
   /usr/bin/sed -i "s?^smtp_sender_dependent_authentication = yes?#smtp_sender_dependent_authentication = yes?" /etc/postfix/main.cf
   /usr/bin/sed -i "s?^ssl_cert = </etc/ssl/server/mail/vmail.crt?#ssl_cert = </etc/ssl/server/mail/vmail.crt?" /etc/dovecot/conf.d/10-ssl.conf
   /usr/bin/sed -i "s?^ssl_dh = </etc/dovecot/dh.pem?#ssl_dh = </etc/dovecot/dh.pem?" /etc/dovecot/conf.d/10-ssl.conf
-  /usr/bin/rm -f /etc/ssl/server/mail/${DEST}.key
+  /usr/bin/rm -f /etc/ssl/server/mail/${dest}.key
   /usr/bin/sed -i "s?^#ssl_key = </etc/ssl/server/server.key?ssl_key = </etc/ssl/server/server.key?" /etc/dovecot/conf.d/10-ssl.conf
   /usr/bin/sed -i "s?^ssl_key = </etc/ssl/server/mail/vmail.key?#ssl_key = </etc/ssl/server/mail/vmail.key?" /etc/dovecot/conf.d/10-ssl.conf
 fi

@@ -7,19 +7,19 @@
 ## ./info serfname
 ## ./info
 
-SerfsDIR='/opt/verb/serfs'
+Serfsdir='/opt/verb/serfs'
 
 if [ -z $1 ]; then
 	echo "Must set a serf"
 	exit 0
 else
-	SERF=$1
+	serf=$1
 	infoINKonly='true'
 if [ -e "/opt/verb/mods/info.replace" ]; then . /opt/verb/mods/info.replace; return 0; fi # Replaces this script
 if [ -e "/opt/verb/mods/info.before" ]; then . /opt/verb/mods/info.before; fi # Precedes this script
 fi
 
-. "${SerfsDIR}/${SERF}"
+. "${SerfsDIR}/${serf}"
 
 # Specific information
 if [ -n "$2" ]; then
@@ -27,7 +27,7 @@ if [ -n "$2" ]; then
 	echo "${PARAM}: ${!PARAM[*]}"
 # All information
 else
-	echo "${SERF} :: Information"
+	echo "${serf} :: Information"
 
 	echo "Notes (usagenotes): $usagenotes"
 

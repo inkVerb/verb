@@ -25,10 +25,10 @@ exit 8; fi
 
 # Verber Keys (on the same CA server)
 ## Create the inkNet host keys for Verber
-ssh-keygen -t rsa -N "" -f /etc/ssh/inknet/in_cav_${IAMCANAME}_key
+ssh-keygen -t rsa -N "" -f /etc/ssh/inknet/in_cav_${iamCAname}_key
 ## CA signs the Verber host key
-ssh-keygen -s ~/.ssh/inknet/ca/in_ca_${IAMCANAME}_key -N "" -I in_cav_${IAMCANAME} -h -n ${IAMCAHOST} -V +170w /etc/ssh/inknet/in_cav_${IAMCANAME}_key.pub
-### Now exists: /etc/ssh/inknet/in_cav_${CAVERBERNAME}_key-cert.pub
+ssh-keygen -s ~/.ssh/inknet/ca/in_ca_${iamCAname}_key -N "" -I in_cav_${iamCAname} -h -n ${iamCAhost} -V +170w /etc/ssh/inknet/in_cav_${iamCAname}_key.pub
+### Now exists: /etc/ssh/inknet/in_cav_${caVerberName}_key-cert.pub
 
 # Restart
 /bin/systemctl reload ssh

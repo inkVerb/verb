@@ -16,9 +16,9 @@ cVappName=fossil
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/siteurilist
 
-NEWUSER=$1
-NEWEMAIL=$2
-NEWPASS=$3
+NEWuser=$1
+newEmail=$2
+newPass=$3
 
 
 cd /srv/www/vapps || exit 6
@@ -58,8 +58,8 @@ repository: /fossil/dinosaur.fossil" > dinosaur.cgi
 /bin/chown -R www:www /srv/www/vip/fossil; wait
 
 # Add the user
-fossil user new ${NEWUSER} ${NEWEMAIL} ${NEWPASS} --repository index.fossil
-fossil user new ${NEWUSER} ${NEWEMAIL} ${NEWPASS} --repository dinosaur.fossil
+fossil user new ${newUser} ${newEmail} ${newPass} --repository index.fossil
+fossil user new ${newUser} ${newEmail} ${newPass} --repository dinosaur.fossil
 
 # Ending message
 /bin/echo "

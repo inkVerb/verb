@@ -22,10 +22,10 @@ Primary TLD: ${ServerTLD}
 Primary URI: ${nameURI}
 Host: ${ServerTLD}
 FQDN: ${hostURI}
-Timezone: ${ServerTimeCity}, ${SITETIMEREGION}
+Timezone: ${ServerTimeCity}, ${ServerTimeCity}
 Update channel: ${ServerUpdateRepo}
-Version: ${VERNO}
-Type: ${VTYPE}
+Version: ${Verno}
+Type: ${Vtype}
 
 IT/SQL URL: ${itsqlTLD}
 Email main domain URI: ${emailURI}

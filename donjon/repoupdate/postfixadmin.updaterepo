@@ -21,7 +21,8 @@ if [ $InkGet_Method != "ZJZ" ]; then
 /bin/echo "Updating the PostfixAdmin package to v${distVer}..."
 
 # Get the package
-/usr/bin/wget -O postfixadmin-${distVer}.tar.gz https://sourceforge.net/projects/postfixadmin/files/postfixadmin-${distVer}/PostfixAdmin%20${distVer}.tar.gz
+# https://sourceforge.net/projects/postfixadmin/files/postfixadmin-${distVer}/PostfixAdmin%20${distVer}.tar.gz # The public link sends a 301 to this below:
+/usr/bin/wget -O postfixadmin-${distVer}.tar.gz https://nchc.dl.sourceforge.net/project/postfixadmin/postfixadmin-${distVer}/PostfixAdmin%20${distVer}.tar.gz
 if [ ! -f "postfixadmin-${distVer}.tar.gz" ]; then
 /bin/echo "Failed download."; touch "${cVappName}.failed"
 exit 4; else

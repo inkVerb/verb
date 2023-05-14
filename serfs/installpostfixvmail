@@ -367,7 +367,7 @@ fi
 /bin/mkdir -p /etc/opendkim/keys/${nameURI}
 cd /etc/opendkim/keys/${nameURI} || exit 6
 /usr/bin/opendkim-genkey -r -S -s inkdkim -d ${nameURI}; wait
-cd $OLDPWD || exit 6
+cd ${oldPwd} || exit 6
 /bin/chmod 660 /etc/opendkim/keys/${nameURI}/inkdkim.private
 /bin/chown -R opendkim:opendkim /etc/opendkim
 ## Start

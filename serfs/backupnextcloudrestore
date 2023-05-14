@@ -50,14 +50,14 @@ cd .. || exit 6
 
 # Restore and include the app config
 . /srv/www/vapps/nextcloud/data/vapp.nextcloud
-OLDDBASE="${APPDBASE}"
+oldDBase="${appDBase}"
 . /opt/verb/conf/vapp.nextcloud
 
 # Restore the database
 cd /srv/www/vapps/nextcloud/data || exit 6
-/bin/mv ${OLDDBASE}.sql ${APPDBASE}.sql; wait
-/opt/verb/serfs/mysqlin ${APPDBASE}; wait
-/bin/rm -f ${APPDBASE}.sql
+/bin/mv ${oldDBase}.sql ${appDBase}.sql; wait
+/opt/verb/serfs/mysqlin ${appDBase}; wait
+/bin/rm -f ${appDBase}.sql
 
 # Own
 /bin/chown -R www:www /srv/www/vapps/nextcloud

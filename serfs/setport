@@ -29,11 +29,11 @@
 # Include the config file
 . /opt/verb/conf/serverport
 
-NEWPORT=$1
+newport=$1
 
-/bin/sed -i "s/Port.*/Port ${NEWPORT}/g" /etc/ssh/sshd_config
-/bin/sed -i "s/ServerPort.*/ServerPort=\"${NEWPORT}\"/" /opt/verb/conf/serverport
-/usr/bin/ufw allow ${NEWPORT}
+/bin/sed -i "s/Port.*/Port ${newport}/g" /etc/ssh/sshd_config
+/bin/sed -i "s/ServerPort.*/ServerPort=\"${newport}\"/" /opt/verb/conf/serverport
+/usr/bin/ufw allow ${newport}
 # Deny the previous port from the config file which has been written, but not yet refreshed
 /usr/bin/ufw deny ${ServerPort}
 

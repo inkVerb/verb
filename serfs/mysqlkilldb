@@ -26,10 +26,10 @@ if [ -e "/opt/verb/mods/mysqlkilldb.replace" ]; then . /opt/verb/mods/mysqlkilld
 if [ -e "/opt/verb/mods/mysqlkilldb.before" ]; then . /opt/verb/mods/mysqlkilldb.before; fi # Precedes this script
 
 
-DBASE=$1
+dBase=$1
 
 /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
-DROP DATABASE ${DBASE};"
+DROP DATABASE ${dBase};"
 
 
 

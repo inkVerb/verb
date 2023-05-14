@@ -19,7 +19,7 @@
 # Prerequesites
 if [ -f /opt/verb/conf/inknet/ca.verber.cnf ]; then
 . /opt/verb/conf/inknet/ca.verber.cnf
- if [ "${INKNETSTATUS}" != "INSTALLED" ]; then
+ if [ "${inkNetStatus}" != "INSTALLED" ]; then
 /bin/echo "inkNet not quite installed. First, run inknetinstallca"
 exit 0
  fi
@@ -29,22 +29,22 @@ exit 0
 fi
 
 ICHOST=$1
-ADDIP=$2
-ADDHOST="$(/bin/echo ${ICHOST} | sed 's/_/\./g')"
+addIP=$2
+addHost="$(/bin/echo ${ICHOST} | sed 's/_/\./g')"
 ADDNAME="$(/bin/echo ${ICHOST} | sed 's/\./_/g')"
-ADDURI="$(/bin/echo ${ADDHOST} | rev | cut -d'.' -f-3 | rev)"
-URINAME="$(/bin/echo ${ADDURI} | sed 's/\./_/g')"
+addURI="$(/bin/echo ${addHost} | rev | cut -d'.' -f-3 | rev)"
+URINAME="$(/bin/echo ${addURI} | sed 's/\./_/g')"
 
 if [ -z ${2} ]; then
 /bin/echo "Dude. You need both options. Read the instructions."
 exit 0
 fi
-ADDAPG=$(/usr/bin/pwgen -1 -0 -A 4)
+addApg=$(/usr/bin/pwgen -1 -0 -A 4)
 ## Truncate the new username to fit appendage before the 32 character limit
-CUTUSERNAME=$(/bin/echo ${URINAME} | cut -c1-28)
+cutUsername=$(/bin/echo ${URINAME} | cut -c1-28)
 # New username based on user, random appendage, and computer name
-ADDUSERNAME=${CUTUSERNAME}${ADDAPG}
-ADDPASSWORD=$(/usr/bin/pwgen -1 -s 15)
+addUsername=${cutUsername}${addApg}
+addPassword=$(/usr/bin/pwgen -1 -s 15)
 
 # Just in case user already exists
 if [ -f /opt/verb/conf/inknet/verber/client.verber.${ADDNAME}.cnf ]; then
@@ -52,7 +52,7 @@ if [ -f /opt/verb/conf/inknet/verber/client.verber.${ADDNAME}.cnf ]; then
 
 It looks like you have already done this for this verber. A config already exists for that Verber name.
 
-For example: Try a hostname like one of these: \"${ADDTLD}${ADDHOST}\" or \"${ADDTLD}2${ADDHOST}\"
+For example: Try a hostname like one of these: \"${ADDTLD}${addHost}\" or \"${ADDTLD}2${addHost}\"
 
 But, if this really is a separate Verber, you're going to need either change the short \"host\" name or re-install that Verber with a new hostname if you can't.
 
@@ -66,29 +66,29 @@ fi
 if [ ! -d "/opt/verb/conf/inknet/verber" ]; then
 /bin/mkdir -p /opt/verb/conf/inknet/verber; fi
 . /opt/verb/conf/serverport
-ADDLOGINPORT=${ServerPort}
+ADDLOGINport=${ServerPort}
 /bin/echo "#!/bin/bash
 # inkNet config, verb.ink
 ## This contains information about a Verber Client's credentials used in signing SSH keys for inkNet on this CA Verber
 
-CLIENTHOST=\"${ADDHOST}\"
-CLIENTURI=\"${ADDURI}\"
-CLIENTNAME=\"${ADDNAME}\"
-CLIENTIP=\"${ADDIP}\"
-CLIENTUSERNAME=\"${ADDUSERNAME}\"
-CLIENTPASSWORD=\"${ADDPASSWORD}\"
-CLIENTPORT=\"${ADDLOGINPORT}\"
+CLIENTHOST=\"${addHost}\"
+clientURI=\"${addURI}\"
+clientName=\"${ADDNAME}\"
+CLIENTIP=\"${addIP}\"
+clientUsername=\"${addUsername}\"
+CLIENTPASSWORD=\"${addPassword}\"
+CLIENTport=\"${addLoginPort}\"
 " > /opt/verb/conf/inknet/verber/client.verber.${ADDNAME}.cnf
 
 # Create the ivApp user
-/opt/verb/serfs/inknetivappadduser ${ADDUSERNAME} ${ADDPASSWORD} vrb
+/opt/verb/serfs/inknetivappadduser ${addUsername} ${addPassword} vrb
 wait
 
 # Create the inkNet Client tool links
-/bin/ln -sfn /opt/verb/tools/verber /opt/ivapp/inknet/verber/${ADDUSERNAME}/tools
+/bin/ln -sfn /opt/verb/tools/verber /opt/ivapp/inknet/verber/${addUsername}/tools
 
 # Finish
-/bin/echo " \"${ADDHOST}\" has been added as a Verber Client."
+/bin/echo " \"${addHost}\" has been added as a Verber Client."
 
 ## Serf message
 /bin/echo "

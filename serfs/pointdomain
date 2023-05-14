@@ -11,23 +11,23 @@
 ## The forwarded domain can be any domain or subdomain created with adddomain or addsubdomain (and -cgi)
 
 
-FWDDOM=$1
-DEST=$2
-ORIG_DEST="$(find /srv/www/html/${FWDDOM} -prune -printf "%l\n")"
+fwdDom=$1
+dest=$2
+origDest="$(find /srv/www/html/${fwdDom} -prune -printf "%l\n")"
 
 # Prepare
-/bin/mkdir -p /srv/www/forwards/${FWDDOM}
-/bin/rm -f /srv/www/html/${FWDDOM}
-/bin/ln -sfn /srv/www/forwards/${FWDDOM} /srv/www/html/
+/bin/mkdir -p /srv/www/forwards/${fwdDom}
+/bin/rm -f /srv/www/html/${fwdDom}
+/bin/ln -sfn /srv/www/forwards/${fwdDom} /srv/www/html/
 
 # Set and own
-/bin/echo "<?php header(\"Location: ${DEST}\"); die(); ?>" > /srv/www/forwards/${FWDDOM}/index.php
-/bin/echo "FORWARD=\"${DEST}\"" > /srv/www/forwards/${FWDDOM}/config
-/bin/echo "OLD_DEST=\"${ORIG_DEST}\"" >> /srv/www/forwards/${FWDDOM}/config
-/bin/chown -R www:www /srv/www/forwards/${FWDDOM}
+/bin/echo "<?php header(\"Location: ${dest}\"); die(); ?>" > /srv/www/forwards/${fwdDom}/index.php
+/bin/echo "forward=\"${dest}\"" > /srv/www/forwards/${fwdDom}/config
+/bin/echo "oldDest=\"${origDest}\"" >> /srv/www/forwards/${fwdDom}/config
+/bin/chown -R www:www /srv/www/forwards/${fwdDom}
 
 # Finish
-/bin/echo "${FWDDOM} now forwarding to ${DEST}"
+/bin/echo "${fwdDom} now forwarding to ${dest}"
 
 
 

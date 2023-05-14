@@ -41,26 +41,26 @@ fi
 
 DNsdnsDomainAIN="$1"
 if [ -n $2 ] && [ "$2" = "verber" ]; then
-  ZONEDIR="inkzones"
+  ZONEdir="inkzones"
 else
-  ZONEDIR="zones"
+  ZONEdir="zones"
 fi
 
 # Include the configs
 . /opt/verb/conf/servernameip
 
 # Check if already added
-if /bin/grep -Fq "; inkDKIM key" /opt/verb/conf/inkdns/${ZONEDIR}/db.${DNsdnsDomainAIN}; then
+if /bin/grep -Fq "; inkDKIM key" /opt/verb/conf/inkdns/${zonedir}/db.${DNsdnsDomainAIN}; then
 /bin/echo "The inkDKIM key for ${DNsdnsDomainAIN} has not been added. Use inkdnsaddinkdkim to add it."
 exit 0; fi
 
 # Remove the key
-/bin/sed -i "/; inkDKIM key ${DNsdnsDomainAIN}/,/;; End inkDKIM key ${DNsdnsDomainAIN}/d" /opt/verb/conf/inkdns/${ZONEDIR}/db.${DNsdnsDomainAIN}
+/bin/sed -i "/; inkDKIM key ${DNsdnsDomainAIN}/,/;; End inkDKIM key ${DNsdnsDomainAIN}/d" /opt/verb/conf/inkdns/${zonedir}/db.${DNsdnsDomainAIN}
 
 # Set the Serial No
-if [ "${ZONEDIR}" = "inkzones" ]; then
+if [ "${zonedir}" = "inkzones" ]; then
   /opt/verb/serfs/inkdnsserial ${DNsdnsDomainAIN} verber
-elif [ "${ZONEDIR}" = "zones" ]; then
+elif [ "${zonedir}" = "zones" ]; then
   /opt/verb/serfs/inkdnsserial ${DNsdnsDomainAIN}
 fi
 

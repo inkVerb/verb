@@ -8,7 +8,7 @@
 
 . /opt/verb/conf/inklists/verberverno
 . /opt/verb/conf/servernameip
-/bin/echo "${ServerUpdateRepo} ${VERNO}"
+/bin/echo "${ServerUpdateRepo} ${Verno}"
 
 
 

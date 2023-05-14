@@ -26,21 +26,21 @@ if [ -e "/opt/verb/mods/killinkdnsvipsub.replace" ]; then . /opt/verb/mods/killi
 if [ -e "/opt/verb/mods/killinkdnsvipsub.before" ]; then . /opt/verb/mods/killinkdnsvipsub.before; fi # Precedes this script
 
 
-DNSSUBDOM="$1"
-ZONEDIR="inkzones"
+dnsSubDom="$1"
+ZONEdir="inkzones"
 
 # Include the configs
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/siteurilist
 
 # Check if already added
-if ! /bin/grep -Fq "${DNSSUBDOM}.${vipURI}" /opt/verb/conf/inkdns/${ZONEDIR}/db.${vipURI}; then
-/bin/echo "The subdomain ${DNSSUBDOM} has not been added to ${vipURI}. Use inkdnsaddsub to add it."
+if ! /bin/grep -Fq "${dnsSubDom}.${vipURI}" /opt/verb/conf/inkdns/${zonedir}/db.${vipURI}; then
+/bin/echo "The subdomain ${dnsSubDom} has not been added to ${vipURI}. Use inkdnsaddsub to add it."
 exit 0; fi
 
 # Remove the records
-/bin/sed -i "/; Subdomain Records Added by inkDNS ${DNSSUBDOM}\.${vipURI}/,+2d" /opt/verb/conf/inkdns/${ZONEDIR}/db.${vipURI}
-/bin/sed -i "/; PTR Subdomain Records Added by inkDNS ${DNSSUBDOM}\.${vipURI}/,+2d" /opt/verb/conf/inkdns/${ZONEDIR}/nv.${vipURI}
+/bin/sed -i "/; Subdomain Records Added by inkDNS ${dnsSubDom}\.${vipURI}/,+2d" /opt/verb/conf/inkdns/${zonedir}/db.${vipURI}
+/bin/sed -i "/; PTR Subdomain Records Added by inkDNS ${dnsSubDom}\.${vipURI}/,+2d" /opt/verb/conf/inkdns/${zonedir}/nv.${vipURI}
 
 # Set the Serial No
 /opt/verb/serfs/inkdnsserial ${vipURI} verber
@@ -52,7 +52,7 @@ if [ -f "/opt/verb/conf/inkdnsconf" ]; then
 /opt/verb/serfs/inkdnsrefreshbind; fi; fi
 
 # Finish
-/bin/echo "The VIP subdomain ${DNSSUBDOM} has been removed from the DNS zone file."
+/bin/echo "The VIP subdomain ${dnsSubDom} has been removed from the DNS zone file."
 
 
 

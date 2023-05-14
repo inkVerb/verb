@@ -77,16 +77,16 @@ exit 8; fi
 
 # Security & path
 if [ -n "$1" ]; then
-  RCFOLDER=$1
+  rcFolder=$1
 else
-  RCFOLDER="$(/usr/bin/pwgen -0 5 1)"
+  rcFolder="$(/usr/bin/pwgen -0 5 1)"
 fi
 RCPASSGEN=$(/usr/bin/pwgen -s -1 5)
-DESSALTGEN=$(/usr/bin/pwgen -s -1 24)
+desSaltGen=$(/usr/bin/pwgen -s -1 24)
 
-if [ "${ServerBoxPath}" = "${RCFOLDER}" ]; then
-  RCFOLDER="$(/usr/bin/pwgen -0 5 1)"
-  echo "Folder already taken by box, new folder will be: ${RCFOLDER}. This can be changed with setrcpath"
+if [ "${ServerBoxPath}" = "${rcFolder}" ]; then
+  rcFolder="$(/usr/bin/pwgen -0 5 1)"
+  echo "Folder already taken by box, new folder will be: ${rcFolder}. This can be changed with setrcpath"
 fi
 
 # Get inkVerb's latest and install
@@ -109,7 +109,7 @@ FLUSH PRIVILEGES;"
 # Webserver
 ## Web directories
 /usr/bin/mkdir -p /srv/www/verb/${ServerEmailTLD}.box
-/usr/bin/ln -sfn /srv/www/email/roundcube /srv/www/verb/${ServerEmailTLD}.box/${RCFOLDER}
+/usr/bin/ln -sfn /srv/www/email/roundcube /srv/www/verb/${ServerEmailTLD}.box/${rcFolder}
 /usr/bin/chown -R www:www /srv/www/verb/${ServerEmailTLD}.box
 ## Hosting conf
 if [ ${ServerType} = "laemp" ]; then
@@ -152,10 +152,10 @@ fi
 /usr/bin/sed -i "s/nameURI286/${nameURI}/g" /srv/www/email/roundcube/config/defaults.inc.php
 /usr/bin/sed -i "s/rcpass286/rcpass${RCPASSGEN}/g" /srv/www/email/roundcube/config/config.inc.php
 /usr/bin/sed -i "s/rcpass286/rcpass${RCPASSGEN}/g" /srv/www/email/roundcube/config/defaults.inc.php
-/usr/bin/sed -i "s/rcemailconfdeskeysalt286/${DESSALTGEN}/g" /srv/www/email/roundcube/config/config.inc.php
+/usr/bin/sed -i "s/rcemailconfdeskeysalt286/${desSaltGen}/g" /srv/www/email/roundcube/config/config.inc.php
 # In the event that installpfa was run first
 if [ -e "/srv/www/email/postfixadmin/config.inc.php" ]; then
-  /usr/bin/sed -i "s/rcfolder286/${RCFOLDER}/g" /srv/www/email/postfixadmin/config.inc.php
+  /usr/bin/sed -i "s/rcfolder286/${rcFolder}/g" /srv/www/email/postfixadmin/config.inc.php
   if [ "$?" = "0" ]; then
     /bin/sed -i "s/\$Conf\['show_footer_text'\] = 'NO';/\$Conf\['show_footer_text'\] = 'YES';/" /srv/www/email/postfixadmin/config.local.php
   fi
@@ -175,7 +175,7 @@ fi
 /usr/bin/sed -i "s/; Email Control Records/; Email Control Records\n${ServerARPAIPv4} \tIN  PTR \tbox.${emailTLDURI}.\n${ServerARPAIPv6} \tIN  PTR \tbox.${emailTLDURI}./" /opt/verb/conf/inkdns/inkzones/nv.${emailTLDURI}
 # Set the config for backup
 /usr/bin/sed -i "s/ServerBoxPassApg.*/ServerBoxPassApg=\"${RCPASSGEN}\"/g" /opt/verb/conf/servermailpass
-/usr/bin/sed -i "s/ServerRCPath.*/ServerRCPath=\"${RCFOLDER}\"/g" /opt/verb/conf/servermailpath
+/usr/bin/sed -i "s/ServerRCPath.*/ServerRCPath=\"${rcFolder}\"/g" /opt/verb/conf/servermailpath
 
 # Fool RoundCube into accepting current versions of PHP
 ## This is unrelated to Composer, but earlier so we make sure it gets done
@@ -194,7 +194,7 @@ cd /srv/www/email/roundcube
 
 # Finished
 /bin/echo "
-Roundcube is installed and can be accessed at: https://box.${emailTLDURI}/${RCFOLDER}
+Roundcube is installed and can be accessed at: https://box.${emailTLDURI}/${rcFolder}
 (It may be using self-signed SSL certificates until the production certificates are installed.)
 "
 

@@ -11,9 +11,9 @@
 ## ./setinkcertsshca sshca.inkisaverb.com
 
 
-INKSSHCA=$1
+inkSSHca=$1
 
-/bin/sed -i "s/InkCertSSHCA=.*/InkCertSSHCA=\"${INKSSHCA}\"/g" /opt/verb/conf/inkcertstatus
+/bin/sed -i "s/InkCertSSHCA=.*/InkCertSSHCA=\"${inkSSHca}\"/g" /opt/verb/conf/inkcertstatus
 
 
 

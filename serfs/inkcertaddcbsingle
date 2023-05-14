@@ -67,18 +67,18 @@ fi
 ## This is a test for the inkcert directories:
 if [ ! -e "/etc/inkcert/le/live/${sitedomain}/cert.pem" ] || [ ! -e "/etc/inkcert/le/live/${sitedomain}/chain.pem" ] || [ ! -e "/etc/inkcert/le/live/${sitedomain}/fullchain.pem" ] || [ ! -e "/etc/inkcert/le/live/${sitedomain}/privkey.pem" ]; then
   if [ "${ServerIPv4}" != "NOIP4" ] && [ "${ServerIPv6}" != "NOIP6" ]; then
-    IPADDRBLOCK="A ${ServerIPv4} and AAAA ${ServerIPv6}"
+    ipAddrBlock="A ${ServerIPv4} and AAAA ${ServerIPv6}"
   ## IP4?
   elif [ "${ServerIPv4}" != "NOIP4" ]; then
-    IPADDRBLOCK="A ${ServerIPv4}"
+    ipAddrBlock="A ${ServerIPv4}"
   ## IP6?
   elif [ "${ServerIPv6}" != "NOIP6" ]; then
-    IPADDRBLOCK="AAAA ${ServerIPv6}"
+    ipAddrBlock="AAAA ${ServerIPv6}"
   fi
 /bin/echo "Something's wrong...
 
 inkCert-Letsencrypt certs were not installed for ${sitedomain} because the ${sitedomain} certs don't exist. Common problems can include:
-  - DNS records: ${sitedomain} should point to ${IPADDRBLOCK}
+  - DNS records: ${sitedomain} should point to ${ipAddrBlock}
   - DNS for ${sitedomain} may need a \"wildcard\" * CNAME record that points to ${sitedomain} as the \"hostname\"
   - DNS records can take about 4 hours to have effect
   - You need to first run: inkcertreqcb

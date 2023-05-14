@@ -26,36 +26,36 @@ if [ -e "/opt/verb/mods/mysqlnewdb.replace" ]; then . /opt/verb/mods/mysqlnewdb.
 if [ -e "/opt/verb/mods/mysqlnewdb.before" ]; then . /opt/verb/mods/mysqlnewdb.before; fi # Precedes this script
 
 
-DBASE="${1}"
-DBUSER="${2}"
+dBase="${1}"
+dBaseUser="${2}"
 
 # Auto password
 if [ -z ${3} ]; then
-DBPASSWORD="$(/usr/bin/pwgen -s -1 32)"
-serfOUT="New Password: ${DBPASSWORD}"
+dBPassword="$(/usr/bin/pwgen -s -1 32)"
+serfOUT="New Password: ${dBPassword}"
 else
-DBPASSWORD="${3}"
+dBPassword="${3}"
 fi
 
 # Create the SQL items
 /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
-CREATE DATABASE ${DBASE} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-GRANT SELECT, INSERT, UPDATE, DELETE, FILE, CREATE, ALTER, INDEX, DROP, CREATE TEMPORARY TABLES, SHOW VIEW, CREATE ROUTINE, ALTER ROUTINE, EXECUTE, CREATE VIEW, EVENT, TRIGGER ON ${DBASE}.* TO '${DBUSER}'@'localhost' IDENTIFIED BY '${DBPASSWORD}';
+CREATE DATABASE ${dBase} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+GRANT SELECT, INSERT, UPDATE, DELETE, FILE, CREATE, ALTER, INDEX, DROP, CREATE TEMPORARY TABLES, SHOW VIEW, CREATE ROUTINE, ALTER ROUTINE, EXECUTE, CREATE VIEW, EVENT, TRIGGER ON ${dBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '${dBPassword}';
 FLUSH PRIVILEGES;"
 
 # Create a Verber record
-echo "DBASE=\"${DBASE}\"
-DBUSER=\"${DBUSER}\"
-DBPASSWORD=\"${DBPASSWORD}\"
-UTYPE=\"CLIENT\"" > /opt/verb/conf/mysqldb.${DBASE}
+echo "dBase=\"${dBase}\"
+dBaseUser=\"${dBaseUser}\"
+dBPassword=\"${dBPassword}\"
+UTYPE=\"CLIENT\"" > /opt/verb/conf/mysqldb.${dBase}
 
 # Create the MySQL login .cnf
 echo "[client]
-user = ${DBUSER}
-password = ${DBPASSWORD}
-database = ${DBASE}
+user = ${dBaseUser}
+password = ${dBPassword}
+database = ${dBase}
 host = localhost
-" > /opt/verb/conf/mysqldb.${DBASE}.cnf
+" > /opt/verb/conf/mysqldb.${dBase}.cnf
 
 
 

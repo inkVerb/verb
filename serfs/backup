@@ -17,7 +17,7 @@
 ## ./backup wpinkblog b
 
 
-APPNAME=$1
+appName=$1
 if [ -z "$2" ]; then
 SECNAME=$(/usr/bin/pwgen -s -1 12)
 else
@@ -25,43 +25,43 @@ SECNAME=$2
 fi
 
 # Check if installed
-if [ -z "/opt/verb/conf/vapp.${APPNAME}" ]; then
-/bin/echo "${APPNAME} not installed. Nothing to backup."
+if [ -z "/opt/verb/conf/vapp.${appName}" ]; then
+/bin/echo "${appName} not installed. Nothing to backup."
 exit 0; fi
 
 # Include the configs
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/siteurilist
-. /opt/verb/conf/vapp.${APPNAME}
+. /opt/verb/conf/vapp.${appName}
 
 # Export the database
-cd /srv/www/vapps/${APPNAME}/ || exit 6
-/opt/verb/serfs/mysqlvappex vapp.${APPNAME}; wait
-/bin/cp /srv/vip/sql/${APPDBASE}.sql /srv/www/vapps/${APPNAME}/ || exit 4
+cd /srv/www/vapps/${appName}/ || exit 6
+/opt/verb/serfs/mysqlvappex vapp.${appName}; wait
+/bin/cp /srv/vip/sql/${appDBase}.sql /srv/www/vapps/${appName}/ || exit 4
 
 # Backup the config
-/bin/cp /opt/verb/conf/vapp.${APPNAME} /srv/www/vapps/${APPNAME}/
+/bin/cp /opt/verb/conf/vapp.${appName} /srv/www/vapps/${appName}/
 
 # Pack the directory
 cd /srv/www/vapps || exit 6
-/opt/verb/serfs/vtxzin ${APPNAME}
-/bin/mv ${APPNAME}.txz verb.${APPNAME}.${SECNAME}.vbak
-/bin/mv verb.${APPNAME}.${SECNAME}.vbak /srv/www/vip/
+/opt/verb/serfs/vtxzin ${appName}
+/bin/mv ${appName}.txz verb.${appName}.${SECNAME}.vbak
+/bin/mv verb.${appName}.${SECNAME}.vbak /srv/www/vip/
 
 # Finish
 if [ "$3" = "-nl" ]; then
-/bin/echo "${APPNAME} has been backed up to the 'vip' folder.
+/bin/echo "${appName} has been backed up to the 'vip' folder.
 
 Note that the app remains live.
 "
 exit 0
 fi
 
-/bin/ln -sfn /srv/www/vip/verb.${APPNAME}.${SECNAME}.vbak /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/
-/bin/chown -R www:www /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/verb.${APPNAME}.${SECNAME}.vbak
-/bin/echo "${APPNAME} has been backed up to the 'vip' folder and can also be downloaded at:
+/bin/ln -sfn /srv/www/vip/verb.${appName}.${SECNAME}.vbak /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/
+/bin/chown -R www:www /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/verb.${appName}.${SECNAME}.vbak
+/bin/echo "${appName} has been backed up to the 'vip' folder and can also be downloaded at:
 
-http://${ServerServePath}/verb.${APPNAME}.${SECNAME}.vbak
+http://${ServerServePath}/verb.${appName}.${SECNAME}.vbak
 
 Note that the app remains live.
 "

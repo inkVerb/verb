@@ -29,7 +29,7 @@ exit 8; fi
 . /opt/verb/conf/inknet/2cav.${CA2NAME}.cnf
 
 # Generate the keys
-runuser -l ${CLIENTSAILOR} -c "ssh-keygen -t rsa -N '' -f /opt/ivapp/inknet/sailor/${CLIENTSAILOR}/.ssh/in_cli_${CLIENTNAME}_key"
+runuser -l ${clientSailor} -c "ssh-keygen -t rsa -N '' -f /opt/ivapp/inknet/sailor/${clientSailor}/.ssh/in_cli_${clientName}_key"
 
 # Finish
 /bin/echo "Ready for the next step...

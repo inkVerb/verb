@@ -15,11 +15,11 @@
 ## ./vtxzin mystuff
 
 
-DIR=$1
+dir=$1
 
 /usr/bin/echo "Creating .txz archive file..."
-/bin/tar c ${DIR} | /usr/bin/xz -v > ${DIR}.tar.xz
-/bin/mv ${DIR}.tar.xz ${DIR}.txz
+/bin/tar c ${dir} | /usr/bin/xz -v > ${dir}.tar.xz
+/bin/mv ${dir}.tar.xz ${dir}.txz
 /usr/bin/echo "Done."
 
 

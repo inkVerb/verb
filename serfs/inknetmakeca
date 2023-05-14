@@ -11,10 +11,10 @@
 # Include the config
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/siteurilist
-NEWCAURI="${nameURI}"
-NEWCANAME="$(/bin/echo ${NEWCAHOST} | sed 's/\./_/g')"
-if [ "${NEWCAHOST}" = "$(hostname -f)" ]; then
-NEWCAHOST="${hostURI}"
+newCAURI="${nameURI}"
+newCAname="$(/bin/echo ${newCAHost} | sed 's/\./_/g')"
+if [ "${newCAHost}" = "$(hostname -f)" ]; then
+newCAHost="${hostURI}"
 else
 /bin/echo "The full hostname doesn't match the inkVerb namespace URI and host settings. Fix that before proceeding.
 These are set in /etc/hosts and /etc/hostname
@@ -24,8 +24,8 @@ exit 8; fi
 
 # inkNet prerequisites
 ## Verify that the main domain is installed (this is mainly a DNS record-ready check, the CA's actual URI stands as a subdomain to itself.)
-if [ ! -f /opt/verb/conf/inkcert/cli-ini/siteinkcert.${NEWCAURI} ]; then
-/bin/echo "Bunkertime! ${NEWCAURI} is not on this machine, but it should BE the machine!
+if [ ! -f /opt/verb/conf/inkcert/cli-ini/siteinkcert.${newCAURI} ]; then
+/bin/echo "Bunkertime! ${newCAURI} is not on this machine, but it should BE the machine!
 Something is really wronggg here!
 "
 exit 8; fi
@@ -42,8 +42,8 @@ if [ -f /opt/verb/conf/inknet/ca.verber.cnf ]; then
 "
 exit 0; fi
 ## Verify web directory doesn't exist
-if [ -d /srv/www/html/${NEWCAHOST}/inknet ]; then
-/bin/echo "Fascinating, Captain. This is not an Inker CA, but the web folder for it (${NEWCAHOST}/inknet) exists.
+if [ -d /srv/www/html/${newCAHost}/inknet ]; then
+/bin/echo "Fascinating, Captain. This is not an Inker CA, but the web folder for it (${newCAHost}/inknet) exists.
 There is no logical explanation. We must purge and begin anew.
 "
 exit 8; fi
@@ -58,77 +58,77 @@ wait
 fi
 
 # Set based on web directory and Apache status
-if [ -e /srv/www/html/${NEWCAHOST} ]; then
- if [ -f /opt/verb/conf/webserver/sites-available/httpd/${NEWCAHOST}.conf ]; then
-  if [ -e /etc/httpd/sites-enabled/${NEWCAHOST}.conf ]; then
-  /bin/echo "Great, ${NEWCAHOST} already exists..."
+if [ -e /srv/www/html/${newCAHost} ]; then
+ if [ -f /opt/verb/conf/webserver/sites-available/httpd/${newCAHost}.conf ]; then
+  if [ -e /etc/httpd/sites-enabled/${newCAHost}.conf ]; then
+  /bin/echo "Great, ${newCAHost} already exists..."
   else
-  /bin/echo "Enabling ${NEWCAHOST}..."
-  /opt/verb/serfs/ensiteapache ${NEWCAHOST}
+  /bin/echo "Enabling ${newCAHost}..."
+  /opt/verb/serfs/ensiteapache ${newCAHost}
   fi
  else
- /bin/echo "Cute. The Apache config for ${NEWCAHOST} does not exist, but the web directory does. Fix this how you want and start over, Tiger."
+ /bin/echo "Cute. The Apache config for ${newCAHost} does not exist, but the web directory does. Fix this how you want and start over, Tiger."
  exit 8
  fi
 else
 ## Add the full URI as a subdomain
 ### Make sure it the Inker has the repo properly setup
- if [ ! -e /srv/www/domains/${NEWCAHOST} ]; then
- /bin/echo "Creating ${NEWCAHOST}..."
+ if [ ! -e /srv/www/domains/${newCAHost} ]; then
+ /bin/echo "Creating ${newCAHost}..."
 ## Remove any duplicate, because that can happen in the known plasmaverse and interwebverse.
-  if [ -f /opt/verb/conf/webserver/sites-available/httpd/${NEWCAHOST}.conf ]; then
-  rm -f /opt/verb/conf/webserver/sites-available/httpd/${NEWCAHOST}.conf; fi
-  if [ -e /etc/httpd/sites-enabled/${NEWCAHOST}.conf ]; then
-  rm -f /etc/httpd/sites-enabled/${NEWCAHOST}.conf; fi
+  if [ -f /opt/verb/conf/webserver/sites-available/httpd/${newCAHost}.conf ]; then
+  rm -f /opt/verb/conf/webserver/sites-available/httpd/${newCAHost}.conf; fi
+  if [ -e /etc/httpd/sites-enabled/${newCAHost}.conf ]; then
+  rm -f /etc/httpd/sites-enabled/${newCAHost}.conf; fi
   /opt/verb/serfs/adddomain ${nameTLD} ${nameURI}
   wait
 ### Set up SSL certs based on situation
 #### If not done
-  if /bin/grep -Fq "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${NEWCAURI}; then
-  /bin/echo "Need SSL certs for ${NEWCAURI}. Getting via inkCert-LE (Letsencrypt)..."
-  /opt/verb/serfs/inkcertdole ${NEWCAURI}
+  if /bin/grep -Fq "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${newCAURI}; then
+  /bin/echo "Need SSL certs for ${newCAURI}. Getting via inkCert-LE (Letsencrypt)..."
+  /opt/verb/serfs/inkcertdole ${newCAURI}
   wait
   fi
 #### If domain is already done via inkCert-LE
-  if /bin/grep -Fq "InkCerted=DONE_LE" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${NEWCAURI}; then
-  /bin/echo "Need to update inkCert-LE (Letsencrypt) SSL certs for ${NEWCAURI} to include ${nameTLD}.${NEWCAURI}..."
-  /opt/verb/serfs/inkcertreqle ${NEWCAURI} r
+  if /bin/grep -Fq "InkCerted=DONE_LE" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${newCAURI}; then
+  /bin/echo "Need to update inkCert-LE (Letsencrypt) SSL certs for ${newCAURI} to include ${nameTLD}.${newCAURI}..."
+  /opt/verb/serfs/inkcertreqle ${newCAURI} r
   wait
-  /opt/verb/serfs/inkcertaddallle ${NEWCAURI}
+  /opt/verb/serfs/inkcertaddallle ${newCAURI}
   wait
   fi
 #### If domain is already done via inkCert-CB
   if /bin/grep -Fq "InkCerted=DONE_CB" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${nameURI}; then
-  /bin/echo "Need to update inkCert-CB (Certbot) SSL wildcard certs for ${NEWCAURI} to use ${nameTLD} wildcard certs..."
-  /opt/verb/serfs/inkcertaddcb ${NEWCAURI} ${nameURI}
+  /bin/echo "Need to update inkCert-CB (Certbot) SSL wildcard certs for ${newCAURI} to use ${nameTLD} wildcard certs..."
+  /opt/verb/serfs/inkcertaddcb ${newCAURI} ${nameURI}
   wait
   fi
 ## If the html link doesn't exist but the domain is in a folder on the server.
  else
- /bin/echo "Cute. The domain directory for ${NEWCAHOST} exists, but isn't available in www/html. Fix this how you want and start over, Tiger."
+ /bin/echo "Cute. The domain directory for ${newCAHost} exists, but isn't available in www/html. Fix this how you want and start over, Tiger."
  exit 8
  fi
 fi
 
 # In case web directory already existed and large if-section above was skipped, but still no inkCert
-if /bin/grep -Fq "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${NEWCAURI}; then
-/bin/echo "Need SSL certs for ${NEWCAURI}. Getting via inkCert-LE (Letsencrypt)..."
-/opt/verb/serfs/inkcertdole ${NEWCAURI}
+if /bin/grep -Fq "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${newCAURI}; then
+/bin/echo "Need SSL certs for ${newCAURI}. Getting via inkCert-LE (Letsencrypt)..."
+/opt/verb/serfs/inkcertdole ${newCAURI}
 else
-/bin/echo "And great, ${NEWCAHOST} already has SSL certs..."
+/bin/echo "And great, ${newCAHost} already has SSL certs..."
 fi
 
 # Set up download directories
 ## For inkNet Certs
-/bin/mkdir -p /srv/www/html/${NEWCAHOST}/inknet
-/bin/chown -R www:www /srv/www/html/${NEWCAHOST}
+/bin/mkdir -p /srv/www/html/${newCAHost}/inknet
+/bin/chown -R www:www /srv/www/html/${newCAHost}
 
 # Make/verify the CA directories
 /bin/mkdir -p /opt/verb/conf/inknet/clients
 /bin/mkdir -p /opt/verb/conf/inknet/vrk
 /bin/mkdir -p /opt/verb/conf/inknet/verber
 /bin/mkdir -p /root/.ssh/inknet/ca
-if [ "${USER}" != "root" ]; then
+if [ "${user}" != "root" ]; then
 /bin/mkdir -p ~/.ssh/inknet/ca
 fi
 
@@ -144,12 +144,12 @@ exit 8; fi
 /bin/rm -f /etc/ssh/authorized_keys/root
 /bin/ln -sfn /root/.ssh/authorized_keys /etc/ssh/authorized_keys/root
 ### In case the user is not root
-if [ "${USER}" != "root" ]; then
- if [ -e "/etc/ssh/authorized_keys/${USER}" ] && [ ! -L "/etc/ssh/authorized_keys/${USER}" ]; then
- /bin/echo "/etc/ssh/authorized_keys/${USER} exists, but not as a link. That's not allowed for this configuration. Look at $0 instructions about this directory path for \"\${USER}\"."
+if [ "${user}" != "root" ]; then
+ if [ -e "/etc/ssh/authorized_keys/${user}" ] && [ ! -L "/etc/ssh/authorized_keys/${user}" ]; then
+ /bin/echo "/etc/ssh/authorized_keys/${user} exists, but not as a link. That's not allowed for this configuration. Look at $0 instructions about this directory path for \"\${user}\"."
  exit 8; fi
-/bin/rm -f /etc/ssh/authorized_keys/${USER}
-/bin/ln -sfn ~/.ssh/authorized_keys /etc/ssh/authorized_keys/${USER}
+/bin/rm -f /etc/ssh/authorized_keys/${user}
+/bin/ln -sfn ~/.ssh/authorized_keys /etc/ssh/authorized_keys/${user}
 fi
 
 ######## NO BEING STRANGE
@@ -161,9 +161,9 @@ fi
 ## Comment any previous HostCerts - THEY WILL ConfLICT!! (which probably don't exist, but just in case...)
 /bin/sed -i "s/HostCertificate/#inkVerb-COMMENT HostCertificate/g" /etc/ssh/sshd_config
 ## Add the standard key to the SSH config
-/bin/echo "HostKey /etc/ssh/inknet/in_cav_${NEWCANAME}_key" >> /etc/ssh/sshd_config
+/bin/echo "HostKey /etc/ssh/inknet/in_cav_${newCAname}_key" >> /etc/ssh/sshd_config
 ## Echo in the new settings
-/bin/echo "HostCertificate /etc/ssh/inknet/in_cav_${NEWCANAME}_key-cert.pub" >> /etc/ssh/sshd_config
+/bin/echo "HostCertificate /etc/ssh/inknet/in_cav_${newCAname}_key-cert.pub" >> /etc/ssh/sshd_config
 
 # Reload SSH services
 /bin/systemctl reload ssh
@@ -174,10 +174,10 @@ fi
 # inkNet config, verb.ink
 ## This contains information about this CA Verber's credentials used in signing Verber/Vrk Client SSH keys for inkNet
 
-INKNETSTATUS=\"MADE_INSTALL_READY\"
-IAMCAHOST=\"${NEWCAHOST}\"
-IAMCAURI=\"${NEWCAURI}\"
-IAMCANAME=\"${NEWCANAME}\"
+inkNetStatus=\"MADE_INSTALL_READY\"
+iamCAhost=\"${newCAHost}\"
+IAMCAURI=\"${newCAURI}\"
+iamCAname=\"${newCAname}\"
 " > /opt/verb/conf/inknet/ca.verber.cnf
 
 # Secure the download bundle inknet/ directory

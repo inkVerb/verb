@@ -19,7 +19,7 @@ exit 8; fi
 # Display info
 /bin/echo "Copy and paste the ENTIRE long key below, as is, into the \"Activate Client key\" area on the inkNet CA Inker:
 "
-/bin/cat /opt/ivapp/inknet/sailor/${CLIENTSAILOR}/.ssh/in_cli_${CLIENTNAME}_key.pub
+/bin/cat /opt/ivapp/inknet/sailor/${clientSailor}/.ssh/in_cli_${clientName}_key.pub
 
 
 

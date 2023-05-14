@@ -17,11 +17,11 @@
 
 
 wpdomain=$1
-INSTTYPE=$2
+instType=$2
 
 # Set the default setting
-if [ "${INSTTYPE}" != "dir" ]; then
-INSTTYPE="sub"; fi
+if [ "${instType}" != "dir" ]; then
+instType="sub"; fi
 
 # Check the configs are ready
 if /bin/grep -Fq "define( 'WP_ALLOW_MULTISITE', true );" /srv/www/html/${wpdomain}/wp-config.php; then
@@ -49,7 +49,7 @@ define( 'WP_ALLOW_MULTISITE', true );" > /srv/www/html/${wpdomain}/wp-config.php
 ## Add the settings
 
 ### Subdomain install
-if [ "${INSTTYPE}" = "sub" ]; then
+if [ "${instType}" = "sub" ]; then
 /bin/echo "Using subdomains for the WP Multisite..."
 /bin/echo "
 /* Multisite Settings via inkVerb */
@@ -63,7 +63,7 @@ define('BLOG_ID_CURRENT_SITE', 1);
 fi
 
 ### Directory install
-if [ "${INSTTYPE}" = "dir" ]; then
+if [ "${instType}" = "dir" ]; then
 /bin/echo "Using directories for the WP Multisite..."
 /bin/echo "
 /* Multisite Settings via inkVerb */

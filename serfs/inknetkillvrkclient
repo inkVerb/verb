@@ -7,34 +7,34 @@
 ## ./inknetkillvrkclient [username on machine] [machine name - AKA 'computer name']
 
 
-KILLUSER=$1
-KILLHOST=$2
-KILLMACHINE="$(/bin/echo ${KILLHOST} | sed 's/\./_/g')"
-KILLVRKCLIENT="${KILLUSER}_${KILLMACHINE}"
+KILLuser=$1
+killHost=$2
+KILLMACHINE="$(/bin/echo ${killHost} | sed 's/\./_/g')"
+killVrkClient="${killUser}_${KILLMACHINE}"
 
 if [ -z ${2} ]; then
 /bin/echo "Enter the user, a space, then the machine. Get your machine name with: hostname -f"; exit 5; fi
 
 # Chek if it exists
-if [ ! -e "/opt/verb/conf/inknet/vrk/client.vrk.${KILLVRKCLIENT}.cnf" ]; then
+if [ ! -e "/opt/verb/conf/inknet/vrk/client.vrk.${killVrkClient}.cnf" ]; then
 /bin/echo "That Verber Client doesn't exist here."
 exit 8; fi
 
 # Include the Client's config
-. /opt/verb/conf/inknet/vrk/client.vrk.${KILLVRKCLIENT}.cnf
+. /opt/verb/conf/inknet/vrk/client.vrk.${killVrkClient}.cnf
 
 # Kill the inkNet ivApp user
-userdel -r ${CLIENTUSERNAME}
-/bin/rm -rf /opt/ivapp/inknet/vrker/${CLIENTUSERNAME}
+userdel -r ${clientUsername}
+/bin/rm -rf /opt/ivapp/inknet/vrker/${clientUsername}
 
 # Remove directories
-/bin/rm -f /opt/verb/conf/inknet/vrk/client.vrk.${KILLVRKCLIENT}.cnf
+/bin/rm -f /opt/verb/conf/inknet/vrk/client.vrk.${killVrkClient}.cnf
 
 # Remove the SSH authorized_key file
-/bin/rm -f /etc/ssh/authorized_keys/${CLIENTUSERNAME}
+/bin/rm -f /etc/ssh/authorized_keys/${clientUsername}
 
 # Finish
-/bin/echo "Done. ${KILLVRKCLIENT} pushed overboard and fed to the sharks."
+/bin/echo "Done. ${killVrkClient} pushed overboard and fed to the sharks."
 
 
 

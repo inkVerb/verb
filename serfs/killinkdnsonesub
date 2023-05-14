@@ -26,21 +26,21 @@ if [ -e "/opt/verb/mods/killinkdnsonesub.replace" ]; then . /opt/verb/mods/killi
 if [ -e "/opt/verb/mods/killinkdnsonesub.before" ]; then . /opt/verb/mods/killinkdnsonesub.before; fi # Precedes this script
 
 
-DNSSUBDOM="$1"
-ZONEDIR="inkzones"
+dnsSubDom="$1"
+ZONEdir="inkzones"
 
 # Include the configs
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/siteurilist
 
 # Check if already added
-if ! /bin/grep -Fq "${DNSSUBDOM}.${oneURI}" /opt/verb/conf/inkdns/${ZONEDIR}/db.${oneURI}; then
-/bin/echo "The subdomain ${DNSSUBDOM} has not been added to ${oneURI}. Use inkdnsaddsub to add it."
+if ! /bin/grep -Fq "${dnsSubDom}.${oneURI}" /opt/verb/conf/inkdns/${zonedir}/db.${oneURI}; then
+/bin/echo "The subdomain ${dnsSubDom} has not been added to ${oneURI}. Use inkdnsaddsub to add it."
 exit 0; fi
 
 # Remove the records
-/bin/sed -i "/; Subdomain Records Added by inkDNS ${DNSSUBDOM}\.${oneURI}/,+2d" /opt/verb/conf/inkdns/${ZONEDIR}/db.${oneURI}
-/bin/sed -i "/; PTR Subdomain Records Added by inkDNS ${DNSSUBDOM}\.${oneURI}/,+2d" /opt/verb/conf/inkdns/${ZONEDIR}/nv.${oneURI}
+/bin/sed -i "/; Subdomain Records Added by inkDNS ${dnsSubDom}\.${oneURI}/,+2d" /opt/verb/conf/inkdns/${zonedir}/db.${oneURI}
+/bin/sed -i "/; PTR Subdomain Records Added by inkDNS ${dnsSubDom}\.${oneURI}/,+2d" /opt/verb/conf/inkdns/${zonedir}/nv.${oneURI}
 
 # Set the Serial No
 /opt/verb/serfs/inkdnsserial ${oneURI} verber
@@ -52,7 +52,7 @@ if [ -f "/opt/verb/conf/inkdnsconf" ]; then
 /opt/verb/serfs/inkdnsrefreshbind; fi; fi
 
 # Finish
-/bin/echo "The ONE subdomain ${DNSSUBDOM} has been removed from the DNS zone file."
+/bin/echo "The ONE subdomain ${dnsSubDom} has been removed from the DNS zone file."
 
 
 

@@ -30,50 +30,50 @@ if [ -e "/opt/verb/mods/newboss.before" ]; then . /opt/verb/mods/newboss.before;
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/serverport
 
-NEWBoss=$1
+newBoss=$1
 NEWBossPASS=$2
 
 # Old create new boss user
-# /usr/sbin/adduser ${NEWBoss} --gecos ",,," --disabled-password
-# /bin/echo "${NEWBoss}:${NEWBossPASS}" | chpasswd
-# usermod -a -G sudo ${NEWBoss}
-# usermod -a -G www-data ${NEWBoss}
-# /bin/ln -s /opt/verb/boss /home/${NEWBoss}/
+# /usr/sbin/adduser ${newBoss} --gecos ",,," --disabled-password
+# /bin/echo "${newBoss}:${NEWBossPASS}" | chpasswd
+# usermod -a -G sudo ${newBoss}
+# usermod -a -G www-data ${newBoss}
+# /bin/ln -s /opt/verb/boss /home/${newBoss}/
 
 # Create the new boss user
-/usr/bin/groupadd ${NEWBoss}
-/usr/bin/useradd -g ${NEWBoss} ${NEWBoss}
-/bin/echo "${NEWBoss}:${NEWBossPASS}" | chpasswd
-/usr/bin/usermod -a -G sudo ${NEWBoss}
-/usr/bin/usermod -a -G www ${NEWBoss}
-/usr/bin/mkdir -p /home/${NEWBoss}
-/bin/ln -sfn /opt/verb/boss /home/${NEWBoss}/
+/usr/bin/groupadd ${newBoss}
+/usr/bin/useradd -g ${newBoss} ${newBoss}
+/bin/echo "${newBoss}:${NEWBossPASS}" | chpasswd
+/usr/bin/usermod -a -G sudo ${newBoss}
+/usr/bin/usermod -a -G www ${newBoss}
+/usr/bin/mkdir -p /home/${newBoss}
+/bin/ln -sfn /opt/verb/boss /home/${newBoss}/
 ## User privilege specification
-/usr/bin/setfacl -R -m user:${NEWBoss}:rwx /home/${NEWBoss}  # DEV see if this line works
-/bin/echo '# Added by newboss inkVerb serf' >> /etc/sudoers.d/${NEWBoss}
-/bin/echo "${NEWBoss}  ALL=(ALL:ALL) ALL" >> /etc/sudoers.d/${NEWBoss}
+/usr/bin/setfacl -R -m user:${newBoss}:rwx /home/${newBoss}  # DEV see if this line works
+/bin/echo '# Added by newboss inkVerb serf' >> /etc/sudoers.d/${newBoss}
+/bin/echo "${newBoss}  ALL=(ALL:ALL) ALL" >> /etc/sudoers.d/${newBoss}
 ## Vim preferences
 echo 'nnoremap <C-c> "+y
 vnoremap <C-c> "+y
 nnoremap <C-p> "+p
-vnoremap <C-p> "+p' > /home/${NEWBoss}/.vimrc
+vnoremap <C-p> "+p' > /home/${newBoss}/.vimrc
 ## BASH settings
-/opt/verb/serfs/setbashrc ${NEWBoss}
+/opt/verb/serfs/setbashrc ${newBoss}
 ## Own
-/usr/bin/chown -R ${NEWBoss}:${NEWBoss} /home/${NEWBoss}
+/usr/bin/chown -R ${newBoss}:${newBoss} /home/${newBoss}
 
 # Finished
   if [ "${ServerIPv4}" != "NOIP4" ] && [ "${ServerIPv6}" != "NOIP6" ]; then
-    IPADDRBLOCK="'ssh ${NEWBoss}@${ServerIPv4} -p ${ServerPort} 'or 'ssh ${NEWBoss}@${ServerIPv6} -p ${ServerPort}'"
+    ipAddrBlock="'ssh ${newBoss}@${ServerIPv4} -p ${ServerPort} 'or 'ssh ${newBoss}@${ServerIPv6} -p ${ServerPort}'"
   ## IP4?
   elif [ "${ServerIPv4}" != "NOIP4" ]; then
-    IPADDRBLOCK="'ssh ${NEWBoss}@${ServerIPv4} -p ${ServerPort}'"
+    ipAddrBlock="'ssh ${newBoss}@${ServerIPv4} -p ${ServerPort}'"
   ## IP6?
   elif [ "${ServerIPv6}" != "NOIP6" ]; then
-    IPADDRBLOCK="'ssh ${NEWBoss}@${ServerIPv6} -p ${ServerPort}'"
+    ipAddrBlock="'ssh ${newBoss}@${ServerIPv6} -p ${ServerPort}'"
   fi
-/bin/echo "The boss user ${NEWBoss} has been created.
-Log in using ${IPADDRBLOCK}'
+/bin/echo "The boss user ${newBoss} has been created.
+Log in using ${ipAddrBlock}'
 "
 
 

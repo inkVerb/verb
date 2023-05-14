@@ -32,60 +32,60 @@ if [ -e "/opt/verb/mods/newvipsub.before" ]; then . /opt/verb/mods/newvipsub.bef
 . /opt/verb/conf/siteurilist
 . /opt/verb/conf/servertype
 
-NEWVIPSUB=$1
+newVIPsub=$1
 
 # Web directory
-/bin/cp -r /opt/verb/conf/site-files/newvipsubdir /srv/www/vip/_subs.vip/${NEWVIPSUB}
-/bin/chown -R www:www /srv/www/vip/_subs.vip/${NEWVIPSUB}
+/bin/cp -r /opt/verb/conf/site-files/newvipsubdir /srv/www/vip/_subs.vip/${newVIPsub}
+/bin/chown -R www:www /srv/www/vip/_subs.vip/${newVIPsub}
 
 # Server
 if [ ${ServerType} = "lemp" ]; then
-  /bin/cp -f /opt/verb/conf/site-files/conf/newnginxvipsub.conf /opt/verb/conf/webserver/sites-available/nginx/${NEWVIPSUB}.${vipURI}.conf
-  /bin/sed -i "s/newvipsub/${NEWVIPSUB}/g" /opt/verb/conf/webserver/sites-available/nginx/${NEWVIPSUB}.${vipURI}.conf
-  /bin/sed -i "s/vipURI286/${vipURI}/g" /opt/verb/conf/webserver/sites-available/nginx/${NEWVIPSUB}.${vipURI}.conf
-  /opt/verb/serfs/ensitenginx -r ${NEWVIPSUB}.${vipURI}
+  /bin/cp -f /opt/verb/conf/site-files/conf/newnginxvipsub.conf /opt/verb/conf/webserver/sites-available/nginx/${newVIPsub}.${vipURI}.conf
+  /bin/sed -i "s/newvipsub/${newVIPsub}/g" /opt/verb/conf/webserver/sites-available/nginx/${newVIPsub}.${vipURI}.conf
+  /bin/sed -i "s/vipURI286/${vipURI}/g" /opt/verb/conf/webserver/sites-available/nginx/${newVIPsub}.${vipURI}.conf
+  /opt/verb/serfs/ensitenginx -r ${newVIPsub}.${vipURI}
 elif [ ${ServerType} = "lamp" ]; then
-  /bin/cp -f /opt/verb/conf/site-files/conf/newvipsub.conf /opt/verb/conf/webserver/sites-available/httpd/${NEWVIPSUB}.${vipURI}.conf
-  /bin/sed -i "s/newvipsub/${NEWVIPSUB}/g" /opt/verb/conf/webserver/sites-available/httpd/${NEWVIPSUB}.${vipURI}.conf
-  /bin/sed -i "s/vipURI286/${vipURI}/g" /opt/verb/conf/webserver/sites-available/httpd/${NEWVIPSUB}.${vipURI}.conf
-  /opt/verb/serfs/ensiteapache -r ${NEWVIPSUB}.${vipURI}
+  /bin/cp -f /opt/verb/conf/site-files/conf/newvipsub.conf /opt/verb/conf/webserver/sites-available/httpd/${newVIPsub}.${vipURI}.conf
+  /bin/sed -i "s/newvipsub/${newVIPsub}/g" /opt/verb/conf/webserver/sites-available/httpd/${newVIPsub}.${vipURI}.conf
+  /bin/sed -i "s/vipURI286/${vipURI}/g" /opt/verb/conf/webserver/sites-available/httpd/${newVIPsub}.${vipURI}.conf
+  /opt/verb/serfs/ensiteapache -r ${newVIPsub}.${vipURI}
 elif [ ${ServerType} = "laemp" ]; then
-  /bin/cp -f /opt/verb/conf/site-files/conf/newvipsub.conf /opt/verb/conf/webserver/sites-available/httpd/${NEWVIPSUB}.${vipURI}.conf
-  /bin/sed -i "s/newvipsub/${NEWVIPSUB}/g" /opt/verb/conf/webserver/sites-available/httpd/${NEWVIPSUB}.${vipURI}.conf
-  /bin/sed -i "s/vipURI286/${vipURI}/g" /opt/verb/conf/webserver/sites-available/httpd/${NEWVIPSUB}.${vipURI}.conf
-  /bin/cp -f /opt/verb/conf/site-files/conf/newrpnginxvipsub.conf /opt/verb/conf/webserver/sites-available/nginx/${NEWVIPSUB}.${vipURI}.conf
-  /bin/sed -i "s/newvipsub/${NEWVIPSUB}/g" /opt/verb/conf/webserver/sites-available/nginx/${NEWVIPSUB}.${vipURI}.conf
-  /bin/sed -i "s/vipURI286/${vipURI}/g" /opt/verb/conf/webserver/sites-available/nginx/${NEWVIPSUB}.${vipURI}.conf
-  /opt/verb/serfs/ensiteapache -r ${NEWVIPSUB}.${vipURI}
-  /opt/verb/serfs/ensitenginx -r ${NEWVIPSUB}.${vipURI}
+  /bin/cp -f /opt/verb/conf/site-files/conf/newvipsub.conf /opt/verb/conf/webserver/sites-available/httpd/${newVIPsub}.${vipURI}.conf
+  /bin/sed -i "s/newvipsub/${newVIPsub}/g" /opt/verb/conf/webserver/sites-available/httpd/${newVIPsub}.${vipURI}.conf
+  /bin/sed -i "s/vipURI286/${vipURI}/g" /opt/verb/conf/webserver/sites-available/httpd/${newVIPsub}.${vipURI}.conf
+  /bin/cp -f /opt/verb/conf/site-files/conf/newrpnginxvipsub.conf /opt/verb/conf/webserver/sites-available/nginx/${newVIPsub}.${vipURI}.conf
+  /bin/sed -i "s/newvipsub/${newVIPsub}/g" /opt/verb/conf/webserver/sites-available/nginx/${newVIPsub}.${vipURI}.conf
+  /bin/sed -i "s/vipURI286/${vipURI}/g" /opt/verb/conf/webserver/sites-available/nginx/${newVIPsub}.${vipURI}.conf
+  /opt/verb/serfs/ensiteapache -r ${newVIPsub}.${vipURI}
+  /opt/verb/serfs/ensitenginx -r ${newVIPsub}.${vipURI}
 fi
 
 # inkDNS Zone entry
-/opt/verb/serfs/inkdnsaddvipsub ${NEWVIPSUB} verber
+/opt/verb/serfs/inkdnsaddvipsub ${newVIPsub} verber
 wait
 
 # inkCert, at end of the "domains =" line
-/bin/sed -i "/^domains =/ s/$/, ${NEWVIPSUB}.${vipURI}/" /opt/verb/conf/inkcert/cli-ini/cli.${vipURI}.ini
+/bin/sed -i "/^domains =/ s/$/, ${newVIPsub}.${vipURI}/" /opt/verb/conf/inkcert/cli-ini/cli.${vipURI}.ini
 
 # inkCert status
 ## inkCert-CBSINGLE DONE for parent domain
 if /bin/grep -Fq "InkCerted=DONE_CBSINGLE" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${vipURI}; then
 /bin/echo "FYI: inkCert has already been setup for this subdomain's parent domain with Certbot single-cert. But, that certificate cannot be used with this subdomain.
 
-In summary: ${NEWVIPSUB}.${vipURI} will not have SSL certs until you run:
-  inkcertdocbsingle ${NEWVIPSUB}.${vipURI}
+In summary: ${newVIPsub}.${vipURI} will not have SSL certs until you run:
+  inkcertdocbsingle ${newVIPsub}.${vipURI}
 "
 
 ## inkCert-CBSINGLE DONE for this subdomain
-if /bin/grep -Fq "InkCerted=DONE_CBSINGLE" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${NEWVIPSUB}.${vipURI}; then
+if /bin/grep -Fq "InkCerted=DONE_CBSINGLE" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${newVIPsub}.${vipURI}; then
 /bin/echo "FYI: inkCert has already been setup for this domain with Certbot single-cert, which should technically be impossible since that would normally require running this first.
 
 Try to completely purge this domain with:
-  killdomain ${NEWVIPSUB}.${vipURI}
+  killdomain ${newVIPsub}.${vipURI}
 Or try a gentler way that may not work:
-  inkcertremovecbsingle ${NEWVIPSUB}.${vipURI}
+  inkcertremovecbsingle ${newVIPsub}.${vipURI}
    ...then...
-  inkcertdocbsingle ${NEWVIPSUB}.${vipURI}
+  inkcertdocbsingle ${newVIPsub}.${vipURI}
 "
 
 ## Not setup
@@ -100,7 +100,7 @@ The Letsencrypt certs will include this subdomain next time your Letsencrypt cer
 To refresh and thus get certs for this subdomain, run inkcertreqle for ${vipURI} with the \"r\" option, unless you want to add more subdomains first.
 Note: Don't get Letsencrypt certs for the same core domain.tld too often or Letsencrypt will make you wait to get more.
 
-In summary: ${NEWVIPSUB}.${vipURI} will not have SSL certs until you run:
+In summary: ${newVIPsub}.${vipURI} will not have SSL certs until you run:
   inkcertremovele ${vipURI}
    ...then...
   inkcertdole ${vipURI}
@@ -111,7 +111,7 @@ elif /bin/grep -Fq "InkCerted=DONE_CB" /opt/verb/conf/inkcert/cli-ini/siteinkcer
   /bin/echo "FYI: inkCert has already been setup for this domain with a Certbot wildcard cert.
 Adding that cert now...
 "
-/opt/verb/serfs/inkcertaddcb ${NEWVIPSUB}.${vipURI} ${vipURI}; wait
+/opt/verb/serfs/inkcertaddcb ${newVIPsub}.${vipURI} ${vipURI}; wait
 
 ## inkCert-IC DONE
 elif /bin/grep -Fq "InkCerted=DONE_SC" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${vipURI}; then
@@ -119,11 +119,11 @@ elif /bin/grep -Fq "InkCerted=DONE_SC" /opt/verb/conf/inkcert/cli-ini/siteinkcer
 To refresh and thus get certs for this subdomain, run inkcertreq for ${vipURI} with the \"r\" option, unless you want to add more subdomains first.
 Note: Don't get inkCert certs for the same core domain.tld too often or inkCert will make you wait to get more.
 
-In summary: ${NEWVIPSUB}.${vipURI} will not have SSL certs under the domain until you run:
+In summary: ${newVIPsub}.${vipURI} will not have SSL certs under the domain until you run:
 either...
  inkcertreqsc ${vipURI} r
 or...
- inkcertreqsc ${NEWVIPSUB}.${vipURI}
+ inkcertreqsc ${newVIPsub}.${vipURI}
 "
 fi
 

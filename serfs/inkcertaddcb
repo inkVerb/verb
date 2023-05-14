@@ -65,25 +65,25 @@ fi
 
 # Certs should already be in place from inkcertreqle
 ## This is a test for the inkcert directories:
-if [ ! -e "/etc/inkcert/le/live/${PARENTDOMAIN}/cert.pem" ] || [ ! -e "/etc/inkcert/le/live/${PARENTDOMAIN}/chain.pem" ] || [ ! -e "/etc/inkcert/le/live/${PARENTDOMAIN}/fullchain.pem" ] || [ ! -e "/etc/inkcert/le/live/${PARENTDOMAIN}/privkey.pem" ]; then
+if [ ! -e "/etc/inkcert/le/live/${parentdomain}/cert.pem" ] || [ ! -e "/etc/inkcert/le/live/${parentdomain}/chain.pem" ] || [ ! -e "/etc/inkcert/le/live/${parentdomain}/fullchain.pem" ] || [ ! -e "/etc/inkcert/le/live/${parentdomain}/privkey.pem" ]; then
   if [ "${ServerIPv4}" != "NOIP4" ] && [ "${ServerIPv6}" != "NOIP6" ]; then
-    IPADDRBLOCK="A ${ServerIPv4} and AAAA ${ServerIPv6}"
+    ipAddrBlock="A ${ServerIPv4} and AAAA ${ServerIPv6}"
   ## IP4?
   elif [ "${ServerIPv4}" != "NOIP4" ]; then
-    IPADDRBLOCK="A ${ServerIPv4}"
+    ipAddrBlock="A ${ServerIPv4}"
   ## IP6?
   elif [ "${ServerIPv6}" != "NOIP6" ]; then
-    IPADDRBLOCK="AAAA ${ServerIPv6}"
+    ipAddrBlock="AAAA ${ServerIPv6}"
   fi
 /bin/echo "Something's wrong...
 
-inkCert-Letsencrypt certs were not installed for ${sitedomain} because the ${PARENTDOMAIN} certs don't exist. Common problems can include:
-  - DNS records: ${sitedomain} should point to ${IPADDRBLOCK}
+inkCert-Letsencrypt certs were not installed for ${sitedomain} because the ${parentdomain} certs don't exist. Common problems can include:
+  - DNS records: ${sitedomain} should point to ${ipAddrBlock}
   - DNS for ${sitedomain} may need a \"wildcard\" * CNAME record that points to ${sitedomain} as the \"hostname\"
   - DNS records can take about 4 hours to have effect
   - You need to first run: inkcertreqcbsingle
   - Do not run inkcertreqle for individual subdomains with a shared certificate, but only for: ${blueURI}, inkisaverb.com, etc.
-  - The verb/conf/inkcert/cli-ini/ file for ${PARENTDOMAIN} may not contain the subdomain you are using.
+  - The verb/conf/inkcert/cli-ini/ file for ${parentdomain} may not contain the subdomain you are using.
 "
 exit 8
 fi
@@ -124,7 +124,7 @@ if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
   /bin/sed -i "s/ssl_certificate/#INKVERB-INKCERT-COMMENT-ssl_certificate/g" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf
 
   ## Insert the inkCert certs
-  /bin/sed -i "s/#INKVERB-INKCERT=INK_.*/#INKVERB-INKCERT=DONE_CBSINGLE\n  ssl_certificate\t\/etc\/inkcert\/le\/live\/${PARENTDOMAIN}\/fullchain\.pem;\n  ssl_certificate_key\t\/etc\/inkcert\/le\/live\/${PARENTDOMAIN}\/privkey\.pem;\n  #INKVERB-INKCERT-stop/" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf
+  /bin/sed -i "s/#INKVERB-INKCERT=INK_.*/#INKVERB-INKCERT=DONE_CBSINGLE\n  ssl_certificate\t\/etc\/inkcert\/le\/live\/${parentdomain}\/fullchain\.pem;\n  ssl_certificate_key\t\/etc\/inkcert\/le\/live\/${parentdomain}\/privkey\.pem;\n  #INKVERB-INKCERT-stop/" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf
 
   ## inkCert status & exit
   if [ "${FirstInkCertAddCBSINGLE}" = "NOT_YET" ]; then
@@ -180,7 +180,7 @@ elif [ ${ServerType} = "lamp" ]; then
   /bin/sed -i "s/SSLCertificateKeyFile/#INKVERB-INKCERT-COMMENT-SSLCertificateKeyFile/g" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf
 
   ## Insert the inkCert certs
-  /bin/sed -i "s/#INKVERB-INKCERT=INK_.*/#INKVERB-INKCERT=DONE_CBSINGLE\n  SSLCertificateFile\t\/etc\/inkcert\/le\/live\/${PARENTDOMAIN}\/cert\.pem\n  SSLCertificateKeyFile\t\/etc\/inkcert\/le\/live\/${PARENTDOMAIN}\/privkey\.pem\n  SSLCertificateChainFile\t\/etc\/inkcert\/le\/live\/${PARENTDOMAIN}\/chain\.pem\n  #INKVERB-INKCERT-stop/" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf
+  /bin/sed -i "s/#INKVERB-INKCERT=INK_.*/#INKVERB-INKCERT=DONE_CBSINGLE\n  SSLCertificateFile\t\/etc\/inkcert\/le\/live\/${parentdomain}\/cert\.pem\n  SSLCertificateKeyFile\t\/etc\/inkcert\/le\/live\/${parentdomain}\/privkey\.pem\n  SSLCertificateChainFile\t\/etc\/inkcert\/le\/live\/${parentdomain}\/chain\.pem\n  #INKVERB-INKCERT-stop/" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf
 
   ## inkCert status & exit
   if [ "${FirstInkCertAddCBSINGLE}" = "NOT_YET" ]; then

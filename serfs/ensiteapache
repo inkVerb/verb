@@ -12,7 +12,7 @@
 
 
 # Run as a loop so multiple sites can be enabled in one command, just like a2ensite
-for DOMAIN in $@; do
+for domain in $@; do
   if [ "${domain}" = "-r" ]; then
     continue
   elif [ -e "/etc/httpd/sites-available/${domain}.conf" ] && [ -f "/opt/verb/conf/webserver/sites-available/httpd/${domain}.conf" ]; then

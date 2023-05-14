@@ -13,7 +13,7 @@
 NEWIP4="$1"
 
 # Normal IP
-/bin/sed -i "s:SITEIP=.*:SITEIP=\"${NEWIP4}\":" /opt/verb/conf/servernameip
+/bin/sed -i "s:siteIP=.*:siteIP=\"${NEWIP4}\":" /opt/verb/conf/servernameip
 /bin/sed -i "s:ServerIPv4=.*:ServerIPv4=\"${NEWIP4}\":" /opt/verb/conf/servernameip
 /bin/sed -i "s:${ServerIPv4}:${NEWIP4}:" /etc/hosts
 

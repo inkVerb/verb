@@ -85,8 +85,8 @@ e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 # Backup
 if [ -n "$4" ]; then
-  BACKUPRESTORE=$4
-  /opt/verb/serfs/backupinkvmailrestore ${BACKUPRESTORE}
+  backupRestore=$4
+  /opt/verb/serfs/backupinkvmailrestore ${backupRestore}
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 

@@ -32,21 +32,21 @@ if [ -d /srv/www/vapps/${cVappName} ]; then
 exit 8; fi
 
 # Auto database
-CLEANNAME=$(/bin/echo $cVappName | sed -e 's/\.//g')
+cleanName=$(/bin/echo $cVappName | sed -e 's/\.//g')
 if [ -z ${3} ]; then
-DBPASSWORD=$(/usr/bin/pwgen -s -1 10)
+dBPassword=$(/usr/bin/pwgen -s -1 10)
 else
-DBPASSWORD=$3
+dBPassword=$3
 fi
 if [ -z ${1} ]; then
-DBASE=${CLEANNAME}$(/usr/bin/pwgen -s -1 6)
+dBase=${cleanName}$(/usr/bin/pwgen -s -1 6)
 else
-DBASE=$1
+dBase=$1
 fi
 if [ -z ${2} ]; then
-DBUSER=${DBASE}
+dBaseUser=${dBase}
 else
-DBUSER=$2
+dBaseUser=$2
 fi
 
 # Download as webapp
@@ -62,14 +62,14 @@ e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 # Create the database and credentials
 /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
-CREATE DATABASE ${DBASE} DEFAULT CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_general_ci';
-GRANT ALL PRIVILEGES ON ${DBASE}.* TO '${DBUSER}'@'localhost' IDENTIFIED BY '${DBPASSWORD}';
+CREATE DATABASE ${dBase} DEFAULT CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_general_ci';
+GRANT ALL PRIVILEGES ON ${dBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '${dBPassword}';
 FLUSH PRIVILEGES;"
 
 # Write the config for backup
-/bin/echo "APPDBASE=${DBASE}
-APPDDBUSR=${DBUSER}
-APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.${cVappName}
+/bin/echo "APPdBase=${dBase}
+appDDBUsr=${dBaseUser}
+appDDBPass=${dBPassword}" > /opt/verb/conf/vapp.${cVappName}
 
 # php-fpm
 /usr/bin/mkdir -p /var/run/nextcloud
@@ -178,9 +178,9 @@ sed -i "s/if (PHP_VERSION_ID >=.*/if (PHP_VERSION_ID >= 90000) {/" /srv/www/vapp
 <?php
 \$AUTOConfIG = array(
   'dbtype'        => 'mysql',
-  'dbname'        => '${DBASE}',
-  'dbuser'        => '${DBUSER}',
-  'dbpass'        => '${DBPASSWORD}',
+  'dbname'        => '${dBase}',
+  'dbuser'        => '${dBaseUser}',
+  'dbpass'        => '${dBPassword}',
   'dbhost'        => 'localhost',
   'dbtableprefix' => '',
   'directory'     => '/srv/www/vapps/nextcloud/data'

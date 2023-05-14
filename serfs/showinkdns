@@ -11,16 +11,16 @@
 
 domain="$1"
 if [ -n $2 ] && [ "$2" = "verber" ]; then
-  ZONEDIR="inkzones"
+  ZONEdir="inkzones"
 else
-  ZONEDIR="zones"
+  ZONEdir="zones"
 fi
 
 /bin/echo "Zone file:"
-/bin/cat /opt/verb/conf/inkdns/${ZONEDIR}/db.${domain}
+/bin/cat /opt/verb/conf/inkdns/${zonedir}/db.${domain}
 /bin/echo "#######"
 /bin/echo "Inverse lookup file:"
-/bin/cat /opt/verb/conf/inkdns/${ZONEDIR}/nv.${domain}
+/bin/cat /opt/verb/conf/inkdns/${zonedir}/nv.${domain}
 
 
 

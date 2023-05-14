@@ -45,8 +45,8 @@ subdomain=$1
 olddomain=$2
 
 # Check if it already exists
-if [ -f /opt/verb/conf/webserver/sites-available/httpd/${SUBDOMAIN}.${OLDDOMAIN}.conf ]; then
- if [ -f /etc/httpd/sites-enabled/${SUBDOMAIN}.${OLDDOMAIN}.conf ]; then
+if [ -f /opt/verb/conf/webserver/sites-available/httpd/${subdomain}.${olddomain}.conf ]; then
+ if [ -f /etc/httpd/sites-enabled/${subdomain}.${olddomain}.conf ]; then
    /bin/echo "That subdomain already exists."
    exit 7
  else
@@ -56,115 +56,115 @@ if [ -f /opt/verb/conf/webserver/sites-available/httpd/${SUBDOMAIN}.${OLDDOMAIN}
 fi
 
 # Check the domain shell
-if [ ! -f /opt/verb/conf/inkcert/cli-ini/siteinkcert.${OLDDOMAIN} ]; then
-  /bin/echo "The shell for ${OLDDOMAIN} does not exist yet. Creating it..."
-  /opt/verb/serfs/newdomainshell ${OLDDOMAIN}
+if [ ! -f /opt/verb/conf/inkcert/cli-ini/siteinkcert.${olddomain} ]; then
+  /bin/echo "The shell for ${olddomain} does not exist yet. Creating it..."
+  /opt/verb/serfs/newdomainshell ${olddomain}
   wait
 fi
 
 # Server config files
 ## Web directory
-if [ ! -d /srv/www/domains/${SUBDOMAIN}.${OLDDOMAIN} ]; then
-  /bin/cp -rf /opt/verb/conf/site-files/newdomain.tld /srv/www/domains/${SUBDOMAIN}.${OLDDOMAIN}
+if [ ! -d /srv/www/domains/${subdomain}.${olddomain} ]; then
+  /bin/cp -rf /opt/verb/conf/site-files/newdomain.tld /srv/www/domains/${subdomain}.${olddomain}
 fi
-  /bin/ln -s /srv/www/domains/${SUBDOMAIN}.${OLDDOMAIN} /srv/www/html/
-  /bin/chown -R www:www /srv/www/html/${SUBDOMAIN}.${OLDDOMAIN}
-  /bin/chown -R www:www /srv/www/domains/${SUBDOMAIN}.${OLDDOMAIN}
-  /bin/chmod -R 750 /srv/www/domains/${SUBDOMAIN}.${OLDDOMAIN}
+  /bin/ln -s /srv/www/domains/${subdomain}.${olddomain} /srv/www/html/
+  /bin/chown -R www:www /srv/www/html/${subdomain}.${olddomain}
+  /bin/chown -R www:www /srv/www/domains/${subdomain}.${olddomain}
+  /bin/chmod -R 750 /srv/www/domains/${subdomain}.${olddomain}
 ## Copy
 if [ ${ServerType} = "lemp" ]; then
-  /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxdomain.tld.conf /opt/verb/conf/webserver/sites-available/nginx/${SUBDOMAIN}.${OLDDOMAIN}.conf
-  /bin/sed -i "s/newdomain.tld/${SUBDOMAIN}.${OLDDOMAIN}/g" /opt/verb/conf/webserver/sites-available/nginx/${SUBDOMAIN}.${OLDDOMAIN}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxdomain.tld.conf /opt/verb/conf/webserver/sites-available/nginx/${subdomain}.${olddomain}.conf
+  /bin/sed -i "s/newdomain.tld/${subdomain}.${olddomain}/g" /opt/verb/conf/webserver/sites-available/nginx/${subdomain}.${olddomain}.conf
   ## Server
-  /opt/verb/serfs/ensitenginx -r ${SUBDOMAIN}.${OLDDOMAIN}
+  /opt/verb/serfs/ensitenginx -r ${subdomain}.${olddomain}
 elif [ ${ServerType} = "lamp" ]; then
-  /usr/bin/cp /opt/verb/conf/site-files/conf/newdomain.tld.conf /opt/verb/conf/webserver/sites-available/httpd/${SUBDOMAIN}.${OLDDOMAIN}.conf
-  /bin/sed -i "s/newdomain.tld/${SUBDOMAIN}.${OLDDOMAIN}/g" /opt/verb/conf/webserver/sites-available/httpd/${SUBDOMAIN}.${OLDDOMAIN}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newdomain.tld.conf /opt/verb/conf/webserver/sites-available/httpd/${subdomain}.${olddomain}.conf
+  /bin/sed -i "s/newdomain.tld/${subdomain}.${olddomain}/g" /opt/verb/conf/webserver/sites-available/httpd/${subdomain}.${olddomain}.conf
   ## Server
-  /opt/verb/serfs/ensiteapache -r ${SUBDOMAIN}.${OLDDOMAIN}
+  /opt/verb/serfs/ensiteapache -r ${subdomain}.${olddomain}
 elif [ ${ServerType} = "laemp" ]; then
-  /usr/bin/cp /opt/verb/conf/site-files/conf/newdomain.tld.conf /opt/verb/conf/webserver/sites-available/httpd/${SUBDOMAIN}.${OLDDOMAIN}.conf
-  /usr/bin/cp /opt/verb/conf/site-files/conf/newrpnginxdomain.tld.conf /opt/verb/conf/webserver/sites-available/nginx/${SUBDOMAIN}.${OLDDOMAIN}.conf
-  /bin/sed -i "s/newdomain.tld/${SUBDOMAIN}.${OLDDOMAIN}/g" /opt/verb/conf/webserver/sites-available/httpd/${SUBDOMAIN}.${OLDDOMAIN}.conf
-  /bin/sed -i "s/newdomain.tld/${SUBDOMAIN}.${OLDDOMAIN}/g" /opt/verb/conf/webserver/sites-available/nginx/${SUBDOMAIN}.${OLDDOMAIN}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newdomain.tld.conf /opt/verb/conf/webserver/sites-available/httpd/${subdomain}.${olddomain}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newrpnginxdomain.tld.conf /opt/verb/conf/webserver/sites-available/nginx/${subdomain}.${olddomain}.conf
+  /bin/sed -i "s/newdomain.tld/${subdomain}.${olddomain}/g" /opt/verb/conf/webserver/sites-available/httpd/${subdomain}.${olddomain}.conf
+  /bin/sed -i "s/newdomain.tld/${subdomain}.${olddomain}/g" /opt/verb/conf/webserver/sites-available/nginx/${subdomain}.${olddomain}.conf
   ## Server
-  /opt/verb/serfs/ensiteapache -r ${SUBDOMAIN}.${OLDDOMAIN}
-  /opt/verb/serfs/ensitenginx -r ${SUBDOMAIN}.${OLDDOMAIN}
+  /opt/verb/serfs/ensiteapache -r ${subdomain}.${olddomain}
+  /opt/verb/serfs/ensitenginx -r ${subdomain}.${olddomain}
 fi
 
 # inkDNS
-/opt/verb/serfs/inkdnsaddsub ${SUBDOMAIN} ${OLDDOMAIN}
+/opt/verb/serfs/inkdnsaddsub ${subdomain} ${olddomain}
 wait
 
 # inkCert-LE
 ## This adds the declared domain to the end of the "domains =" line
-/bin/sed -i "s/, ${SUBDOMAIN}.${OLDDOMAIN}//g" /opt/verb/conf/inkcert/cli-ini/cli.${OLDDOMAIN}.ini
-/bin/sed -i "/^domains =/ s/$/, ${SUBDOMAIN}.${OLDDOMAIN}/" /opt/verb/conf/inkcert/cli-ini/cli.${OLDDOMAIN}.ini
+/bin/sed -i "s/, ${subdomain}.${olddomain}//g" /opt/verb/conf/inkcert/cli-ini/cli.${olddomain}.ini
+/bin/sed -i "/^domains =/ s/$/, ${subdomain}.${olddomain}/" /opt/verb/conf/inkcert/cli-ini/cli.${olddomain}.ini
 
 # inkCert status
 ## inkCert-CBSINGLE DONE for parent domain
-if /bin/grep -Fq "InkCerted=DONE_CBSINGLE" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${OLDDOMAIN}; then
+if /bin/grep -Fq "InkCerted=DONE_CBSINGLE" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${olddomain}; then
 /bin/echo "FYI: inkCert has already been setup for this subdomain's parent domain with Certbot single-cert. But, that certificate cannot be used with this subdomain.
 
-In summary: ${SUBDOMAIN}.${OLDDOMAIN} will not have SSL certs until you run:
-  inkcertdocbsingle ${SUBDOMAIN}.${OLDDOMAIN}
+In summary: ${subdomain}.${olddomain} will not have SSL certs until you run:
+  inkcertdocbsingle ${subdomain}.${olddomain}
 "
 
 ## inkCert-CBSINGLE DONE for this subdomain
-if /bin/grep -Fq "InkCerted=DONE_CBSINGLE" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${SUBDOMAIN}.${OLDDOMAIN}; then
+if /bin/grep -Fq "InkCerted=DONE_CBSINGLE" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${subdomain}.${olddomain}; then
   /bin/echo "FYI: inkCert has already been setup for this domain with Certbot single-cert, which should technically be impossible since that would normally require running this first.
 
 Try to completely purge this domain with:
-  killdomain ${SUBDOMAIN}.${OLDDOMAIN}
+  killdomain ${subdomain}.${olddomain}
 Or try a gentler way that may not work:
-  inkcertremovecbsingle ${SUBDOMAIN}.${OLDDOMAIN}
+  inkcertremovecbsingle ${subdomain}.${olddomain}
    ...then...
-  inkcertdocbsingle ${SUBDOMAIN}.${OLDDOMAIN}
+  inkcertdocbsingle ${subdomain}.${olddomain}
 "
 
 ## Not setup
-elif /bin/grep -Fq "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${OLDDOMAIN}; then
+elif /bin/grep -Fq "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${olddomain}; then
   /bin/echo "FYI: inkCert has NOT YET been setup for this domain, which is probably what you want.
-Once all set up, you are ready to run inkCert for ${OLDDOMAIN}, if you haven't already or unless you want to add more subdomains first."
+Once all set up, you are ready to run inkCert for ${olddomain}, if you haven't already or unless you want to add more subdomains first."
 
 ## inkCert-LE DONE
-elif /bin/grep -Fq "InkCerted=DONE_LE" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${OLDDOMAIN}; then
+elif /bin/grep -Fq "InkCerted=DONE_LE" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${olddomain}; then
   /bin/echo "FYI: inkCert has already been setup for this domain with Letsencrypt. So, your other certs will need inkCert-LE certs also.
 The Letsencrypt certs will include this subdomain next time your Letsencrypt certs renew. But, that hasn't happened yet.
-To refresh and thus get certs for this subdomain, run inkcertreqle for ${OLDDOMAIN} with the \"r\" option, unless you want to add more subdomains first.
+To refresh and thus get certs for this subdomain, run inkcertreqle for ${olddomain} with the \"r\" option, unless you want to add more subdomains first.
 Note: Don't get Letsencrypt certs for the same core domain.tld too often or Letsencrypt will make you wait to get more.
 
-In summary: ${SUBDOMAIN}.${OLDDOMAIN} will not have SSL certs until you run:
-  inkcertremovele ${OLDDOMAIN}
+In summary: ${subdomain}.${olddomain} will not have SSL certs until you run:
+  inkcertremovele ${olddomain}
    ...then...
-  inkcertdole ${OLDDOMAIN}
+  inkcertdole ${olddomain}
 "
 
 ## inkCert-CB DONE
-elif /bin/grep -Fq "InkCerted=DONE_CB" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${OLDDOMAIN}; then
+elif /bin/grep -Fq "InkCerted=DONE_CB" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${olddomain}; then
   /bin/echo "FYI: inkCert has already been setup for this domain with a Certbot wildcard cert.
 Adding that cert now...
 "
-/opt/verb/serfs/inkcertaddcb ${SUBDOMAIN} ${OLDDOMAIN}; wait
+/opt/verb/serfs/inkcertaddcb ${subdomain} ${olddomain}; wait
 
 ## inkCert-IC DONE
-elif /bin/grep -Fq "InkCerted=DONE_SC" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${OLDDOMAIN}; then
+elif /bin/grep -Fq "InkCerted=DONE_SC" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${olddomain}; then
   /bin/echo "FYI: inkCert has already been setup for this domain from inkCert self-cert. So, your other certs will need inkCert self certs also.
-To refresh and thus get certs for this subdomain, run inkcertreq for ${OLDDOMAIN} with the \"r\" option, unless you want to add more subdomains first.
+To refresh and thus get certs for this subdomain, run inkcertreq for ${olddomain} with the \"r\" option, unless you want to add more subdomains first.
 Note: Don't get inkCert certs for the same core domain.tld too often or inkCert will make you wait to get more.
 
-In summary: ${SUBDOMAIN}.${OLDDOMAIN} will not have SSL certs under the domain until you run:
+In summary: ${subdomain}.${olddomain} will not have SSL certs under the domain until you run:
 either...
- inkcertreqsc ${OLDDOMAIN} r
+ inkcertreqsc ${olddomain} r
 or...
- inkcertreqsc ${SUBDOMAIN}.${OLDDOMAIN}
+ inkcertreqsc ${subdomain}.${olddomain}
 "
 fi
 
 # Finish
 /bin/echo "There is no inkDKIM email record for this specific subdomain, unless you want to add one with newinkdkim. That's if you want your subdomain in an email address.
 
-${SUBDOMAIN}.${OLDDOMAIN} is good to go!"
+${subdomain}.${olddomain} is good to go!"
 
 
 

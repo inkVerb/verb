@@ -22,10 +22,10 @@ First run, according to instructions: inknetmakeverberclient
 exit 0; fi
 
 INPCAVERBERHOST=$1
-NEWCAVERBERURI="$(/bin/echo ${NEWCAVERBERHOST} | rev | cut -d'.' -f-3 | rev)"
-NEWCAVERBERNAME="$(/bin/echo ${INPCAVERBERHOST} | sed 's/\./_/g')"
-NEWCAVERBERHOST="$(/bin/echo ${NEWCAVERBERNAME} | sed 's/_/\./g')"
-NEWCAVERBERIP=$2
+NEWcaVerberURI="$(/bin/echo ${newCAverberHost} | rev | cut -d'.' -f-3 | rev)"
+NEWcaVerberName="$(/bin/echo ${INPCAVERBERHOST} | sed 's/\./_/g')"
+newCAverberHost="$(/bin/echo ${newCAverberName} | sed 's/_/\./g')"
+NEWcaVerberIP=$2
 
 # Set configs
 ## For the secondary CA Verber
@@ -33,19 +33,19 @@ NEWCAVERBERIP=$2
 # inkNet config, verb.ink
 ## This contains information about this a secondary CA Verber
 
-CAVERBERHOST=\"${NEWCAVERBERHOST}\"
-CAVERBERURI=\"${NEWCAVERBERURI}\"
-CAVERBERNAME=\"${NEWCAVERBERNAME}\"
-CAVERBERIP=\"${NEWCAVERBERIP}\"
-CLIENTSAILOR=\"NOT_SET\"
-" > /opt/verb/conf/inknet/2cav.${NEWCAVERBERNAME}.cnf
+CAVERBERHOST=\"${newCAverberHost}\"
+caVerberURI=\"${newCAverberURI}\"
+caVerberName=\"${newCAverberName}\"
+caVerberIP=\"${newCAverberIP}\"
+clientSailor=\"NOT_SET\"
+" > /opt/verb/conf/inknet/2cav.${newCAverberName}.cnf
 
 # inkNet ivApp Sailor (to login to the CA Verber)
-/opt/verb/serfs/inknetivappnewclientsailor ${NEWCAVERBERHOST}
+/opt/verb/serfs/inknetivappnewclientsailor ${newCAverberHost}
 wait
 
 # Finish
-/bin/echo "The secondary CA Verber credentials have been added for ${NEWCAVERBERNAME} at ${NEWCAVERBERHOST}.${NEWCAVERBERURI} with IP ${NEWCAVERBERIP}
+/bin/echo "The secondary CA Verber credentials have been added for ${newCAverberName} at ${newCAverberHost}.${newCAverberURI} with IP ${newCAverberIP}
 Now run inknetnewverber2clientkey"
 
 

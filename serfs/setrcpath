@@ -16,19 +16,19 @@
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/servermailpath
 
-RCFOLDER=$1
+rcFolder=$1
 
-if [ "${ServerBoxPath}" = "${RCFOLDER}" ]; then
+if [ "${ServerBoxPath}" = "${rcFolder}" ]; then
   echo "Folder already taken by box."
   exit 7
 fi
 
 /bin/rm -rf /srv/www/html/${ServerEmailTLD}.box
 /bin/cp -R /srv/www/html/0ne /srv/www/html/${ServerEmailTLD}.box
-/bin/ln -s /srv/www/email/roundcube /srv/www/html/${ServerEmailTLD}.box/${RCFOLDER}
+/bin/ln -s /srv/www/email/roundcube /srv/www/html/${ServerEmailTLD}.box/${rcFolder}
 /bin/chown -R www:www /srv/www/html/${ServerEmailTLD}.box
-/bin/sed -i "s/ServerRCPath=.*/ServerRCPath=\"${RCFOLDER}\"/g" /opt/verb/conf/servermailpass
-/bin/sed -i "s/\$Conf\['footer_link'\] = 'https:\/\/.*/\$Conf\['footer_link'\] = 'https:\/\/box\.${ServerName}\.verb\.${ServerEmailTLD}\/${RCFOLDER}';/g" /srv/www/email/postfixadmin/config.inc.php
+/bin/sed -i "s/ServerRCPath=.*/ServerRCPath=\"${rcFolder}\"/g" /opt/verb/conf/servermailpass
+/bin/sed -i "s/\$Conf\['footer_link'\] = 'https:\/\/.*/\$Conf\['footer_link'\] = 'https:\/\/box\.${ServerName}\.verb\.${ServerEmailTLD}\/${rcFolder}';/g" /srv/www/email/postfixadmin/config.inc.php
 
 
 

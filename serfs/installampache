@@ -15,9 +15,9 @@ cVappName=ampache
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/siteurilist
 
-DBASE=$1
-DBUSER=$2
-DBPASSWORD=$3
+dBase=$1
+dBaseUser=$2
+dBPassword=$3
 
 # Install
 cd /srv/www/vapps || exit 6
@@ -30,48 +30,48 @@ e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 # Auto database
 if [ -z ${3} ]; then
-DBPASSWORD=$(/usr/bin/pwgen -s -1 10); fi
+dBPassword=$(/usr/bin/pwgen -s -1 10); fi
 if [ -z ${1} ]; then
-DBASE=${cVappName}$(/usr/bin/pwgen -s -1 6); fi
+dBase=${cVappName}$(/usr/bin/pwgen -s -1 6); fi
 if [ -z ${2} ]; then
-DBUSER=${DBASE}; fi
+dBaseUser=${dBase}; fi
 
 # Create the database user and credentials
 /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
-CREATE DATABASE  ${DBASE};
-GRANT ALL PRIVILEGES ON *.* TO '${DBUSER}'@'localhost' IDENTIFIED BY '${DBPASSWORD}' WITH GRANT OPTION;
+CREATE DATABASE  ${dBase};
+GRANT ALL PRIVILEGES ON *.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '${dBPassword}' WITH GRANT OPTION;
 FLUSH PRIVILEGES;"
 
 # Ampache config file
 ## All of this works, but fools the app into thinking it is fully installed
 #cp /srv/www/vapps/ampache/config/ampache.cfg.php.dist /srv/www/vapps/ampache/config/ampache.cfg.php
-#sed -i "s/database_name = ampache/database_name = ${DBASE}/g" /srv/www/vapps/ampache/config/ampache.cfg.php
-#sed -i "s/database_username = username/database_username = ${DBUSER}/g" /srv/www/vapps/ampache/config/ampache.cfg.php
-#sed -i "s/database_password = password/database_password = ${DBPASSWORD}/g" /srv/www/vapps/ampache/config/ampache.cfg.php
+#sed -i "s/database_name = ampache/database_name = ${dBase}/g" /srv/www/vapps/ampache/config/ampache.cfg.php
+#sed -i "s/database_username = username/database_username = ${dBaseUser}/g" /srv/www/vapps/ampache/config/ampache.cfg.php
+#sed -i "s/database_password = password/database_password = ${dBPassword}/g" /srv/www/vapps/ampache/config/ampache.cfg.php
 ## Add the tables to the database
-#mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${DBASE} < /srv/www/vapps/ampache/sql/ampache.sql
+#mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${dBase} < /srv/www/vapps/ampache/sql/ampache.sql
 
 # Write the config for backup
 /bin/echo "#!/bin/bash
-APPDBASE=${DBASE}
-APPDDBUSR=${DBUSER}
-APPDDBPAS=${DBPASSWORD}" > /opt/verb/conf/vapp.${cVappName}
+APPdBase=${dBase}
+appDDBUsr=${dBaseUser}
+appDDBPass=${dBPassword}" > /opt/verb/conf/vapp.${cVappName}
 
 /bin/echo "These are setup:
 
-Database Name: ${DBASE}
+Database Name: ${dBase}
 MySQL Hostname: localhost
 MySQL port: (leave blank)
-MySQL Administrative Username: ${DBUSER} (not root)
-MySQL Administrative Password: ${DBPASSWORD}
+MySQL Administrative Username: ${dBaseUser} (not root)
+MySQL Administrative Password: ${dBPassword}
 
 *UnCheck \"Create Database\"
 *Check \"Create Tables (ampache.sql)\" (no change)
 *Check \"Create Database User\"
  ...and enter this information:
 
-Ampache Database Username:	${DBUSER}
-Ampache Database User Password:	${DBPASSWORD}
+Ampache Database Username:	${dBaseUser}
+Ampache Database User Password:	${dBPassword}
 
 *Click \"Insert Database\"
 
