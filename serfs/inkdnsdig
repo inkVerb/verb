@@ -29,7 +29,7 @@ dependencyinstall=( inkdnsinstall )
 prerequesite=(  )
 usedby=( inkdnsdigverbs "adddomain - via donjon/digdomain.sh" )
 useserfs=(  )
-useconfigs=( inkdnsconf servertldstatus )
+useconfigs=( inkdnsconf servernameip )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/inkdnsdig.replace" ]; then . /opt/verb/mods/inkdnsdig.replace; return 0; fi # Replaces this script
 if [ -e "/opt/verb/mods/inkdnsdig.before" ]; then . /opt/verb/mods/inkdnsdig.before; fi # Precedes this script
@@ -42,7 +42,7 @@ fi
 
 # Include the configs
 . /opt/verb/conf/inkdnsconf
-. /opt/verb/conf/servertldstatus
+. /opt/verb/conf/servernameip
 
 
 # Argument check
@@ -55,28 +55,26 @@ domain="$1"
 
 # Check mail?
 if [ -n "$2" ] && [ "$2" = "mail" ]; then
-  /usr/bin/dig ${domain} ns | /usr/bin/grep "${ServerNS1DNS}" || /usr/bin/echo "No NS record for ${ServerNS1DNS} " && exit 4
-  /usr/bin/dig ${domain} ns | /usr/bin/grep "${ServerNS2DNS}" || /usr/bin/echo "No NS record for ${ServerNS2DNS} " && exit 4
-  /usr/bin/dig ${domain} mx | /usr/bin/grep MX | /usr/bin/grep "mail.${domain}." || /usr/bin/echo "No MX record for ${domain} " && exit 4
-  /usr/bin/dig inkdkim._domainkey.${domain} txt | /usr/bin/grep TXT | /usr/bin/grep "inkdkim" || /usr/bin/echo "No TXT record for DKIM " && exit 4
-  /usr/bin/dig ${domain} a | /usr/bin/grep A | /usr/bin/grep "${ServerIPv4}" || /usr/bin/echo "No A record for ${ServerIPv4} " && exit 4
-  /usr/bin/dig ${domain} aaaa | /usr/bin/grep AAAA | /usr/bin/grep "${ServerIPv6}" || /usr/bin/echo "No AAAA record for ${ServerIPv6} " && exit 4
-  /usr/bin/dig mail.${domain} a | /usr/bin/grep A | /usr/bin/grep "${ServerIPv4}" || /usr/bin/echo "No A record for ${ServerIPv4} " && exit 4
-  /usr/bin/dig mail.${domain} aaaa | /usr/bin/grep AAAA | /usr/bin/grep "${ServerIPv6}" || /usr/bin/echo "No AAAA record for ${ServerIPv6} " && exit 4
-  /usr/bin/dig smtp.${domain} a | /usr/bin/grep A | /usr/bin/grep "${ServerIPv4}" || /usr/bin/echo "No A record for ${ServerIPv4} " && exit 4
-  /usr/bin/dig smtp.${domain} aaaa | /usr/bin/grep AAAA | /usr/bin/grep "${ServerIPv6}" || /usr/bin/echo "No AAAA record for ${ServerIPv6} " && exit 4
-  /usr/bin/dig imap.${domain} a | /usr/bin/grep A | /usr/bin/grep "${ServerIPv4}" || /usr/bin/echo "No A record for ${ServerIPv4} " && exit 4
-  /usr/bin/dig imap.${domain} aaaa | /usr/bin/grep AAAA | /usr/bin/grep "${ServerIPv6}" || /usr/bin/echo "No AAAA record for ${ServerIPv6} " && exit 4
-  /usr/bin/dig pop3.${domain} a | /usr/bin/grep A | /usr/bin/grep "${ServerIPv4}" || /usr/bin/echo "No A record for ${ServerIPv4} " && exit 4
-  /usr/bin/dig pop3.${domain} aaaa | /usr/bin/grep AAAA | /usr/bin/grep "${ServerIPv6}" || /usr/bin/echo "No AAAA record for ${ServerIPv6} " && exit 4
+  /usr/bin/dig ${domain} ns | /usr/bin/grep "${ServerNS1DNS}" || ( /usr/bin/echo "No NS record for ${ServerNS1DNS}" && exit 4 )
+  /usr/bin/dig ${domain} ns | /usr/bin/grep "${ServerNS2DNS}" || ( /usr/bin/echo "No NS record for ${ServerNS2DNS}" && exit 4 )
+  /usr/bin/dig ${domain} mx | /usr/bin/grep MX | /usr/bin/grep "mail.${domain}." || ( /usr/bin/echo "No MX record for ${domain}" && exit 4 )
+  /usr/bin/dig inkdkim._domainkey.${domain} txt | /usr/bin/grep TXT | /usr/bin/grep "inkdkim" || ( /usr/bin/echo "No TXT record for DKIM" && exit 4 )
+  /usr/bin/dig ${domain} a | /usr/bin/grep A | /usr/bin/grep "${ServerIPv4}" || ( /usr/bin/echo "No A record for ${ServerIPv4}" && exit 4 )
+  /usr/bin/dig ${domain} aaaa | /usr/bin/grep AAAA | /usr/bin/grep "${ServerIPv6}" || ( /usr/bin/echo "No AAAA record for ${ServerIPv6}" && exit 4 )
+  /usr/bin/dig mail.${domain} a | /usr/bin/grep A | /usr/bin/grep "${ServerIPv4}" || ( /usr/bin/echo "No A record for ${ServerIPv4}" && exit 4 )
+  /usr/bin/dig mail.${domain} aaaa | /usr/bin/grep AAAA | /usr/bin/grep "${ServerIPv6}" || ( /usr/bin/echo "No AAAA record for ${ServerIPv6} " && exit 4 )
+  /usr/bin/dig smtp.${domain} a | /usr/bin/grep A | /usr/bin/grep "${ServerIPv4}" || ( /usr/bin/echo "No A record for ${ServerIPv4}" && exit 4 )
+  /usr/bin/dig smtp.${domain} aaaa | /usr/bin/grep AAAA | /usr/bin/grep "${ServerIPv6}" || ( /usr/bin/echo "No AAAA record for ${ServerIPv6} " && exit 4 )
+  /usr/bin/dig imap.${domain} a | /usr/bin/grep A | /usr/bin/grep "${ServerIPv4}" || ( /usr/bin/echo "No A record for ${ServerIPv4}" && exit 4 )
+  /usr/bin/dig imap.${domain} aaaa | /usr/bin/grep AAAA | /usr/bin/grep "${ServerIPv6}" || ( /usr/bin/echo "No AAAA record for ${ServerIPv6} " && exit 4 )
+  /usr/bin/dig pop3.${domain} a | /usr/bin/grep A | /usr/bin/grep "${ServerIPv4}" || ( /usr/bin/echo "No A record for ${ServerIPv4}" && exit 4 )
+  /usr/bin/dig pop3.${domain} aaaa | /usr/bin/grep AAAA | /usr/bin/grep "${ServerIPv6}" || ( /usr/bin/echo "No AAAA record for ${ServerIPv6}" && exit 4 )
 else
-  /usr/bin/dig ${domain} ns | /usr/bin/grep "${ServerNS1DNS}" || /usr/bin/echo "No NS record for ${ServerNS1DNS} " && exit 4
-  /usr/bin/dig ${domain} ns | /usr/bin/grep "${ServerNS2DNS}" || /usr/bin/echo "No NS record for ${ServerNS2DNS} " && exit 4
-  /usr/bin/dig ${domain} a | /usr/bin/grep A | /usr/bin/grep "${ServerIPv4}" || /usr/bin/echo "No A record for ${ServerIPv4} " && exit 4
-  /usr/bin/dig ${domain} aaaa | /usr/bin/grep AAAA | /usr/bin/grep "${ServerIPv6}" || /usr/bin/echo "No AAAA record for ${ServerIPv6} " && exit 4
+  /usr/bin/dig ${domain} ns | /usr/bin/grep "${ServerNS1DNS}" || ( /usr/bin/echo "No NS record for ${ServerNS1DNS}" && exit 4 )
+  /usr/bin/dig ${domain} ns | /usr/bin/grep "${ServerNS2DNS}" || ( /usr/bin/echo "No NS record for ${ServerNS2DNS}" && exit 4 )
+  /usr/bin/dig ${domain} a | /usr/bin/grep A | /usr/bin/grep "${ServerIPv4}" || ( /usr/bin/echo "No A record for ${ServerIPv4} " && exit 4 )
+  /usr/bin/dig ${domain} aaaa | /usr/bin/grep AAAA | /usr/bin/grep "${ServerIPv6}" || ( /usr/bin/echo "No AAAA record for ${ServerIPv6} " && exit 4 )
 fi
-
-
 
 
 if [ -e "/opt/verb/mods/inkdnsdig.after" ]; then . /opt/verb/mods/inkdnsdig.after; fi # Follows this script
