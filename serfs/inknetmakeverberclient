@@ -92,7 +92,7 @@ fi
 # inkNet config, verb.ink
 ## This contains information about this Client Verber's credentials used in signing SSH keys for inkNet on another CA Verber
 
-CAVERBERHOST=\"${newCAverberHost}\"
+caVerberHost=\"${newCAverberHost}\"
 caVerberURI=\"${newCAverberURI}\"
 caVerberName=\"${newCAverberName}\"
 caVerberIP=\"${newCAverberIP}\"

@@ -47,18 +47,18 @@ DATESTAMP="$(date '+%Y%m%d')"
 ### Make sure we have a count file
 if [ ! -f "/opt/verb/conf/inkdns/serial" ]; then
 /bin/echo "0" > /opt/verb/conf/inkdns/serial; fi
-OLDSERIAL="$(/bin/cat /opt/verb/conf/inkdns/serial)"
+oldSerial="$(/bin/cat /opt/verb/conf/inkdns/serial)"
 ### Keep it to two digits
-if [ "${OLDSERIAL}" -gt "98" ]; then
-OLDSERIAL="0"; fi
+if [ "${oldSerial}" -gt "98" ]; then
+oldSerial="0"; fi
 ### Keep the digits double
-NEWSERIAL=$(expr ${OLDSERIAL} + 1)
-if [ "${NEWSERIAL}" -le "9" ]; then
-NEWSERIAL="0${NEWSERIAL}"; fi
+newSerial=$(expr ${oldSerial} + 1)
+if [ "${newSerial}" -le "9" ]; then
+newSerial="0${newSerial}"; fi
 ### Record the serial
-/bin/echo "${NEWSERIAL}" > /opt/verb/conf/inkdns/serial
+/bin/echo "${newSerial}" > /opt/verb/conf/inkdns/serial
 ## Create a datestamp-based serial number to the second (how inkVerb does it)
-SERNO="${DATESTAMP}${NEWSERIAL}\t\t; Serial No"
+SERNO="${DATESTAMP}${newSerial}\t\t; Serial No"
 ## Set it in the files
 /bin/sed -i "/; Serial No/c ${SERNO}" /opt/verb/conf/inkdns/${zonedir}/db.${DNsdnsDomainAIN}
 

@@ -22,13 +22,13 @@
 
 
 CA2URI=$1
-SECONDARYCAVNAME="$(/bin/echo ${CA2URI} | sed 's/\./_/g')"
+secondaryCAvName="$(/bin/echo ${CA2URI} | sed 's/\./_/g')"
 
 # Include the config
 if [ -z ${1} ]; then
 . /opt/verb/conf/inknet/rink.client.cnf
 else
-. /opt/verb/conf/inknet/2cav.${SECONDARYCAVNAME}.cnf
+. /opt/verb/conf/inknet/2cav.${secondaryCAvName}.cnf
 fi
 
 # Check to acknowledge if already added
@@ -52,7 +52,7 @@ if [ -f /etc/ssh/inknet/in_ca_${caVerberName}_key.pub ]; then
 /bin/mv /etc/ssh/inknet/in_ca_${caVerberName}_key.pub /etc/ssh/inknet/in_ca_${caVerberName}_key-vbak.pub
 fi
 ## Get the new key
-/usr/bin/wget -q https://${CAVERBERHOST}/inknet/in_ca_${caVerberName}_key.pub --no-check-certificate
+/usr/bin/wget -q https://${caVerberHost}/inknet/in_ca_${caVerberName}_key.pub --no-check-certificate
 ## Check if done correctly 
 if [ -f in_ca_${caVerberName}_key.pub ]; then
 /bin/rm -f /etc/ssh/inknet/in_ca_${caVerberName}_key-vbak.pub

@@ -18,9 +18,9 @@
 
 appName=$1
 if [ -z "$2" ] || [ "$2" = "-nl" ]; then
-SECNAME=$(/usr/bin/pwgen -s -1 12)
+secName=$(/usr/bin/pwgen -s -1 12)
 else
-SECNAME=$2
+secName=$2
 fi
 
 # Include the configs
@@ -31,7 +31,7 @@ fi
 # Export the database
 cd /srv/www/vip || exit 6
 /opt/verb/serfs/mysqlex ${appDBase}; wait
-/bin/mv /srv/www/vip/sql/${appDBase}.sql /srv/www/vip/sql/verb.${appDBase}.${SECNAME}.vbak.sql
+/bin/mv /srv/www/vip/sql/${appDBase}.sql /srv/www/vip/sql/verb.${appDBase}.${secName}.vbak.sql
 
 # Finish
 if [ "$3" = "-nl" ] || [ "$2" = "-nl" ]; then
@@ -42,11 +42,11 @@ Note that the app remains live.
 exit 0
 fi
 
-/bin/ln -sfn /srv/www/vip/sql/verb.${appDBase}.${SECNAME}.vbak.sql /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/
-/bin/chown -R www:www /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/verb.${appDBase}.${SECNAME}.vbak.sql
+/bin/ln -sfn /srv/www/vip/sql/verb.${appDBase}.${secName}.vbak.sql /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/
+/bin/chown -R www:www /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/verb.${appDBase}.${secName}.vbak.sql
 /bin/echo "The database for ${appName} has been backed up and can be downloaded at:
 
-https://${ServerServePath}/verb.${appDBase}.${SECNAME}.vbak.sql
+https://${ServerServePath}/verb.${appDBase}.${secName}.vbak.sql
 
 Note that the app remains live.
 "

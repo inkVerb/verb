@@ -19,9 +19,9 @@
 
 appName=$1
 if [ -z "$2" ]; then
-SECNAME=$(/usr/bin/pwgen -s -1 12)
+secName=$(/usr/bin/pwgen -s -1 12)
 else
-SECNAME=$2
+secName=$2
 fi
 
 # Check if installed
@@ -45,8 +45,8 @@ cd /srv/www/vapps/${appName}/ || exit 6
 # Pack the directory
 cd /srv/www/vapps || exit 6
 /opt/verb/serfs/vtxzin ${appName}
-/bin/mv ${appName}.txz verb.${appName}.${SECNAME}.vbak
-/bin/mv verb.${appName}.${SECNAME}.vbak /srv/www/vip/
+/bin/mv ${appName}.txz verb.${appName}.${secName}.vbak
+/bin/mv verb.${appName}.${secName}.vbak /srv/www/vip/
 
 # Finish
 if [ "$3" = "-nl" ]; then
@@ -57,11 +57,11 @@ Note that the app remains live.
 exit 0
 fi
 
-/bin/ln -sfn /srv/www/vip/verb.${appName}.${SECNAME}.vbak /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/
-/bin/chown -R www:www /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/verb.${appName}.${SECNAME}.vbak
+/bin/ln -sfn /srv/www/vip/verb.${appName}.${secName}.vbak /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/
+/bin/chown -R www:www /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/verb.${appName}.${secName}.vbak
 /bin/echo "${appName} has been backed up to the 'vip' folder and can also be downloaded at:
 
-http://${ServerServePath}/verb.${appName}.${SECNAME}.vbak
+http://${ServerServePath}/verb.${appName}.${secName}.vbak
 
 Note that the app remains live.
 "

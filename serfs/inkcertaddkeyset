@@ -14,11 +14,11 @@
 ## ./inkcertaddkeyset [domain.tld] [req.domain.tld.filename.ict]
 
 domain=$1
-ICTFILENAME=$2
+icTFileName=$2
 
 # Unpack the file
 cd /etc/inkcert || exit 6
-/bin/mv ${ICTFILENAME} ${domain}.txz
+/bin/mv ${icTFileName} ${domain}.txz
 /opt/verb/serfs/vtxzout ${domain}
 /bin/mv ${domain} req/
 

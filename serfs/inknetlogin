@@ -34,7 +34,7 @@ SAILCOMMAND=$2
 # Login
 ##DEV: Done by the user ${clientSailor} with no password. This may not be executed correctly. Delete this DEV note if this script works.
 ## Follow these instructions https://www.cyberciti.biz/open-source/command-line-hacks/linux-run-command-as-different-user/
-runuser -l ${clientSailor} -c "ssh -o HostName=${CAVERBERHOST} -p ${CLIENTPORT} ${clientUsername}@${caVerberIP}"
+runuser -l ${clientSailor} -c "ssh -o HostName=${caVerberHost} -p ${CLIENTPORT} ${clientUsername}@${caVerberIP}"
 /bin/echo "Done."
 
 

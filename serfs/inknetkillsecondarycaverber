@@ -12,8 +12,8 @@
 ## ./inknetaddsecondarycaverber ink2_ink_inkisaverb_com (for Domain Verber mod)
 
 
-FULLKILLNAME=$1
-killCAVerberName=$(/bin/echo $FULLKILLNAME | cut -c1-18)
+fullKillName=$1
+killCAVerberName=$(/bin/echo $fullKillName | cut -c1-18)
 
 /bin/rm /opt/verb/conf/inknet/2cav.${killCAVerberName}.cnf
 

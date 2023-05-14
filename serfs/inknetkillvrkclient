@@ -9,8 +9,8 @@
 
 KILLuser=$1
 killHost=$2
-KILLMACHINE="$(/bin/echo ${killHost} | sed 's/\./_/g')"
-killVrkClient="${killUser}_${KILLMACHINE}"
+killMachine="$(/bin/echo ${killHost} | sed 's/\./_/g')"
+killVrkClient="${killUser}_${killMachine}"
 
 if [ -z ${2} ]; then
 /bin/echo "Enter the user, a space, then the machine. Get your machine name with: hostname -f"; exit 5; fi

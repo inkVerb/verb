@@ -11,18 +11,18 @@
 
 ADDINIVuser=$1
 ADDINIVPASS=$2
-ADDINIVConf=$3
+addInivConf=$3
 
 # Check if installed
 if [ ! -d "/opt/ivapp/inknet" ]; then
 /bin/echo "ivApp is not instlled yet. I quit."; exit 8; fi
 
 # Add the user
-/opt/verb/donjon/ivapp/ivappadduser ${addInivUser} ${ADDINIVPASS} /opt/verb/conf/inknet/ivinknet-${ADDINIVConf}.conf
+/opt/verb/donjon/ivapp/ivappadduser ${addInivUser} ${ADDINIVPASS} /opt/verb/conf/inknet/ivinknet-${addInivConf}.conf
 wait
 
 # Include the user type config
-. /opt/verb/conf/inknet/ivinknet-${ADDINIVConf}.conf
+. /opt/verb/conf/inknet/ivinknet-${addInivConf}.conf
 
 # Create the inkNet Client tool links
 /bin/rm -rf /opt/ivapp/inknet/${IvappGroupDir}/${addInivUser}/tools

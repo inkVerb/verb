@@ -23,8 +23,8 @@ fi
 
 # Specific information
 if [ -n "$2" ]; then
-	PARAM=$2
-	echo "${PARAM}: ${!PARAM[*]}"
+	param=$2
+	echo "${param}: ${!param[*]}"
 # All information
 else
 	echo "${serf} :: Information"

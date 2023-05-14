@@ -15,9 +15,9 @@
 
 
 if [ -z "$1" ]; then
-SECNAME=$(/usr/bin/pwgen -s -1 12)
+secName=$(/usr/bin/pwgen -s -1 12)
 else
-SECNAME=$1
+secName=$1
 fi
 
 # Check if installed
@@ -40,8 +40,8 @@ cd /srv/www/vapps/nextcloud/data || exit 6
 # Pack the data directory
 cd /srv/www/vapps/nextcloud || exit 6
 /opt/verb/serfs/vtxzin data
-/bin/mv data.txz verb.nextcloud.${SECNAME}.vbak
-/bin/mv verb.nextcloud.${SECNAME}.vbak /srv/www/vip/
+/bin/mv data.txz verb.nextcloud.${secName}.vbak
+/bin/mv verb.nextcloud.${secName}.vbak /srv/www/vip/
 
 # Finish
 if [ "$2" = "-nl" ]; then
@@ -52,11 +52,11 @@ Note that the app remains live.
 exit 0
 fi
 
-/bin/ln -sfn /srv/www/vip/verb.nextcloud.${SECNAME}.vbak /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/
-/bin/chown -R www:www /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/verb.nextcloud.${SECNAME}.vbak
+/bin/ln -sfn /srv/www/vip/verb.nextcloud.${secName}.vbak /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/
+/bin/chown -R www:www /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/verb.nextcloud.${secName}.vbak
 /bin/echo "Nextcloud has been backed up to the 'vip' folder and can also be downloaded at:
 
-http://${ServerServePath}/verb.nextcloud.${SECNAME}.vbak
+http://${ServerServePath}/verb.nextcloud.${secName}.vbak
 
 Note that the app remains live.
 "

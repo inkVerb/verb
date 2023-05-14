@@ -29,14 +29,14 @@ if [ -z "${secpath}" ]; then
 /bin/echo "You aren't entering the path. I quit."; exit 5; fi
 
 # Download the package
-/usr/bin/wget -q https://${CAVERBERHOST}/inknet/${secpath}/${clientName}.ink --no-check-certificate
+/usr/bin/wget -q https://${caVerberHost}/inknet/${secpath}/${clientName}.ink --no-check-certificate
 
 # Unpack
 /bin/mv ${clientName}.ink ${clientName}.txz
 /opt/verb/serfs/vtxzout ${clientName}
 /bin/rm -f ${clientName}.txz
 . ~/${clientName}/verbername
-/bin/cp ~/${clientName}/client.verber.${clientName}.cnf /opt/verb/conf/inknet/client.${VERBERNAME}.rink.login.cnf
+/bin/cp ~/${clientName}/client.verber.${clientName}.cnf /opt/verb/conf/inknet/client.${verberName}.rink.login.cnf
 /bin/rm -rf ${clientName}
 
 # Finish

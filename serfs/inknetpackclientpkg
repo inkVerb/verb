@@ -66,12 +66,12 @@ secpath=$(/usr/bin/pwgen -1 -s 10)
 if [ "${Vtype}" = "vrk" ]; then
 /bin/cp /opt/verb/conf/inknet/vrk/client.vrk.${vcname}.cnf ~/.ssh/inknet/${vcname}/
 /bin/echo "#!/bin/bash
-VERBERNAME=${iamCAname}" > ~/.ssh/inknet/${vcname}/verbername
+verberName=${iamCAname}" > ~/.ssh/inknet/${vcname}/verbername
 fi
 if [ "${Vtype}" = "verber" ]; then
 /bin/cp /opt/verb/conf/inknet/verber/client.verber.${vcname}.cnf ~/.ssh/inknet/${vcname}/
 /bin/echo "#!/bin/bash
-VERBERNAME=${iamCAname}" > ~/.ssh/inknet/${vcname}/verbername
+verberName=${iamCAname}" > ~/.ssh/inknet/${vcname}/verbername
 fi
 cd ~/.ssh/inknet/ || exit 6
 /opt/verb/serfs/vtxzin ${vcname}
@@ -90,13 +90,13 @@ if [ "${CLIENTIP}" = "NOT_SET" ]; then
  Require valid-user
 </Files>
 " > /srv/www/html/${iamCAhost}/inknet/${secpath}/.htaccess
-SECNAME=$(/usr/bin/pwgen -1 -s 15)
+secName=$(/usr/bin/pwgen -1 -s 15)
 SECPASS=$(/usr/bin/pwgen -1 -s 15)
-/bin/echo "${SECNAME}:${SECPASS}" > /srv/www/html/${iamCAhost}/inknet/${secpath}/.htpasswd
+/bin/echo "${secName}:${SECPASS}" > /srv/www/html/${iamCAhost}/inknet/${secpath}/.htpasswd
 /bin/echo "Great! Now, hurry up and get the file from this URL:
  https://${iamCAhost}/${secpath}/inknet/${vcname}.ink
 
- Login:    ${SECNAME}
+ Login:    ${secName}
  Password: ${SECPASS}
 
  It expires in about 30 minutes, so hurry!

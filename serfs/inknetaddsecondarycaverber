@@ -21,9 +21,9 @@ First run, according to instructions: inknetmakeverberclient
 "
 exit 0; fi
 
-INPCAVERBERHOST=$1
+INPcaVerberHost=$1
 NEWcaVerberURI="$(/bin/echo ${newCAverberHost} | rev | cut -d'.' -f-3 | rev)"
-NEWcaVerberName="$(/bin/echo ${INPCAVERBERHOST} | sed 's/\./_/g')"
+NEWcaVerberName="$(/bin/echo ${inpCAverberHost} | sed 's/\./_/g')"
 newCAverberHost="$(/bin/echo ${newCAverberName} | sed 's/_/\./g')"
 NEWcaVerberIP=$2
 
@@ -33,7 +33,7 @@ NEWcaVerberIP=$2
 # inkNet config, verb.ink
 ## This contains information about this a secondary CA Verber
 
-CAVERBERHOST=\"${newCAverberHost}\"
+caVerberHost=\"${newCAverberHost}\"
 caVerberURI=\"${newCAverberURI}\"
 caVerberName=\"${newCAverberName}\"
 caVerberIP=\"${newCAverberIP}\"
