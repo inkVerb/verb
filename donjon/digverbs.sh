@@ -13,4 +13,5 @@ e="$?"; [[ "$e" = "0" ]] || exit "$e"
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 /usr/bin/rm -f /opt/verb/dig/digverbs-*
+if [ "$(/usr/bin/ls /opt/verb/dig)" = "" ]; then /usr/bin/rm -rf /opt/verb/dig; fi
 /usr/bin/rm -f /etc/cron.d/digverbs
