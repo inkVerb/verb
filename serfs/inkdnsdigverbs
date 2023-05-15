@@ -20,7 +20,7 @@ voptflags=(  )
 voptflagpurpose=(  )
 dependencyinstall=( inkdnsinstall )
 prerequesite=(  )
-usedby=( "setup - via donjon/digverbs.sh" )
+usedby=( "setup - via cron -> donjon/digverbs.sh" )
 useserfs=( inkdnsdig )
 useconfigs=( inkdnsconf servertldstatus siteurilist )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
@@ -39,26 +39,26 @@ fi
 . /opt/verb/conf/servertldstatus
 
 # Primary VPS host
-/opt/verb/serfs/inkdnsdigverbs ${nameURI} mail; e="$?"; [[ "$e" = "0" ]] || exit "$e"
+/opt/verb/inkdnsdig ${nameURI} mail; e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 if [ ${VERBemail} = "true" ]; then
-  /opt/verb/serfs/inkdnsdigverbs ${emailURI}; e="$?"; [[ "$e" = "0" ]] || exit "$e"
+  /opt/verb/inkdnsdig ${emailURI}; e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 if [ ${VERBone} = "true" ]; then
-  /opt/verb/serfs/inkdnsdigverbs ${oneURI}; e="$?"; [[ "$e" = "0" ]] || exit "$e"
+  /opt/verb/inkdnsdig ${oneURI}; e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 if [ ${VERBink} = "true" ]; then
-  /opt/verb/serfs/inkdnsdigverbs ${inkURI}; e="$?"; [[ "$e" = "0" ]] || exit "$e"
+  /opt/verb/inkdnsdig ${inkURI}; e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 if [ ${VERBblue} = "true" ]; then
-  /opt/verb/serfs/inkdnsdigverbs ${blueURI}; e="$?"; [[ "$e" = "0" ]] || exit "$e"
+  /opt/verb/inkdnsdig ${blueURI}; e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 if [ ${VERBvip} = "true" ]; then
-  /opt/verb/serfs/inkdnsdigverbs ${vipURI}; e="$?"; [[ "$e" = "0" ]] || exit "$e"
+  /opt/verb/inkdnsdig ${vipURI}; e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 if [ ${VERBkiwi} = "true" ]; then
-  /opt/verb/serfs/inkdnsdigverbs ${kiwiURI}; e="$?"; [[ "$e" = "0" ]] || exit "$e"
+  /opt/verb/inkdnsdig ${kiwiURI}; e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 if [ ${VERBred} = "true" ]; then
-  /opt/verb/serfs/inkdnsdigverbs ${redURI}; e="$?"; [[ "$e" = "0" ]] || exit "$e"
+  /opt/verb/inkdnsdig ${redURI}; e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi

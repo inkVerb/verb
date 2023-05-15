@@ -106,9 +106,12 @@ cd /etc/ssl/server || exit 6
 /bin/chmod 600 /etc/ssl/server/dhparams.pem
 cd $OLDPWD || exit 6
 
-## Apache
+# Apache
 /usr/bin/pacman -S --noconfirm --needed apache
 if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
+if [ ! -d "/etc/httpd" ]; then echo "Apache installed, but /etc/httpd does not exist!"; exit 6; fi
+
+## Apache Settings
 /usr/bin/sed -i "s?#LoadModule proxy_module modules/mod_proxy.so?LoadModule proxy_module modules/mod_proxy.so?" /etc/httpd/conf/httpd.conf
 /usr/bin/sed -i "s?#LoadModule proxy_fcgi_module modules/mod_proxy_fcgi.so?LoadModule proxy_fcgi_module modules/mod_proxy_fcgi.so?" /etc/httpd/conf/httpd.conf
 /usr/bin/sed -i "s?^LoadModule mpm_event_module modules/mod_mpm_event.so?#LoadModule mpm_event_module modules/mod_mpm_event.so?" /etc/httpd/conf/httpd.conf
@@ -117,12 +120,14 @@ if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 /usr/bin/sed -i "s?#LoadModule rewrite_module modules/mod_rewrite.so?LoadModule rewrite_module modules/mod_rewrite.so?" /etc/httpd/conf/httpd.conf
 /usr/bin/sed -i "s?User http?User www?" /etc/httpd/conf/httpd.conf
 /usr/bin/sed -i "s?Group http?Group www?" /etc/httpd/conf/httpd.conf
+
 /usr/bin/cat <<'EOF' > /etc/httpd/conf/extra/php-fpm.conf
 DirectoryIndex index.htm index.html index.php
 <FilesMatch \.php$>
   SetHandler "proxy:unix:/run/php-fpm/php-fpm.sock|fcgi://localhost/"
 </FilesMatch>
 EOF
+
 /usr/bin/echo "
 # Added by inkVerb Verber #
 Include conf/extra/php-fpm.conf
@@ -130,8 +135,7 @@ Protocols h2 http/1.1
 
 # Include the virtual host configurations:
 IncludeOptional /etc/httpd/sites-enabled/*.conf" >> /etc/httpd/conf/httpd.conf
-/usr/bin/mkdir -p /opt/verb/conf/webserver/sites-available/httpd /opt/verb/conf/webserver/sites-enabled/httpd /etc/httpd
-/usr/bin/cp /opt/verb/inst/webserver/laemp-httpd-sites-available/*.conf /opt/verb/conf/webserver/sites-available/httpd/
+
 /usr/bin/cat <<'EOF' > /srv/http/index.htm
 <!DOCTYPE html>
 <html>
@@ -140,14 +144,10 @@ IncludeOptional /etc/httpd/sites-enabled/*.conf" >> /etc/httpd/conf/httpd.conf
 </html>
 EOF
 
-## New Apache & Nginx site-files
-/usr/bin/cp /opt/verb/inst/webserver/laemp-conf/* /opt/verb/conf/site-files/conf/
-
-## Nginx
+# Nginx
 /usr/bin/pacman -S --noconfirm --needed nginx
 if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
-/usr/bin/mkdir -p /opt/verb/conf/webserver/sites-available/nginx /opt/verb/conf/webserver/sites-enabled/nginx /etc/nginx
-/usr/bin/cp /opt/verb/inst/webserver/laemp-nginx-sites-available/*.conf /opt/verb/conf/webserver/sites-available/nginx/
+/usr/bin/mkdir -p /etc/nginx
 
 ## Nginx Settings
 /usr/bin/cat <<'EOF' > /etc/nginx/nginx.conf
@@ -221,20 +221,6 @@ EOF
 </html>
 EOF
 /usr/bin/chown -R www:www /etc/nginx/default
-
-## Site files
-if [ -d "/opt/verb/conf/webserver/sites-available/httpd" ] && [ -d "/opt/verb/conf/webserver/sites-enabled/httpd" ] && [ -d "/etc/httpd" ]; then
-  /usr/bin/ln -sfn /opt/verb/conf/webserver/sites-available/httpd /etc/httpd/sites-available
-  /usr/bin/ln -sfn /opt/verb/conf/webserver/sites-enabled/httpd /etc/httpd/sites-enabled
-else
-  /usr/bin/echo 'httpd config folder does not exist!'; exit 4
-fi
-if [ -d "/opt/verb/conf/webserver/sites-available/nginx" ] && [ -d "/opt/verb/conf/webserver/sites-enabled/nginx" ] && [ -d "/etc/nginx" ]; then
-  /usr/bin/ln -sfn /opt/verb/conf/webserver/sites-available/nginx /etc/nginx/sites-available
-  /usr/bin/ln -sfn /opt/verb/conf/webserver/sites-enabled/nginx /etc/nginx/sites-enabled
-else
-  /usr/bin/echo 'nginx config folder does not exist!'; exit 4
-fi
 
 ## PHP
 /usr/bin/pacman -S --noconfirm --needed php php-fpm
@@ -418,7 +404,7 @@ if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 /usr/bin/systemctl start monit; wait
 
 # Server type
-/usr/bin/echo 'ServerType="laemp"' > /opt/verb/conf/servertype
+/usr/bin/echo 'ServerType="laemp"' > /opt/verb/inst/servertype
 
 # Pre-install Go (may be redundand as Go is a dependency in make-preverber)
 /usr/bin/pacman -S --noconfirm --needed go

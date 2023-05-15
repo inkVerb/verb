@@ -106,11 +106,10 @@ cd /etc/ssl/server || exit 6
 /usr/bin/chmod 600 /etc/ssl/server/dhparams.pem
 cd $OLDPWD || exit 6
 
-## Nginx
+# Nginx
 /usr/bin/pacman -S --noconfirm --needed nginx
 if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
-/usr/bin/mkdir -p /opt/verb/conf/webserver/sites-available/nginx /opt/verb/conf/webserver/sites-enabled/nginx /etc/nginx
-/usr/bin/cp /opt/verb/inst/webserver/lemp-sites-available/*.conf /opt/verb/conf/webserver/sites-available/nginx/
+/usr/bin/mkdir -p /etc/nginx
 
 ## Nginx Settings
 /usr/bin/cat <<'EOF' > /etc/nginx/nginx.conf
@@ -184,14 +183,6 @@ EOF
 </html>
 EOF
 /usr/bin/chown -R www:www /etc/nginx/default
-
-## Site files
-if [ -d "/opt/verb/conf/webserver/sites-available/nginx" ] && [ -d "/opt/verb/conf/webserver/sites-enabled/nginx" ] && [ -d "/etc/nginx" ]; then
-  /usr/bin/ln -sfn /opt/verb/conf/webserver/sites-available/nginx /etc/nginx/sites-available
-  /usr/bin/ln -sfn /opt/verb/conf/webserver/sites-enabled/nginx /etc/nginx/sites-enabled
-else
-  /usr/bin/echo 'nginx config folder does not exist!'; exit 4
-fi
 
 ## PHP
 /usr/bin/pacman -S --noconfirm --needed php php-fpm
@@ -339,7 +330,7 @@ sed -i "s?#  include /etc/monit.d?  include /etc/monit.d?" /etc/monitrc
 /usr/bin/systemctl start monit; wait
 
 # Server type
-/usr/bin/echo 'ServerType="lemp"' > /opt/verb/conf/servertype
+/usr/bin/echo 'ServerType="lemp"' > /opt/verb/inst/servertype
 
 # Pre-install Go (may be redundand as Go is a dependency in make-preverber)
 /usr/bin/pacman -S --noconfirm --needed go
