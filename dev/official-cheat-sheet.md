@@ -264,29 +264,6 @@ Make a snapshot of each:
 
 After the snapshots are finished, you may destroy the Verber VPS instance, but not the Rink
 
-> **Snapshot Updates**
-> Anytime before running `setup`, you may update `pacman` packages and the verb framework on this pre-setup 'arch-premade' verber snapshot with this: 
-> 
-> *(Note that the update will only affect verb actions that have not already been taken, for a fully up-to-date pre-`setup` verber, clone from arch-rink or arch-keyed and start installing from the beginning)*
-> 
-> | **Verber/Rink pre-setup** #
-> 
-> ```console
-> /opt/verb/inst/update-snapshot
-> ```
-> 
-> ...which is a shortcut for:
-> 
-> ```console
-> /opt/verb/inst/update-pre-setup
-> /usr/bin/pacman -Sy archlinux-keyring --noconfirm
-> /usr/bin/pacman -Syyu --noconfirm
-> /usr/bin/pacman -Qdt --noconfirm
-> /usr/bin/pacman -Scc --noconfirm
-> /usr/bin/su worker -c '/usr/bin/yay -Syyu --noconfirm'
-> /usr/bin/su worker -c '/usr/bin/yay -Scc --noconfirm'
-> ```
-
 Snapshots and Rink are now ready for production and re-production
 
 4. Whitelist the IP for this Rink
