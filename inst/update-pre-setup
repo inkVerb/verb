@@ -1,6 +1,7 @@
 #!/bin/bash
 #inkVerbMaker! verb.ink
 
+#DEV This is defunct, may not work properly, and may be depreciated altogether
 # This usees the verb repo to get updates scripts in:
 ## verb/inst/
 ## verb/donjon/
@@ -57,12 +58,6 @@ fi
 if [ ! -f "/opt/verb/inst/ink.set" ]; then
   /usr/bin/rm -f /opt/tmp/verb/inst/ink.set
 fi
-
-# Web folders
-/usr/bin/rm -rf /opt/tmp/verb/conf/site-files/conf
-/usr/bin/cp -rf /opt/verb/conf/site-files/conf /opt/tmp/verb/conf/site-files/
-/usr/bin/rm -rf /opt/tmp/verb/conf/webserver
-/usr/bin/cp -rf /opt/verb/conf/webserver /opt/tmp/verb/conf/
 
 # Ink CLI tool
 /usr/bin/rm -rf /opt/tmp/verb/ink

@@ -423,6 +423,15 @@ fi
 /bin/ln -sfn /usr/share/zoneinfo/${phpcity} /etc/localtime
 
 # Site settings
+## ink CLI tool
+/usr/bin/mv /opt/verb/inst/ink.set /opt/verb/ink/
+/usr/bin/sed -i 's:vDir=.*:vDir="/opt/verb":' /opt/verb/ink/ink.set
+/usr/bin/mkdir -p /opt/verb/ink/log
+/usr/bin/touch /opt/verb/ink/log/inklog
+/usr/bin/touch /opt/verb/ink/log/outputlog
+/usr/bin/ln -sfn /opt/verb/ink/log /var/log/ink
+/usr/bin/ln -sfn /opt/verb/ink/ink /usr/local/bin/
+/usr/bin/chmod 755 /usr/local/bin/ink
 ## Configs
 /usr/bin/mv /opt/verb/inst/mysqlrootpassword /opt/verb/conf/
 /usr/bin/mv /opt/verb/inst/servertype /opt/verb/conf/
