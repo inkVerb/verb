@@ -32,16 +32,16 @@ exit 8; fi
 
 # swap size
 if [ -z "$1" ]; then
-SWAPSIZEMAKE="2"
+swapsizemake="2"
 else
-SWAPSIZEMAKE="$1"
+swapsizemake="$1"
 fi
 
 # MySQL root password
 if [ -z "$2" ]; then
-MYSQLPASS=$(/usr/bin/pwgen -0 -1 -A -B 11)
+mysqlpass=$(/usr/bin/pwgen -0 -1 -A -B 11)
 else
-MYSQLPASS="$2"
+mysqlpass="$2"
 fi
 
 # MySQL boss password
@@ -60,7 +60,7 @@ fi
 /usr/bin/su worker -c '/usr/bin/yay -Syyu --noconfirm --needed'
 
 # Swap
-/opt/verb/serfs/setswapsize ${SWAPSIZEMAKE}; wait
+/opt/verb/serfs/setswapsize ${swapsizemake}; wait
 ## Enable swap at next startup
 /usr/bin/echo "/var/swap.img    none    swap    sw    0    0" >> /etc/fstab
 
@@ -79,7 +79,7 @@ fi
 /usr/bin/ln -sfn /opt/verb /root/
 
 # Record the MySQL root password
-/usr/bin/echo "${MYSQLPASS}" > /opt/verb/conf/mysqlrootpassword
+/usr/bin/echo "${mysqlpass}" > /opt/verb/conf/mysqlrootpassword
 
 #  LAEMP Server
 ## Web directory
@@ -310,10 +310,10 @@ if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 /usr/bin/systemctl enable mariadb; wait
 /usr/bin/systemctl start mariadb; wait
 ## Set password before securing
-/usr/bin/mysql -e "SET PASSWORD FOR root@localhost = PASSWORD('${MYSQLPASS}');FLUSH PRIVILEGES;"
+/usr/bin/mysql -e "SET PASSWORD FOR root@localhost = PASSWORD('${mysqlpass}');FLUSH PRIVILEGES;"
 ## Secure
 /usr/bin/mysql_secure_installation <<EOF
-${MYSQLPASS}
+${mysqlpass}
 y
 n
 y
@@ -322,7 +322,7 @@ y
 y
 EOF
 ## Alternate method of above Secure
-#/usr/bin/printf "${MYSQLPASS}\n y\n n\n y\n y\n y\n y\n" | /usr/bin/mysql_secure_installation
+#/usr/bin/printf "${mysqlpass}\n y\n n\n y\n y\n y\n y\n" | /usr/bin/mysql_secure_installation
 
 ## MySQL conf for Postfix Admin
 #/bin/echo "##### Added by inkVerb ######
@@ -377,7 +377,7 @@ if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 
 #DEV moved to setup
 # # MySQL superuser to auto-create databases
-# /usr/bin/mysql -uroot -p${MYSQLPASS} -e "
+# /usr/bin/mysql -uroot -p${mysqlpass} -e "
 # CREATE USER mysqlboss@localhost;
 # SET PASSWORD FOR mysqlboss@localhost=PASSWORD('${MYSQLBossPASS}');
 # GRANT ALL PRIVILEGES ON *.* TO 'mysqlboss'@'localhost' IDENTIFIED BY '${MYSQLBossPASS}' WITH GRANT OPTION;

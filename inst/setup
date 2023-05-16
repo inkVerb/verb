@@ -119,9 +119,9 @@ ITsqlTLD="$4"
 ServerIPv4="$6"
 ServerIPv6="$7"
 SSLemail="$8"
-PHPlimit="$9"
-PHPsize="${10}"
-PHPcity="${11}"
+phplimit="$9"
+phpsize="${10}"
+phpcity="${11}"
 
 # Validation functions
 setupDomainPart() {
@@ -276,45 +276,45 @@ elif [ -n "${ServerIPv6}" ] && [ "${ServerIPv6}" = "NOIP6" ]; then
   /bin/sed -i "/hostarpaipv6286/d" /opt/verb/conf/inkdns/nv.dnsdomain
 fi
 setupEmail "${SSLemail}" "SSL cert contact email address"
-setupInt "${PHPlimit}" "PHP upload file count limit"
-setupInt "${PHPsize}" "PHP upload file size"
-setupPHPcity "${PHPcity}" "PHP city"
+setupInt "${phplimit}" "PHP upload file count limit"
+setupInt "${phpsize}" "PHP upload file size"
+setupPHPcity "${phpcity}" "PHP city"
 
 if [ -z "${12}" ]; then
-  NEWPORT="22"
+  newport="22"
 else
-  NEWPORT="${12}"
-  setupInt "${NEWPORT}" "New SSH port"
+  newport="${12}"
+  setupInt "${newport}" "New SSH port"
 fi
 
 if [ -z "${13}" ]; then
-  NEWBoss=$(/usr/bin/pwgen -s -1 16)
+  newBoss=$(/usr/bin/pwgen -s -1 16)
 else
-  NEWBoss="${13}"
-  setupUsername "${NEWBoss}" "New Linux 'boss' user"
+  newBoss="${13}"
+  setupUsername "${newBoss}" "New Linux 'boss' user"
 fi
-/usr/bin/echo "Boss user: ${NEWBoss}" >> /opt/verb/conf/bossuser
+/usr/bin/echo "Boss user: ${newBoss}" >> /opt/verb/conf/bossuser
 
 if [ -z "${14}" ]; then
-  NEWBossPASS=$(/usr/bin/pwgen -s -1 16)
+  newBossPASS=$(/usr/bin/pwgen -s -1 16)
 else
-  NEWBossPASS="${14}"
-  setupPassword "${NEWBossPASS}" "New Linux 'boss' user password"
+  newBossPASS="${14}"
+  setupPassword "${newBossPASS}" "New Linux 'boss' user password"
 fi
-/usr/bin/echo "Boss pass: ${NEWBossPASS}" >> /opt/verb/conf/bossuser
+/usr/bin/echo "Boss pass: ${newBossPASS}" >> /opt/verb/conf/bossuser
 
 if [ -z "${15}" ]; then
-  VUPRepo="verb-update"
+  vUpRepo="verb-update"
 else
-  VUPRepo="${15}"
-  setupDomainPart "${VUPRepo}" "Custom Git repository"
+  vUpRepo="${15}"
+  setupDomainPart "${vUpRepo}" "Custom Git repository"
 fi
 
 if [ -z "${16}" ]; then
-  VUPORG="inkverb"
+  vUpOrg="inkverb"
 else
-  VUPORG="${16}"
-  setupDomainPart "${VUPORG}" "Custom Git organization"
+  vUpOrg="${16}"
+  setupDomainPart "${vUpOrg}" "Custom Git organization"
 fi
 
 # IP processing
@@ -420,10 +420,12 @@ fi
 /usr/bin/localectl set-locale LANG=en_US.UTF-8
 
 # System timezone
-/bin/ln -sfn /usr/share/zoneinfo/${PHPcity} /etc/localtime
+/bin/ln -sfn /usr/share/zoneinfo/${phpcity} /etc/localtime
 
 # Site settings
 ## Configs
+/usr/bin/mv /opt/verb/inst/mysqlrootpassword /opt/verb/conf/
+/usr/bin/mv /opt/verb/inst/servertype /opt/verb/conf/
 /usr/bin/mv /opt/verb/conf/servernameip286 /opt/verb/conf/servernameip
 /usr/bin/mv /opt/verb/conf/serverport286 /opt/verb/conf/serverport
 /usr/bin/mv /opt/verb/conf/serverinkget286 /opt/verb/conf/serverinkget
@@ -545,9 +547,9 @@ serveDIR="$(/usr/bin/pwgen -s -1 6)"
 /bin/sed -i "s/expip6286/${ServerIPv6EXP}/" /opt/verb/conf/servernameip
 /bin/sed -i "s/arpaipv4286/${ServerIPv4ARPA}/" /opt/verb/conf/servernameip
 /bin/sed -i "s/arpaip6286/${ServerIPv6ARPA}/" /opt/verb/conf/servernameip
-/bin/sed -i "s:timecity286:${PHPcity}:" /opt/verb/conf/servernameip
-/bin/sed -i "s/updaterepo286/${VUPRepo}/" /opt/verb/conf/servernameip
-/bin/sed -i "s/updateorg286/${VUPORG}/" /opt/verb/conf/servernameip
+/bin/sed -i "s:timecity286:${phpcity}:" /opt/verb/conf/servernameip
+/bin/sed -i "s/updaterepo286/${vUpRepo}/" /opt/verb/conf/servernameip
+/bin/sed -i "s/updateorg286/${vUpOrg}/" /opt/verb/conf/servernameip
 /bin/sed -i "s/ServerEmailTLD=.*/ServerEmailTLD=\"${SvMailTLD}\"/" /opt/verb/conf/servermailpath
 /bin/sed -i "s/inkcertemail286/${SSLemail}/" /opt/verb/conf/inkcertstatus
 ##DEV Check that this is correct with: SQL[(none)]> SHOW variables like '%pid%';
@@ -562,9 +564,9 @@ if [ -f "/etc/httpd/conf/rpaf.conf" ]; then
 fi
 
 # PHP ini file
-/bin/sed -i "s/phplimit286/${PHPlimit}/g" /opt/verb/conf/php.ini
-/bin/sed -i "s/phpsize286M/${PHPsize}M/g" /opt/verb/conf/php.ini
-/bin/sed -i "s:phptimecity286:${PHPcity}:g" /opt/verb/conf/php.ini
+/bin/sed -i "s/phplimit286/${phplimit}/g" /opt/verb/conf/php.ini
+/bin/sed -i "s/phpsize286M/${phpsize}M/g" /opt/verb/conf/php.ini
+/bin/sed -i "s:phptimecity286:${phpcity}:g" /opt/verb/conf/php.ini
 /bin/sed -i "s/name286/${vName}/g" /opt/verb/conf/php.ini
 /bin/sed -i "s/;.*.open_basedir =.*/open_basedir = \/var\/www/" /opt/verb/conf/php.ini
 /bin/sed -i "s/;.*.sys_temp_dir =.*/sys_temp_dir = \/var\/www\/tmp/" /opt/verb/conf/php.ini
@@ -576,9 +578,8 @@ fi
 /bin/chmod 644 /etc/php/php.ini
 
 # webserver sites-available
-. /opt/verb/inst/servertype
-# Server type
-/usr/bin/echo "ServerType=\"${ServerType}\"" > /opt/verb/conf/servertype
+## Server type
+. /opt/verb/conf/servertype
 
 ## Apache
 if [ -d "/etc/httpd" ] && [ ${ServerType} = "lemp" ]; then
@@ -856,32 +857,32 @@ fi
 
 
 # Create the new boss user
-/usr/bin/groupadd ${NEWBoss}
-/usr/bin/useradd -g ${NEWBoss} ${NEWBoss}
-/bin/echo "${NEWBoss}:${NEWBossPASS}" | chpasswd
-/usr/bin/usermod -a -G sudo ${NEWBoss}
-/usr/bin/usermod -a -G www ${NEWBoss}
-/usr/bin/mkdir -p /home/${NEWBoss}
-/usr/bin/ln -sfn /opt/verb/boss /home/${NEWBoss}/
+/usr/bin/groupadd ${newBoss}
+/usr/bin/useradd -g ${newBoss} ${newBoss}
+/bin/echo "${newBoss}:${newBossPASS}" | chpasswd
+/usr/bin/usermod -a -G sudo ${newBoss}
+/usr/bin/usermod -a -G www ${newBoss}
+/usr/bin/mkdir -p /home/${newBoss}
+/usr/bin/ln -sfn /opt/verb/boss /home/${newBoss}/
 ## User privilege specifi/bin/cation
-/usr/bin/setfacl -R -m user:${NEWBoss}:rwx /home/${NEWBoss} # DEV see if this line works
-/usr/bin/echo '# Added by newboss inkVerb serf' >> /etc/sudoers.d/${NEWBoss}
-/usr/bin/echo "${NEWBoss}  ALL=(ALL:ALL) ALL" >> /etc/sudoers.d/${NEWBoss}
+/usr/bin/setfacl -R -m user:${newBoss}:rwx /home/${newBoss} # DEV see if this line works
+/usr/bin/echo '# Added by newboss inkVerb serf' >> /etc/sudoers.d/${newBoss}
+/usr/bin/echo "${newBoss}  ALL=(ALL:ALL) ALL" >> /etc/sudoers.d/${newBoss}
 ## Vim preferences
 echo 'nnoremap <C-c> "+y
 vnoremap <C-c> "+y
 nnoremap <C-p> "+p
-vnoremap <C-p> "+p' > /home/${NEWBoss}/.vimrc
+vnoremap <C-p> "+p' > /home/${newBoss}/.vimrc
 ## BASH settings
-/opt/verb/serfs/setbashrc ${NEWBoss}
+/opt/verb/serfs/setbashrc ${newBoss}
 ## Own
-/usr/bin/chown -R ${NEWBoss}:${NEWBoss} /home/${NEWBoss}
+/usr/bin/chown -R ${newBoss}:${newBoss} /home/${newBoss}
 
 # New Boss MySQL root password
 /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
-CREATE USER ${NEWBoss}@localhost;
-SET PASSWORD FOR ${NEWBoss}@localhost=PASSWORD('${NEWBossPASS}');
-GRANT ALL PRIVILEGES ON *.* TO '${NEWBoss}'@'localhost' IDENTIFIED BY '${NEWBossPASS}' WITH GRANT OPTION;
+CREATE USER ${newBoss}@localhost;
+SET PASSWORD FOR ${newBoss}@localhost=PASSWORD('${newBossPASS}');
+GRANT ALL PRIVILEGES ON *.* TO '${newBoss}'@'localhost' IDENTIFIED BY '${newBossPASS}' WITH GRANT OPTION;
 FLUSH PRIVILEGES;"
 
 # Host name
@@ -1144,9 +1145,9 @@ cd $OLDPWD || exit 6
 # Set for IPV6 (should be set already, but just to be sure)
 /bin/sed -i "s/IPV6=.*/IPV6=yes/" /etc/default/ufw
 # Port (set to something to avoid attacks)
-/bin/sed -i "/Port.*/ c\Port ${NEWPORT}" /etc/ssh/sshd_config
-/bin/sed -i "/ServerPort.*/ c\ServerPort=${NEWPORT}" /opt/verb/conf/serverport
-/usr/bin/ufw allow ${NEWPORT}
+/bin/sed -i "/Port.*/ c\Port ${newport}" /etc/ssh/sshd_config
+/bin/sed -i "/ServerPort.*/ c\ServerPort=${newport}" /opt/verb/conf/serverport
+/usr/bin/ufw allow ${newport}
 /usr/bin/ufw --force enable; wait
 
 # Set NS servers
@@ -1201,16 +1202,16 @@ fi
 
 # Next step instructions
 if [ "${ServerIPv4}" != "NOIP4" ] && [ "${ServerIPv6}" != "NOIP6" ]; then
-  IPADDRBLOCKroot="'ssh root@${ServerIPv4} -p ${NEWPORT} 'or 'ssh root@${ServerIPv6} -p ${NEWPORT}'"
-  IPADDRBLOCKboss="'ssh ${NEWBoss}@${ServerIPv4} -p ${NEWPORT} 'or 'ssh root@${ServerIPv6} -p ${NEWPORT}'"
+  IPADDRBLOCKroot="'ssh root@${ServerIPv4} -p ${newport} 'or 'ssh root@${ServerIPv6} -p ${newport}'"
+  IPADDRBLOCKboss="'ssh ${newBoss}@${ServerIPv4} -p ${newport} 'or 'ssh root@${ServerIPv6} -p ${newport}'"
 ## IPv4?
 elif [ "${ServerIPv4}" != "NOIP4" ]; then
-  IPADDRBLOCKroot="'ssh root@${ServerIPv4} -p ${NEWPORT}'"
-  IPADDRBLOCKboss="'ssh ${NEWBoss}@${ServerIPv4} -p ${NEWPORT}'"
+  IPADDRBLOCKroot="'ssh root@${ServerIPv4} -p ${newport}'"
+  IPADDRBLOCKboss="'ssh ${newBoss}@${ServerIPv4} -p ${newport}'"
 ## IPv6?
 elif [ "${ServerIPv6}" != "NOIP6" ]; then
-  IPADDRBLOCKroot="'ssh root@${ServerIPv6} -p ${NEWPORT}'"
-  IPADDRBLOCKboss="'ssh ${NEWBoss}@${ServerIPv6} -p ${NEWPORT}'"
+  IPADDRBLOCKroot="'ssh root@${ServerIPv6} -p ${newport}'"
+  IPADDRBLOCKboss="'ssh ${newBoss}@${ServerIPv6} -p ${newport}'"
 fi
 /bin/echo "Setup is finished, this verber is unique
 1. reboot
