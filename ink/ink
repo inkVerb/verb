@@ -37,7 +37,8 @@ exit 0; fi
 
 ## Schema help
 if [ "${HELPOPT}" == "-h" ] || [ "${HELPOPT}" == "--help" ]; then
-usageSur "${ACTION}${SCHEMA}"
+${Felt}/${ACTION}${SCHEMA}.ink ${ALLARGS} # for .ink flag help
+usageSur "${ACTION}${SCHEMA}" # for .md extended help
 exit 0; fi
 
 # Lists

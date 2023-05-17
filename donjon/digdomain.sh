@@ -4,7 +4,7 @@
 
 /usr/bin/mkdir -p /opt/verb/dig
 
-/opt/verb/serfs/inkdnsdig "${1}" mail > /opt/verb/dig/digverbs-"${1}"-$(date +'%Y-%m-%d_%H:%M:%S')
+/opt/verb/serfs/inkdnsdig "${1}" mail
 
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 

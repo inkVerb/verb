@@ -4,12 +4,10 @@
 
 /usr/bin/mkdir -p /opt/verb/dig
 
-/opt/verb/serfs/inkdnsdigverbs > /opt/verb/dig/digverbs-$(date +'%Y-%m-%d_%H:%M:%S')
-
+/opt/verb/serfs/inkdnsdigverbs
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 /opt/verb/serfs/inkcertdole-all-verbs
-
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 /usr/bin/rm -f /opt/verb/dig/digverbs-*
