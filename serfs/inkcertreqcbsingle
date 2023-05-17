@@ -195,6 +195,9 @@ if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
     errcode="$?"
     /bin/echo "inkCert certbot non-zero exit status for ${domain}: $errcode"
     exit $errcode
+  elif [ ! -e "/etc/inkcert/le/live/${domain}/fullchain.pem" ] || [ ! -d "/etc/inkcert/le/archive/${domain}" ]; then
+    /usr/bin/echo "inkCert does not exist"
+    exit 4
   fi
   /bin/systemctl restart nginx; wait
 elif [ ${ServerType} = "lamp" ]; then
@@ -205,6 +208,9 @@ elif [ ${ServerType} = "lamp" ]; then
     errcode="$?"
     /bin/echo "inkCert certbot non-zero exit status for ${domain}: $errcode"
     exit $errcode
+  elif [ ! -e "/etc/inkcert/le/live/${domain}/fullchain.pem" ] || [ ! -d "/etc/inkcert/le/archive/${domain}" ]; then
+    /usr/bin/echo "inkCert does not exist"
+    exit 4
   fi
   /bin/systemctl start httpd; wait
 fi

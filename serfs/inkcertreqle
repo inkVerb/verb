@@ -47,7 +47,7 @@ domain=$1
 
 # Check inkCert installed
 if [ "${InkCertInstalled}" = "NOT_YET" ]; then
-/bin/echo "inkCert not yet installed.
+/usr/bin/echo "inkCert not yet installed.
 
 First run inkcertinstall
 "
@@ -56,7 +56,7 @@ fi
 
 # Verify that the domain is installed
 if [ ! -f /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain} ]; then
-/bin/echo "Sorry, Bucko. ${domain} is not installed yet.
+/usr/bin/echo "Sorry, Bucko. ${domain} is not installed yet.
 
 Do that first, then get back to me.
 "; exit 0
@@ -67,8 +67,8 @@ fi
 inkcertmsg="This sets up certs for inkCert's via Letsencrypt."
 case ${InkCerted} in
   DONE_SC)
-  /bin/echo $inkcertmsg
-  /bin/echo "inkCert self-cert is already setup for ${domain}.
+  /usr/bin/echo $inkcertmsg
+  /usr/bin/echo "inkCert self-cert is already setup for ${domain}.
 
 To set up certs differently, first run: inkcertrevokesc ${domain}, then run this again.
 "
@@ -76,41 +76,41 @@ To set up certs differently, first run: inkcertrevokesc ${domain}, then run this
   ;;
   DONE_LE)
   if [ -z "$2" ] || [ "$2" != "r" ]; then
-    /bin/echo $inkcertmsg
-    /bin/echo "inkCert Letsencrypt is already setup for ${domain}.
+    /usr/bin/echo $inkcertmsg
+    /usr/bin/echo "inkCert Letsencrypt is already setup for ${domain}.
 
 To set up certs differently, first run: inkcertrevokele ${domain}, then run this again.
 "
     exit 0
   else
-    /bin/echo "Refreshing inkCert Letsencrypt certs for ${domain}..."
+    /usr/bin/echo "Refreshing inkCert Letsencrypt certs for ${domain}..."
   fi
   ;;
   DONE_CBSINGLE)
-  /bin/echo $inkcertmsg
-  /bin/echo "inkCert cert-bot single-site cert is already setup for ${domain}.
+  /usr/bin/echo $inkcertmsg
+  /usr/bin/echo "inkCert cert-bot single-site cert is already setup for ${domain}.
 
 To set up certs differently, first run: inkcertrevokecbsingle ${domain}, then run this again.
 "
   exit 0
   ;;
   DONE_CB)
-  /bin/echo $inkcertmsg
-  /bin/echo "inkCert cert-bot is already setup for ${domain}.
+  /usr/bin/echo $inkcertmsg
+  /usr/bin/echo "inkCert cert-bot is already setup for ${domain}.
 
 To set up certs differently, first run: inkcertrevokecb ${domain}, then run this again.
 "
   exit 0
   ;;
   NO|NOT_YET)
-    /bin/echo "Ready to go..."
+    /usr/bin/echo "Ready to go..."
   ;;
   *)
     if ! /bin/grep -q "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
-      /bin/echo "Something's wrong with the inkCert siteinkcert configs! Aborting"
+      /usr/bin/echo "Something's wrong with the inkCert siteinkcert configs! Aborting"
       exit 6
     else
-      /bin/echo "Ready to go..."
+      /usr/bin/echo "Ready to go..."
     fi
   ;;
 esac
@@ -119,7 +119,7 @@ esac
 ## If verb domain was spelled correctly
 if [[ "${domain}" =~ ".verb.email" ]] || [[ "${domain}" =~ ".verb.one" ]] || [[ "${domain}" =~ ".verb.ink" ]] || [[ "${domain}" =~ ".verb.blue" ]] || [[ "${domain}" =~ ".verb.vip" ]] || [[ "${domain}" =~ ".verb.kiwi" ]] || [[ "${domain}" =~ ".verb.red" ]] || [[ "${domain}" =~ ".verb.rocks" ]]; then
  if [[ "${domain}" != *"${ServerName}"* ]]; then
-/bin/echo "
+/usr/bin/echo "
 Problem: You might have spelled ${domain} wrong.
   - Did you mean to include "${ServerName}"?
   - Are you an awesome person with multiple inkVerb namespaces, but you somehow have the wrong server?
@@ -130,7 +130,7 @@ fi
 ## Check specific verb domain tlds
 ### Create the error message function
 verbtld_is_off() {
-/bin/echo "
+/usr/bin/echo "
 Problem: ${domain} is not active on this server...
   1. It could be running on a different Verber server. If so, run inkCert on that server.
   2. You could have planned it for this Verber server, but it's not on. Activate on this server with verbon
@@ -184,16 +184,22 @@ if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
   /usr/bin/certbot --nginx certonly --expand --server https://acme-v02.api.letsencrypt.org/directory --agree-tos --no-eff-email --renew-by-default -c /opt/verb/conf/inkcert/cli-ini/cli.${domain}.ini
   if [ "$?" != "0" ]; then
     errcode="$?"
-    /bin/echo "inkCert le-certbot non-zero exit status for ${domain}: $errcode"
+    /usr/bin/echo "inkCert le-certbot non-zero exit status for ${domain}: $errcode"
     exit $errcode
+  elif [ ! -e "/etc/inkcert/le/live/${domain}/fullchain.pem" ] || [ ! -d "/etc/inkcert/le/archive/${domain}" ]; then
+    /usr/bin/echo "inkCert does not exist"
+    exit 4
   fi
   /bin/systemctl restart nginx; wait
 elif [ ${ServerType} = "lamp" ]; then
   /usr/bin/certbot --apache certonly --expand --server https://acme-v02.api.letsencrypt.org/directory --agree-tos --no-eff-email --renew-by-default -c /opt/verb/conf/inkcert/cli-ini/cli.${domain}.ini
   if [ "$?" != "0" ]; then
     errcode="$?"
-    /bin/echo "inkCert le-certbot non-zero exit status for ${domain}: $errcode"
+    /usr/bin/echo "inkCert le-certbot non-zero exit status for ${domain}: $errcode"
     exit $errcode
+  elif [ ! -e "/etc/inkcert/le/live/${domain}/fullchain.pem" ] || [ ! -d "/etc/inkcert/le/archive/${domain}" ]; then
+    /usr/bin/echo "inkCert does not exist"
+    exit 4
   fi
   /bin/systemctl restart httpd; wait
 fi
@@ -202,11 +208,11 @@ sleep 1
 
 # Finish
 if [ -e "/etc/inkcert/le/live/${domain}/cert.pem" ] && [ -e "/etc/inkcert/le/live/${domain}/chain.pem" ] && [ -e "/etc/inkcert/le/live/${domain}/fullchain.pem" ] && [ -e "/etc/inkcert/le/live/${domain}/privkey.pem" ]; then
-  /bin/echo "
+  /usr/bin/echo "
   Finished getting certs. Now to install them with inkcertaddle...
   "
 else
-  /bin/echo "Certs not installed, cannot proceed."
+  /usr/bin/echo "Certs not installed, cannot proceed."
   exit 4
 fi
 
