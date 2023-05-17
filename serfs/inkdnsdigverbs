@@ -39,34 +39,34 @@ fi
 . /opt/verb/conf/servertldstatus
 
 # Primary VPS host
-/opt/verb/inkdnsdig ${nameURI} mail
+/opt/verb/serfs/inkdnsdig ${nameURI} mail
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 if [ ${VERBemail} = "true" ]; then
-  /opt/verb/inkdnsdig ${emailURI}
+  /opt/verb/serfs/inkdnsdig ${emailURI}
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 if [ ${VERBone} = "true" ]; then
-  /opt/verb/inkdnsdig ${oneURI}
+  /opt/verb/serfs/inkdnsdig ${oneURI}
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 if [ ${VERBink} = "true" ]; then
-  /opt/verb/inkdnsdig ${inkURI}
+  /opt/verb/serfs/inkdnsdig ${inkURI}
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 if [ ${VERBblue} = "true" ]; then
-  /opt/verb/inkdnsdig ${blueURI}
+  /opt/verb/serfs/inkdnsdig ${blueURI}
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 if [ ${VERBvip} = "true" ]; then
-  /opt/verb/inkdnsdig ${vipURI}
+  /opt/verb/serfs/inkdnsdig ${vipURI}
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 if [ ${VERBkiwi} = "true" ]; then
-  /opt/verb/inkdnsdig ${kiwiURI}
+  /opt/verb/serfs/inkdnsdig ${kiwiURI}
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 if [ ${VERBred} = "true" ]; then
-  /opt/verb/inkdnsdig ${redURI}
+  /opt/verb/serfs/inkdnsdig ${redURI}
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
