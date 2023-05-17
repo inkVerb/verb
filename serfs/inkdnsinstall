@@ -85,9 +85,6 @@ fi
 # DNS serial number
 /bin/echo '0 0 * * * root /opt/verb/donjon/rmserial.sh > /dev/null 2>&1' > /etc/cron.d/dnsserial
 /bin/chmod 0644 /etc/cron.d/dnsserial
-/bin/echo '#!/bin/bash
-/bin/rm -f /opt/verb/conf/inkdns/serial' > /opt/verb/donjon/rmserial.sh
-/bin/chmod 750 /opt/verb/donjon/rmserial.sh
 
 # Allow the port
 #/usr/bin/ufw allow 53 # Not that simple
