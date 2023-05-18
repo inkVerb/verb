@@ -103,11 +103,13 @@ fi
 cd /opt/verb/conf/inkdns/inkzones
 for inkZoneDB in db.*; do
   inkZone="$(/usr/bin/echo ${inkZoneDB} | /usr/bin/sed 's/db\.//' )"
-  echo /opt/verb/serfs/inkdnsserial ${inkZone} verber
+  if [ "${inkZone}" = "*" ]; then continue; fi
+  /opt/verb/serfs/inkdnsserial ${inkZone} verber
 done
 cd /opt/verb/conf/inkdns/zones
 for inkZoneDB in db.*; do
   inkZone="$(/usr/bin/echo ${inkZoneDB} | /usr/bin/sed 's/db\.//' )"
+  if [ "${inkZone}" = "*" ]; then continue; fi
   /opt/verb/serfs/inkdnsserial ${inkZone}
 done
 
