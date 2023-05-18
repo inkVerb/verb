@@ -99,6 +99,18 @@ fi
 # Config
 /usr/bin/sed -i "s/InkDNSStat=.*/InkDNSStat=\"INSTALLED\"/" /opt/verb/conf/inkdnsconf
 
+# Serial numbers for existing domains
+cd /opt/verb/conf/inkdns/inkzones
+for inkZoneDB in db.*; do
+  inkZone="$(/usr/bin/echo ${inkZoneDB} | /usr/bin/sed 's/db\.//' )"
+  echo /opt/verb/serfs/inkdnsserial ${inkZone} verber
+done
+cd /opt/verb/conf/inkdns/zones
+for inkZoneDB in db.*; do
+  inkZone="$(/usr/bin/echo ${inkZoneDB} | /usr/bin/sed 's/db\.//' )"
+  /opt/verb/serfs/inkdnsserial ${inkZone}
+done
+
 # Refresh all records
 /opt/verb/serfs/inkdnsrefreshbind
 
