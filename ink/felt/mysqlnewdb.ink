@@ -4,7 +4,7 @@
 SURFNAME="mysqlnewdb"
 
 # Include the settings & functions
-. ${INKSET}
+. ${InkSet}
 . ${iDir}/ink.functions
 
 # About message
@@ -66,7 +66,7 @@ success_message="Database '$SOu' created for user ${SOu}."
 fail_message="Database '$SOu' failed to be created for user ${SOu}."
 
 # Check requirements or defaults
-## HELP
+## Help
 if [ "${SOh}" = "true" ]; then
   /bin/echo "
 ${aboutMsg}"

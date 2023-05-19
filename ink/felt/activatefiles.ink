@@ -4,7 +4,7 @@
 SURFNAME="activatefiles"
 
 # Include the settings & functions
-. ${INKSET}
+. ${InkSet}
 . ${iDir}/ink.functions
 . ${Conf}/siteurilist
 
@@ -66,7 +66,7 @@ success_message=$SuccessMessage
 fail_message=$FailMessage
 
 # Check requirements or defaults
-## HELP
+## Help
 if [ "${SOh}" = "true" ]; then
   /bin/echo "
 ${aboutMsg}"

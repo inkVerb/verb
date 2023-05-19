@@ -42,6 +42,58 @@ elif [ "$RinkConfigured" != "true" ]; then
 	exit 5
 fi
 
+# Already served?
+## dig our own NS servers to see if already hosted
+digns1="$(/usr/bin/dig @${ServerNS1DNS} ${slavedomain} | /usr/bin/grep ^${slavedomain})"
+digns2="$(/usr/bin/dig @${ServerNS2DNS} ${slavedomain} | /usr/bin/grep ^${slavedomain})"
+if [[ "${digns1}" =~ "${slavedomain}" ]]; then
+  domTaken="true"
+fi
+if [[ "${digns2}" =~ "${slavedomain}" ]]; then
+  domTaken="true"
+fi
+## Log as taken
+if [ -n "${domTaken}" ] && [ "${domTaken}" = "true" ]; then
+  ### Local record
+  /usr/bin/mkdir -p /opt/verb/conf/inkdns/taken
+  /usr/bin/touch "/opt/verb/conf/inkdns/taken/${slavedomain}"
+  /usr/bin/echo "${slavedomain} :: $(date +'%Y-%m-%d_%H:%M:%S')
+  dig1: ${digns1}
+  dig2: ${digns2}
+  " >> "/opt/verb/conf/inkdns/taken/${slavedomain}"
+  ### Rink NS server records
+  /usr/bin/ssh -T ns1 <<EOS
+/usr/bin/mkdir -p /srv/sns/${ServerName}-${ServerTLD}/domains/taken
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/taken/${slavedomain}_$(date +'%Y-%m-%d_%H:%M:%S')
+${slavedomain} :: $(date +'%Y-%m-%d_%H:%M:%S')
+  dig1: ${digns1}
+  dig2: ${digns2}
+EOF
+EOS
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
+  /usr/bin/echo "Logged ${slavedomain} as taken on NS1"
+  /usr/bin/ssh -T ns2 <<EOS
+/usr/bin/mkdir -p /srv/sns/${ServerName}-${ServerTLD}/domains/taken
+/usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/taken/${slavedomain}_$(date +'%Y-%m-%d_%H:%M:%S')
+${slavedomain} :: $(date +'%Y-%m-%d_%H:%M:%S')
+  dig1: ${digns1}
+  dig2: ${digns2}
+EOF
+EOS
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
+  /usr/bin/echo "Logged ${slavedomain} as taken on NS2"
+  exit 7
+## Not taken; remove any taken logs
+else
+  /usr/bin/rm -f "/opt/verb/conf/inkdns/taken/${slavedomain}"
+  /usr/bin/ssh -T ns1 <<EOS
+  /usr/bin/rm -f '/srv/sns/${ServerName}-${ServerTLD}/domains/taken/${slavedomain}'*
+EOS
+  /usr/bin/ssh -T ns2 <<EOS
+  /usr/bin/rm -f '/srv/sns/${ServerName}-${ServerTLD}/domains/taken/${slavedomain}'*
+EOS
+fi
+
 # Served or parked?
 if [ -f "/opt/verb/conf/inkdns/zones/db.${slavedomain}" ]; then
   parkserve="served"

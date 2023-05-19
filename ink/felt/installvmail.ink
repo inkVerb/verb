@@ -4,7 +4,7 @@
 SURFNAME="installinkvmail"
 
 # Include the settings & functions
-. ${INKSET}
+. ${InkSet}
 . ${iDir}/ink.functions
 
 # About message
@@ -65,7 +65,7 @@ while getopts "${optSerf}" Flag; do
 done
 
 # Check requirements or defaults
-## HELP
+## Help
 if [ "${SOh}" = "true" ]; then
   /bin/echo "
 ${aboutMsg}"

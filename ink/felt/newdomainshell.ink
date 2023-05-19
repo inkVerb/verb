@@ -4,7 +4,7 @@
 SURFNAME="newdomainshell"
 
 # Include the settings & functions
-. ${INKSET}
+. ${InkSet}
 . ${iDir}/ink.functions
 
 # About message
@@ -64,7 +64,7 @@ success_message="$SOd domain framework added."
 fail_message="$SOd domain framework failed to be added."
 
 # Check requirements or defaults
-## HELP
+## Help
 if [ "${SOh}" = "true" ]; then
   /bin/echo "
 ${aboutMsg}"

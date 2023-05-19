@@ -31,7 +31,7 @@ if [ -e "/opt/verb/mods/inkdnsinstall.before" ]; then . /opt/verb/mods/inkdnsins
 # Check if installed
 . /opt/verb/conf/inkdnsconf
 if [ "${InkDNSStat}" = "INSTALLED" ]; then
-  /bin/echo "inkDNS already installed."
+  /usr/bin/echo "inkDNS already installed."
   exit 0
 fi
 
@@ -53,8 +53,8 @@ fi
 #/usr/bin/pacman -S --noconfirm --needed bind certbot-dns-rfc2136
 
 # Config
-/bin/cp -f /etc/named.conf /etc/named.conf.original
-/bin/cp -f /opt/verb/conf/inkdns/named.conf /etc/
+/usr/bin/cp -f /etc/named.conf /etc/named.conf.original
+/usr/bin/cp -f /opt/verb/conf/inkdns/named.conf /etc/
 /usr/bin/chown root:named /etc/named.conf
 /usr/bin/chown 644 /etc/named.conf
 /usr/bin/mkdir -p /opt/verb/conf/inkdns/parked
@@ -71,20 +71,20 @@ fi
 
 # Set the NS domains
 ## Verber Domains
-/bin/sed -i "s/ns1\.DNsdnsDomainAIN286/${ServerNS1DNS}/g" /opt/verb/conf/inkdns/inkzones/db.*
-/bin/sed -i "s/ns2\.DNsdnsDomainAIN286/${ServerNS2DNS}/g" /opt/verb/conf/inkdns/inkzones/db.*
+/usr/bin/sed -i "s/ns1\.DNsdnsDomainAIN286/${ServerNS1DNS}/g" /opt/verb/conf/inkdns/inkzones/db.*
+/usr/bin/sed -i "s/ns2\.DNsdnsDomainAIN286/${ServerNS2DNS}/g" /opt/verb/conf/inkdns/inkzones/db.*
 ## Hosted domain template
-/bin/sed -i "s/ns1\.DNsdnsDomainAIN286/${ServerNS1DNS}/g" /opt/verb/conf/inkdns/db.dnsdomain
-/bin/sed -i "s/ns2\.DNsdnsDomainAIN286/${ServerNS2DNS}/g" /opt/verb/conf/inkdns/db.dnsdomain
+/usr/bin/sed -i "s/ns1\.DNsdnsDomainAIN286/${ServerNS1DNS}/g" /opt/verb/conf/inkdns/db.dnsdomain
+/usr/bin/sed -i "s/ns2\.DNsdnsDomainAIN286/${ServerNS2DNS}/g" /opt/verb/conf/inkdns/db.dnsdomain
 ## Any hosted domains
 if [ -f "/opt/verb/conf/inkdns/zones/db.*" ]; then
-  /bin/sed -i "s/ns1\.DNsdnsDomainAIN286/${ServerNS1DNS}/g" /opt/verb/conf/inkdns/zones/db.*
-  /bin/sed -i "s/ns2\.DNsdnsDomainAIN286/${ServerNS2DNS}/g" /opt/verb/conf/inkdns/zones/db.*
+  /usr/bin/sed -i "s/ns1\.DNsdnsDomainAIN286/${ServerNS1DNS}/g" /opt/verb/conf/inkdns/zones/db.*
+  /usr/bin/sed -i "s/ns2\.DNsdnsDomainAIN286/${ServerNS2DNS}/g" /opt/verb/conf/inkdns/zones/db.*
 fi
 
 # DNS serial number
-/bin/echo '0 0 * * * root /opt/verb/donjon/rmserial.sh > /dev/null 2>&1' > /etc/cron.d/dnsserial
-/bin/chmod 0644 /etc/cron.d/dnsserial
+/usr/bin/echo '0 0 * * * root /opt/verb/donjon/rmserial.sh > /dev/null 2>&1' > /etc/cron.d/dnsserial
+/usr/bin/chmod 0644 /etc/cron.d/dnsserial
 
 # Allow the port
 #/usr/bin/ufw allow 53 # Not that simple

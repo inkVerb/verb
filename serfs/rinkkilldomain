@@ -55,10 +55,21 @@ else
   exit 8
 fi
 
-# Insert the function statements
-/usr/bin/ssh -T ${ns1} "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${parkserve}/${servedomain}"
-/usr/bin/ssh -T ${ns2} "/usr/bin/rm -f /srv/sns/${ServerName}-${ServerTLD}/domains/${parkserve}/${servedomain}"
-# /usr/bin/ssh ns1 "/usr/bin/echo 'killinkdnsslavedns ${ServerName}-${ServerTLD} ${servedomain} -n' > /srv/sns/${ServerName}-${ServerTLD}/calls/killinkdnsslavedns"
-# /usr/bin/ssh ns2 "/usr/bin/echo 'killinkdnsslavedns ${ServerName}-${ServerTLD} ${servedomain} -n' > /srv/sns/${ServerName}-${ServerTLD}/calls/killinkdnsslavedns"
+# Update the NS servers
+/usr/bin/ssh -T ns1 <<EOS
+/usr/bin/mkdir -p /srv/sns/${ServerName}-${ServerTLD}/domains/killed/fresh
+/usr/bin/mv /srv/sns/${ServerName}-${ServerTLD}/domains/${parkserve}/${servedomain} /srv/sns/${ServerName}-${ServerTLD}/domains/killed/fresh/
+/usr/bin/echo "verber-killed at $(date +'%Y-%m-%d_%H:%M:%S')" >> /srv/sns/${ServerName}-${ServerTLD}/domains/killed/fresh/${servedomain}
+EOS
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+/usr/bin/echo "Killed ${slavedomain} as on NS1"
+/usr/bin/ssh -T ns2 <<EOS
+/usr/bin/mkdir -p /srv/sns/${ServerName}-${ServerTLD}/domains/killed/fresh
+/usr/bin/mv /srv/sns/${ServerName}-${ServerTLD}/domains/${parkserve}/${servedomain} /srv/sns/${ServerName}-${ServerTLD}/domains/killed/fresh/
+/usr/bin/echo "verber-killed at $(date +'%Y-%m-%d_%H:%M:%S')" >> /srv/sns/${ServerName}-${ServerTLD}/domains/killed/fresh/${servedomain}
+EOS
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+/usr/bin/echo "Killed ${slavedomain} as on NS2"
+
 
 if [ -e "/opt/verb/mods/rinkkilldomain.after" ]; then . /opt/verb/mods/rinkkilldomain.after; fi # Follows this script

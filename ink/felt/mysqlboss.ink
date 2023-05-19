@@ -4,7 +4,7 @@
 SURFNAME="mysqlboss"
 
 # Include the settings & functions
-. ${INKSET}
+. ${InkSet}
 . ${iDir}/ink.functions
 
 # About message
@@ -55,7 +55,7 @@ success_log="Admin database user created."
 fail_log="Admin database user failed to be created."
 
 # Check requirements or defaults
-## HELP
+## Help
 if [ "${SOh}" = "true" ]; then
   /bin/echo "
 ${aboutMsg}"

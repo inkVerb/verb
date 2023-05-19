@@ -4,7 +4,7 @@
 SURFNAME="webwild"
 
 # Include the settings & functions
-. ${INKSET}
+. ${InkSet}
 . ${iDir}/ink.functions
 
 # About message
@@ -62,7 +62,7 @@ success_message="$SOd wildcard subdomain $SOyn"
 fail_message="$SOd wildcard subdomain failed to turn $SOyn"
 
 # Check requirements or defaults
-## HELP
+## Help
 if [ "${SOh}" = "true" ]; then
   /bin/echo "
 ${aboutMsg}"

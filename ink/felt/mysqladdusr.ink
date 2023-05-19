@@ -4,7 +4,7 @@
 SURFNAME="mysqladdusr"
 
 # Include the settings & functions
-. ${INKSET}
+. ${InkSet}
 . ${iDir}/ink.functions
 
 # About message
@@ -66,7 +66,7 @@ success_message="User added to database '$SOu'."
 fail_message="User failed to be added to database '$SOu'."
 
 # Check requirements or defaults
-## HELP
+## Help
 if [ "${SOh}" = "true" ]; then
   /bin/echo "
 ${aboutMsg}"

@@ -4,7 +4,7 @@
 SURFNAME="webvipcgi"
 
 # Include the settings & functions
-. ${INKSET}
+. ${InkSet}
 . ${iDir}/ink.functions
 . ${Conf}/siteurilist
 
@@ -59,7 +59,7 @@ success_message="FTP folder vip/cgi active with CGI, hosted at: v.${vipURI}/cgi/
 fail_message="v.${vipURI} CGI failed to turn $SOyn"
 
 # Check requirements or defaults
-## HELP
+## Help
 if [ "${SOh}" = "true" ]; then
   /bin/echo "
 ${aboutMsg}"

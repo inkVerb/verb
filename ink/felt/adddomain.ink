@@ -4,7 +4,7 @@
 SURFNAME="adddomain"
 
 # Include the settings & functions
-. ${INKSET}
+. ${InkSet}
 . ${iDir}/ink.functions
 
 # About message
@@ -62,7 +62,7 @@ success_message="$SOd domain added."
 fail_message="$SOd domain failed to be added."
 
 # Check requirements or defaults
-## HELP
+## Help
 if [ "${SOh}" = "true" ]; then
   /bin/echo "
 ${aboutMsg}"

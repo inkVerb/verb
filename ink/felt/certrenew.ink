@@ -4,7 +4,7 @@
 SURFNAME="inkcertrenewcbleall"
 
 # Include the settings & functions
-. ${INKSET}
+. ${InkSet}
 . ${iDir}/ink.functions
 
 # About message
@@ -48,7 +48,7 @@ success_message="inkCert certs renewed."
 fail_message="inkCert certs failed to be renewed."
 
 # Check requirements or defaults
-## HELP
+## Help
 if [ "${SOh}" = "true" ]; then
   /bin/echo "
 ${aboutMsg}"

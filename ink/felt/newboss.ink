@@ -4,7 +4,7 @@
 SURFNAME="newinkdkim"
 
 # Include the settings & functions
-. ${INKSET}
+. ${InkSet}
 . ${iDir}/ink.functions
 
 # About message
@@ -60,7 +60,7 @@ success_message="$SOu boss user created."
 fail_message="$SOu boss user failed to be created."
 
 # Check requirements or defaults
-## HELP
+## Help
 if [ "${SOh}" = "true" ]; then
   /bin/echo "
 ${aboutMsg}"

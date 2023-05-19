@@ -4,7 +4,7 @@
 SURFNAME="webcgi"
 
 # Include the settings & functions
-. ${INKSET}
+. ${InkSet}
 . ${iDir}/ink.functions
 
 # Not for LEMP
@@ -65,7 +65,7 @@ success_message="$SOd CGI $SOyn"
 fail_message="$SOd CGI failed to turn $SOyn"
 
 # Check requirements or defaults
-## HELP
+## Help
 if [ "${SOh}" = "true" ]; then
   /bin/echo "
 ${aboutMsg}"

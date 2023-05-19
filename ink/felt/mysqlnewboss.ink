@@ -4,7 +4,7 @@
 SURFNAME="mysqlnewboss"
 
 # Include the settings & functions
-. ${INKSET}
+. ${InkSet}
 . ${iDir}/ink.functions
 
 # About message
@@ -60,7 +60,7 @@ success_message="Admin user '$SOu' added."
 fail_message="Admin user '$SOu' failed to be added."
 
 # Check requirements or defaults
-## HELP
+## Help
 if [ "${SOh}" = "true" ]; then
   /bin/echo "
 ${aboutMsg}"

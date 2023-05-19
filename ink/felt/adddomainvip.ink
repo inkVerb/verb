@@ -4,7 +4,7 @@
 SURFNAME="adddomainvip"
 
 # Include the settings & functions
-. ${INKSET}
+. ${InkSet}
 . ${iDir}/ink.functions
 
 # About message
@@ -55,7 +55,7 @@ success_message="$SOd domain added vip folder."
 fail_message="$SOd domain failed to be added to vip folder."
 
 # Check requirements or defaults
-## HELP
+## Help
 if [ "${SOh}" = "true" ]; then
   /bin/echo "
 ${aboutMsg}"

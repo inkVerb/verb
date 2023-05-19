@@ -4,7 +4,7 @@
 SURFNAME="killsubdomain"
 
 # Include the settings & functions
-. ${INKSET}
+. ${InkSet}
 . ${iDir}/ink.functions
 
 # About message
@@ -63,7 +63,7 @@ fail_message="$SOs subdomain could not be removed from $SOd domain."
 isDomain "${SOs}.${SOd}" "Full length of the domain-to-be"
 
 # Check requirements or defaults
-## HELP
+## Help
 if [ "${SOh}" = "true" ]; then
   /bin/echo "
 ${aboutMsg}"

@@ -4,7 +4,7 @@
 SURFNAME="mysqlin"
 
 # Include the settings & functions
-. ${INKSET}
+. ${InkSet}
 . ${iDir}/ink.functions
 
 # About message
@@ -54,7 +54,7 @@ success_message="Database '$SOd' imported."
 fail_message="Database '$SOd' failed to import."
 
 # Check requirements or defaults
-## HELP
+## Help
 if [ "${SOh}" = "true" ]; then
   /bin/echo "
 ${aboutMsg}"

@@ -228,6 +228,9 @@ IX. Other notes
 	- `inkdns*` serfs that contain `slave` in the name are meant to be run on an NS nameserver by the `rinkcon.cron` task script
 	  - These rely on certain settings inside `/srv/sns/VERBUSER.TLD/` configs for their IP and other arguments to be completed
 	- `inkdns*` and `rink*` serfs that contain `local` (and often `slave` also) are meant to be run manually on the server, such as for a `make-domainmod` verber, where NS records must be handled manually
+	- Study `inkdnsrefreshbind` and `rinkadddomain` and `rinkkilldomain` carefully to see how they interact with each other, both on the local verber and on the NS nameservers
+	  - Knowledge about these goes well beyond the capability of documentation; to sumarize would be to elaborate
+	  - Essentially, these check, manage, and rebuild the entire `/var/named` directory, and other related settings, from the bottom up each time
 - Parking
   - `db.*` and `nv.*` files can be placed in the `verb/conf/inkdns/parked/` directory
     - These must be properly formatted Zone and PTA (rDNS) files

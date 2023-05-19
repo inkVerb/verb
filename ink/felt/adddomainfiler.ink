@@ -4,7 +4,7 @@
 SURFNAME="adddomainfiler"
 
 # Include the settings & functions
-. ${INKSET}
+. ${InkSet}
 . ${iDir}/ink.functions
 
 # About message
@@ -61,7 +61,7 @@ success_message="$SOf added to $SOd."
 fail_message="$SOf could not be added to $SOd."
 
 # Check requirements or defaults
-## HELP
+## Help
 if [ "${SOh}" = "true" ]; then
   /bin/echo "
 ${aboutMsg}"

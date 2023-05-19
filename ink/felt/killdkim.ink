@@ -4,7 +4,7 @@
 SURFNAME="killinkdkim"
 
 # Include the settings & functions
-. ${INKSET}
+. ${InkSet}
 . ${iDir}/ink.functions
 
 # About message
@@ -61,7 +61,7 @@ success_message="$SOd domain OpenDKIM keys created and added."
 fail_message="$SOd domain OpenDKIM keys failed to be created and added."
 
 # Check requirements or defaults
-## HELP
+## Help
 if [ "${SOh}" = "true" ]; then
   /bin/echo "
 ${aboutMsg}"

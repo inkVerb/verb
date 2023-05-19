@@ -4,7 +4,7 @@
 SURFNAME="webcgi"
 
 # Include the settings & functions
-. ${INKSET}
+. ${InkSet}
 . ${iDir}/ink.functions
 
 # Not for LEMP
@@ -70,7 +70,7 @@ success_message="$SOd webfolder read access $SOyn"
 fail_message="$SOd webfolder read access failed to turn $SOyn"
 
 # Check requirements or defaults
-## HELP
+## Help
 if [ "${SOh}" = "true" ]; then
   /bin/echo "
 ${aboutMsg}"

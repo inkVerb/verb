@@ -4,7 +4,7 @@
 SURFNAME="mysqldb"
 
 # Include the settings & functions
-. ${INKSET}
+. ${InkSet}
 . ${iDir}/ink.functions
 
 # About message
@@ -54,7 +54,7 @@ success_log="Database accessed: '$SOd'."
 fail_log="Database failed to access: '$SOd'."
 
 # Check requirements or defaults
-## HELP
+## Help
 if [ "${SOh}" = "true" ]; then
   /bin/echo "
 ${aboutMsg}"

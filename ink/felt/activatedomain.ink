@@ -4,7 +4,7 @@
 SURFNAME="activatedomain"
 
 # Include the settings & functions
-. ${INKSET}
+. ${InkSet}
 . ${iDir}/ink.functions
 
 # About message
@@ -71,7 +71,7 @@ success_message=$SuccessMessage
 fail_message=$FailMessage
 
 # Check requirements or defaults
-## HELP
+## Help
 if [ "${SOh}" = "true" ]; then
   /bin/echo "
 ${aboutMsg}"

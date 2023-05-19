@@ -4,7 +4,7 @@
 SURFROOT="killdomain"
 
 # Include the settings & functions
-. ${INKSET}
+. ${InkSet}
 . ${iDir}/ink.functions
 
 # About message
@@ -67,7 +67,7 @@ fi
 fail_message="$SOd domain failed to be removed."
 
 # Check requirements or defaults
-## HELP
+## Help
 if [ "${SOh}" = "true" ]; then
   /bin/echo "
 ${aboutMsg}"

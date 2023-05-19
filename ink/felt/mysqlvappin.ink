@@ -4,7 +4,7 @@
 SURFNAME="mysqlvappin"
 
 # Include the settings & functions
-. ${INKSET}
+. ${InkSet}
 . ${iDir}/ink.functions
 
 # About message
@@ -54,7 +54,7 @@ success_message="Verb web app '$SOa' imported."
 fail_message="Verb web app '$SOa' failed to be imported."
 
 # Check requirements or defaults
-## HELP
+## Help
 if [ "${SOh}" = "true" ]; then
   /bin/echo "
 ${aboutMsg}"

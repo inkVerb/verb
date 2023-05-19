@@ -4,7 +4,7 @@
 SURFNAME="mysqlkilluser"
 
 # Include the settings & functions
-. ${INKSET}
+. ${InkSet}
 . ${iDir}/ink.functions
 
 # About message
@@ -54,7 +54,7 @@ success_message="Database user '$SOu' dropped."
 fail_message="Database user '$SOu' failed to drop."
 
 # Check requirements or defaults
-## HELP
+## Help
 if [ "${SOh}" = "true" ]; then
   /bin/echo "
 ${aboutMsg}"

@@ -4,7 +4,7 @@
 SURFNAME="killdomainshell"
 
 # Include the settings & functions
-. ${INKSET}
+. ${InkSet}
 . ${iDir}/ink.functions
 
 # About message
@@ -55,7 +55,7 @@ success_message="$SOd domain framework removed."
 fail_message="$SOd domain framework failed to be removed."
 
 # Check requirements or defaults
-## HELP
+## Help
 if [ "${SOh}" = "true" ]; then
   /bin/echo "
 ${aboutMsg}"
