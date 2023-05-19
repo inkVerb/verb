@@ -1229,7 +1229,9 @@ fi
   - login boss: ${IPADDRBLOCKboss}
 3. Run:
   - inkVmail installer ('serfs/installinkvmail')
-  - inkCert for verb domains ('ink cert do -ma' or 'serfs/inkcertdole-all-verbs')
+4. Once DNS records are populated...
+  - inkCert should obtain SSL certs automatically
+  - ...if not, manually run inkCert for verb domains ('ink cert do -ma' or 'serfs/inkcertdole-all-verbs')
 "
 
 # Cleanup
