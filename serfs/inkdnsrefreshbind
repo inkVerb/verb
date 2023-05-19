@@ -195,6 +195,7 @@ EOF
             /usr/bin/rm -f "/var/named/db.${slv}"
             /usr/bin/mv /domains/served/killed/fresh/${slv} /domains/served/killed/
           done
+        fi
       done
     fi
   fi # End Slave DNS
