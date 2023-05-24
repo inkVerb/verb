@@ -1,6 +1,7 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
 
+#DEV this is only included for dev reference; it may not work and it should not be used to install nextcloud; use installnextcloud instead
 # This installs Nextcloud through the Arch repositories ....verb.blue
 
 # All options are optional, but must are sequential, omit last options first.

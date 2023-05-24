@@ -96,7 +96,8 @@ pm.min_spare_servers = 1
 pm.max_spare_servers = 3
 EOF
 /usr/bin/mkdir -p /etc/systemd/system/php-fpm.service.d
-/usr/bin/cat <<'EOF' > /etc/systemd/system/php-fpm.service.d/override.conf
+#DEV changed below line from > to >>
+/usr/bin/cat <<'EOF' >> /etc/systemd/system/php-fpm.service.d/override.conf
 [Service]
 # Your data directory
 ReadWritePaths=/srv/www/vapps/nextcloud/data
@@ -176,25 +177,33 @@ sed -i "s/if (PHP_VERSION_ID >=.*/if (PHP_VERSION_ID >= 90000) {/" /srv/www/vapp
 # Autoconfig (so user does not need to enter database info)
 /usr/bin/cat <<EOF > /srv/www/vapps/nextcloud/config/autoconfig.php
 <?php
-\$AUTOConfIG = array(
+\$AUTOCONFIG = [
   'dbtype'        => 'mysql',
   'dbname'        => '${dBase}',
   'dbuser'        => '${dBaseUser}',
   'dbpass'        => '${dBPassword}',
   'dbhost'        => 'localhost',
-  'dbtableprefix' => '',
-  'directory'     => '/srv/www/vapps/nextcloud/data'
-);
+  'dbtableprefix' => '', 
+  'directory'     => '/srv/www/vapps/nextcloud/data',
+  'trusted_domains' =>
+    [
+      'cloud.${blueURI}',
+      '${ServerIPv4}',
+      '[${ServerIPv6}]'
+    ],
+];
 EOF
+
 
 # Config for URL & basic settings
 /usr/bin/cat <<EOF > /srv/www/vapps/nextcloud/config/basic.config.php
 <?php
 \$ConfIG = [
-'overwritehost' => 'name.verb.blue',
-'overwrite.cli.url' => 'name.verb.blue',
-'proxy' => 'name.verb.blue',
-'defaultapp' => 'files',
+'overwritehost' => 'cloud.${blueURI}',
+'overwrite.cli.url' => 'cloud.${blueURI}',
+'proxy' => 'cloud.${blueURI}',
+'defaultapp' => 'dashboard,files',
+'ratelimit.protection.enabled' => true,
 'auth.bruteforce.protection.enabled' => true
 ];
 EOF
@@ -212,12 +221,13 @@ EOF
 ## Permissions
 /bin/chmod 0644 /etc/cron.d/nextcloud
 
-# See if PFA is installed
-if [ "${ServerPFAPath}" = "PFA_NOT_INSTALLED" ]; then
-  MESSAGEPFAPATH="_path_after_installed_"
-else
-  MESSAGEPFAPATH="${ServerPFAPath}"
-fi
+#DEV handling this automatically now
+# # See if PFA is installed
+# if [ "${ServerPFAPath}" = "PFA_NOT_INSTALLED" ]; then
+#   messagePFApath="_path_after_installed_"
+# else
+#   messagePFApath="${ServerPFAPath}"
+# fi
 
 # Finish
 /bin/echo "

@@ -79,6 +79,11 @@ if [ -z "${SOd}" ]; then
   #SOd="DEFAULT" # Uncomment for optional default
   /bin/echo "${optName[d]} option must be set."; inkFail # Uncomment if required
 fi
+## Required flags & defaults
+if [ -z "${SOa}" ]; then
+  SOa="" # Uncomment for optional default
+  #/bin/echo "${optName[a]} option must be set."; inkFail # Uncomment if required
+fi
 
 # Prepare command
 serfcommand="${Serfs}/${SURFNAME} ${SOd} ${SOa}"
