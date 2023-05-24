@@ -472,7 +472,6 @@ if [ -f "/opt/verb/inst/domain.mod.conf" ]; then
     hosturi="${Hostname}.${DModBase}"
   fi
 /usr/bin/cat <<EOF > /opt/verb/conf/siteurilist
-#!/bin/sh
 baseDOM="${baseDOM}"
 nameTLD="${serverTLD}"
 emailTLD="${SvMailTLD}"
@@ -497,7 +496,6 @@ else
     hosturi="${Hostname}.${vName}.verb.${serverTLD}"
   fi
 /usr/bin/cat <<EOF > /opt/verb/conf/siteurilist
-#!/bin/sh
 nameTLD="${serverTLD}"
 emailTLD="${SvMailTLD}"
 itsqlTLD="${ITsqlTLD}"
