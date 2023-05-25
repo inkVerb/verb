@@ -51,6 +51,9 @@ if [ -n "$2" ]; then
 elif [ -n "${SSDdefault}" ]; then
   Mnt=${SSDdefault}
   Typ="ssd"
+elif [ -z "${SSDdefault}" ] && [ "${Svc}" = "www" ]; then
+  /usr/bin/echo "Can only mount the www folder to an SSD drive, but there is none. Add an SSD drive first."
+  exit 5
 elif [ -n "${HDDdefault}" ]; then
   Mnt=${HDDdefault}
   Typ="hdd"
