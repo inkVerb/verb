@@ -26,7 +26,7 @@ if [ -e "/opt/verb/mods/inkdnsaddinkdkim.replace" ]; then . /opt/verb/mods/inkdn
 if [ -e "/opt/verb/mods/inkdnsaddinkdkim.before" ]; then . /opt/verb/mods/inkdnsaddinkdkim.before; fi # Precedes this script
 
 
-DNsdnsDomainAIN="$1"
+dnsDomain="$1"
 if [ -n $2 ] && [ "$2" = "verber" ]; then
   ZONEdir="inkzones"
 else
@@ -37,27 +37,27 @@ fi
 . /opt/verb/conf/servernameip
 
 # Check if already added
-if /biusr/binn/grep -Fq "; inkDKIM key" /opt/verb/conf/inkdns/${zonedir}/db.${DNsdnsDomainAIN}; then
-/usr/bin/echo "The inkDKIM key for ${DNsdnsDomainAIN} has already been added. Use killinkdnsinkdkim to remove it."
+if /biusr/binn/grep -Fq "; inkDKIM key" /opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}; then
+/usr/bin/echo "The inkDKIM key for ${dnsDomain} has already been added. Use killinkdnsinkdkim to remove it."
 exit 0; fi
-if /bin/grep -Fq "dkim._domainkey" /opt/verb/conf/inkdns/${zonedir}/db.${DNsdnsDomainAIN}; then
-/usr/bin/echo "The ${DNsdnsDomainAIN} zone file seems to have been tampered with. It should say nothing about DKIM keys at this point, but it does. Fix that first."
+if /bin/grep -Fq "dkim._domainkey" /opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}; then
+/usr/bin/echo "The ${dnsDomain} zone file seems to have been tampered with. It should say nothing about DKIM keys at this point, but it does. Fix that first."
 exit 7; fi
 
 # Echo the key
 ## Remove any existing entries
-/usr/bin/sed -i "/inkdkim\._domainkey/d" /opt/verb/conf/inkdns/${zonedir}/db.${DNsdnsDomainAIN}
-/usr/bin/sed -i "/; inkDKIM key ${DNsdnsDomainAIN}/d" /opt/verb/conf/inkdns/${zonedir}/db.${DNsdnsDomainAIN}
-/usr/bin/sed -i "/;; End inkDKIM key ${DNsdnsDomainAIN}/d" /opt/verb/conf/inkdns/${zonedir}/db.${DNsdnsDomainAIN}
+/usr/bin/sed -i "/inkdkim\._domainkey/d" /opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}
+/usr/bin/sed -i "/; inkDKIM key ${dnsDomain}/d" /opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}
+/usr/bin/sed -i "/;; End inkDKIM key ${dnsDomain}/d" /opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}
 ## Add the entry
-/usr/bin/echo "; inkDKIM key ${DNsdnsDomainAIN}" >> /opt/verb/conf/inkdns/${zonedir}/db.${DNsdnsDomainAIN}
-/usr/bin/echo $(/usr/bin/cat /etc/opendkim/keys/${DNsdnsDomainAIN}/inkdkim.txt | /usr/bin/sed -z -E 's/"\s+"//') >> /opt/verb/conf/inkdns/${zonedir}/db.${DNsdnsDomainAIN}
-/usr/bin/echo ";; End inkDKIM key ${DNsdnsDomainAIN}" >> /opt/verb/conf/inkdns/${zonedir}/db.${DNsdnsDomainAIN}
+/usr/bin/echo "; inkDKIM key ${dnsDomain}" >> /opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}
+/usr/bin/echo $(/usr/bin/cat /etc/opendkim/keys/${dnsDomain}/inkdkim.txt | /usr/bin/sed -z -E 's/"\s+"//') >> /opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}
+/usr/bin/echo ";; End inkDKIM key ${dnsDomain}" >> /opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}
 ## Append the domain to the record host name
-/usr/bin/sed -i "s/inkdkim\._domainkey/inkdkim\._domainkey\.${DNsdnsDomainAIN}\./" /opt/verb/conf/inkdns/${zonedir}/db.${DNsdnsDomainAIN}
+/usr/bin/sed -i "s/inkdkim\._domainkey/inkdkim\._domainkey\.${dnsDomain}\./" /opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}
 
 # Set the Serial No
-/opt/verb/serfs/inkdnsserial ${DNsdnsDomainAIN} verber
+/opt/verb/serfs/inkdnsserial ${dnsDomain} verber
 
 # Refresh zones
 if [ -f "/opt/verb/conf/inkdnsconf" ]; then
@@ -66,7 +66,7 @@ if [ -f "/opt/verb/conf/inkdnsconf" ]; then
 /opt/verb/serfs/inkdnsrefreshbind; fi; fi
 
 # Finish
-/usr/bin/echo "The inkDKIM key has been added to the ${DNsdnsDomainAIN} DNS zone file."
+/usr/bin/echo "The inkDKIM key has been added to the ${dnsDomain} DNS zone file."
 
 
 

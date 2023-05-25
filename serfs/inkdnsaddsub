@@ -38,40 +38,40 @@ if ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpat
 fi
 
 dnsSubDom="$1"
-DNsdnsDomainAIN="$2"
+dnsDomain="$2"
 
 # Include the configs
 . /opt/verb/conf/servernameip
 
 # Check if already added
-if /bin/grep -Fq "${dnsSubDom}.${DNsdnsDomainAIN}" /opt/verb/conf/inkdns/zones/db.${DNsdnsDomainAIN}; then
-/bin/echo "The subdomain ${dnsSubDom} has already been added to ${DNsdnsDomainAIN}. Use killinkdnssub to remove it."
+if /bin/grep -Fq "${dnsSubDom}.${dnsDomain}" /opt/verb/conf/inkdns/zones/db.${dnsDomain}; then
+/bin/echo "The subdomain ${dnsSubDom} has already been added to ${dnsDomain}. Use killinkdnssub to remove it."
 exit 0; fi
 
 # Echo the records
 ## db.DOM
-/bin/echo "; Subdomain Records Added by inkDNS ${dnsSubDom}.${DNsdnsDomainAIN}" >> /opt/verb/conf/inkdns/zones/db.${DNsdnsDomainAIN}
+/bin/echo "; Subdomain Records Added by inkDNS ${dnsSubDom}.${dnsDomain}" >> /opt/verb/conf/inkdns/zones/db.${dnsDomain}
 ### IP4?
 if [ "${ServerIPv4}" != "NOIP4" ]; then
-  /bin/echo "${dnsSubDom}.${DNsdnsDomainAIN}.   IN  A    ${ServerIPv4}" >> /opt/verb/conf/inkdns/zones/db.${DNsdnsDomainAIN}
+  /bin/echo "${dnsSubDom}.${dnsDomain}.   IN  A    ${ServerIPv4}" >> /opt/verb/conf/inkdns/zones/db.${dnsDomain}
 fi
 ### IP6?
 if [ "${ServerIPv6}" != "NOIP6" ]; then
-  /bin/echo "${dnsSubDom}.${DNsdnsDomainAIN}.   IN  AAAA   ${ServerIPv6}" >> /opt/verb/conf/inkdns/zones/db.${DNsdnsDomainAIN}
+  /bin/echo "${dnsSubDom}.${dnsDomain}.   IN  AAAA   ${ServerIPv6}" >> /opt/verb/conf/inkdns/zones/db.${dnsDomain}
 fi
 ## nv.DOM
-/bin/echo "; PTR Subdomain Records Added by inkDNS ${dnsSubDom}.${DNsdnsDomainAIN}" >> /opt/verb/conf/inkdns/zones/nv.${DNsdnsDomainAIN}
+/bin/echo "; PTR Subdomain Records Added by inkDNS ${dnsSubDom}.${dnsDomain}" >> /opt/verb/conf/inkdns/zones/nv.${dnsDomain}
 ### IP4?
 if [ "${ServerIPv4}" != "NOIP4" ]; then
-  /bin/echo "${ServerARPAIPv4}		IN  PTR  ${dnsSubDom}.${DNsdnsDomainAIN}." >> /opt/verb/conf/inkdns/zones/nv.${DNsdnsDomainAIN}
+  /bin/echo "${ServerARPAIPv4}		IN  PTR  ${dnsSubDom}.${dnsDomain}." >> /opt/verb/conf/inkdns/zones/nv.${dnsDomain}
 fi
 ### IP6?
 if [ "${ServerIPv6}" != "NOIP6" ]; then
-  /bin/echo "${ServerARPAIPv6}		IN  PTR  ${dnsSubDom}.${DNsdnsDomainAIN}." >> /opt/verb/conf/inkdns/zones/nv.${DNsdnsDomainAIN}
+  /bin/echo "${ServerARPAIPv6}		IN  PTR  ${dnsSubDom}.${dnsDomain}." >> /opt/verb/conf/inkdns/zones/nv.${dnsDomain}
 fi
 
 # Set the Serial No
-/opt/verb/serfs/inkdnsserial ${DNsdnsDomainAIN}
+/opt/verb/serfs/inkdnsserial ${dnsDomain}
 
 # Refresh zones
 if [ -f "/opt/verb/conf/inkdnsconf" ]; then
@@ -80,7 +80,7 @@ if [ -f "/opt/verb/conf/inkdnsconf" ]; then
 /opt/verb/serfs/inkdnsrefreshbind; fi; fi
 
 # Finish
-/bin/echo "The subdomain ${dnsSubDom} has been added to the ${DNsdnsDomainAIN} DNS zone file."
+/bin/echo "The subdomain ${dnsSubDom} has been added to the ${dnsDomain} DNS zone file."
 
 
 

@@ -38,7 +38,7 @@ if ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpat
   /usr/bin/echo "Install Postfix Vmail first, I quit."; exit 8
 fi
 
-DNsdnsDomainAIN="$1"
+dnsDomain="$1"
 
 # Make sure we don't kill a verb domain
 if /bin/grep -q "${domain}" /opt/verb/conf/siteurilist; then
@@ -49,22 +49,22 @@ fi
 . /opt/verb/conf/servernameip
 
 # Check if already added
-if ! /bin/grep -Fq "; Hostname Mail Record Defaults" /opt/verb/conf/inkdns/zones/db.${DNsdnsDomainAIN}; then
-/bin/echo "Mail Record Defaults don't exist for ${DNsdnsDomainAIN}. Use inkdnsaddmail to add them."
+if ! /bin/grep -Fq "; Hostname Mail Record Defaults" /opt/verb/conf/inkdns/zones/db.${dnsDomain}; then
+/bin/echo "Mail Record Defaults don't exist for ${dnsDomain}. Use inkdnsaddmail to add them."
 exit 0; fi
 
 # Remove the records
-/bin/sed -i "/; Hostname Mail Record Defaults/,/;; End Mail Defaults/d" /opt/verb/conf/inkdns/zones/db.${DNsdnsDomainAIN}
-/bin/sed -i "/; PTR Hostname Mail Record Defaults/,/;; End Mail Defaults/d" /opt/verb/conf/inkdns/zones/nv.${DNsdnsDomainAIN}
+/bin/sed -i "/; Hostname Mail Record Defaults/,/;; End Mail Defaults/d" /opt/verb/conf/inkdns/zones/db.${dnsDomain}
+/bin/sed -i "/; PTR Hostname Mail Record Defaults/,/;; End Mail Defaults/d" /opt/verb/conf/inkdns/zones/nv.${dnsDomain}
 
 # Set the Serial No
-/opt/verb/serfs/inkdnsserial ${DNsdnsDomainAIN}
+/opt/verb/serfs/inkdnsserial ${dnsDomain}
 
 # Refresh zones
 /opt/verb/serfs/inkdnsrefreshbind; fi; fi
 
 # Finish
-/bin/echo "The Mail Record Defaults have been removed from the ${DNsdnsDomainAIN} DNS zone file."
+/bin/echo "The Mail Record Defaults have been removed from the ${dnsDomain} DNS zone file."
 
 
 

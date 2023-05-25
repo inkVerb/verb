@@ -27,22 +27,22 @@ if [ -e "/opt/verb/mods/killinkdnssub.before" ]; then . /opt/verb/mods/killinkdn
 
 
 dnsSubDom="$1"
-DNsdnsDomainAIN="$2"
+dnsDomain="$2"
 
 # Include the configs
 . /opt/verb/conf/servernameip
 
 # Check if already added
-if ! /bin/grep -Fq "${dnsSubDom}.${DNsdnsDomainAIN}" /opt/verb/conf/inkdns/zones/db.${DNsdnsDomainAIN}; then
-/bin/echo "The subdomain ${dnsSubDom} has not been added to ${DNsdnsDomainAIN}. Use inkdnsaddsub to add it."
+if ! /bin/grep -Fq "${dnsSubDom}.${dnsDomain}" /opt/verb/conf/inkdns/zones/db.${dnsDomain}; then
+/bin/echo "The subdomain ${dnsSubDom} has not been added to ${dnsDomain}. Use inkdnsaddsub to add it."
 exit 0; fi
 
 # Remove the records
-/bin/sed -i "/; Subdomain Records Added by inkDNS ${dnsSubDom}\.${DNsdnsDomainAIN}/,+2d" /opt/verb/conf/inkdns/zones/db.${DNsdnsDomainAIN}
-/bin/sed -i "/; PTR Subdomain Records Added by inkDNS ${dnsSubDom}\.${DNsdnsDomainAIN}/,+2d" /opt/verb/conf/inkdns/zones/nv.${DNsdnsDomainAIN}
+/bin/sed -i "/; Subdomain Records Added by inkDNS ${dnsSubDom}\.${dnsDomain}/,+2d" /opt/verb/conf/inkdns/zones/db.${dnsDomain}
+/bin/sed -i "/; PTR Subdomain Records Added by inkDNS ${dnsSubDom}\.${dnsDomain}/,+2d" /opt/verb/conf/inkdns/zones/nv.${dnsDomain}
 
 # Set the Serial No
-/opt/verb/serfs/inkdnsserial ${DNsdnsDomainAIN}
+/opt/verb/serfs/inkdnsserial ${dnsDomain}
 
 # Refresh zones
 if [ -f "/opt/verb/conf/inkdnsconf" ]; then
@@ -51,7 +51,7 @@ if [ -f "/opt/verb/conf/inkdnsconf" ]; then
 /opt/verb/serfs/inkdnsrefreshbind; fi; fi
 
 # Finish
-/bin/echo "The subdomain ${dnsSubDom} has been removed from the ${DNsdnsDomainAIN} DNS zone file."
+/bin/echo "The subdomain ${dnsSubDom} has been removed from the ${dnsDomain} DNS zone file."
 
 
 

@@ -39,7 +39,7 @@ if ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpat
   /usr/bin/echo "Install Postfix Vmail first, I quit."; exit 8
 fi
 
-DNsdnsDomainAIN="$1"
+dnsDomain="$1"
 if [ -n $2 ] && [ "$2" = "verber" ]; then
   ZONEdir="inkzones"
 else
@@ -50,18 +50,18 @@ fi
 . /opt/verb/conf/servernameip
 
 # Check if already added
-if /bin/grep -Fq "; inkDKIM key" /opt/verb/conf/inkdns/${zonedir}/db.${DNsdnsDomainAIN}; then
-/bin/echo "The inkDKIM key for ${DNsdnsDomainAIN} has not been added. Use inkdnsaddinkdkim to add it."
+if /bin/grep -Fq "; inkDKIM key" /opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}; then
+/bin/echo "The inkDKIM key for ${dnsDomain} has not been added. Use inkdnsaddinkdkim to add it."
 exit 0; fi
 
 # Remove the key
-/bin/sed -i "/; inkDKIM key ${DNsdnsDomainAIN}/,/;; End inkDKIM key ${DNsdnsDomainAIN}/d" /opt/verb/conf/inkdns/${zonedir}/db.${DNsdnsDomainAIN}
+/bin/sed -i "/; inkDKIM key ${dnsDomain}/,/;; End inkDKIM key ${dnsDomain}/d" /opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}
 
 # Set the Serial No
 if [ "${zonedir}" = "inkzones" ]; then
-  /opt/verb/serfs/inkdnsserial ${DNsdnsDomainAIN} verber
+  /opt/verb/serfs/inkdnsserial ${dnsDomain} verber
 elif [ "${zonedir}" = "zones" ]; then
-  /opt/verb/serfs/inkdnsserial ${DNsdnsDomainAIN}
+  /opt/verb/serfs/inkdnsserial ${dnsDomain}
 fi
 
 # Refresh zones
@@ -71,7 +71,7 @@ if [ -f "/opt/verb/conf/inkdnsconf" ]; then
 /opt/verb/serfs/inkdnsrefreshbind; fi; fi
 
 # Finish
-/bin/echo "The inkDKIM key has been removed from the ${DNsdnsDomainAIN} DNS zone file."
+/bin/echo "The inkDKIM key has been removed from the ${dnsDomain} DNS zone file."
 
 
 

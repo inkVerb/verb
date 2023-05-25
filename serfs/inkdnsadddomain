@@ -37,33 +37,33 @@ if ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpat
   /usr/bin/echo "Install Postfix Vmail first, I quit."; exit 8
 fi
 
-DNsdnsDomainAIN="$1"
+dnsDomain="$1"
 
 # Include the configs
 . /opt/verb/conf/servernameip
 
 # Check if already added
-if [ -e "/opt/verb/conf/inkdns/zones/db.${DNsdnsDomainAIN}" ]; then
-/bin/echo "The domain ${DNsdnsDomainAIN} zone file has already been created. Use killinkdnsdomain to remove it."
+if [ -e "/opt/verb/conf/inkdns/zones/db.${dnsDomain}" ]; then
+/bin/echo "The domain ${dnsDomain} zone file has already been created. Use killinkdnsdomain to remove it."
 exit 0; fi
 
 # DNS zone file
-/bin/cp /opt/verb/conf/inkdns/db.dnsdomain /opt/verb/conf/inkdns/zones/db.${DNsdnsDomainAIN}
-/bin/sed -i "s/hostdomain286/${DNsdnsDomainAIN}/g" /opt/verb/conf/inkdns/zones/db.${DNsdnsDomainAIN}
+/bin/cp /opt/verb/conf/inkdns/db.dnsdomain /opt/verb/conf/inkdns/zones/db.${dnsDomain}
+/bin/sed -i "s/hostdomain286/${dnsDomain}/g" /opt/verb/conf/inkdns/zones/db.${dnsDomain}
 
 # rDNS zone file
-/bin/echo "; PTR Domain" > /opt/verb/conf/inkdns/zones/nv.${DNsdnsDomainAIN}
+/bin/echo "; PTR Domain" > /opt/verb/conf/inkdns/zones/nv.${dnsDomain}
 ## IP4?
 if [ "${ServerIPv4}" != "NOIP4" ]; then
-  /bin/echo "${ServerARPAIPv4}		IN  PTR  ${DNsdnsDomainAIN}." >> /opt/verb/conf/inkdns/zones/nv.${DNsdnsDomainAIN}
+  /bin/echo "${ServerARPAIPv4}		IN  PTR  ${dnsDomain}." >> /opt/verb/conf/inkdns/zones/nv.${dnsDomain}
 fi
 ## IP6?
 if [ "${ServerIPv6}" != "NOIP6" ]; then
-  /bin/echo "${ServerARPAIPv6}		IN  PTR  ${DNsdnsDomainAIN}." >> /opt/verb/conf/inkdns/zones/nv.${DNsdnsDomainAIN}
+  /bin/echo "${ServerARPAIPv6}		IN  PTR  ${dnsDomain}." >> /opt/verb/conf/inkdns/zones/nv.${dnsDomain}
 fi
 
 # Set the Serial No
-/opt/verb/serfs/inkdnsserial ${DNsdnsDomainAIN}
+/opt/verb/serfs/inkdnsserial ${dnsDomain}
 
 # Refresh zones
 if [ -f "/opt/verb/conf/inkdnsconf" ]; then
@@ -72,7 +72,7 @@ if [ -f "/opt/verb/conf/inkdnsconf" ]; then
 /opt/verb/serfs/inkdnsrefreshbind; fi; fi
 
 # Finish
-/bin/echo "${DNsdnsDomainAIN} DNS zone file created."
+/bin/echo "${dnsDomain} DNS zone file created."
 
 
 

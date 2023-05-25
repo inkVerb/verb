@@ -37,19 +37,19 @@ if ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpat
   /usr/bin/echo "Install Postfix Vmail first, I quit."; exit 8
 fi
 
-DNsdnsDomainAIN="$1"
+dnsDomain="$1"
 
 # Include the configs
 . /opt/verb/conf/servernameip
 
 # Check if added
-if [ ! -e "/opt/verb/conf/inkdns/zones/db.${DNsdnsDomainAIN}" ]; then
-/bin/echo "The domain ${DNsdnsDomainAIN} zone file has not been created. Use inkdnsadddomain to add it."
+if [ ! -e "/opt/verb/conf/inkdns/zones/db.${dnsDomain}" ]; then
+/bin/echo "The domain ${dnsDomain} zone file has not been created. Use inkdnsadddomain to add it."
 exit 0; fi
 
 # Remove the records
-/bin/rm -f /opt/verb/conf/inkdns/zones/db.${DNsdnsDomainAIN}
-/bin/rm -f /opt/verb/conf/inkdns/zones/nv.${DNsdnsDomainAIN}
+/bin/rm -f /opt/verb/conf/inkdns/zones/db.${dnsDomain}
+/bin/rm -f /opt/verb/conf/inkdns/zones/nv.${dnsDomain}
 
 # Refresh zones & delete the global rDNS entry
 if [ -f "/opt/verb/conf/inkdnsconf" ]; then
@@ -58,7 +58,7 @@ if [ -f "/opt/verb/conf/inkdnsconf" ]; then
 /opt/verb/serfs/inkdnsrefreshbind; fi; fi
 
 # Finish
-/bin/echo "${DNsdnsDomainAIN} DNS zone file removed."
+/bin/echo "${dnsDomain} DNS zone file removed."
 
 
 

@@ -71,15 +71,15 @@ fi
 
 # Set the NS domains
 ## Verber Domains
-/usr/bin/sed -i "s/ns1\.DNsdnsDomainAIN286/${ServerNS1DNS}/g" /opt/verb/conf/inkdns/inkzones/db.*
-/usr/bin/sed -i "s/ns2\.DNsdnsDomainAIN286/${ServerNS2DNS}/g" /opt/verb/conf/inkdns/inkzones/db.*
+/usr/bin/sed -i "s/ns1\.dnsDomain286/${ServerNS1DNS}/g" /opt/verb/conf/inkdns/inkzones/db.*
+/usr/bin/sed -i "s/ns2\.dnsDomain286/${ServerNS2DNS}/g" /opt/verb/conf/inkdns/inkzones/db.*
 ## Hosted domain template
-/usr/bin/sed -i "s/ns1\.DNsdnsDomainAIN286/${ServerNS1DNS}/g" /opt/verb/conf/inkdns/db.dnsdomain
-/usr/bin/sed -i "s/ns2\.DNsdnsDomainAIN286/${ServerNS2DNS}/g" /opt/verb/conf/inkdns/db.dnsdomain
+/usr/bin/sed -i "s/ns1\.dnsDomain286/${ServerNS1DNS}/g" /opt/verb/conf/inkdns/db.dnsdomain
+/usr/bin/sed -i "s/ns2\.dnsDomain286/${ServerNS2DNS}/g" /opt/verb/conf/inkdns/db.dnsdomain
 ## Any hosted domains
 if [ -f "/opt/verb/conf/inkdns/zones/db.*" ]; then
-  /usr/bin/sed -i "s/ns1\.DNsdnsDomainAIN286/${ServerNS1DNS}/g" /opt/verb/conf/inkdns/zones/db.*
-  /usr/bin/sed -i "s/ns2\.DNsdnsDomainAIN286/${ServerNS2DNS}/g" /opt/verb/conf/inkdns/zones/db.*
+  /usr/bin/sed -i "s/ns1\.dnsDomain286/${ServerNS1DNS}/g" /opt/verb/conf/inkdns/zones/db.*
+  /usr/bin/sed -i "s/ns2\.dnsDomain286/${ServerNS2DNS}/g" /opt/verb/conf/inkdns/zones/db.*
 fi
 
 # DNS serial number
