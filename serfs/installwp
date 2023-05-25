@@ -132,18 +132,6 @@ elif [ ${ServerType} = "laemp" ]; then
   /usr/bin/systemctl restart nginx
 fi
 
-# inkDrive?
-if [ -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
-  . /opt/verb/conf/inkdrive/inkdriveinfo
-fi
-if [ "${InkDriveWP}" != "off" ]; then
-  /usr/bin/echo "Mounting 'wp-content' to a drive..."
-  /opt/verb/serfs/inkdriveapp "${cVappName}.${domain}" "${InkDriveWP}"
-  if [ "$?" = 0 ]; then
-    /usr/bin/echo "InkDrive=\"${InkDriveWP}\"" >> /opt/verb/conf/vapp.${cVappName}.${domain}
-  fi
-fi
-
 # Finish
 /usr/bin/echo "These are setup:
 
@@ -153,6 +141,22 @@ Database password: ${dBPassword}
 
 Go to http://${domain}/wp-admin/index.php to install.
 "
+
+# inkDrive? (last so above message shows, even if we need to exit non-zero next)
+if [ -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
+  . /opt/verb/conf/inkdrive/inkdriveinfo
+fi
+if [ "${InkDriveWP}" != "off" ]; then
+  /usr/bin/echo "Mounting 'wp-content' to a drive..."
+  /opt/verb/serfs/inkdriveapp "${cVappName}.${domain}" "${InkDriveWP}"
+  if [ "$?" = 0 ]; then
+    /usr/bin/echo "InkDrive=\"${InkDriveWP}\"" >> /opt/verb/conf/vapp.${cVappName}.${domain}
+  else
+    /usr/bin/echo "inkDrive hosting is expected, but unable to host WP on the drive. Something is very wrong!"
+    exit 6
+  fi
+fi
+
 
 
 if [ -e "/opt/verb/mods/installwp.after" ]; then . /opt/verb/mods/installwp.after; fi # Follows this script

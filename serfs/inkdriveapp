@@ -124,6 +124,10 @@ if [ "$?" != 0 ]; then
   exit 6
 fi
 
+## Conf
+/usr/bin/mv /opt/verb/conf/vapp.${Vapp} "/mnt/${Mnt}/.conf/"
+/usr/bin/ln -sfn "/mnt/${Mnt}/.conf/vapp.${Vapp}" /opt/verb/conf/
+
 # Finish
 if [ -d "/mnt/${Mnt}/${Vapp}" ] [ -e "${VappData}" ]; then
   /usr/bin/sed -i '/VappDrive=/d' "/opt/verb/conf/vapp.${Vapp}"

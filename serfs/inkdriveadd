@@ -100,6 +100,7 @@ fi
 /usr/bin/touch /etc/fstab
 /usr/bin/echo "/dev/${Dev}1               /mnt/${Mnt}       ext4    defaults,noatime,nofail 0 0" >> /etc/fstab
 /usr/bin/mount /mnt/${Mnt}
+/usr/bin/mkdir -p /mnt/${Mnt}/.conf
 
 # Finish
 if [ -d "/mnt/${Mnt}" ]; then
