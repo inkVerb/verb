@@ -26,7 +26,7 @@ voptflags=(  )
 voptflagpurpose=(  )
 dependencyinstall=(  )
 prerequesite=( inkdriveadd )
-usedby=(  )
+usedby=( rink::unplugdrive )
 useserfs=(  )
 useconfigs=( inkdrive/inkdriveinfo )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
@@ -58,7 +58,7 @@ if [ "Device" != "${Dev}" ] && [ "Mount" != "${Mnt}" ] && [ "Type" != "${Typ}" ]
 fi
 
 # Check that the mounted drive is empty
-if [ -n "$(/usr/bin/ls -A /mnt/${Mnt})" ] && [ -z "$Ignore" ]; then
+if [ -n "$(/usr/bin/ls -A /mnt/${Mnt})" ] && [ -z "${Ignore}" ]; then
    /usr/bin/echo "That mounted drive is not empty. Move its contents first using inkdrivemove, or use the \"ignore\" fourth argument to remove it anyway."
    exit 5
 fi
