@@ -7,14 +7,14 @@
 ## ./inkdrivewp [ on/off ] [ drive name - optional ]
 
 # Eg:
-## ./inkdrivewp on myssd
+## ./inkdrivewp on ssd
 ## ./inkdrivewp on
 ## ./inkdrivewp off
 
 
 usagenotes="This sets a default for installwp to always mount the wp-content to a mounted drive"
 usageformat="inkdrivewp [ on/off ] [ drive name - optional ]"
-usageexample="inkdrivewp on myssd
+usageexample="inkdrivewp on ssd
 inkdrivewp on
 inkdrivewp off"
 hierarchy=( primary )
@@ -38,8 +38,7 @@ if [ ! -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
   /usr/bin/echo "inkDrive not installed. Nothing to show."
 fi
 
-OnOff="$1"
-Mnt="$2"
+OnOff="${1}"
 
 if [ "${OnOff}" != "on" ] && [ "${OnOff}" != "off" ]; then
   /usr/bin/echo "WP must be set to 'on' or 'off', see usage."
@@ -55,9 +54,8 @@ else
 fi
 
 # Defaults (prefer HDD)
-Vapp="$1"
-if [ -n "$2" ]; then
-  Mnt="$2"
+if [ -n "${2}" ]; then
+  Mnt="${2}"
 elif [ -n "${HDDdefault}" ]; then
   Mnt=${HDDdefault}
 elif [ -n "${SSDdefault}" ]; then
