@@ -70,6 +70,7 @@ fi
 
 # Unmount the drive
 /usr/bin/sed "/${Dev}1\s*\/mnt\/${Mnt}/d" /etc/fstab
+/usr/bin/umount "/mnt/${Mnt}"
 /usr/bin/rm -rf "/mnt/${Mnt}"
 
 # Delete configs

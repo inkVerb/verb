@@ -51,7 +51,7 @@ if /bin/grep -q "/mnt/${Mnt}" /etc/fstab; then
   /usr/bin/echo "That drive name is already in use."
   exit 0
 fi
-if /bin/grep -q "/dev/${Dev}" /opt/verb/conf/inkdrive/*; then
+if [ -n "$(ls /opt/verb/conf/inkdrive/*)" ] && /bin/grep -q "/dev/${Dev}" /opt/verb/conf/inkdrive/*; then
   /usr/bin/echo "That device is already listed, but isn't in use; something is wrong."
   exit 0
 fi
