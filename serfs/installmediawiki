@@ -21,7 +21,7 @@ dBPassword=$3
 cleanName=$(/bin/echo $cVappName | sed -e 's/\.//g')
 
 # Check if already installed
-if [-f /opt/verb/conf/vapp.${cVappName} ]; then
+if [-f /opt/verb/conf/vapps/vapp.${cVappName} ]; then
 /bin/echo "This is already installed. I quit."
 exit 0; fi
 
@@ -52,7 +52,7 @@ FLUSH PRIVILEGES;"
 /bin/echo "#!/bin/bash
 APPdBase=${dBase}
 appDDBUsr=${dBaseUser}
-appDDBPass=${dBPassword}" > /opt/verb/conf/vapp.${cVappName}
+appDDBPass=${dBPassword}" > /opt/verb/conf/vapps/vapp.${cVappName}
 
 /bin/echo "These are setup:
 

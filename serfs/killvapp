@@ -33,7 +33,7 @@ if [ -e "/opt/verb/mods/killvapp.before" ]; then . /opt/verb/mods/killvapp.befor
 
 # Include the configs
 . /opt/verb/conf/servernameip
-. /opt/verb/conf/vapp.${appName}
+. /opt/verb/conf/vapps/vapp.${appName}
 
 appName=$1
 
@@ -44,7 +44,7 @@ DROP USER ${appDDBUsr}@localhost;
 FLUSH PRIVILEGES;"
 
 # Kill the config
-/bin/rm -f /opt/verb/conf/vapp.${appName}
+/bin/rm -f /opt/verb/conf/vapps/vapp.${appName}
 
 # Kill the directories
 /bin/rm -rf /srv/www/vapps/${appName}

@@ -63,7 +63,7 @@ elif [ ! -d "/mnt/${Mnt}" ]; then
 fi
 
 # Check vapp
-if [ ! -f "/opt/verb/conf/vapp.${Vapp}" ]; then
+if [ ! -f "/opt/verb/conf/vapps/vapp.${Vapp}" ]; then
   /usr/bin/echo "That vapp is not installed; nothing to do."
   exit 8
 fi
@@ -83,7 +83,7 @@ else
   /usr/bin/echo "${Vapp} is not a vapp that can be mounted to a drive."
   exit 5
 fi
-. "/opt/verb/conf/vapp.${Vapp}"
+. "/opt/verb/conf/vapps/vapp.${Vapp}"
 if [ -d "/mnt/${Mnt}/${Vapp}" ] && [ -n "${VappDrive}" ] && [ "${VappDrive}" = "${Mnt}" ]; then
   /usr/bin/echo "That vapp is already mounted to that drive."
   exit 0
@@ -125,13 +125,12 @@ if [ "$?" != 0 ]; then
 fi
 
 ## Conf
-/usr/bin/mv /opt/verb/conf/vapp.${Vapp} "/mnt/${Mnt}/.conf/"
-/usr/bin/ln -sfn "/mnt/${Mnt}/.conf/vapp.${Vapp}" /opt/verb/conf/
+/usr/bin/mv /opt/verb/conf/vapps/vapp.${Vapp} "/mnt/${Mnt}/.conf/"
+/usr/bin/ln -sfn "/mnt/${Mnt}/.conf/vapp.${Vapp}" /opt/verb/conf/vapps/vapp./
 
 # Finish
 if [ -d "/mnt/${Mnt}/${Vapp}" ] [ -e "${VappData}" ]; then
-  /usr/bin/sed -i '/VappDrive=/d' "/opt/verb/conf/vapp.${Vapp}"
-  /usr/bin/echo "VappDrive=\"${Mnt}\"" >> "/opt/verb/conf/vapp.${Vapp}"
+  /usr/bin/sed -i "s/VappDrive=.*/VappDrive=\"${Mnt}\"/" "/opt/verb/conf/vapps/vapp.${Vapp}"
   /usr/bin/echo "${VappType} successfully mounted to '${Mnt}'."
 fi
 

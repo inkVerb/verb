@@ -28,11 +28,11 @@ FILENAME=$2
 . /opt/verb/conf/servernameip
 
 # Backup and remove whatever the original status is
-if [ -e "/opt/verb/conf/vapp.${appName}" ]; then
-. /opt/verb/conf/vapp.${appName}
+if [ -e "/opt/verb/conf/vapps/vapp.${appName}" ]; then
+. /opt/verb/conf/vapps/vapp.${appName}
 cd /srv/www/vapps/${appName}/ || exit 6
 /opt/verb/serfs/mysqlvappex vapp.${appName}; wait
-/bin/mv /opt/verb/conf/vapp.${appName} .
+/bin/mv /opt/verb/conf/vapps/vapp.${appName} .
 cd /srv/www/vapps/ || exit 6
 /opt/verb/serfs/vtxzin ${appName}
 /bin/mv ${appName}.txz verb.${appName}.restore-originalbackedup.vbak
@@ -53,7 +53,7 @@ cd /srv/www/vip || exit 6
 
 # Restore and include the app config
 /bin/mv /srv/www/vapps/${appName}/vapp.${appName} /opt/verb/conf/
-. /opt/verb/conf/vapp.${appName}
+. /opt/verb/conf/vapps/vapp.${appName}
 
 # Create the SQL database
 /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "

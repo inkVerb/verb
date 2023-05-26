@@ -24,7 +24,7 @@ cVappName=nextcloud
 
 # Check if already installed
 ## Config
-if [ -f /opt/verb/conf/vapp.${cVappName} ]; then
+if [ -f /opt/verb/conf/vapps/vapp.${cVappName} ]; then
 /bin/echo "This is already installed."
 exit 0; fi
 ## Directory
@@ -93,7 +93,7 @@ FLUSH PRIVILEGES;"
 # Write the config for backup
 /bin/echo "APPdBase=${dBase}
 appDDBUsr=${dBaseUser}
-appDDBPass=${dBPassword}" > /opt/verb/conf/vapp.${cVappName}
+appDDBPass=${dBPassword}" > /opt/verb/conf/vapps/vapp.${cVappName}
 
 # php-fpm
 /usr/bin/cat <<'EOF' > /etc/php/php-fpm.d/nextcloud.conf

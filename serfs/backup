@@ -25,14 +25,14 @@ secName=$2
 fi
 
 # Check if installed
-if [ -z "/opt/verb/conf/vapp.${appName}" ]; then
+if [ -z "/opt/verb/conf/vapps/vapp.${appName}" ]; then
 /bin/echo "${appName} not installed. Nothing to backup."
 exit 0; fi
 
 # Include the configs
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/siteurilist
-. /opt/verb/conf/vapp.${appName}
+. /opt/verb/conf/vapps/vapp.${appName}
 
 # Export the database
 cd /srv/www/vapps/${appName}/ || exit 6
@@ -40,7 +40,7 @@ cd /srv/www/vapps/${appName}/ || exit 6
 /bin/cp /srv/vip/sql/${appDBase}.sql /srv/www/vapps/${appName}/ || exit 4
 
 # Backup the config
-/bin/cp /opt/verb/conf/vapp.${appName} /srv/www/vapps/${appName}/
+/bin/cp /opt/verb/conf/vapps/vapp.${appName} /srv/www/vapps/${appName}/
 
 # Pack the directory
 cd /srv/www/vapps || exit 6

@@ -1,22 +1,22 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
-# This sets a default for installwp to always mount the wp-content folder to a mounted drive
+# This sets a default for installnextcloud to automatically mount the data folder to a mounted drive
 ## The drive must be added first, if none is specified, then hdd or ssd defaults will be used in that order of preference
 
 # How to use:
-## ./inkdrivewp [ on/off ] [ drive name - optional ]
+## ./inkdrivenc [ on/off ] [ drive name - optional ]
 
 # Eg:
-## ./inkdrivewp on myssd
-## ./inkdrivewp on
-## ./inkdrivewp off
+## ./inkdrivenc on myssd
+## ./inkdrivenc on
+## ./inkdrivenc off
 
 
-usagenotes="This sets a default for installwp to always mount the wp-content to a mounted drive"
-usageformat="inkdrivewp [ on/off ] [ drive name - optional ]"
-usageexample="inkdrivewp on myssd
-inkdrivewp on
-inkdrivewp off"
+usagenotes="This sets a default for installnextcloud to automatically mount the data folder to a mounted drive"
+usageformat="inkdrivenc [ on/off ] [ drive name - optional ]"
+usageexample="inkdrivenc on myssd
+inkdrivenc on
+inkdrivenc off"
 hierarchy=( primary )
 vsetnames=( "Drive name" "on/off" )
 vsettypes=( isChoice isExists )
@@ -30,8 +30,8 @@ usedby=(  )
 useserfs=(  )
 useconfigs=( inkdrive/inkdriveinfo )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
-if [ -e "/opt/verb/mods/inkdrivewp.replace" ]; then . /opt/verb/mods/inkdrivewp.replace; return 0; fi # Replaces this script
-if [ -e "/opt/verb/mods/inkdrivewp.before" ]; then . /opt/verb/mods/inkdrivewp.before; fi # Precedes this script
+if [ -e "/opt/verb/mods/inkdrivenc.replace" ]; then . /opt/verb/mods/inkdrivenc.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdrivenc.before" ]; then . /opt/verb/mods/inkdrivenc.before; fi # Precedes this script
 
 # Check if installed
 if [ ! -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
@@ -68,8 +68,8 @@ else
 fi
 
 # Redundancy
-if [ -n "${InkDriveWP}" ] && [ "${InkDriveWP}" = "${OnOff}" ]; then
-  /usr/bin/echo "WP inkDrive is already set to '${InkDriveWP}'; nothing to do."
+if [ -n "${InkDriveNC}" ] && [ "${InkDriveNC}" = "${OnOff}" ]; then
+  /usr/bin/echo "Nextcloud inkDrive is already set to '${InkDriveNC}'; nothing to do."
   exit 0
 fi
 
@@ -88,15 +88,15 @@ elif [ ! -d "/mnt/${Mnt}" ]; then
 fi
 
 # Set
-if [ -n "${InkDriveWP}" ]; then
-  /usr/bin/sed -i "s/InkDriveWP=.*/InkDriveWP=\"${OnOff}\"/" /opt/verb/conf/inkdrive/inkdriveinfo
+if [ -n "${InkDriveNC}" ]; then
+  /usr/bin/sed -i "s/InkDriveNC=.*/InkDriveNC=\"${OnOff}\"/" /opt/verb/conf/inkdrive/inkdriveinfo
 else
-  /usr/bin/echo "InkDriveWP=\"${OnOff}\"" >> /opt/verb/conf/inkdrive/inkdriveinfo
+  /usr/bin/echo "InkDriveNC=\"${OnOff}\"" >> /opt/verb/conf/inkdrive/inkdriveinfo
 fi
 
 # Finish
 if [ "$?" = 0 ]; then
-  /usr/bin/echo "Automatic inkDrive for WordPress is set to '${OnOff}'\""
+  /usr/bin/echo "Automatic inkDrive for Nextcloud is set to '${OnOff}'\""
 fi
 
-if [ -e "/opt/verb/mods/inkdrivewp.after" ]; then . /opt/verb/mods/inkdrivewp.after; fi # Follows this script
+if [ -e "/opt/verb/mods/inkdrivenc.after" ]; then . /opt/verb/mods/inkdrivenc.after; fi # Follows this script

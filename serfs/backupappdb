@@ -26,7 +26,7 @@ fi
 # Include the configs
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/siteurilist
-. /opt/verb/conf/vapp.${appName}
+. /opt/verb/conf/vapps/vapp.${appName}
 
 # Export the database
 cd /srv/www/vip || exit 6

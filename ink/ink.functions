@@ -529,7 +529,7 @@ if [ "$3" != "n" ] && [ "${isSiteInstalled}" = "false" ]; then
 exit 0; fi
 }
 
-## isVappConfig (a valid vapp config at /opt/verb/conf/vapp.nameTOCHECK)
+## isVappConfig (a valid vapp config at /opt/verb/conf/vapps/vapp.nameTOCHECK)
 isVappConfig() {
 local Vapp="$1"
 local vvar="$2"

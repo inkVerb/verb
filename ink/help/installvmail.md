@@ -17,5 +17,5 @@
     - Some possible dependencies
   - Downloads web apps from roundcube.net and PostfixAdmin's SourForge page
   - Creates databases with apps at:
-    - verb/conf/vapp.roundcube
-    - verb/conf/vapp.postfixadmin
+    - verb/conf/vapps/vapp.roundcube
+    - verb/conf/vapps/vapp.postfixadmin

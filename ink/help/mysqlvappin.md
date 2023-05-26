@@ -7,4 +7,4 @@
 - `ink mysql vappin -a [ Verb web app name ]`
   - Creates the databased based on the vapp.* config database credentials
 - `ink mysql vappin -a wp.inkisaverb.com`
-  - The database will be created and imported from `vip/sql/whatever.sql` based on the database credentials at `verb/conf/vapp.wp.inkisaverb.com`
+  - The database will be created and imported from `vip/sql/whatever.sql` based on the database credentials at `verb/conf/vapps/vapp.wp.inkisaverb.com`

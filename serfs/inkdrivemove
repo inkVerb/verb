@@ -39,11 +39,11 @@ if [ ! -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
 fi
 
 # Vapp or service
-if [ -z "$1" ]; then
+if [ -z "${1}" ]; then
   /usr/bin/echo "You must specify a vapp or service. I quit."
   exit 5
 else
-  VappSvc="$1"
+  VappSvc="${1}"
 fi
 if [[ "${VappSvc}" =~ ^wp.* ]] && [ -e "/srv/www/vapps/${Vapp}/wp-content" ]; then
   VappSvcType="WordPress"
@@ -90,8 +90,8 @@ fi
 Origin="$(/usr/bin/readlink -f "${VappSvcData}")"
 
 # Move to new drive
-if [ -n "$2" ]; then
-  Mnt="$2"
+if [ -n "${2}" ]; then
+  Mnt="${2}"
   if [ ! -d "/mnt/${Mnt}" ]; then
     /usr/bin/echo "${Mnt} is not a mounted drive."
     exit 5
@@ -142,10 +142,29 @@ if [ -n "${Mnt}" ]; then
     /usr/bin/chown -R ${Owner} "${VappSvcDataFolder}/${DataName}"
 fi
 /usr/bin/chown -R ${Owner} "${Dest}/${DataName}"
-## Legacy for vmail
+
+## Conf for vmail
 if [ "${Svc}" = "vmail" ]; then
+  servermailpassOrigin="$(/usr/bin/readlink /opt/verb/conf/servermailpass)"
+  /usr/bin/mv "${servermailpassOrigin}" "/mnt/${Mnt}/.conf/"
+  /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/servermailpass" /opt/verb/conf/
+  servermailpathOrigin="$(/usr/bin/readlink /opt/verb/conf/servermailpath)"
+  /usr/bin/mv "${servermailpathOrigin}" "/mnt/${Mnt}/.conf/"
+  /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/servermailpath" /opt/verb/conf/
+  ### Legacy for vmail
   /usr/bin/ln -sfn "${Dest}/vmail" /var/vmail
   /usr/bin/chown -R ${Owner} /var/vmail
+## Conf for mysql
+elif [ "${Svc}" = "mysql" ]; then
+  mysqlrootpasswordOrigin="$(/usr/bin/readlink /opt/verb/conf/mysqlrootpassword)"
+  /usr/bin/mv "${mysqlrootpasswordOrigin}" "/mnt/${Mnt}/.conf/"
+  /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/mysqlrootpassword" /opt/verb/conf/
+## Conf for www
+elif
+  confvappsOrigin="$(/usr/bin/readlink /opt/verb/conf/vapps/vapp.)"
+  /usr/bin/mv "${confvappsOrigin}" "/mnt/${Mnt}/.conf/"
+  /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/vapps" /opt/verb/conf/
 fi
+
 
 if [ -e "/opt/verb/mods/inkdrivemove.after" ]; then . /opt/verb/mods/adddoinkdrivemovemain.after; fi # Follows this script

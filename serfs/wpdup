@@ -36,7 +36,7 @@ fi
 
 # Dump the database
 ## Include the vapp.config.file
-. /opt/verb/conf/vapp.wp.${oDOMAIN}
+. /opt/verb/conf/vapps/vapp.wp.${oDOMAIN}
 
 ## Export the database
 /usr/bin/mysqldump --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${appDBase} > ${appDBase}.sql
@@ -68,7 +68,7 @@ FLUSH PRIVILEGES;"
 /bin/echo "#!/bin/bash
 APPdBase=${dBase}
 appDDBUsr=${dBaseUser}
-appDDBPass=${dBPassword}" > /opt/verb/conf/vapp.wp.${nDOMAIN}
+appDDBPass=${dBPassword}" > /opt/verb/conf/vapps/vapp.wp.${nDOMAIN}
 
 ## Put the settings in the WordPress config file
 cd /srv/www/vapps/wp.${nDOMAIN} || exit 6

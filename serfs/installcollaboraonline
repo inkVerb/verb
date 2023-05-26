@@ -22,7 +22,7 @@ port=$1
 fi
 
 # Check if already installed
-if [ -f /opt/verb/conf/vapp.${cVappName} ]; then
+if [ -f /opt/verb/conf/vapps/vapp.${cVappName} ]; then
 /bin/echo "This is already installed. I quit."
 exit 0; fi
 
@@ -58,7 +58,7 @@ fi
 /bin/echo "#!/bin/bash
 COVAPPSTATUS=\"INSTALLED\"
 COport=${port}
-COHOST=\"b.${blueURI}\"" > /opt/verb/conf/vapp.${cVappName}
+COHOST=\"b.${blueURI}\"" > /opt/verb/conf/vapps/vapp.${cVappName}
 
 /bin/echo "Collabora Online is now installed...
 

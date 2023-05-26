@@ -59,7 +59,7 @@ FLUSH PRIVILEGES;"
 /bin/echo "#!/bin/bash
 APPdBase=${dBase}
 appDDBUsr=${dBaseUser}
-appDDBPass=${dBPassword}" > /opt/verb/conf/vapp.${cVappName}
+appDDBPass=${dBPassword}" > /opt/verb/conf/vapps/vapp.${cVappName}
 
 # Put the settings in the WordPress config file
 cd ${cVappName} || exit 6

@@ -23,7 +23,7 @@ cVappName=nextcloud
 
 # Check if already installed
 ## Config
-if [ -f /opt/verb/conf/vapp.${cVappName} ]; then
+if [ -f /opt/verb/conf/vapps/vapp.${cVappName} ]; then
 /bin/echo "This is already installed."
 exit 0; fi
 ## Directory
@@ -69,7 +69,7 @@ FLUSH PRIVILEGES;"
 # Write the config for backup
 /bin/echo "APPdBase=${dBase}
 appDDBUsr=${dBaseUser}
-appDDBPass=${dBPassword}" > /opt/verb/conf/vapp.${cVappName}
+appDDBPass=${dBPassword}" > /opt/verb/conf/vapps/vapp.${cVappName}
 
 # php-fpm
 /usr/bin/mkdir -p /var/run/nextcloud
@@ -240,6 +240,20 @@ Tip: https://${blueURI}/index.php/settings/admin
 After, you may want to run setnextcloudbfdoff to disable brute force detection in order to allow some client apps to work. You can always turn it on again with setnextcloudbfdon
 "
 
+# inkDrive? (last so above message shows, even if we need to exit non-zero next)
+if [ -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
+  . /opt/verb/conf/inkdrive/inkdriveinfo
+fi
+if [ "${InkDriveNC}" != "off" ]; then
+  /usr/bin/echo "Mounting 'data' to a drive..."
+  /opt/verb/serfs/inkdriveapp "${cVappName}.${domain}" "${InkDriveNC}"
+  if [ "$?" = 0 ]; then
+    /usr/bin/echo "InkDrive=\"${InkDriveNC}\"" >> /opt/verb/conf/vapps/vapp.${cVappName}
+  else
+    /usr/bin/echo "inkDrive hosting is expected, but unable to host WP on the drive. Something is very wrong!"
+    exit 6
+  fi
+fi
 
 
 

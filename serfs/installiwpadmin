@@ -71,7 +71,7 @@ FLUSH PRIVILEGES;"
 APPdBase=${dBase}
 appDDBUsr=${dBaseUser}
 appDDBPass=${dBPassword}
-IWPADMIN_directory=\"${directory}\"" > /opt/verb/conf/vapp.${cVappName}.${domain}
+IWPADMIN_directory=\"${directory}\"" > /opt/verb/conf/vapps/vapp.${cVappName}.${domain}
 
 # Reset all permissions
 /bin/chown -R www:www /srv/www/html/${domain}/${directory}; wait

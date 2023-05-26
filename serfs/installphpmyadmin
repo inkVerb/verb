@@ -28,7 +28,7 @@ dBaseUser=phpmy$(/usr/bin/pwgen -s -1 15); fi
 
 # Check if already installed
 ## Config
-if [ -f /opt/verb/conf/vapp.${cVappName} ]; then
+if [ -f /opt/verb/conf/vapps/vapp.${cVappName} ]; then
 /bin/echo "This is already installed."
 exit 0; fi
 ## Directory
@@ -47,7 +47,7 @@ e="$?"; [[ "$e" = "0" ]] || exit "$e"
 # Write the config for backup
 /bin/echo "SUBdir=${DIRECTRY}
 appDDBUsr=${dBaseUser}
-appDDBPass=${dBPassword}" > /opt/verb/conf/vapp.${cVappName}
+appDDBPass=${dBPassword}" > /opt/verb/conf/vapps/vapp.${cVappName}
 
 # Prepare the config and web directory
 /bin/cp /srv/www/vapps/${cVappName}/config.sample.inc.php /srv/www/vapps/${cVappName}/config.inc.php

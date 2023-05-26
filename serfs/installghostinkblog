@@ -133,7 +133,7 @@ fi
 /bin/echo "#!/bin/bash
 ghostport=\"${newport}\"
 ghostemail=\"${emailUser}\"
-ghostemailpas=\"${emailPass}\"" > /opt/verb/conf/vapp.${cVappName}
+ghostemailpas=\"${emailPass}\"" > /opt/verb/conf/vapps/vapp.${cVappName}
 
 # Record the port in the Ghost port inklist
 /bin/echo "${domain} ${newport}" >> /opt/verb/conf/inklists/ghostserverports

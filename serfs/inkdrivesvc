@@ -113,16 +113,21 @@ fi
 /usr/bin/chown -R ${Owner} "${SrcPath}"
 /usr/bin/chown -R ${Owner} "/mnt/${Mnt}/${Svc}"
 ## Conf for vmail
-if [ "{Svc}" = "vmail" ]; then
+if [ "${Svc}" = "vmail" ]; then
   /usr/bin/mv /opt/verb/conf/servermailpass "/mnt/${Mnt}/.conf/"
   /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/servermailpass" /opt/verb/conf/
+  /usr/bin/mv /opt/verb/conf/servermailpath "/mnt/${Mnt}/.conf/"
+  /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/servermailpath" /opt/verb/conf/
   ### Legacy for vmail
   /usr/bin/ln -sfn "/mnt/${Mnt}" /var/vmail
-fi
 ## Conf for mysql
-if [ "{Svc}" = "mysql" ]; then
+elif [ "${Svc}" = "mysql" ]; then
   /usr/bin/mv /opt/verb/conf/mysqlrootpassword "/mnt/${Mnt}/.conf/"
   /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/mysqlrootpassword" /opt/verb/conf/
+## Conf for www
+elif [ "${Svc}" = "www" ]; then
+  /usr/bin/mv /opt/verb/conf/vapps/vapp. "/mnt/${Mnt}/.conf/"
+  /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/vapps" /opt/verb/conf/
 fi
 
 # Finish

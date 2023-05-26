@@ -11,7 +11,7 @@
 
 usagenotes="This creates and adds a MySQL/MariaDB database using an existing vapp config"
 usageformat="mysqlvappin [ path/to/database/vapp.config.file ]"
-usageexample="mysqlvappin /opt/verb/conf/vapp.wp.inkisaverb.com"
+usageexample="mysqlvappin /opt/verb/conf/vapps/vapp.wp.inkisaverb.com"
 hierarchy=( primary )
 vsetnames=( "Vapp conf file path" )
 vsettypes=( isFile )

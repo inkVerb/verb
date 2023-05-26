@@ -135,7 +135,7 @@ fi
 ghostdomain=\"${domain}\"
 ghostport=\"${newport}\"
 ghostemail=\"${emailUser}\"
-ghostemailpas=\"${emailPass}\"" > /opt/verb/conf/vapp.${cVappName}.${domain}
+ghostemailpas=\"${emailPass}\"" > /opt/verb/conf/vapps/vapp.${cVappName}.${domain}
 
 # Record the port in the Ghost port inklist
 /bin/echo "${domain} ${newport}" >> /opt/verb/conf/inklists/ghostserverports

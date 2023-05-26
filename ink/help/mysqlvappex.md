@@ -7,4 +7,4 @@
 - `ink mysql vappex -a [ Verb web app name ]`
   - Creates the databased based on the vapp.* config database credentials
 - `ink mysql vappex -a wp.inkisaverb.com`
-  - The database will be exported to `vip/sql/whatever.sql` based on the database credentials at `verb/conf/vapp.wp.inkisaverb.com`
+  - The database will be exported to `vip/sql/whatever.sql` based on the database credentials at `verb/conf/vapps/vapp.wp.inkisaverb.com`

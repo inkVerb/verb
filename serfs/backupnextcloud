@@ -21,21 +21,21 @@ secName=$1
 fi
 
 # Check if installed
-if [ -z "/opt/verb/conf/vapp.nextcloud" ]; then
+if [ -z "/opt/verb/conf/vapps/vapp.nextcloud" ]; then
 /bin/echo "Nextcloud not installed. Nothing to backup."
 exit 0; fi
 
 # Include the configs
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/siteurilist
-. /opt/verb/conf/vapp.nextcloud
+. /opt/verb/conf/vapps/vapp.nextcloud
 
 # Export the database
 cd /srv/www/vapps/nextcloud/data || exit 6
 /opt/verb/serfs/mysqlvappex vapp.nextcloud; wait
 
 # Backup the config
-/bin/cp /opt/verb/conf/vapp.nextcloud /srv/www/vapps/nextcloud/data/
+/bin/cp /opt/verb/conf/vapps/vapp.nextcloud /srv/www/vapps/nextcloud/data/
 
 # Pack the data directory
 cd /srv/www/vapps/nextcloud || exit 6

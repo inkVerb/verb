@@ -433,6 +433,7 @@ fi
 /usr/bin/ln -sfn /opt/verb/ink/ink /usr/local/bin/
 /usr/bin/chmod 755 /usr/local/bin/ink
 ## Configs
+/usr/bin/mkdir -p /opt/verb/conf/vapps
 /usr/bin/mv /opt/verb/inst/mysqlrootpassword /opt/verb/conf/
 /usr/bin/mv /opt/verb/inst/servertype /opt/verb/conf/
 /usr/bin/mv /opt/verb/conf/servernameip286 /opt/verb/conf/servernameip
