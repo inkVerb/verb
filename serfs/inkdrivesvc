@@ -7,13 +7,13 @@
 ## ./inkdrivesvc [ service ] [ mount dir - optional ]
 
 # Eg:
-## ./inkdrivesvc www mydrive 
+## ./inkdrivesvc www hdd 
 ## ./inkdrivesvc mysql
 
 
 usagenotes="This relocates a service directory to an inkDrive mounted with inkdriveadd, such as www/ vmail/ mysql/"
 usageformat="inkdrivesvc [ service ] [ mount dir - optional ]"
-usageexample="inkdrivesvc www mydrive 
+usageexample="inkdrivesvc www hdd
 inkdrivesvc mysql"
 hierarchy=( primary )
 vsetnames=( "Service name" )
@@ -40,9 +40,9 @@ else
 fi
 
 # Defaults (prefer SSD)
-Svc="$1"
-if [ -n "$2" ]; then
-  Mnt="$2"
+Svc="${1}"
+if [ -n "${2}" ]; then
+  Mnt="${2}"
   if [ -f "/opt/verb/conf/inkdrive/ssd.${Mnt}" ]; then
     Typ="ssd"
   elif [ -f "/opt/verb/conf/inkdrive/hdd.${Mnt}" ]; then
@@ -116,23 +116,31 @@ fi
 if [ "${Svc}" = "vmail" ]; then
   /usr/bin/mv /opt/verb/conf/servermailpass "/mnt/${Mnt}/.conf/"
   /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/servermailpass" /opt/verb/conf/
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
   /usr/bin/mv /opt/verb/conf/servermailpath "/mnt/${Mnt}/.conf/"
   /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/servermailpath" /opt/verb/conf/
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
   ### Legacy for vmail
   /usr/bin/ln -sfn "/mnt/${Mnt}" /var/vmail
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
 ## Conf for mysql
 elif [ "${Svc}" = "mysql" ]; then
   /usr/bin/mv /opt/verb/conf/mysqlrootpassword "/mnt/${Mnt}/.conf/"
   /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/mysqlrootpassword" /opt/verb/conf/
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
 ## Conf for www
 elif [ "${Svc}" = "www" ]; then
-  /usr/bin/mv /opt/verb/conf/vapps/vapp. "/mnt/${Mnt}/.conf/"
+  /usr/bin/mv /opt/verb/conf/vapps "/mnt/${Mnt}/.conf/"
   /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/vapps" /opt/verb/conf/
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 
 # Finish
 if [ -d "/mnt/${Mnt}" ] && [ "$(/usr/bin/readlink -f "${SrcPath}")" = "/mnt/${Mnt}/${Svc}" ]; then
   /usr/bin/echo "${Svc} folder successfully mounted on ${Typ} drive at /mnt/${Mnt}"
+else
+  /usr/bin/echo "${Svc} folder is not where it should be. Something is very wrong."
+  exit 6
 fi
 
 

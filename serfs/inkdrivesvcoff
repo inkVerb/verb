@@ -1,0 +1,128 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+# This restores a service directory from an inkDrive mounted with inkdriveadd, such as www/ vmail/ mysql/
+
+# How to use:
+## ./inkdrivesvcoff [ service ]
+
+# Eg:
+## ./inkdrivesvcoff www
+## ./inkdrivesvcoff mysql
+
+
+usagenotes="This relocates a service directory to an inkDrive mounted with inkdriveadd, such as www/ vmail/ mysql/"
+usageformat="inkdrivesvcoff [ service ] [ mount dir - optional ]"
+usageexample="inkdrivesvcoff www hdd
+inkdrivesvcoff mysql"
+hierarchy=( primary )
+vsetnames=( "Service name" )
+vsettypes=( isChoice )
+voptnames=( "Drive name" )
+vopttypes=( isExists )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( inkdriveadd )
+usedby=(  )
+useserfs=(  )
+useconfigs=( inkdrive/inkdriveinfo )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdrivesvcoff.replace" ]; then . /opt/verb/mods/inkdrivesvcoff.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdrivesvcoff.before" ]; then . /opt/verb/mods/inkdrivesvcoff.before; fi # Precedes this script
+
+# Config check
+if [ ! -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
+  /usr/bin/echo "No drives installed; do that first."
+  exit 8
+else
+  . /opt/verb/conf/inkdrive/inkdriveinfo
+fi
+
+# Service
+case $Svc in
+  www) SrcPath="/srv/www"; Owner="www:www" ;;
+  mysql) SrcPath="/var/lib/mysql"; Owner="mysql:mysql" ;;
+  vmail) SrcPath="/srv/vmail"; Owner="vmail:vmail" ;;
+esac
+
+# Check service is indeed drive hosted and linked
+if [ -d "${SrcPath}" ]; then
+  /usr/bin/echo "${Svc} is not hosted on a drive, but resides on the verber itself. Nothing to do."
+  exit 0
+fi
+
+# Drive Origin
+driveOrigin="$(/usr/bin/readlink ${SrcPath})"
+
+# Space
+SpaceAvail="$(/usr/bin/df -k "/" | /usr/bin/awk 'NR==2 { print $4 }')"
+SpaceNeed="$(/usr/bin/du -s "${driveOrigin}" | /usr/bin/awk '{ print $1 }')"
+if [ "${SpaceNeed}" -gt "${SpaceAvail}" ]; then
+  SpaceAvailH="$(/usr/bin/df -h "/" | /usr/bin/awk 'NR==2 { print $4 }')"
+  SpaceNeedH="$(/usr/bin/du -sh "${driveOrigin}" | /usr/bin/awk '{ print $1 }')"
+  echo "Not enough space. ${SpaceNeedH} needed, but only ${SpaceAvailH} available."
+  exit 4
+fi
+
+# Remove link & relocate
+/usr/bin/rm -f ${SrcPath}
+if [ -e "${SrcPath}" ]; then
+  /usr/bin/echo "${Svc} could not be properly prepared to relocate. Something is very wrong."
+  exit 6
+fi
+/usr/bin/mv "${driveOrigin}" "${SrcPath}"
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+/usr/bin/chown -R ${Owner} "${SrcPath}"
+## Conf for vmail
+if [ "${Svc}" = "vmail" ]; then
+  confOrigin="$(/usr/bin/readlink /opt/verb/conf/servermailpass)"
+  /usr/bin/rm -f /opt/verb/conf/servermailpass
+  if [ -e "/opt/verb/conf/servermailpass" ]; then
+    /usr/bin/echo "${Svc} pass config could not be properly prepared to relocate. Something is very wrong."
+    exit 6
+  fi
+  /usr/bin/mv "${confOrigin}" /opt/verb/conf/servermailpass
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
+  confOrigin="$(/usr/bin/readlink /opt/verb/conf/servermailpath)"
+  /usr/bin/rm -f /opt/verb/conf/servermailpath
+  if [ -e "/opt/verb/conf/servermailpath" ]; then
+    /usr/bin/echo "${Svc} path config could not be properly prepared to relocate. Something is very wrong."
+    exit 6
+  fi
+  /usr/bin/mv "${confOrigin}" /opt/verb/conf/servermailpath
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
+  ### Legacy for vmail
+  /usr/bin/ln -sfn /srv/vmail /var/vmail
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
+## Conf for mysql
+elif [ "${Svc}" = "mysql" ]; then
+  confOrigin="$(/usr/bin/readlink /opt/verb/conf/mysqlrootpassword)"
+  /usr/bin/rm -f /opt/verb/conf/mysqlrootpassword
+  if [ -e "/opt/verb/conf/mysqlrootpassword" ]; then
+    /usr/bin/echo "${Svc} config could not be properly prepared to relocate. Something is very wrong."
+    exit 6
+  fi
+  /usr/bin/mv "${confOrigin}" /opt/verb/conf/mysqlrootpassword
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
+## Conf for www
+elif [ "${Svc}" = "www" ]; then
+  confOrigin="$(/usr/bin/readlink /opt/verb/conf/vapps)"
+  /usr/bin/rm -f /opt/verb/conf/vapps
+  if [ -e "/opt/verb/conf/vapps" ]; then
+    /usr/bin/echo "${Svc} config could not be properly prepared to relocate. Something is very wrong."
+    exit 6
+  fi
+  /usr/bin/mv "${confOrigin}" /opt/verb/conf/vapps
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
+fi
+
+# Finish
+if [ -d "${SrcPath}" ]; then
+  /usr/bin/echo "${Svc} folder successfully restored to original location."
+else
+  /usr/bin/echo "${Svc} folder is not where it should be. Something is very wrong."
+  exit 6
+fi
+
+
+if [ -e "/opt/verb/mods/inkdrivesvcoff.after" ]; then . /opt/verb/mods/inkdrivesvcoff.after; fi # Follows this script
