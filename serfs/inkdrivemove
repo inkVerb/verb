@@ -104,29 +104,36 @@ if [ -n "${2}" ]; then
     exit 6
   fi
   Dest="/mnt/${Mnt}/${VappSvc}"
-  /usr/bin/mkdir -p "${Dest}"
 
 # Move back to original location
 else
-    case $Svc in
+    case $VappSvc in
         www) Dest="/srv";;
         mysql) Dest="/var/lib";;
         vmail) Dest="/srv";;
         *) Dest="/srv/www/vapps/${VappSvc}";;
     esac
+    restore="true"
 fi
 
 # Space
-SpaceAvail="$(/usr/bin/df -k "${Dest}" | /usr/bin/awk 'NR==2 { print $4 }')"
+SpaceAvail="$(/usr/bin/df -k "/mnt/${Mnt}" | /usr/bin/awk 'NR==2 { print $4 }')"
 SpaceNeed="$(/usr/bin/du -s "${Origin}" | /usr/bin/awk '{ print $1 }')"
 if [ "${SpaceNeed}" -gt "${SpaceAvail}" ]; then
-    SpaceAvailH="$(/usr/bin/df -h "${Dest}" | /usr/bin/awk 'NR==2 { print $4 }')"
+    SpaceAvailH="$(/usr/bin/df -h "$/mnt/${Mnt}" | /usr/bin/awk 'NR==2 { print $4 }')"
     SpaceNeedH="$(/usr/bin/du -sh "${Origin}" | /usr/bin/awk '{ print $1 }')"
     echo "Not enough space. ${SpaceNeedH} needed, but only ${SpaceAvailH} available."
     exit 4
 fi
 
 # Move
+/usr/bin/rm -f ${VappSvcData}
+if [ -e "${VappSvcData}" ]; then
+  /usr/bin/echo "${VappSvcType} could not be properly prepared to relocate. Something is very wrong."
+  exit 6
+fi
+/usr/bin/mkdir -p "${Dest}"
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 /usr/bin/mv "${Origin}/${DataName}" "${Dest}/"
 if [ ! -d "${Dest}/${DataName}" ]; then
     /usr/bin/echo "Could not move. Something is very wrong."
@@ -143,27 +150,109 @@ if [ -n "${Mnt}" ]; then
 fi
 /usr/bin/chown -R ${Owner} "${Dest}/${DataName}"
 
-## Conf for vmail
-if [ "${Svc}" = "vmail" ]; then
-  servermailpassOrigin="$(/usr/bin/readlink /opt/verb/conf/servermailpass)"
-  /usr/bin/mv "${servermailpassOrigin}" "/mnt/${Mnt}/.conf/"
-  /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/servermailpass" /opt/verb/conf/
-  servermailpathOrigin="$(/usr/bin/readlink /opt/verb/conf/servermailpath)"
-  /usr/bin/mv "${servermailpathOrigin}" "/mnt/${Mnt}/.conf/"
-  /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/servermailpath" /opt/verb/conf/
-  ### Legacy for vmail
-  /usr/bin/ln -sfn "${Dest}/vmail" /var/vmail
-  /usr/bin/chown -R ${Owner} /var/vmail
-## Conf for mysql
-elif [ "${Svc}" = "mysql" ]; then
-  mysqlrootpasswordOrigin="$(/usr/bin/readlink /opt/verb/conf/mysqlrootpassword)"
-  /usr/bin/mv "${mysqlrootpasswordOrigin}" "/mnt/${Mnt}/.conf/"
-  /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/mysqlrootpassword" /opt/verb/conf/
-## Conf for www
-elif
-  confvappsOrigin="$(/usr/bin/readlink /opt/verb/conf/vapps/vapp.)"
-  /usr/bin/mv "${confvappsOrigin}" "/mnt/${Mnt}/.conf/"
-  /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/vapps" /opt/verb/conf/
+# Restore to original location
+if [ "${restore}" = "true" ]; then
+  ## Conf for vmail
+  if [ "${VappSvc}" = "vmail" ]; then
+    confOrigin="$(/usr/bin/readlink /opt/verb/conf/servermailpass)"
+    /usr/bin/rm -f /opt/verb/conf/servermailpass
+    if [ -e "/opt/verb/conf/servermailpass" ]; then
+      /usr/bin/echo "${VappSvcType} pass config could not be properly prepared to relocate. Something is very wrong."
+      exit 6
+    fi
+    /usr/bin/mv "${confOrigin}" /opt/verb/conf/servermailpass
+    e="$?"; [[ "$e" = "0" ]] || exit "$e"
+    confOrigin="$(/usr/bin/readlink /opt/verb/conf/servermailpath)"
+    /usr/bin/rm -f /opt/verb/conf/servermailpath
+    if [ -e "/opt/verb/conf/servermailpath" ]; then
+      /usr/bin/echo "${VappSvcType} path config could not be properly prepared to relocate. Something is very wrong."
+      exit 6
+    fi
+    /usr/bin/mv "${confOrigin}" /opt/verb/conf/servermailpath
+    e="$?"; [[ "$e" = "0" ]] || exit "$e"
+    ### Legacy for vmail
+    /usr/bin/ln -sfn /srv/vmail /var/vmail
+    e="$?"; [[ "$e" = "0" ]] || exit "$e"
+  ## Conf for mysql
+  elif [ "${VappSvc}" = "mysql" ]; then
+    confOrigin="$(/usr/bin/readlink /opt/verb/conf/mysqlrootpassword)"
+    /usr/bin/rm -f /opt/verb/conf/mysqlrootpassword
+    if [ -e "/opt/verb/conf/mysqlrootpassword" ]; then
+      /usr/bin/echo "${VappSvcType} config could not be properly prepared to relocate. Something is very wrong."
+      exit 6
+    fi
+    /usr/bin/mv "${confOrigin}" /opt/verb/conf/mysqlrootpassword
+    e="$?"; [[ "$e" = "0" ]] || exit "$e"
+  ## Conf for www
+  elif [ "${VappSvc}" = "www" ]; then
+    confOrigin="$(/usr/bin/readlink /opt/verb/conf/vapps)"
+    /usr/bin/rm -f /opt/verb/conf/vapps
+    if [ -e "/opt/verb/conf/vapps" ]; then
+      /usr/bin/echo "${VappSvcType} config could not be properly prepared to relocate. Something is very wrong."
+      exit 6
+    fi
+    /usr/bin/mv "${confOrigin}" /opt/verb/conf/vapps
+    e="$?"; [[ "$e" = "0" ]] || exit "$e"
+  fi
+
+  # Config
+  if [ -f "/opt/verb/conf/vapps/vapp.${Vapp}" ]; then
+    . /opt/verb/conf/vapps/vapp.${Vapp}
+    if [ ! -f "/opt/verb/conf/vapps/vapp.${Vapp}" ] && [ -f "/mnt/${VappDrive}/.conf/vapps/vapp.${Vapp}" ]; then
+      /usr/bin/rm -f /opt/verb/conf/vapps/vapp.${Vapp}
+      /usr/bin/mv "/mnt/${VappDrive}/.conf/vapps/vapp.${Vapp}" /opt/verb/conf/vapps/
+      e="$?"; [[ "$e" = "0" ]] || exit "$e"
+    else
+      /usr/bin/echo "${VappSvcType} configs are not where they should be. Something is very wrong."
+      exit 6
+    fi
+  fi   
+
+  ## Finish
+  if [ -d "${SrcPath}" ]; then
+    /usr/bin/echo "${VappSvcType} folder successfully restored to original location."
+  else
+    /usr/bin/echo "${VappSvcType} folder is not where it should be. Something is very wrong."
+    exit 6
+  fi
+
+# Relocate to different drive
+else
+  ## Conf for vmail
+  if [ "${VappSvc}" = "vmail" ]; then
+    servermailpassOrigin="$(/usr/bin/readlink /opt/verb/conf/servermailpass)"
+    /usr/bin/mv "${servermailpassOrigin}" "/mnt/${Mnt}/.conf/"
+    /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/servermailpass" /opt/verb/conf/
+    e="$?"; [[ "$e" = "0" ]] || exit "$e"
+    servermailpathOrigin="$(/usr/bin/readlink /opt/verb/conf/servermailpath)"
+    /usr/bin/mv "${servermailpathOrigin}" "/mnt/${Mnt}/.conf/"
+    /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/servermailpath" /opt/verb/conf/
+    e="$?"; [[ "$e" = "0" ]] || exit "$e"
+    ### Legacy for vmail
+    /usr/bin/ln -sfn "${Dest}/vmail" /var/vmail
+    /usr/bin/chown -R ${Owner} /var/vmail
+  ## Conf for mysql
+  elif [ "${VappSvc}" = "mysql" ]; then
+    mysqlrootpasswordOrigin="$(/usr/bin/readlink /opt/verb/conf/mysqlrootpassword)"
+    /usr/bin/mv "${mysqlrootpasswordOrigin}" "/mnt/${Mnt}/.conf/"
+    /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/mysqlrootpassword" /opt/verb/conf/
+    e="$?"; [[ "$e" = "0" ]] || exit "$e"
+  ## Conf for www
+  elif [ "${VappSvc}" = "www" ]; then
+    confvappsOrigin="$(/usr/bin/readlink /opt/verb/conf/vapps/vapp.)"
+    /usr/bin/mv "${confvappsOrigin}" "/mnt/${Mnt}/.conf/"
+    /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/vapps" /opt/verb/conf/
+    e="$?"; [[ "$e" = "0" ]] || exit "$e"
+  fi
+
+  ## Finish
+  if [ -d "/mnt/${Mnt}/${VappSvc}/${DataName}" ] && [ "$(/usr/bin/readlink -f "${VappSvcDataFolder}/${DataName}")" = "/mnt/${Mnt}/${VappSvc}/${DataName}" ]; then
+    /usr/bin/echo "${VappSvcType} folder successfully mounted on ${Typ} drive at /mnt/${Mnt}"
+  else
+    /usr/bin/echo "${VappSvcType} folder is not where it should be. Something is very wrong."
+    exit 6
+  fi
+
 fi
 
 

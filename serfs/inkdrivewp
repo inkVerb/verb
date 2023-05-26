@@ -33,6 +33,11 @@ if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Mus
 if [ -e "/opt/verb/mods/inkdrivewp.replace" ]; then . /opt/verb/mods/inkdrivewp.replace; return 0; fi # Replaces this script
 if [ -e "/opt/verb/mods/inkdrivewp.before" ]; then . /opt/verb/mods/inkdrivewp.before; fi # Precedes this script
 
+if [ -z "${1}" ]; then
+  /usr/bin/echo "Must desegnate on or off."
+  exit 5
+fi
+
 # Check if installed
 if [ ! -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
   /usr/bin/echo "inkDrive not installed. Nothing to show."

@@ -41,9 +41,9 @@ else
 fi
 
 # Defaults (prefer HDD)
-Vapp="$1"
-if [ -n "$2" ]; then
-  Mnt="$2"
+Vapp="${1}"
+if [ -n "${2}" ]; then
+  Mnt="${2}"
 elif [ -n "${HDDdefault}" ]; then
   Mnt=${HDDdefault}
 elif [ -n "${SSDdefault}" ]; then
@@ -54,7 +54,7 @@ else
 fi
 
 # Check mount
-if [ ! -d "/mnt/${Mnt}" ] && [ -n "$2" ]; then
+if [ ! -d "/mnt/${Mnt}" ] && [ -n "${2}" ]; then
   /usr/bin/echo "That drive is not mounted on the system. Choose a drive that exists."
   echo 8
 elif [ ! -d "/mnt/${Mnt}" ]; then
@@ -129,7 +129,7 @@ fi
 /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/vapp.${Vapp}" /opt/verb/conf/vapps/vapp./
 
 # Finish
-if [ -d "/mnt/${Mnt}/${Vapp}" ] [ -e "${VappData}" ]; then
+if [ -d "/mnt/${Mnt}/${Vapp}" ] && [ -e "${VappData}" ]; then
   /usr/bin/sed -i "s/VappDrive=.*/VappDrive=\"${Mnt}\"/" "/opt/verb/conf/vapps/vapp.${Vapp}"
   /usr/bin/echo "${VappType} successfully mounted to '${Mnt}'."
 fi

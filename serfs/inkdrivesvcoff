@@ -1,5 +1,6 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
+#DEV This is depreciated and kept for reference only. It worked once, but is fully achieved with larger implementations in inkdrivemove
 # This restores a service directory from an inkDrive mounted with inkdriveadd, such as www/ vmail/ mysql/
 
 # How to use:
@@ -30,6 +31,11 @@ if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Mus
 if [ -e "/opt/verb/mods/inkdrivesvcoff.replace" ]; then . /opt/verb/mods/inkdrivesvcoff.replace; return 0; fi # Replaces this script
 if [ -e "/opt/verb/mods/inkdrivesvcoff.before" ]; then . /opt/verb/mods/inkdrivesvcoff.before; fi # Precedes this script
 
+if [ -z "${1}" ]; then
+  /usr/bin/echo "Must desegnate a service."
+  exit 5
+fi
+
 # Config check
 if [ ! -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
   /usr/bin/echo "No drives installed; do that first."
@@ -37,6 +43,8 @@ if [ ! -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
 else
   . /opt/verb/conf/inkdrive/inkdriveinfo
 fi
+
+Svc="${1}"
 
 # Service
 case $Svc in

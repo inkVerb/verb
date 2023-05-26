@@ -7,16 +7,16 @@
 ## ./inkdrivekill [ dev ] [ drive name ] [ disk type: hdd/ssd ] [ 'ignore' - optional to unmount the drive even if not empty ]
 
 # Eg:
-## ./inkdrivekill vdb mydrive ssd
-## ./inkdrivekill vdc harddrive hdd
-## ./inkdrivekill vdc harddrive hdd ignore
+## ./inkdrivekill vdb ssd ssd
+## ./inkdrivekill vdc hdd hdd
+## ./inkdrivekill vdc hdd1 hdd ignore
 
 
 usagenotes="This removes a block storage drive to the /mnt/ directory and removes the entry in /etc/fstab; the drive must be empty first"
 usageformat="inkdrivekill [ drive name ] [ disk type: hdd/ssd ][ 'ignore' - optional to unmount the drive even if not empty ]"
-usageexample="inkdrivekill vdb mydrive ssd
-inkdrivekill dc harddrive hdd
-inkdrivekill dc harddrive hdd ignore"
+usageexample="inkdrivekill vdb ssd ssd
+inkdrivekill vdc hdd hdd
+inkdrivekill vdc hdd1 hdd ignore"
 hierarchy=( primary )
 vsetnames=( "Device" "Drive name" "Disk type" )
 vsettypes=( isExists isFilename isChoice )
@@ -32,6 +32,11 @@ useconfigs=( inkdrive/inkdriveinfo )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/inkdrivekill.replace" ]; then . /opt/verb/mods/inkdrivekill.replace; return 0; fi # Replaces this script
 if [ -e "/opt/verb/mods/inkdrivekill.before" ]; then . /opt/verb/mods/inkdrivekill.before; fi # Precedes this script
+
+if [ -z "${3}" ]; then
+  /usr/bin/echo "Must enter all arguments."
+  exit 5
+fi
 
 # Check if installed
 if [ ! -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
@@ -52,7 +57,7 @@ else
   /usr/bin/echo "That drive configuration does not exist. Check your credentials, then try again."
   exit 5
 fi
-if [ "Device" != "${Dev}" ] && [ "Mount" != "${Mnt}" ] && [ "Type" != "${Typ}" ]; then
+if [ "${Device}" != "${Dev}" ] && [ "${Mount}" != "${Mnt}" ] && [ "${Type}" != "${Typ}" ]; then
   /usr/bin/echo "A mounted drive with that configuration does not exist. Check your credentials, then try again."
   exit 5
 fi

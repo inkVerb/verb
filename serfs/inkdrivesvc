@@ -1,6 +1,6 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
-# This relocates a service directory to an inkDrive mounted with inkdriveadd, such as www/ vmail/ mysql/
+# This relocates a service directory to an inkDrive mounted with inkdriveadd; directories will be double such as www/www/ vmail/vmail/ mysql/mysql/
 ## All credentials must be entered correctly for accurate confirmation
 
 # How to use:
@@ -11,7 +11,7 @@
 ## ./inkdrivesvc mysql
 
 
-usagenotes="This relocates a service directory to an inkDrive mounted with inkdriveadd, such as www/ vmail/ mysql/"
+usagenotes="This relocates a service directory to an inkDrive mounted with inkdriveadd; directories will be double such as www/www/ vmail/vmail/ mysql/mysql/"
 usageformat="inkdrivesvc [ service ] [ mount dir - optional ]"
 usageexample="inkdrivesvc www hdd
 inkdrivesvc mysql"
@@ -30,6 +30,11 @@ useconfigs=( inkdrive/inkdriveinfo )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/inkdrivesvc.replace" ]; then . /opt/verb/mods/inkdrivesvc.replace; return 0; fi # Replaces this script
 if [ -e "/opt/verb/mods/inkdrivesvc.before" ]; then . /opt/verb/mods/inkdrivesvc.before; fi # Precedes this script
+
+if [ -z "${1}" ]; then
+  /usr/bin/echo "Must desegnate a service."
+  exit 5
+fi
 
 # Config check
 if [ ! -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
@@ -108,8 +113,11 @@ if [ "${SpaceNeed}" -gt "${SpaceAvail}" ]; then
 fi
 
 # Move & link
-/usr/bin/mv "${SrcPath}" "/mnt/${Mnt}/"
-/usr/bin/ln -sfn "/mnt/${Mnt}" "${SrcPath}"
+/usr/bin/mkdir -p "/mnt/${Mnt}/${Svc}"
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+/usr/bin/mv "${SrcPath}" "/mnt/${Mnt}/${Svc}/"
+/usr/bin/ln -sfn "/mnt/${Mnt}/${Svc}/${Svc}" "${SrcPath}"
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 /usr/bin/chown -R ${Owner} "${SrcPath}"
 /usr/bin/chown -R ${Owner} "/mnt/${Mnt}/${Svc}"
 ## Conf for vmail
@@ -136,7 +144,7 @@ elif [ "${Svc}" = "www" ]; then
 fi
 
 # Finish
-if [ -d "/mnt/${Mnt}" ] && [ "$(/usr/bin/readlink -f "${SrcPath}")" = "/mnt/${Mnt}/${Svc}" ]; then
+if [ -d "/mnt/${Mnt}/${Svc}/${Svc}" ] && [ "$(/usr/bin/readlink -f "${SrcPath}")" = "/mnt/${Mnt}/${Svc}/${Svc}" ]; then
   /usr/bin/echo "${Svc} folder successfully mounted on ${Typ} drive at /mnt/${Mnt}"
 else
   /usr/bin/echo "${Svc} folder is not where it should be. Something is very wrong."
