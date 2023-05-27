@@ -178,7 +178,7 @@ IX. Other notes
 		- `4` - failed attempt, such as a file not downloaded, not enough space, package not available/installed, or login credentials rejected, thus cannot proceed
 		- `5` - unmet/invalid credentials (ie arguments for a bash script are incomplete or incorrect or incompatible or inappropriate, it could cause a problem if continuing)
 		- `6` - impossible error (something is wrong that shouldn't be possible, such as a script is messed up or something was changed manually-incorrectly, this error status is only for circumstances that creat a problem that didn't exist before, errors that notice a pre-existing problem should `exit 0`)
-		- `7` - already installed dilemma ('already installed' reports `7` only if it would cause a problem to continue, this is a mass abort `exit` status to avoid conflict. A benign 'already installed' will `exit 0`)
+		- `7` - already done dilemma ('already installed' reports `7` only if it would cause a problem to continue, this is a mass abort `exit` status to avoid conflict. A benign 'already installed' will `exit 0`)
 		- `8` - unmet dependency (the basic 'do your homework' message: something else should have been done first, but can't be complete automatically)
 		- `9` - illegal/catostrophic attempt ('you are not allowed to destroy the system' or 'you are not authorized in this area' message)
 	B. If statements, checks, and inclusions
