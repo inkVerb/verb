@@ -342,7 +342,7 @@ fi
     domain varchar(255) NOT NULL,
     created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     active tinyint(1) NOT NULL default '1',
-    KEY username (username)
+    PRIMARY KEY (username)
   ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Postfix Vmail - Domain Admins';"
 
 # OpenDKIM
