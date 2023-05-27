@@ -83,6 +83,7 @@ if [ -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
     defaultMnt="${HDDdefault}"
   elif [ "${TypDescr}" = "SSD" ] && [ -n "${SSDdefault}" ]; then
     defaultMnt="${SSDdefault}"
+  fi
 fi
 if [ -z "${!default}" ]; then
   /usr/bin/echo "${TypDescr}default=${Mnt}" >> /opt/verb/conf/inkdrive/inkdriveinfo
