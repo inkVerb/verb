@@ -53,6 +53,11 @@ cd /srv/www/vip || exit 6
 
 # Restore and include the app config
 /bin/mv /srv/www/vapps/${appName}/vapp.${appName} /opt/verb/conf/vapps/
+###DEV one-time migration to Arch
+/usr/bin/sed -i "s/APPDBASE/appDBase/g" /opt/verb/conf/vapps/vapp.${appName}
+/usr/bin/sed -i "s/APPDDBUSR/appDDBUsr/g" /opt/verb/conf/vapps/vapp.${appName}
+/usr/bin/sed -i "s/APPDDBPAS/appDDBPass/g" /opt/verb/conf/vapps/vapp.${appName}
+###DEV
 . /opt/verb/conf/vapps/vapp.${appName}
 
 # Create the SQL database
@@ -63,9 +68,9 @@ FLUSH PRIVILEGES;"
 
 # Restore the database
 cd /srv/www/vapps/${appName} || exit 6
-/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${appDBase} < ${appDBase}.sql; wait
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${appDBase} < /srv/www/vapps/${appName}/${appDBase}.sql; wait
 #/bin/rm -f ${appDBase}.sql
-/usr/bin/mv ${appDBase}.sql /srv/vip/sql/
+/usr/bin/mv ${appDBase}.sql /srv/vip/sql/ ###DEV one-time migration to Arch
 /bin/rm -f /srv/www/vapps/${appName}/servernameip*
 
 # Own
