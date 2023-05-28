@@ -80,7 +80,11 @@ fi
 # Service
 case $Svc in
   www) SrcPath="/srv/www"; Owner="www:www" ;;
-  mysql) SrcPath="/var/lib/mysql"; Owner="mysql:mysql" ;;
+  mysql) SrcPath="/var/lib/mysql"; Owner="mysql:mysql";
+    # MySQL won't work becuase we need to figure out how to properly set it up
+    # Consider this: https://unix.stackexchange.com/questions/151523/mysql-different-database-location
+    /usr/bin/echo "MySQL is not yet configured to be able to work on a cloud drive."; exit 0
+  ;;
   vmail) SrcPath="/srv/vmail"; Owner="vmail:vmail" ;;
 esac
 

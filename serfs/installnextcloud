@@ -231,9 +231,9 @@ EOF
 
 # Finish
 /bin/echo "
-Go to https://${blueURI} to install.
+Go to https://cloud.${blueURI} to install.
 
-Tip: https://${blueURI}/index.php/settings/admin
+Tip: https://cloud.${blueURI}/index.php/settings/admin
 - Background jobs
   - Cron
 
