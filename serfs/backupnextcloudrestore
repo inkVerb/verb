@@ -16,7 +16,7 @@
 ## ./backuprestorenextcloud verb.nextcloud.sF52.vbak  # (This is for the backup file verb.nextcloud.sF52.vbak)
 
 
-FILENAME=$1
+filename=$1
 
 # Include the site config
 . /opt/verb/conf/servernameip
@@ -36,7 +36,7 @@ fi
 
 # Unpack the file
 cd /srv/www/vip || exit 6
-/bin/mv ${FILENAME} data.txz
+/bin/mv ${filename} data.txz
 /opt/verb/serfs/vtxzout data
 cd data || exit 6
 /bin/rm -f index.html

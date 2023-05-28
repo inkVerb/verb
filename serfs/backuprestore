@@ -22,7 +22,7 @@
 
 
 appName=$1
-FILENAME=$2
+filename=$2
 
 # Include the site config
 . /opt/verb/conf/servernameip
@@ -44,7 +44,7 @@ fi
 
 # Unpack the file
 cd /srv/www/vip || exit 6
-/bin/mv ${FILENAME} ${appName}.txz
+/bin/mv ${filename} ${appName}.txz
 /opt/verb/serfs/vtxzout ${appName}; wait
 /bin/mv ${appName} /srv/www/vapps/
 

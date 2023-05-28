@@ -18,7 +18,7 @@
 ## ./backupinkvmailrestore verb.inkvmail.hR21.vbak
 
 
-FILENAME=$1
+filename=$1
 
 # Include the configs
 . /opt/verb/conf/servernameip
@@ -31,7 +31,7 @@ tbrSMPAPG=${ServerMailPassApg}
 
 # Unpack the file
 cd /srv/www/vip || exit 6
-/bin/mv ${FILENAME} inkvmail.txz
+/bin/mv ${filename} inkvmail.txz
 /opt/verb/serfs/vtxzout inkvmail
 
 # Restore and include BOX settings in the sitemail config
