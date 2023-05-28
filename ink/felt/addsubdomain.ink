@@ -63,17 +63,17 @@ done
 # Message prep
 inkCertSiteStatus $SOd
 # Success message
-if [ $inkCertSiteStatus = "Letsencrypt multiple" ]; then
+if [ "$inkCertSiteStatus" = "Letsencrypt multiple" ]; then
   success_message="$SOs subdomain added to $SOd domain. $SOd already uses $inkCertSiteStatus multiple SSL certs, so they will need to be updated."
-elif [ $inkCertSiteStatus = "Letsencrypt wildcard" ]; then
+elif [ "$inkCertSiteStatus" = "Letsencrypt wildcard" ]; then
   success_message="$SOs subdomain added to $SOd domain. $SOd already uses $inkCertSiteStatus SSL certs, so they should be automatically set up."
-elif [ $inkCertSiteStatus = "Letsencrypt single" ]; then
+elif [ "$inkCertSiteStatus" = "Letsencrypt single" ]; then
   success_message="$SOs subdomain added to $SOd domain. $SOd uses a single-domain $inkCertSiteStatus SSL cert, so a $inkCertSiteStatus cert needs to be added for this also."
-elif [ $inkCertSiteStatus = "Removed" ] || [ $inkCertSiteStatus = "Not yet" ]; then
+elif [ "$inkCertSiteStatus" = "Removed" ] || [ $inkCertSiteStatus = "Not yet" ]; then
   success_message="$SOs subdomain added to $SOd domain. $SOd has no SSL certs installed and is ready when you are."
-elif [ $inkCertSiteStatus = "Self-Cert" ]; then
+elif [ "$inkCertSiteStatus" = "Self-Cert" ]; then
   success_message="$SOs subdomain added to $SOd domain. $SOd and its subdomains use SSL Self-certs."
-elif [ $inkCertSiteStatus = "NA" ]; then
+elif [ "$inkCertSiteStatus" = "NA" ]; then
   success_message="$SOs subdomain added to $SOd domain. SSL certificates to not apply to $SOd and its subdomains."
 else
   success_message="$SOs subdomain added to $SOd domain."

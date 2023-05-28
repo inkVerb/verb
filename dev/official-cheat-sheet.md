@@ -64,7 +64,7 @@ Paste that key from above, ending with `= My_Vultr_Key`, into the code below, an
 cat <<EOF >> /root/.ssh/authorized_keys
 abcdefg1234567thatLongKeyLongerThanThis= My_Vultr_Key
 EOF
-chmod 700 ~/root/.ssh
+chmod 700 /root/.ssh
 chmod 600 /root/.ssh/authorized_keys
 ```
 

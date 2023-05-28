@@ -7,7 +7,7 @@
 
 
 ## Usage
-- `ink add domain -d [ somedomain.tld ] - a [ multi/wild - auto SSL cert option ]`
+- `ink add domain -d [ somedomain.tld ] -a [ multi/wild - auto SSL cert option ]`
 
 - `ink add domain -d inkisaverb.com`
   - Creates the domain folder `www/domains/inkisaverb.com` & makes it live at `www/html/inkisaverb.com`

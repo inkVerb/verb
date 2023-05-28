@@ -26,7 +26,7 @@ filename=$1
 . /opt/verb/conf/servermailpath
 . /opt/verb/conf/servermailpass
 
-# Set the to-be-replaced ServerMailPassApg
+# Set the to-be-replaced ServerMailPassApg from system configs
 tbrSMPAPG=${ServerMailPassApg}
 
 # Unpack the file
@@ -38,6 +38,7 @@ cd /srv/www/vip || exit 6
 . /srv/www/vip/inkvmail/servermailpass-old
 /bin/sed -i "s/ServerMailPassApg.*/ServerMailPassApg=\"${ServerMailPassApg}\"/g" /opt/verb/conf/servermailpass
 . /opt/verb/conf/servermailpass
+# Now ${ServerMailPassApg} is the new one
 
 # Restore the database
 /opt/verb/serfs/mysqlkilldb mail; wait
