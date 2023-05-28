@@ -82,7 +82,7 @@ wp.inkblog)
 ;;
 
 *)
-VAPPdomain=$(echo "${vAppName}" | sed 's/wp.//')
+vappdomain=$(echo "${vAppName}" | sed 's/wp.//')
 if [ -d "/srv/www/domains/${vappdomain}" ]; then
 	/bin/ln -sfn /srv/www/vapps/${vAppName} /srv/www/html/${vappdomain}
 	/bin/echo "${vAppName} symlink is set."
