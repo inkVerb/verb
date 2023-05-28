@@ -49,11 +49,11 @@ done
 # Which engine?
 inkCertSiteStatus
 inkCertServerConfStatus
-if [ $inkCertSiteStatus = "Letsencrypt multiple" ] && [ $inkCertServerConfStatus = "Letsencrypt multiple" ]; then
+if [ "$inkCertSiteStatus" = "Letsencrypt multiple" ] && [ "$inkCertServerConfStatus" = "Letsencrypt multiple" ]; then
   ENGINE="le"
-elif [ $inkCertSiteStatus = "Letsencrypt single" ] && [ $inkCertServerConfStatus = "Letsencrypt single" ]; then
+elif [ "$inkCertSiteStatus" = "Letsencrypt single" ] && [ "$inkCertServerConfStatus" = "Letsencrypt single" ]; then
   ENGINE="cbsingle"
-elif [ $inkCertSiteStatus = "Letsencrypt wildcard" ] && [ $inkCertServerConfStatus = "Letsencrypt wildcard" ]; then
+elif [ "$inkCertSiteStatus" = "Letsencrypt wildcard" ] && [ "$inkCertServerConfStatus" = "Letsencrypt wildcard" ]; then
   ENGINE="cb"
 else
   /bin/echo "Something is broken. Domain uses $inkCertSiteStatus, but server conf uses $inkCertServerConfStatus."

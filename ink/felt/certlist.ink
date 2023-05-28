@@ -63,7 +63,7 @@ fi
 
 ## Already installed?
 inkCertInstallStatus
-if [ $inkCertInstallStatus = "Installed" ]; then
+if [ "$inkCertInstallStatus" = "Installed" ]; then
   /bin/echo "inkCert already installed"; inkFail # Uncomment if required
 fi
 
