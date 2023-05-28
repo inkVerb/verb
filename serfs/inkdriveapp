@@ -126,7 +126,7 @@ fi
 
 ## Conf
 /usr/bin/mv /opt/verb/conf/vapps/vapp.${Vapp} "/mnt/${Mnt}/.conf/"
-/usr/bin/ln -sfn "/mnt/${Mnt}/.conf/vapp.${Vapp}" /opt/verb/conf/vapps/vapp./
+/usr/bin/ln -sfn "/mnt/${Mnt}/.conf/vapp.${Vapp}" /opt/verb/conf/vapps/
 
 # Finish
 if [ -d "/mnt/${Mnt}/${Vapp}" ] && [ -e "${VappData}" ]; then
