@@ -246,11 +246,11 @@ if [ -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
 fi
 if [ "${InkDriveNC}" != "off" ]; then
   /usr/bin/echo "Mounting 'data' to a drive..."
-  /opt/verb/serfs/inkdriveapp "${cVappName}.${domain}" "${InkDriveNC}"
+  /opt/verb/serfs/inkdriveapp "${cVappName}" "${InkDriveNC}"
   if [ "$?" = 0 ]; then
     /usr/bin/echo "InkDrive=\"${InkDriveNC}\"" >> /opt/verb/conf/vapps/vapp.${cVappName}
   else
-    /usr/bin/echo "inkDrive hosting is expected, but unable to host WP on the drive. Something is very wrong!"
+    /usr/bin/echo "inkDrive hosting is expected, but unable to host Nextcloud on the drive. Something is very wrong!"
     exit 6
   fi
 fi
