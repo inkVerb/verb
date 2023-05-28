@@ -65,6 +65,7 @@ FLUSH PRIVILEGES;"
 cd /srv/www/vapps/${appName} || exit 6
 /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf wp52biblecomb0Kvq1 < wp52biblecomb0Kvq1.sql
 #/bin/rm -f ${appDBase}.sql
+/usr/bin/mv ${appDBase}.sql /srv/vip/sql/
 /bin/rm -f /srv/www/vapps/${appName}/servernameip*
 
 # Own
