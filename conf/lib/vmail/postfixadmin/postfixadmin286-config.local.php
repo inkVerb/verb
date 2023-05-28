@@ -1,24 +1,24 @@
 <?php
 
-$Conf['configured'] = true;
+$CONF['configured'] = true;
 
-#$Conf['setup_password'] = 'changeme';
+#$CONF['setup_password'] = 'changeme';
 
 
-$Conf['postfix_admin_url'] = 'https://po.emailTLDURI286/pfafolder286';
+$CONF['postfix_admin_url'] = 'https://po.emailTLDURI286/pfafolder286';
 
-$Conf['default_language'] = 'en';
+$CONF['default_language'] = 'en';
 
-$Conf['language_hook'] = '';
+$CONF['language_hook'] = '';
 
-$Conf['database_type'] = 'mysqli';
-$Conf['database_host'] = 'localhost';
-$Conf['database_user'] = 'mail';
-$Conf['database_password'] = 'mailpassword';
-$Conf['database_name'] = 'mail';
+$CONF['database_type'] = 'mysqli';
+$CONF['database_host'] = 'localhost';
+$CONF['database_user'] = 'mail';
+$CONF['database_password'] = 'mailpassword';
+$CONF['database_name'] = 'mail';
 
-$Conf['database_prefix'] = '';
-$Conf['database_tables'] = array (
+$CONF['database_prefix'] = '';
+$CONF['database_tables'] = array (
     'admin' => 'admin',
     'alias' => 'alias',
     'alias_domain' => 'alias_domain',
@@ -34,74 +34,74 @@ $Conf['database_tables'] = array (
 	'quota2' => 'quota2',
 );
 
-$Conf['admin_email'] = 'admin@nameURI286';
+$CONF['admin_email'] = 'admin@nameURI286';
 
-$Conf['smtp_server'] = 'localhost';
-$Conf['smtp_port'] = '25';
+$CONF['smtp_server'] = 'localhost';
+$CONF['smtp_port'] = '25';
 
-#$Conf['encrypt'] = 'dovecot:SHA512-CRYPT'; # More secure, but Postfix Admin breaks; agree with /etc/dovecot/dovecot-sql.conf
+#$CONF['encrypt'] = 'dovecot:SHA512-CRYPT'; # More secure, but Postfix Admin breaks; agree with /etc/dovecot/dovecot-sql.conf
 
-$Conf['authlib_default_flavor'] = 'md5raw';
+$CONF['authlib_default_flavor'] = 'md5raw';
 
-$Conf['dovecotpw'] = "/usr/sbin/doveadm pw";
+$CONF['dovecotpw'] = "/usr/sbin/doveadm pw";
 
-$Conf['password_validation'] = array(
+$CONF['password_validation'] = array(
 #    '/regular expression/' => '$PALANG key (optional: + parameter)',
     '/.{5}/'                => 'password_too_short 5',      # minimum length 5 characters
     '/([a-zA-Z].*){3}/'     => 'password_no_characters 3',  # must contain at least 3 letters (A-Z, a-z)
     '/([0-9].*){2}/'        => 'password_no_digits 2',      # must contain at least 2 digits
 );
 
-$Conf['generate_password'] = 'NO';
+$CONF['generate_password'] = 'NO';
 
-$Conf['show_password'] = 'NO';
+$CONF['show_password'] = 'NO';
 
-$Conf['page_size'] = '500';
+$CONF['page_size'] = '500';
 
-$Conf['default_aliases'] = array (
+$CONF['default_aliases'] = array (
     'abuse' => 'abuse@nameURI286',
     'hostmaster' => 'hostmaster@nameURI286',
     'postmaster' => 'postmaster@nameURI286',
     'webmaster' => 'webmaster@nameURI286'
 );
 
-$Conf['domain_path'] = 'YES';
+$CONF['domain_path'] = 'YES';
 
-$Conf['domain_in_mailbox'] = 'NO';
+$CONF['domain_in_mailbox'] = 'NO';
 
-$Conf['maildir_name_hook'] = 'NO';
+$CONF['maildir_name_hook'] = 'NO';
 
-$Conf['aliases'] = '1000';
-$Conf['mailboxes'] = '1000';
-$Conf['maxquota'] = '1000';
-$Conf['domain_quota_default'] = '2048';
+$CONF['aliases'] = '1000';
+$CONF['mailboxes'] = '1000';
+$CONF['maxquota'] = '1000';
+$CONF['domain_quota_default'] = '2048';
 
-$Conf['quota'] = 'YES';
+$CONF['quota'] = 'YES';
 
-$Conf['domain_quota'] = 'YES';
+$CONF['domain_quota'] = 'YES';
 
-$Conf['quota_multiplier'] = '1048576';
+$CONF['quota_multiplier'] = '1048576';
 
 
-$Conf['transport'] = 'NO';
+$CONF['transport'] = 'NO';
 
-$Conf['transport_options'] = array (
+$CONF['transport_options'] = array (
     'virtual',
     'local',
     'relay'
 );
 
-$Conf['transport_default'] = 'virtual';
+$CONF['transport_default'] = 'virtual';
 
-$Conf['vacation'] = 'YES';
+$CONF['vacation'] = 'YES';
 
-$Conf['vacation_domain'] = 'away.nameURI286';
+$CONF['vacation_domain'] = 'away.nameURI286';
 
-$Conf['vacation_control'] ='YES';
+$CONF['vacation_control'] ='YES';
 
-$Conf['vacation_control_admin'] = 'YES';
+$CONF['vacation_control_admin'] = 'YES';
 
-$Conf['vacation_choice_of_reply'] = array (
+$CONF['vacation_choice_of_reply'] = array (
    0 => 'reply_once',        // Sends only Once the message during Out of Office
    # considered annoying - only send a reply on every mail if you really need it
    # 1 => 'reply_every_mail',       // Reply on every email
@@ -109,38 +109,38 @@ $Conf['vacation_choice_of_reply'] = array (
 );
 
 
-$Conf['alias_control'] = 'YES';
+$CONF['alias_control'] = 'YES';
 
-$Conf['alias_control_admin'] = 'YES';
+$CONF['alias_control_admin'] = 'YES';
 
-$Conf['special_alias_control'] = 'NO';
+$CONF['special_alias_control'] = 'NO';
 
-$Conf['alias_goto_limit'] = '0';
+$CONF['alias_goto_limit'] = '0';
 
-$Conf['alias_domain'] = 'YES';
+$CONF['alias_domain'] = 'YES';
 
-$Conf['backup'] = 'YES';
+$CONF['backup'] = 'YES';
 
-$Conf['sendmail'] = 'YES';
+$CONF['sendmail'] = 'YES';
 
-$Conf['logging'] = 'YES';
+$CONF['logging'] = 'YES';
 
-$Conf['fetchmail'] = 'NO';
+$CONF['fetchmail'] = 'NO';
 
-$Conf['fetchmail_extra_options'] = 'NO';
+$CONF['fetchmail_extra_options'] = 'NO';
 
-$Conf['show_header_text'] = 'YES';
-$Conf['header_text'] = '';
+$CONF['show_header_text'] = 'YES';
+$CONF['header_text'] = '';
 
-$Conf['show_footer_text'] = 'YES';
-$Conf['footer_text'] = 'Login to your webmail';
-$Conf['footer_link'] = 'https://box.emailTLDURI286/rcfolder286';
+$CONF['show_footer_text'] = 'YES';
+$CONF['footer_text'] = 'Login to your webmail';
+$CONF['footer_link'] = 'https://box.emailTLDURI286/rcfolder286';
 
-$Conf['motd_user'] = 'Ink is a verb. So, get inking!';
-$Conf['motd_admin'] = 'Ink is a verb. So, get inking!';
-$Conf['motd_superadmin'] = 'Ink is a verb. So, get inking!';
+$CONF['motd_user'] = 'Ink is a verb. So, get inking!';
+$CONF['motd_admin'] = 'Ink is a verb. So, get inking!';
+$CONF['motd_superadmin'] = 'Ink is a verb. So, get inking!';
 
-$Conf['welcome_text'] = <<<EOM
+$CONF['welcome_text'] = <<<EOM
 Welcome to inkVerb email! This is the real-deal.
 
 - Email accounts & forwarding are managed at po.emailTLDURI286/pfafolder286
@@ -182,57 +182,57 @@ Thanks for using this real-deal, genuine email server for your email. And, remem
 Ink is a verb. So, ink!
 EOM;
 
-$Conf['emailcheck_resolve_domain']='YES';
+$CONF['emailcheck_resolve_domain']='YES';
 
-$Conf['show_status']='YES';
+$CONF['show_status']='YES';
 
-$Conf['show_status_key']='YES';
+$CONF['show_status_key']='YES';
 
-$Conf['show_status_text']='&nbsp;&nbsp;';
+$CONF['show_status_text']='&nbsp;&nbsp;';
 
-$Conf['show_undeliverable']='YES';
-$Conf['show_undeliverable_color']='tomato';
+$CONF['show_undeliverable']='YES';
+$CONF['show_undeliverable_color']='tomato';
 
-$Conf['show_undeliverable_exceptions']=array("unixmail.domain.ext","exchangeserver.domain.ext","nameURI286","gmail.com","hotmail.com","inkisaverb.com","yahoo.com");
-$Conf['show_popimap']='YES';
-$Conf['show_popimap_color']='darkgrey';
+$CONF['show_undeliverable_exceptions']=array("unixmail.domain.ext","exchangeserver.domain.ext","nameURI286","gmail.com","hotmail.com","inkisaverb.com","yahoo.com");
+$CONF['show_popimap']='YES';
+$CONF['show_popimap_color']='darkgrey';
 
-$Conf['show_custom_domains']=array("nameURI286");
-$Conf['show_custom_colors']=array("#111111");
+$CONF['show_custom_domains']=array("nameURI286");
+$CONF['show_custom_colors']=array("#111111");
 
-$Conf['recipient_delimiter'] = "+";
+$CONF['recipient_delimiter'] = "+";
 
-$Conf['mailbox_postcreation_script'] = '';
+$CONF['mailbox_postcreation_script'] = '';
 
-$Conf['mailbox_postedit_script'] = '';
+$CONF['mailbox_postedit_script'] = '';
 
-$Conf['mailbox_postdeletion_script'] = '';
+$CONF['mailbox_postdeletion_script'] = '';
 
-$Conf['domain_postcreation_script'] = '';
+$CONF['domain_postcreation_script'] = '';
 
-$Conf['domain_postdeletion_script'] = '';
+$CONF['domain_postdeletion_script'] = '';
 
-$Conf['create_mailbox_subdirs'] = array('Archive','Drafts','Junk','Sent','Trash');
-//$Conf['create_mailbox_subdirs'] = array();
+$CONF['create_mailbox_subdirs'] = array('Archive','Drafts','Junk','Sent','Trash');
+//$CONF['create_mailbox_subdirs'] = array();
 
-$Conf['create_mailbox_subdirs_host']='localhost';
+$CONF['create_mailbox_subdirs_host']='localhost';
 
-$Conf['create_mailbox_subdirs_prefix']='';
+$CONF['create_mailbox_subdirs_prefix']='';
 
-$Conf['used_quotas'] = 'NO';
+$CONF['used_quotas'] = 'NO';
 
-$Conf['new_quota_table'] = 'YES';
+$CONF['new_quota_table'] = 'YES';
 
-$Conf['create_mailbox_subdirs_hostoptions'] = array('');
+$CONF['create_mailbox_subdirs_hostoptions'] = array('');
 
-$Conf['theme_logo'] = 'images/logo-ink.png';
+$CONF['theme_logo'] = 'images/logo-ink.png';
 
-$Conf['theme_favicon'] = 'images/favicon-ink.ico';
+$CONF['theme_favicon'] = 'images/favicon-ink.ico';
 
-$Conf['theme_css'] = 'css/default.css';
+$CONF['theme_css'] = 'css/default.css';
 
-$Conf['theme_custom_css'] = '';
+$CONF['theme_custom_css'] = '';
 
-$Conf['xmlrpc_enabled'] = false;
+$CONF['xmlrpc_enabled'] = false;
 
 /* vim: set expandtab softtabstop=4 tabstop=4 shiftwidth=4: */

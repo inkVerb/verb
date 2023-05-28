@@ -22,7 +22,7 @@ pfaFolder=$1
 /bin/ln -s /srv/www/email/postfixadmin /srv/www/html/${ServerEmailTLD}.pfa/${pfaFolder}
 /bin/chown -R www:www /srv/www/html/${ServerEmailTLD}.pfa
 /bin/sed -i "s/ServerPFAPath=.*/ServerPFAPath=\"${pfaFolder}\"/g" /opt/verb/conf/servermailpass
-/bin/sed -i "s/\$Conf\['postfix_admin_url'\] = 'https:\/\/.*/\$Conf\['postfix_admin_url'\] = 'https:\/\/pfa\.${ServerName}\.verb\.${ServerEmailTLD}\/${pfaFolder}';/g" /srv/www/email/postfixadmin/config.inc.php
+/bin/sed -i "s/\$CONF\['postfix_admin_url'\] = 'https:\/\/.*/\$CONF\['postfix_admin_url'\] = 'https:\/\/pfa\.${ServerName}\.verb\.${ServerEmailTLD}\/${pfaFolder}';/g" /srv/www/email/postfixadmin/config.inc.php
 
 
 
