@@ -52,20 +52,20 @@ cd /srv/www/vip || exit 6
 /opt/verb/serfs/setvapplinkon ${appName}
 
 # Restore and include the app config
-/bin/mv /srv/www/vapps/${appName}/vapp.${appName} /opt/verb/conf/
+/bin/mv /srv/www/vapps/${appName}/vapp.${appName} /opt/verb/conf/vapps/
 . /opt/verb/conf/vapps/vapp.${appName}
 
 # Create the SQL database
 /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
-CREATE DATABASE ${appDBase} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-GRANT ALL PRIVILEGES ON ${appDBase}.* TO '${appDDBUsr}'@'localhost' IDENTIFIED BY '${appDDBPass}';
+CREATE DATABASE wp52biblecomb0Kvq1 CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+GRANT ALL PRIVILEGES ON wp52biblecomb0Kvq1.* TO 'wp52biblecomb0Kvq1'@'localhost' IDENTIFIED BY '0gfWiKvCxP}';
 FLUSH PRIVILEGES;"
 
 # Restore the database
 cd /srv/www/vapps/${appName} || exit 6
-/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${appDBase} < ${appDBase}.sql; wait
-/bin/rm -f ${appDBase}.sql
-/bin/rm -f servernameip*
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf wp52biblecomb0Kvq1 < wp52biblecomb0Kvq1.sql
+#/bin/rm -f ${appDBase}.sql
+/bin/rm -f /srv/www/vapps/${appName}/servernameip*
 
 # Own
 /bin/chown -R www:www /srv/www/vapps/${appName}
