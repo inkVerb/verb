@@ -97,16 +97,16 @@ done
 if [ "$SOd" != "Verb domains" ]; then
   inkCertSiteStatus $SOd
   inkCertServerConfStatus $SOd
-  if [ "$inkCertSiteStatus" = "Letsencrypt multiple" ] && [ $inkCertServerConfStatus = "Letsencrypt multiple" ]; then
+  if [ "$inkCertSiteStatus" = "Letsencrypt multiple" ] && [ "$inkCertServerConfStatus" = "Letsencrypt multiple" ]; then
     REFRESHLEOPTION=" r"
     success_message="$SOd cert refreshed. Don't do this too often or you could be briefly suspended from obtaining new certs."
-  elif [ "$inkCertSiteStatus" = "Letsencrypt single" ] && [ $inkCertServerConfStatus = "Letsencrypt single" ]; then
+  elif [ "$inkCertSiteStatus" = "Letsencrypt single" ] && [ "$inkCertServerConfStatus" = "Letsencrypt single" ]; then
     /bin/echo "Already certed using $inkCertSiteStatus certs. Nothing to do."
     exit 0
-  elif [ "$inkCertSiteStatus" = "Letsencrypt wildcard" ] && [ $inkCertServerConfStatus = "Letsencrypt wildcard" ]; then
+  elif [ "$inkCertSiteStatus" = "Letsencrypt wildcard" ] && [ "$inkCertServerConfStatus" = "Letsencrypt wildcard" ]; then
     /bin/echo "Already certed using $inkCertSiteStatus certs. Nothing to do."
     exit 0
-  elif [ "$inkCertSiteStatus" != "Not yet" ] && [ $inkCertServerConfStatus != "Not yet" ] && [ $inkCertSiteStatus != "Removed" ] && [ $inkCertServerConfStatus != "Removed" ]; then
+  elif [ "$inkCertSiteStatus" != "Not yet" ] && [ "$inkCertServerConfStatus" != "Not yet" ] && [ "$inkCertSiteStatus" != "Removed" ] && [ "$inkCertServerConfStatus" != "Removed" ]; then
     /bin/echo "Something is broken. Current status isn't set properly in the server conf and ini settings."
     inkFail
   else
