@@ -197,8 +197,6 @@ EOF
           if [ -f "${snsverber}/domains/fresh/.${sDomain}" ]; then
             /usr/bin/rm -f "/var/named/db.${sDomain}"
             /usr/bin/rm -f "${snsverber}/domains/fresh/.${sDomain}"
-            echo "deleted ${sDomain} ::"
-            ls -l "/var/named/db.${sDomain}"
           fi
         done
         ##### Killed
@@ -212,8 +210,8 @@ EOF
           cd ..
           /usr/bin/rm -rf ${snsverber}/domains/killed/fresh
         fi
-        ## Delete the fresh folder
-        #/usr/bin/rm -rf "${snsverber}/domains/fresh"
+        ## Delete the domains/fresh folder
+        /usr/bin/rm -rf "${snsverber}/domains/fresh"
       done
     fi
   fi # End Slave DNS
