@@ -168,6 +168,11 @@ EOF
           ##### rDNS, pointing to PRT records listed in named/nv.verber on the master, but only if grep doesn't find the ARPA IP doesn't already exist
           /usr/bin/grep -q "${sdnsIPv4ARPA}" /var/named/named.conf.rdns || /usr/bin/echo "zone \"${sdnsIPv4ARPA}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"nv4.${sdnsDomain}\"; };" >> /var/named/named.conf.rdns
           /usr/bin/grep -q "${sdnsIPv6ARPA}" /var/named/named.conf.rdns || /usr/bin/echo "zone \"${sdnsIPv6ARPA}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"nv6.${sdnsDomain}\"; };" >> /var/named/named.conf.rdns
+          ##### Fresh?
+          if [ -f "${snsverber}/domains/fresh/.${slv}" ]; then
+            /usr/bin/rm -f "/var/named/db.${slv}"
+            /usr/bin/rm -f "${snsverber}/domains/fresh/.${slv}"
+          fi
         done
         ##### Served
         for slv in "${snsverber}/domains/served/"*; do
@@ -186,6 +191,11 @@ EOF
           ##### rDNS, pointing to PRT records listed in named/nv.verber on the master, but only if grep doesn't find the ARPA IP doesn't already exist
           /usr/bin/grep -q "${sdnsIPv4ARPA}" /var/named/named.conf.rdns || /usr/bin/echo "zone \"${sdnsIPv4ARPA}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"nv4.${sdnsDomain}\"; };" >> /var/named/named.conf.rdns
           /usr/bin/grep -q "${sdnsIPv6ARPA}" /var/named/named.conf.rdns || /usr/bin/echo "zone \"${sdnsIPv6ARPA}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"nv6.${sdnsDomain}\"; };" >> /var/named/named.conf.rdns
+          ##### Fresh?
+          if [ -f "${snsverber}/domains/fresh/.${slv}" ]; then
+            /usr/bin/rm -f "/var/named/db.${slv}"
+            /usr/bin/rm -f "${snsverber}/domains/fresh/.${slv}"
+          fi
         done
         ##### Killed
         if [ -d "${snsverber}/domains/served/killed/fresh" ]; then
@@ -196,6 +206,8 @@ EOF
             /usr/bin/mv /domains/served/killed/fresh/${slv} /domains/served/killed/
           done
         fi
+        ## Delete the fresh folder
+        /usr/bin/rm -rf "${snsverber}/domains/fresh"
       done
     fi
   fi # End Slave DNS

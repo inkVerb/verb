@@ -105,6 +105,7 @@ else
 fi
 
 # Add the configs to the domains/ folder on the NS nameservers
+## We make a fresh/.domain.tld entry so that the nameserver knows we made an update and it will delete the named slave file at /var/named/db.domain.tld
 /usr/bin/ssh -T ns1 <<EOS
 /usr/bin/cat <<EOF > /srv/sns/${ServerName}-${ServerTLD}/domains/${parkserve}/${slavedomain}
 sdnsDomain="${slavedomain}"
@@ -114,6 +115,8 @@ sdnsIPv6Exp="${ServerExpIPv6}"
 sdnsIPv6Cmp="${ServerIPv6}"
 sdnsIPv6ARPA="${ServerARPAIPv6}"
 EOF
+/usr/bin/mkdir -p /srv/sns/${ServerName}-${ServerTLD}/domains/fresh
+/usr/bin/touch /srv/sns/${ServerName}-${ServerTLD}/domains/fresh/.${slavedomain}
 EOS
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 /usr/bin/echo "Added ${slavedomain} to NS1"
@@ -126,6 +129,8 @@ sdnsIPv6Exp="${ServerExpIPv6}"
 sdnsIPv6Cmp="${ServerIPv6}"
 sdnsIPv6ARPA="${ServerARPAIPv6}"
 EOF
+/usr/bin/mkdir -p /srv/sns/${ServerName}-${ServerTLD}/domains/fresh
+/usr/bin/touch /srv/sns/${ServerName}-${ServerTLD}/domains/fresh/.${slavedomain}
 EOS
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 /usr/bin/echo "Added ${slavedomain} to NS2"
