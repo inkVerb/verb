@@ -198,13 +198,15 @@ EOF
           fi
         done
         ##### Killed
-        if [ -d "${snsverber}/domains/served/killed/fresh" ]; then
-          cd ${snsverber}/domains/served/killed/fresh
+        if [ -d "${snsverber}/domains/killed/fresh" ]; then
+          cd ${snsverber}/domains/killed/fresh
           for slv in *; do
             if [ "${slv}" = '*' ]; then continue; fi
             /usr/bin/rm -f "/var/named/db.${slv}"
-            /usr/bin/mv /domains/served/killed/fresh/${slv} /domains/served/killed/
+            /usr/bin/mv /domains/killed/fresh/${slv} /domains/killed/
           done
+          cd ..
+          /usr/bin/rm -rf ${snsverber}/domains/killed/fresh
         fi
         ## Delete the fresh folder
         /usr/bin/rm -rf "${snsverber}/domains/fresh"
