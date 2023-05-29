@@ -152,6 +152,7 @@ EOF
         ##### Parked
         for slv in "${snsverber}/domains/parked/"*; do
           if [ "${slv}" = ${snsverber}/domains/parked/'*' ]; then continue; fi
+          sDomain=$(/usr/bin/echo ${slv} | /usr/bin/sed "s:^${snsverber}/domains/parked/::")
           ##### Config for this domain
           . ${slv}
           ##### Validate file properly lists itself?
@@ -169,14 +170,15 @@ EOF
           /usr/bin/grep -q "${sdnsIPv4ARPA}" /var/named/named.conf.rdns || /usr/bin/echo "zone \"${sdnsIPv4ARPA}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"nv4.${sdnsDomain}\"; };" >> /var/named/named.conf.rdns
           /usr/bin/grep -q "${sdnsIPv6ARPA}" /var/named/named.conf.rdns || /usr/bin/echo "zone \"${sdnsIPv6ARPA}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"nv6.${sdnsDomain}\"; };" >> /var/named/named.conf.rdns
           ##### Fresh?
-          if [ -f "${snsverber}/domains/fresh/.${slv}" ]; then
-            /usr/bin/rm -f "/var/named/db.${slv}"
-            /usr/bin/rm -f "${snsverber}/domains/fresh/.${slv}"
+          if [ -f "${snsverber}/domains/fresh/.${sDomain}" ]; then
+            /usr/bin/rm -f "/var/named/db.${sDomain}"
+            /usr/bin/rm -f "${snsverber}/domains/fresh/.${sDomain}"
           fi
         done
         ##### Served
         for slv in "${snsverber}/domains/served/"*; do
-          if [ "${slv}" = ${snsverber}/domains/parked/'*' ]; then continue; fi
+          if [ "${slv}" = ${snsverber}/domains/served/'*' ]; then continue; fi
+          sDomain=$(/usr/bin/echo ${slv} | /usr/bin/sed "s:^${snsverber}/domains/served/::")
           ##### Config for this domain
           . ${slv}
           ##### Validate file properly lists itself?
@@ -192,20 +194,20 @@ EOF
           /usr/bin/grep -q "${sdnsIPv4ARPA}" /var/named/named.conf.rdns || /usr/bin/echo "zone \"${sdnsIPv4ARPA}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"nv4.${sdnsDomain}\"; };" >> /var/named/named.conf.rdns
           /usr/bin/grep -q "${sdnsIPv6ARPA}" /var/named/named.conf.rdns || /usr/bin/echo "zone \"${sdnsIPv6ARPA}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"nv6.${sdnsDomain}\"; };" >> /var/named/named.conf.rdns
           ##### Fresh?
-          if [ -f "${snsverber}/domains/fresh/.${slv}" ]; then
-            /usr/bin/rm -f "/var/named/db.${slv}"
-            /usr/bin/rm -f "${snsverber}/domains/fresh/.${slv}"
-            echo "deleted ${slv} ::"
-            ls -l "/var/named/db.${slv}"
+          if [ -f "${snsverber}/domains/fresh/.${sDomain}" ]; then
+            /usr/bin/rm -f "/var/named/db.${sDomain}"
+            /usr/bin/rm -f "${snsverber}/domains/fresh/.${sDomain}"
+            echo "deleted ${sDomain} ::"
+            ls -l "/var/named/db.${sDomain}"
           fi
         done
         ##### Killed
         if [ -d "${snsverber}/domains/killed/fresh" ]; then
           cd ${snsverber}/domains/killed/fresh
-          for slv in *; do
-            if [ "${slv}" = '*' ]; then continue; fi
-            /usr/bin/rm -f "/var/named/db.${slv}"
-            /usr/bin/mv /domains/killed/fresh/${slv} /domains/killed/
+          for sDomain in *; do
+            if [ "${sDomain}" = '*' ]; then continue; fi
+            /usr/bin/rm -f "/var/named/db.${sDomain}"
+            /usr/bin/mv /domains/killed/fresh/${sDomain} /domains/killed/
           done
           cd ..
           /usr/bin/rm -rf ${snsverber}/domains/killed/fresh
