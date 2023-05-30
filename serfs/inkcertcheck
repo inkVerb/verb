@@ -1,0 +1,69 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This checks the cert status of a domain's config file, merely to see if the certs are installed
+## For LAEMP and LEMP it will check the nginx config; for apache it will check the httpd config
+
+# How to use:
+## ./inkcertcheck [ domain.tld ]
+
+usagenotes="This checks the cert status of a domain's config file, merely to see if the certs are installed"
+usageformat="inkcertcheck [ domain.tld ]"
+usageexample="inkcertcheck inkisaverb.com"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkcertinstall )
+prerequesite=( adddomain 'or' addsubdomain )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )	# List config files of any kind used in this serf, please preserve order of appearance
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkcertlist.replace" ]; then . /opt/verb/mods/inkcertlist.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkcertlist.before" ]; then . /opt/verb/mods/inkcertlist.before; fi # Precedes this script
+
+
+sitedomain=$1
+
+# Which server?
+. /opt/verb/conf/servertype
+if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
+  serverdir="nginx"
+elif [ ${ServerType} = "lamp" ]; then
+  serverdir="httpd"
+else
+  /usr/bin/echo "Server type is not set. Something is very wrong."
+  exit 6
+fi
+
+# Check the config file
+/usr/bin/grep "#INKVERB-INKCERT=" /opt/verb/conf/webserver/sites-available/${serverdir}/${sitedomain}.conf
+
+if /bin/grep -Fq "#INKVERB-INKCERT=INK_NO" /opt/verb/conf/webserver/sites-available/${serverdir}/${sitedomain}.conf ; then
+  /bin/echo "${sitedomain} not certified with any SSL certs"
+elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_CBSINGLE" /opt/verb/conf/webserver/sites-available/${serverdir}/${sitedomain}.conf ; then
+  /bin/echo "${sitedomain} certified by inkCert-CBSINGLE"
+  exit 0
+elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_CB" /opt/verb/conf/webserver/sites-available/${serverdir}/${sitedomain}.conf ; then
+  /bin/echo "${sitedomain} certified by inkCert-CB"
+  exit 0
+elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_LE" /opt/verb/conf/webserver/sites-available/${serverdir}/${sitedomain}.conf ; then
+   /bin/echo "${sitedomain} certified by inkCert-LE"
+  exit 0
+elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_SC" /opt/verb/conf/webserver/sites-available/${serverdir}/${sitedomain}.conf ; then
+  /bin/echo "${sitedomain} certified by inkCert-SC"
+  exit 0
+elif /bin/grep -Fq "#INKVERB-INKCERT=NA" /opt/verb/conf/webserver/sites-available/${serverdir}/${sitedomain}.conf ; then
+  /bin/echo "inkCert certs do not apply to ${sitedomain}"
+  exit 0
+else
+  /bin/echo "Something's really wrong with ${sitedomain}. No inkCert, no non-inkCert either. I quit here."
+  exit 6
+fi
+
+
+if [ -e "/opt/verb/mods/inkcertlist.after" ]; then . /opt/verb/mods/inkcertlist.after; fi # Follows this script

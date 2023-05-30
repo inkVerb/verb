@@ -28,8 +28,8 @@ if [ -e "/opt/verb/mods/newftpfiler.replace" ]; then . /opt/verb/mods/newftpfile
 if [ -e "/opt/verb/mods/newftpfiler.before" ]; then . /opt/verb/mods/newftpfiler.before; fi # Precedes this script
 
 
-NEWFTPfiler=$1
-appDBase=$2
+newFTPUser=$1
+newUserPass=$2
 
 # Create the user with vsftpd
 /opt/verb/serfs/newftpuser ${newFTPUser} ${newUserPass}
