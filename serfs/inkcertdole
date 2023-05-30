@@ -28,7 +28,7 @@ voptflagpurpose=( "Refresh if already done (required for domains with certs alre
 dependencyinstall=( inkcertinstall )
 prerequesite=( inkcertinstall )
 usedby=( inkcertdole-all-verbs inknetmakeca )
-useserfs=( inkcertreqle inkcertaddallle setinkcertmailcerts )
+useserfs=( inkcertreqle inkcertaddallle inkcertcheck setinkcertmailcerts )
 useconfigs=( siteurilist )	# List config files of any kind used in this serf, please preserve order of appearance
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/inkcertdole.replace" ]; then . /opt/verb/mods/inkcertdole.replace; return 0; fi # Replaces this script
@@ -70,6 +70,10 @@ if /bin/grep -q "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${doma
   fi
 fi
 
+# Check if installed
+/opt/verb/serfs/inkcertcheck ${domain}
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+
 # Domain check for mail certs
 . /opt/verb/conf/siteurilist
 if [ "${domain}" = "${nameURI}" ]; then
@@ -85,10 +89,6 @@ if [ ! -e "/etc/inkcert/le/live/${domain}/cert.pem" ] || [ ! -e "/etc/inkcert/le
   /usr/bin/echo "Certs don't exist. I quit."
   exit 8
 fi
-
-# Check if installed
-/opt/verb/serfs/inkcertcheck ${domain}
-e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 # Update the inkCert-DOMAIN config file, fail silently (eg. when used on subdomains)
 /bin/sed -i "s/InkCerted=.*/InkCerted=DONE_LE/" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain} 2> /dev/null

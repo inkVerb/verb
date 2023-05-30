@@ -19,12 +19,12 @@ voptflags=(  )
 voptflagpurpose=(  )
 dependencyinstall=( inkcertinstall )
 prerequesite=( adddomain 'or' addsubdomain )
-usedby=(  )
+usedby=( inkcertdocb inkcertdocbsingle inkcertdole inkcertdosc )
 useserfs=(  )
 useconfigs=(  )	# List config files of any kind used in this serf, please preserve order of appearance
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
-if [ -e "/opt/verb/mods/inkcertlist.replace" ]; then . /opt/verb/mods/inkcertlist.replace; return 0; fi # Replaces this script
-if [ -e "/opt/verb/mods/inkcertlist.before" ]; then . /opt/verb/mods/inkcertlist.before; fi # Precedes this script
+if [ -e "/opt/verb/mods/inkcertcheck.replace" ]; then . /opt/verb/mods/inkcertcheck.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkcertcheck.before" ]; then . /opt/verb/mods/inkcertcheck.before; fi # Precedes this script
 
 
 sitedomain=$1
@@ -68,4 +68,4 @@ else
 fi
 
 
-if [ -e "/opt/verb/mods/inkcertlist.after" ]; then . /opt/verb/mods/inkcertlist.after; fi # Follows this script
+if [ -e "/opt/verb/mods/inkcertcheck.after" ]; then . /opt/verb/mods/inkcertcheck.after; fi # Follows this script

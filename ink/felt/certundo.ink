@@ -62,10 +62,10 @@ fi
 
 # Message prep
 # Success message
-success_message="$SOd cert obtained."
+success_message="$SOd cert removed."
 
 # Fail message
-fail_message="$SOd cert failed to be obtained."
+fail_message="$SOd cert failed to be removed."
 
 # Check requirements or defaults
 ## Help

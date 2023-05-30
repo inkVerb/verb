@@ -46,10 +46,16 @@ EOF
 /usr/bin/chown -R www:www /srv/www/mailcatch
 
 # Mail cert links
-/opt/verb/serfs/setinkcertmailcerts ${domain}
+if [ "$2" = "verber" ]; then
+  /opt/verb/serfs/setinkcertmailcerts ${domain} inkvmail
+else
+  /opt/verb/serfs/setinkcertmailcerts ${domain}
+fi
 
-# Dovecot
-/usr/bin/cat <<EOF > /etc/dovecot/crt.d/${domain}.conf
+# Only make the Dovecot & Postfix entries if the keys exist
+if [ -e "$(/usr/bin/readlink /etc/ssl/server/mail/${domain}.crt)" ] && [ -e "$(/usr/bin/readlink /etc/ssl/server/mail/${domain}.key)" ]; then
+  # Dovecot
+  /usr/bin/cat <<EOF > /etc/dovecot/crt.d/${domain}.conf
 local_name imap.${domain} {
   ssl_cert = </etc/ssl/server/mail/${domain}.crt
   ssl_key = </etc/ssl/server/mail/${domain}.key
@@ -65,18 +71,19 @@ local_name mail.${domain} {
   ssl_key = </etc/ssl/server/mail/${domain}.key
 }
 EOF
-## Own
-/bin/chown vmail:dovecot /etc/dovecot/crt.d/${domain}.conf
-/bin/chmod o-rwx /etc/dovecot/crt.d/${domain}.conf
+  ## Own
+  /bin/chown vmail:dovecot /etc/dovecot/crt.d/${domain}.conf
+  /bin/chmod o-rwx /etc/dovecot/crt.d/${domain}.conf
 
-# Postfix
-if ! /bin/grep -q "mail.${domain} /etc/ssl/server/mail/${domain}.key /etc/ssl/server/mail/${domain}.crt" /etc/postfix/virtual_ssl.map; then
-  /usr/bin/cat <<EOF >> /etc/postfix/virtual_ssl.map
+  # Postfix
+  if ! /bin/grep -q "mail.${domain} /etc/ssl/server/mail/${domain}.key /etc/ssl/server/mail/${domain}.crt" /etc/postfix/virtual_ssl.map; then
+    /usr/bin/cat <<EOF >> /etc/postfix/virtual_ssl.map
 mail.${domain} /etc/ssl/server/mail/${domain}.key /etc/ssl/server/mail/${domain}.crt
 smtp.${domain} /etc/ssl/server/mail/${domain}.key /etc/ssl/server/mail/${domain}.crt
 EOF
+  fi
+  /usr/bin/postmap -F hash:/etc/postfix/virtual_ssl.map # Because we made an entry in this file and this is the only way to refresh that
 fi
-/usr/bin/postmap -F hash:/etc/postfix/virtual_ssl.map # Because we made an entry in this file and this is the only way to refresh that
 
 # Webserver files so inkCert-LE checks work
 if [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then

@@ -12,17 +12,36 @@ if [ "${SOcli}" = "true" ]; then
   /usr/bin/echo "$serfcommand"
   exit 0
 elif [ "${SOverbose}" = "true" ]; then
+  # We need to pass our exit code throgh tee
+  set -o pipefail
   # We don't want a serf exit to exit this script, so run it as an if statement; thank you https://stackoverflow.com/a/66585275/10343144
   if $serfcommand | /usr/bin/tee -a "${LogDir}/outputlog"
     then vsuccess="true"
     else vsuccess="false"
   fi
+  # #DEV alternate method of above
+  # $serfcommand | /usr/bin/tee -a "${LogDir}/outputlog"
+  # if [ "$?" = "0" ]; then
+  #   vsuccess="true"
+  # else
+  #   vsuccess="false"
+  # fi
+
+  # Return tee exit code passing to normal
+  set +o pipefail
 else
   # For standard command where all serf & script output goes to the log and only the ink tool sends STDOUT
   if $serfcommand 1>> "${LogDir}/outputlog" 2>> "${LogDir}/outputlog"
     then vsuccess="true"
     else vsuccess="false"
   fi
+  # #DEV alternate method of above
+  # $serfcommand 1>> "${LogDir}/outputlog" 2>> "${LogDir}/outputlog"
+  # if [ "$?" = "0" ]; then
+  #   vsuccess="true"
+  # else
+  #   vsuccess="false"
+  # fi
 fi
 
 # Serf output
