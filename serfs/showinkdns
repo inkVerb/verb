@@ -11,9 +11,9 @@
 
 domain="$1"
 if [ -n $2 ] && [ "$2" = "verber" ]; then
-  ZONEdir="inkzones"
+  zonedir="inkzones"
 else
-  ZONEdir="zones"
+  zonedir="zones"
 fi
 
 /bin/echo "Zone file:"
