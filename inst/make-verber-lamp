@@ -45,7 +45,7 @@ mysqlpass="$2"
 fi
 
 # MySQL boss password
-MYSQLBossPASS=$(/usr/bin/pwgen -s -1 10)
+mysqlbosspass=$(/usr/bin/pwgen -s -1 10)
 
 # Verify SSH Directory
 cd ~ || exit 6
@@ -127,6 +127,8 @@ DirectoryIndex index.htm index.html index.php
   SetHandler "proxy:unix:/run/php-fpm/php-fpm.sock|fcgi://localhost/"
 </FilesMatch>
 EOF
+
+/usr/bin/sed -i 's/^pm.max_children =.*/pm.max_children = 200/' /etc/php/php-fpm.d/www.conf
 
 /usr/bin/echo "
 # Added by inkVerb Verber #
@@ -246,13 +248,13 @@ if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 # # MySQL superuser to auto-create databases
 # /usr/bin/mysql -uroot -p${mysqlpass} -e "
 # CREATE USER mysqlboss@localhost;
-# SET PASSWORD FOR mysqlboss@localhost=PASSWORD('${MYSQLBossPASS}');
-# GRANT ALL PRIVILEGES ON *.* TO 'mysqlboss'@'localhost' IDENTIFIED BY '${MYSQLBossPASS}' WITH GRANT OPTION;
+# SET PASSWORD FOR mysqlboss@localhost=PASSWORD('${mysqlbosspass}');
+# GRANT ALL PRIVILEGES ON *.* TO 'mysqlboss'@'localhost' IDENTIFIED BY '${mysqlbosspass}' WITH GRANT OPTION;
 # FLUSH PRIVILEGES;"
 # ## Set the mysqlboss as the mysqlboss config file so the password is not in the line command
 # /usr/bin/echo "[client]
 # user = mysqlboss
-# password = ${MYSQLBossPASS}
+# password = ${mysqlbosspass}
 # host = localhost" > /opt/verb/conf/mysqlboss.cnf
 
 # Monit
