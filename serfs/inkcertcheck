@@ -40,9 +40,10 @@ else
   exit 6
 fi
 
-# Check the config file
-/usr/bin/grep "#INKVERB-INKCERT=" /opt/verb/conf/webserver/sites-available/${serverdir}/${sitedomain}.conf
+# Check the config file (verbose)
+#/usr/bin/grep "#INKVERB-INKCERT=" /opt/verb/conf/webserver/sites-available/${serverdir}/${sitedomain}.conf
 
+# Check and sort
 if /bin/grep -Fq "#INKVERB-INKCERT=INK_NO" /opt/verb/conf/webserver/sites-available/${serverdir}/${sitedomain}.conf ; then
   /bin/echo "${sitedomain} not certified with any SSL certs"
 elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_CBSINGLE" /opt/verb/conf/webserver/sites-available/${serverdir}/${sitedomain}.conf ; then

@@ -93,6 +93,12 @@ if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
    exit 6
   fi
 
+  ## Check if the certs exist
+  if [ ! -e "/etc/inkcert/sc/live/${certdomain}/fullchain.pem" ] || [ ! -e "/etc/inkcert/sc/live/${certdomain}/fullchain.pem" ] || [ ! -e "/etc/inkcert/sc/live/${certdomain}/key.pem" ]; then
+    /usr/bin/echo "Certs don't exist. I quit."
+    exit 8
+  fi
+
   ## Stop Nginx
   /bin/systemctl stop nginx; wait
 
@@ -141,6 +147,12 @@ elif [ ${ServerType} = "lamp" ]; then
   else
    /bin/echo "Something's really wrong with ${sitedomain}. No inkCert, no non-inkCert either. I quit here."
    exit 6
+  fi
+
+  ## Check if the certs exist
+  if [ ! -e "/etc/inkcert/sc/live/${certdomain}/fullchain.pem" ] || [ ! -e "/etc/inkcert/sc/live/${certdomain}/fullchain.pem" ] || [ ! -e "/etc/inkcert/sc/live/${certdomain}/key.pem" ]; then
+    /usr/bin/echo "Certs don't exist. I quit."
+    exit 8
   fi
 
   ## Stop Apache

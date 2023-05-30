@@ -51,6 +51,16 @@ elif [ "${domain}" != "${emailTLD}" ] && [ "${domain}" != "${hostURI}" ] && [ "$
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 
+## Check if the certs exist
+if [ ! -e "/etc/inkcert/sc/live/${domain}/fullchain.pem" ] || [ ! -e "/etc/inkcert/sc/live/${domain}/fullchain.pem" ] || [ ! -e "/etc/inkcert/sc/live/${domain}/key.pem" ]; then
+  /usr/bin/echo "Certs don't exist. I quit."
+  exit 8
+fi
+
+# Check if installed
+/opt/verb/serfs/inkcertcheck ${domain}
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+
 # Update the inkCert-DOMAIN config file, fail silently (eg. when used on subdomains)
 /bin/sed -i "s/InkCerted=.*/InkCerted=DONE_SC/" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain} 2> /dev/null
 
