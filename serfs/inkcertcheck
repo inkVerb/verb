@@ -42,8 +42,7 @@ fi
 
 # Check the config file (verbose)
 #/usr/bin/grep -q "#INKVERB-INKCERT=" /opt/verb/conf/webserver/sites-available/${serverdir}/${sitedomain}.conf
-echo /opt/verb/conf/webserver/sites-available/${serverdir}/${sitedomain}.conf
-exit 9
+
 # Check and sort
 if /bin/grep -Fq "#INKVERB-INKCERT=INK_NO" /opt/verb/conf/webserver/sites-available/${serverdir}/${sitedomain}.conf ; then
   /bin/echo "${sitedomain} not certified with any SSL certs"
@@ -65,6 +64,7 @@ elif /bin/grep -Fq "#INKVERB-INKCERT=NA" /opt/verb/conf/webserver/sites-availabl
   exit 1
 else
   /bin/echo "Something's really wrong with ${sitedomain}. No inkCert, no non-inkCert either. I quit here."
+  /bin/echo /opt/verb/conf/webserver/sites-available/${serverdir}/${sitedomain}.conf
   exit 6
 fi
 
