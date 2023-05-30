@@ -41,7 +41,7 @@ else
 fi
 
 # Check the config file (verbose)
-#/usr/bin/grep "#INKVERB-INKCERT=" /opt/verb/conf/webserver/sites-available/${serverdir}/${sitedomain}.conf
+#/usr/bin/grep -q "#INKVERB-INKCERT=" /opt/verb/conf/webserver/sites-available/${serverdir}/${sitedomain}.conf
 
 # Check and sort
 if /bin/grep -Fq "#INKVERB-INKCERT=INK_NO" /opt/verb/conf/webserver/sites-available/${serverdir}/${sitedomain}.conf ; then
