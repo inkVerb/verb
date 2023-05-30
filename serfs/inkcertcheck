@@ -46,6 +46,7 @@ fi
 # Check and sort
 if /bin/grep -Fq "#INKVERB-INKCERT=INK_NO" /opt/verb/conf/webserver/sites-available/${serverdir}/${sitedomain}.conf ; then
   /bin/echo "${sitedomain} not certified with any SSL certs"
+  exit 5
 elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_CBSINGLE" /opt/verb/conf/webserver/sites-available/${serverdir}/${sitedomain}.conf ; then
   /bin/echo "${sitedomain} certified by inkCert-CBSINGLE"
   exit 0
@@ -60,7 +61,7 @@ elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_SC" /opt/verb/conf/webserver/sites-ava
   exit 0
 elif /bin/grep -Fq "#INKVERB-INKCERT=NA" /opt/verb/conf/webserver/sites-available/${serverdir}/${sitedomain}.conf ; then
   /bin/echo "inkCert certs do not apply to ${sitedomain}"
-  exit 0
+  exit 1
 else
   /bin/echo "Something's really wrong with ${sitedomain}. No inkCert, no non-inkCert either. I quit here."
   exit 6
