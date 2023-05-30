@@ -119,6 +119,9 @@ if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
   elif /bin/grep -Fq "#INKVERB-INKCERT=NA" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf ; then
    /bin/echo "inkCert certs do not apply here: ${sitedomain}. Moving on..."
    exit 0
+  elif /bin/grep -Fq "#INKVERB-INKCERT=MAIL" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf ; then
+   /bin/echo "inkCert certs not needed for mail certs: ${sitedomain}. Moving on..."
+   exit 0
   else
    /bin/echo "Something's really wrong with ${sitedomain}. No inkCert, no non-inkCert either. I quit here."
    exit 6
@@ -179,6 +182,9 @@ elif [ ${ServerType} = "lamp" ]; then
    exit 0
   elif /bin/grep -Fq "#INKVERB-INKCERT=NA" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf ; then
    /bin/echo "inkCert certs do not apply here: ${sitedomain}. Moving on..."
+   exit 0
+  elif /bin/grep -Fq "#INKVERB-INKCERT=MAIL" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf ; then
+   /bin/echo "inkCert certs not needed for mail certs: ${sitedomain}. Moving on..."
    exit 0
   else
    /bin/echo "Something's really wrong with ${sitedomain}. No inkCert, no non-inkCert either. I quit here."
