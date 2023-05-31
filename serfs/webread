@@ -14,64 +14,65 @@
 ## ./webread off ink.verb.vip
 
 
-WEBPATH=$1
+webpath=$1
 
 . /opt/verb/conf/servertype
 
 if [ ${ServerType} = "lemp" ]; then
   /bin/echo ".htaccess web folder settings not available on LEMP servers anyway. Nothing to do."
+  exit 0
 
 elif [ ${ServerType} = "lamp" ] || [ ${ServerType} = "laemp" ]; then
 
   if [ "$1" = "on" ]; then
 
     # If it doesn't exist
-    if [ ! -d "/srv/www/html/${WEBPATH}" ]; then
+    if [ ! -d "/srv/www/html/${webpath}" ]; then
     /bin/echo "This web folder does not exist. Doing nothing."
     exit 0
     fi
 
     # If another .htaccess already exists
-    if [ -f "/srv/www/html/${WEBPATH}/.htaccess" ] && [ $3 != "-o" ]; then
+    if [ -f "/srv/www/html/${webpath}/.htaccess" ] && [ $3 != "-o" ]; then
       /bin/echo "A .htaccess file already exists for this web path. Use -o at the end of command to override."
       exit 0
     fi
 
     # Do it
-    /usr/bin/sed -i '/deny from all/d'  /srv/www/html/${WEBPATH}/.htaccess
+    /usr/bin/sed -i '/deny from all/d'  /srv/www/html/${webpath}/.htaccess
     /bin/echo "allow from all
 Options +Indexes
-IndexOptions +FancyIndexing" > /srv/www/html/${WEBPATH}/.htaccess
+IndexOptions +FancyIndexing" > /srv/www/html/${webpath}/.htaccess
 
-    /bin/chown -R www:www /srv/www/html/${WEBPATH}
+    /bin/chown -R www:www /srv/www/html/${webpath}
 
     # Finish
-    /bin/echo "The contents of ${WEBPATH} are now available to the public!"
+    /bin/echo "The contents of ${webpath} are now available to the public!"
 
   elif [ "$1" = "off" ]; then
 
     # If it doesn't exist
-    if [ ! -d "/srv/www/html/${WEBPATH}" ]; then
+    if [ ! -d "/srv/www/html/${webpath}" ]; then
     /bin/echo "This web folder does not exist. Doing nothing."
     exit 0
     fi
 
     # If another .htaccess already exists
-    if [ -f "/srv/www/html/${WEBPATH}/.htaccess" ] && [ $3 != "-o" ]; then
+    if [ -f "/srv/www/html/${webpath}/.htaccess" ] && [ $3 != "-o" ]; then
       /bin/echo "A .htaccess file already exists for this web path. Use -o at the end of command to override."
       exit 0
     fi
 
     # Do it
-    /usr/bin/sed -i '/+Indexes/d'  /srv/www/html/${WEBPATH}/.htaccess
-    /usr/bin/sed -i '/IndexOptions +FancyIndexing/d'  /srv/www/html/${WEBPATH}/.htaccess
-    /usr/bin/sed -i '/allow from all/d'  /srv/www/html/${WEBPATH}/.htaccess
-    /bin/echo "deny from all" > /srv/www/html/${WEBPATH}/.htaccess
+    /usr/bin/sed -i '/+Indexes/d'  /srv/www/html/${webpath}/.htaccess
+    /usr/bin/sed -i '/IndexOptions +FancyIndexing/d'  /srv/www/html/${webpath}/.htaccess
+    /usr/bin/sed -i '/allow from all/d'  /srv/www/html/${webpath}/.htaccess
+    /bin/echo "deny from all" > /srv/www/html/${webpath}/.htaccess
 
-    /bin/chown -R www:www /srv/www/html/${WEBPATH}
+    /bin/chown -R www:www /srv/www/html/${webpath}
 
     # Finish
-    /bin/echo "The contents of ${WEBPATH} are now available to the public!"
+    /bin/echo "The contents of ${webpath} are now available to the public!"
 
   fi
 

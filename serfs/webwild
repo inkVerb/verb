@@ -12,6 +12,21 @@ domain=$2
 
 . /opt/verb/conf/servertype
 
+# Check if it exists
+## Nginx
+if [ ${ServerType} = "lemp" ]; then
+	if [ ! -e "/opt/verb/conf/webserver/sites-available/nginx/${domain}.conf" ]; then
+		/usr/bin/echo "${domain} not found."
+		exit 8
+	fi
+## Apache
+elif [ ${ServerType} = "lamp" ] || [ ${ServerType} = "laemp" ]; then
+	if [ ! -e "/opt/verb/conf/webserver/sites-available/httpd/${domain}.conf" ]; then
+		/usr/bin/echo "${domain} not found."
+		exit 8
+	fi
+fi
+
 if [ "$1" = "on" ]; then
 
 	if [ ${ServerType} = "lemp" ]; then

@@ -13,6 +13,14 @@
 . /opt/verb/conf/siteurilist
 . /opt/verb/conf/servertype
 
+# Check if it exists
+if [ ${ServerType} = "lamp" ] || [ ${ServerType} = "laemp" ]; then
+	if [ ! -e "/srv/www/verb/vip.v" ]; then
+		/usr/bin/echo "vip not found. Something is very wrong."
+		exit 6
+	fi
+fi
+
 if [ ${ServerType} = "lemp" ]; then
   /bin/echo "CGI not allowed on LEMP servers anyway. Nothing to do."
 

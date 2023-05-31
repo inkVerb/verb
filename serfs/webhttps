@@ -13,10 +13,24 @@ domain=$2
 
 . /opt/verb/conf/servertype
 
-if [ "$1" = "on" ]; then
+# Check if it exists
+## Nginx
+if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
+	if [ ! -e "/opt/verb/conf/webserver/sites-available/nginx/${domain}.conf" ]; then
+		/usr/bin/echo "${domain} not found."
+		exit 8
+	fi
+## Apache
+elif [ ${ServerType} = "lamp" ]; then
+	if [ ! -e "/opt/verb/conf/webserver/sites-available/httpd/${domain}.conf" ]; then
+		/usr/bin/echo "${domain} not found."
+		exit 8
+	fi
+fi
 
+if [ "$1" = "on" ]; then
+	# Nginx
 	if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
-		# Nginx
 		## Check to see if "fixhttps" has already been added
 		if /bin/grep -q "##INKHTTPSFIX=fixed" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf; then
 			/bin/systemctl restart nginx; wait
@@ -48,8 +62,9 @@ if [ "$1" = "on" ]; then
 
 			/bin/echo "${domain} now redirects all http traffic to SSL-secure https."
 		fi
-
+	# Apache
 	elif [ ${ServerType} = "lamp" ]; then
+
 		# Check to see if "fixhttps" has already been added
 		if /bin/grep -q "##INKHTTPSFIX=fixed" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf; then
 			/usr/bin/systemctl restart httpd
@@ -92,10 +107,9 @@ if [ "$1" = "on" ]; then
 	fi
 
 elif [ "$1" = "off" ]; then
-
+	# Nginx
 	if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
-	  # Nginx
-		## Verify that it has been fixed
+	  ## Verify that it has been fixed
 	  if /bin/grep -q "##INKHTTPSFIX=fixed" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf; then
 
 	    # Replace it with the original file
@@ -117,7 +131,7 @@ elif [ "$1" = "off" ]; then
 	    /bin/echo "${domain} doesn't have the https fix. Doing nothing."
 	    exit 0
 	  fi
-
+	# Apache
 	elif [ ${ServerType} = "lamp" ]; then
 	  # Verify that it has been fixed
 	  if /bin/grep -q "##INKHTTPSFIX=fixed" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf; then

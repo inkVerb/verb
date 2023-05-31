@@ -93,6 +93,9 @@ mkswap /var/swap.img
 ### Should display something like:
 #. no label, UUID=d35552b3-4bbe-42a0-b129-5483a2211cde
 
+## Permissions
+chmod 0600 /var/swap.img
+
 # Enable current session
 swapon /var/swap.img
 

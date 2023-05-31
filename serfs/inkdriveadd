@@ -96,11 +96,17 @@ fi
 /usr/bin/parted -s "/dev/${Dev}" mklabel gpt
 /usr/bin/parted -s "/dev/${Dev}" unit mib mkpart primary 0% 100%
 /usr/bin/mkfs.ext4 "/dev/${Dev}1"
+
 /usr/bin/mkdir /mnt/${Mnt}
 /usr/bin/touch /etc/fstab
-/usr/bin/echo "/dev/${Dev}1               /mnt/${Mnt}       ext4    defaults,noatime,nofail 0 0" >> /etc/fstab
+/usr/bin/echo "#/dev/${Dev}1               /mnt/${Mnt}       ext4    defaults,noatime,nofail 0 0" >> /etc/fstab
+uuid="$(/usr/bin/lsblk -o UUID /dev/${Dev}1 | /usr/bin/awk 'FNR==2{print $0}')"
+/usr/bin/echo "UUID=${uuid}  /mnt/${Mnt}       ext4    defaults,noatime,nofail 0 0" >> /etc/fstab
 /usr/bin/mount /mnt/${Mnt}
 /usr/bin/mkdir -p /mnt/${Mnt}/.conf/
+
+# Update config
+echo "Uuid=${uuid}" >> /opt/verb/conf/inkdrive/"${Typ}"."${Mnt}"
 
 # Finish
 if [ -d "/mnt/${Mnt}" ]; then

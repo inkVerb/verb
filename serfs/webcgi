@@ -12,8 +12,17 @@ domain=$2
 
 . /opt/verb/conf/servertype
 
+# Check if it exists
+if [ ${ServerType} = "lamp" ] || [ ${ServerType} = "laemp" ]; then
+	if [ ! -e "/opt/verb/conf/webserver/sites-available/httpd/${domain}.conf" ]; then
+		/usr/bin/echo "${domain} not found."
+		exit 8
+	fi
+fi
+
 if [ ${ServerType} = "lemp" ]; then
 	/bin/echo "CGI not allowed on LEMP servers."
+	exit 9
 
 elif [ ${ServerType} = "lamp" ] || [ ${ServerType} = "laemp" ]; then
 

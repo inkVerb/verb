@@ -31,8 +31,8 @@ exit 8; fi
 # Update Packages
 /usr/bin/pacman -Syyu --noconfirm --needed
 
-# Install tools
-/usr/bin/pacman -S --noconfirm --needed ntp pwgen zip unzip htop which vim curl wget make cronie gcc autoconf imagemagick git parted perl net-tools inetutils man sudo
+# Install tools (tmux for unstable ssh connections, reconnect with tmux attach)
+/usr/bin/pacman -S --noconfirm --needed tmux ntp pwgen zip unzip htop which vim curl wget make cronie gcc autoconf imagemagick git parted perl net-tools inetutils man sudo
 if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 
 # Enable NTP for accurate time (the standard service is commented below)

@@ -386,6 +386,10 @@ First, make sure the to-be-imported Verber is up-to-date...
 | **Rink** :$
 
 ```console
+vultr-cli instance list
+```
+
+```console
 rink/run/importvps name ink start 1c1ee091-0bb2-4871-8f02-170e3f192bcc
 ```
 
@@ -583,6 +587,8 @@ vultr-cli instance restart ID
 vultr-cli instance delete ID
 ```
 
+# Extra scratch notes
+
 # Add key to local ssh (so you won't be prompted the first time you ssh in)
 ```
 ssh-keyscan -H -p 22 IP4ADDRESS >> ~/.ssh/known_hosts
@@ -593,7 +599,7 @@ ssh-keyscan -H -p 22 IP4ADDRESS >> ~/.ssh/known_hosts
 1. Add a domain on the regular verber, using normal tools like addomain
 2. The domain must be listed on the slave DNS rink using inkdns_slave serfs
 
-## Vultr Archlinux (https://www.vultr.com/docs/installing-2019-arch-linux-on-a-vultr-server)
+# Vultr Archlinux (https://www.vultr.com/docs/installing-2019-arch-linux-on-a-vultr-server)
 *This explains how to install Archlinux on a Vultr VPS instance from scratch*
 
 1. Vultr Arch ISO
@@ -721,7 +727,7 @@ systemctl restart sshd
 - `journalctl -xn --unit postfix`
 - `journalctl -u postfix`
 
-## Add partitions cheat sheet
+# Add partitions cheat sheet
 1. Create a new block storage
 2. Attach it to an instance
 - Use the web interface the CLI tool
