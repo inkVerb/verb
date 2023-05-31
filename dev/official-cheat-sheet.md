@@ -764,3 +764,7 @@ mount /mnt/SOME_NAME2
 reboot
 ```
 *Now, it is mounted at* `/mnt/SOME_NAME2`
+
+# Another Arch Install exampl
+- [https://www.vultr.com/docs/install-arch-linux-with-btrfs-snapshotting/]
+
