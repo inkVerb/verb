@@ -1,5 +1,6 @@
-check process spamassassin with pidfile /var/run/spamd.pid
+check process spamassassin with pidfile /var/run/spamd.sock
   group vmail
-  start program = "/etc/init.d/spamassassin start"
-  stop  program = "/etc/init.d/spamassassin stop"
+  start program = "/usr/bin/systemctl enable spamassassin"
+  stop  program = "/usr/bin/systemctl start spamassassin"
+  if memory usage > 80% for 4 cycles then restart
   if 5 restarts within 5 cycles then timeout

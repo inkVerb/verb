@@ -48,6 +48,12 @@ exit 0; fi
 #  /usr/bin/pacman -S --noconfirm --needed certbot certbot-apache
 #fi
 
+# acme.sh
+cd /opt/verb/donjon
+/usr/bin/git clone https://github.com/acmesh-official/acme.sh.git
+cd ./acme.sh
+./acme.sh --install -m ${InkCertEmail}
+
 ## inkCert proper
 /bin/mkdir -p /etc/inkcert
 cd /etc/inkcert || exit 6
@@ -58,7 +64,7 @@ cd /etc/inkcert || exit 6
 /bin/ln -sfn /etc/inkcert/req /opt/verb/
 /bin/ln -sfn /etc/inkcert/req /srv/www/vip/
 ## Named Letsencrypt/Certbot DNS challenge key config
-inkCertbotKeyOnly="$(grep -F 'key "inkCertbotKey" { algorithm hmac-sha512; secret "' /etc/named.conf | sed 's?key "inkCertbotKey" { algorithm hmac-sha512; secret "??' | sed 's?"; };??')"
+inkCertbotKeyOnly="$(/usr/bin/grep -F 'key "inkCertbotKey" { algorithm hmac-sha512; secret "' /etc/named.conf | /usr/bin/sed 's?key "inkCertbotKey" { algorithm hmac-sha512; secret "??' | /usr/bin/sed 's?"; };??')"
 /bin/echo "dns_rfc2136_server = ${ServerIPv4}
 dns_rfc2136_name = inkCertbotKey
 dns_rfc2136_secret = ${inkCertbotKeyOnly}

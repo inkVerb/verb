@@ -187,8 +187,10 @@ sleep 1
 #DEV: This currently does only the domain interactively, not according to cli.ini files; this needs to be automated to modify inkDNS zone files with --preferred-challenges=dns
 #/usr/bin/certbot certonly --dns-rfc2136 --dns-rfc2136-credentials /etc/letsencrypt/rfc2136.ini --email ${InkCertEmail} --server https://acme-v02.api.letsencrypt.org/directory --agree-tos --no-eff-email --force-renewal -d "${domain}" -d *.${domain}
 #DEV: The above shell command should work, once the non-server Named zones are synced with other nameservers, such as ns1.inkisaverb.com
+# For wildcard certs, we need  acme.sh https://github.com/acmesh-official/acme.sh/blob/master/README.md#11-issue-wildcard-certificates
 if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
   /usr/bin/certbot --nginx certonly --preferred-challenges=dns --email ${InkCertEmail} --server https://acme-v02.api.letsencrypt.org/directory --agree-tos --no-eff-email --renew-by-default -d "${domain}" -d *.${domain}
+
   if [ "$?" != "0" ]; then
     errcode="$?"
     /bin/echo "inkCert certbot non-zero exit status for ${domain}: $errcode"

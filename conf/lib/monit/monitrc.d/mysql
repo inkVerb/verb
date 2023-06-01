@@ -5,5 +5,4 @@ check process mysql with pidfile /var/lib/mysql/localhost.pid
   if 5 restarts within 5 cycles then timeout
   if loadavg (15min) > 15 for 5 times within 15 cycles then restart
   if memory usage > 80% for 4 cycles then restart
-  if swap usage > 50% for 4 cycles then restart
-  
+#  if swap usage > 50% for 4 cycles then restart 

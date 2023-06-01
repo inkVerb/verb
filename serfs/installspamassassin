@@ -61,7 +61,7 @@ if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
 ## Other related files
 /usr/bin/mkdir -p /var/lib/dovecot/sieve/global_sieves /etc/mail/sa-update-keys /etc/mail/spamassassin/sa-update-keys
 /usr/bin/chown -R spamd:spamd /etc/mail/sa-update-keys /etc/mail/spamassassin/sa-update-keys
-## Service
+## Update service
 /usr/bin/cat <<EOF > /etc/systemd/system/spamassassin-update.service
 [Unit]
 Description=spamassassin housekeeping stuff
@@ -86,6 +86,11 @@ Persistent=true
 [Install]
 WantedBy=timers.target
 EOF
+
+## System service
+/bin/cp /opt/verb/conf/lib/vmail/monit/monitrc.d/spamassassin /etc/monit/monitrc.d/
+/usr/bin/systemctl enable spamassassin
+/usr/bin/systemctl start spamassassin
 
 # Razor
 /usr/bin/mkdir -p /etc/mail/spamassassin/razor

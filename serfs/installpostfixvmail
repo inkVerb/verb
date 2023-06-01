@@ -405,7 +405,7 @@ cd ${oldPwd} || exit 6
 /bin/cp /opt/verb/conf/lib/vmail/monit/monitrc.d/dovecot /etc/monit/monitrc.d/
 /bin/cp /opt/verb/conf/lib/vmail/monit/monitrc.d/opendkim /etc/monit/monitrc.d/
 /bin/cp /opt/verb/conf/lib/vmail/monit/monitrc.d/postfix /etc/monit/monitrc.d/
-/bin/cp /opt/verb/conf/lib/vmail/monit/monitrc.d/spamassassin /etc/monit/monitrc.d/
+# /bin/cp /opt/verb/conf/lib/vmail/monit/monitrc.d/spamassassin /etc/monit/monitrc.d/ moved to installspamassassin
 /bin/systemctl enable monit
 /bin/systemctl start monit
 

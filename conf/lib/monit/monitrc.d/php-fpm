@@ -1,7 +1,7 @@
-check process httpd with pidfile /var/run/httpd/httpd.pid
-  group www
-  start program = "/usr/bin/systemctl start httpd"
-  stop program = "/usr/bin/systemctl stop httpd"
+check process httpd with pidfile /var/run/php-fpm/php-fpm.sock
+  group www 
+  start program = "/usr/bin/systemctl start php-fpm"
+  stop program = "/usr/bin/systemctl stop php-fpm"
   if 5 restarts within 5 cycles then timeout
   if loadavg (15min) > 15 for 5 times within 15 cycles then restart
   if memory usage > 80% for 4 cycles then restart

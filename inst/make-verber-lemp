@@ -320,7 +320,8 @@ if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 ## Copy configs (These seem to have precedence, files in /etc/monit seem to conflict with them but may be u/usr/bin/sed instead
 /usr/bin/mkdir -p /etc/monit/monitrc.d
-sed -i "s?#  include /etc/monit.d?  include /etc/monit.d?" /etc/monitrc
+#/usr/bin/sed -i "s?#  include /etc/monit.d?  include /etc/monit/monit.d?" /etc/monitrc
+/usr/bin/echo "include /etc/monit/monitrc.d/*" >> /etc/monitrc
 /usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/acpid /etc/monit/monitrc.d/
 /usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/nginx /etc/monit/monitrc.d/
 /usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/memcached /etc/monit/monitrc.d/

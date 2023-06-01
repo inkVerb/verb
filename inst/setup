@@ -838,26 +838,26 @@ fi
 
 # MySQL root user updates
 ## Password
-MYSQLPASS="$(/usr/bin/cat /opt/verb/conf/mysqlrootpassword)"
-MYSQLBossPASS=$(/usr/bin/pwgen -s -1 10)
+mysqlpass="$(/usr/bin/cat /opt/verb/conf/mysqlrootpassword)"
+mysqlbosspass=$(/usr/bin/pwgen -s -1 10)
 ## MySQL superuser to auto-create databases
-/usr/bin/mysql -uroot -p${MYSQLPASS} -e "
+/usr/bin/mysql -uroot -p${mysqlpass} -e "
 CREATE USER mysqlboss@localhost;
-SET PASSWORD FOR mysqlboss@localhost=PASSWORD('${MYSQLBossPASS}');
-GRANT ALL PRIVILEGES ON *.* TO 'mysqlboss'@'localhost' IDENTIFIED BY '${MYSQLBossPASS}' WITH GRANT OPTION;
+SET PASSWORD FOR mysqlboss@localhost=PASSWORD('${mysqlbosspass}');
+GRANT ALL PRIVILEGES ON *.* TO 'mysqlboss'@'localhost' IDENTIFIED BY '${mysqlbosspass}' WITH GRANT OPTION;
 FLUSH PRIVILEGES;"
 ## Set the mysqlboss as the mysqlboss config file so the password is not in the line command
 /usr/bin/echo "[client]
 user = mysqlboss
-password = ${MYSQLBossPASS}
+password = ${mysqlbosspass}
 host = localhost" > /opt/verb/conf/mysqlboss.cnf
 
 ## New MySQL root password
-NEWMYSQLPASS=$(/usr/bin/pwgen -0 -1 -A -B 11)
-/usr/bin/mysql -uroot -p${MYSQLPASS} -e "
-SET PASSWORD FOR root@localhost = PASSWORD('${NEWMYSQLPASS}');FLUSH PRIVILEGES;"
+newmysqlpass=$(/usr/bin/pwgen -0 -1 -A -B 11)
+/usr/bin/mysql -uroot -p${mysqlpass} -e "
+SET PASSWORD FOR root@localhost = PASSWORD('${newmysqlpass}');FLUSH PRIVILEGES;"
 if [ "$?" = 0 ]; then
-  /usr/bin/echo "${NEWMYSQLPASS}" > /opt/verb/conf/mysqlrootpassword
+  /usr/bin/echo "${newmysqlpass}" > /opt/verb/conf/mysqlrootpassword
 else
   /usr/bin/echo "Can't update MySQL root password, something is very wrong"
   exit 6
