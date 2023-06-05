@@ -117,20 +117,20 @@ EOF
 /usr/bin/systemctl daemon-reload
 # Webserver setup
 if [ ${ServerType} = "laemp" ]; then
-  /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/${blueURI}.conf /opt/verb/conf/webserver/sites-available/nginx/${blueURI}.conf.old
-  /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud-tar.conf /opt/verb/conf/webserver/sites-available/nginx/${blueURI}.conf
-  /usr/bin/mv /opt/verb/conf/webserver/sites-available/httpd/${blueURI}.conf /opt/verb/conf/webserver/sites-available/httpd/${blueURI}.conf.old
-  /usr/bin/rm /opt/verb/conf/webserver/sites-enabled/httpd/${blueURI}.conf
+  /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf.old
+  /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud-tar.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf
+  /usr/bin/mv /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf.old
+  /usr/bin/rm /opt/verb/conf/webserver/sites-enabled/httpd/cloud.${blueURI}.conf
 elif [ ${ServerType} = "lemp" ]; then
-  /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/${blueURI}.conf /opt/verb/conf/webserver/sites-available/nginx/${blueURI}.conf.old
-  /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud.conf /opt/verb/conf/webserver/sites-available/nginx/${blueURI}.conf
+  /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf.old
+  /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf
 elif [ ${ServerType} = "lamp" ]; then
   /usr/bin/su worker -c '/usr/bin/yay -S mod_itk --noconfirm'
   # Include the virtual host configurations:
   echo "# Load the mod_itk module so Apache can use the nextcloud user
   LoadModule mpm_itk_module modules/mpm_itk.so" >> /etc/httpd/conf/httpd.conf
-  /usr/bin/mv /opt/verb/conf/webserver/sites-available/httpd/${blueURI}.conf /opt/verb/conf/webserver/sites-available/httpd/${blueURI}.conf.old
-  /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud.conf /opt/verb/conf/webserver/sites-available/httpd/${blueURI}.conf
+  /usr/bin/mv /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf.old
+  /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud.conf /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf
 fi
 
 # Setup for inkCert

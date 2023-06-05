@@ -8,6 +8,16 @@
 # OPTIONAL Prerequesite:
 ## If restoring from a backupinkvmail backup, the .vbak file must be in vip
 
+#DEV Roadmap:
+## This needs to include a backup sync system, which can synchronize with a larger, backup email server for down times
+## Consider:
+### https://serverfault.com/questions/774787/sync-a-maildir-backup-to-an-account
+### https://imapsync.lamiral.info/ (passwords only)
+### Create custom sync:
+#### loop through mailboxes on the main server in vmail/dom.tld/, then create them on the backup via inkvmailbox
+#### Use rsync to sync the vmail/dom.tld/ folders
+##### Learn about IMAP folders described in this answer to the above SF question: https://serverfault.com/a/774857/487033
+
 # How to use:
 ## ./installinkvmail [ RoundCube webmail path - optional: '-n' to skip ] [ PostfixAdmin email pfa path - optional: if no other arguments and same as RoundCube - '-n' to skip ] [ PostfixAdmin setup password - optional: '-n' to skip ] [ backup filename IF restoring from backupinkvmail backup, optional ]
 

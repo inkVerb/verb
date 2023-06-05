@@ -49,10 +49,14 @@ exit 0; fi
 #fi
 
 # acme.sh
-cd /opt/verb/donjon
-/usr/bin/git clone https://github.com/acmesh-official/acme.sh.git
-cd ./acme.sh
-./acme.sh --install -m ${InkCertEmail}
+# cd /opt/verb/donjon
+# /usr/bin/git clone https://github.com/acmesh-official/acme.sh.git
+# cd ./acme.sh
+# ./acme.sh --install -m ${InkCertEmail}
+#DEV new from this: https://github.com/acmesh-official/acme.sh#readme
+#DEV this entire block may become obsolete
+/usr/bin/curl https://get.acme.sh | sh -s email=${InkCertEmail}
+
 
 ## inkCert proper
 /bin/mkdir -p /etc/inkcert

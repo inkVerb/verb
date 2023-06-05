@@ -123,6 +123,9 @@ events {
 }
 
 http {
+    # https://serverfault.com/a/419851/487033 all server names served are stored in a [hash table for lookup](http://nginx.org/en/docs/hash.html), more served means this must increase, either server_names_hash_max_size and/or the server_names_hash_bucket_size below
+    server_names_hash_max_size 1024;
+    server_names_hash_bucket_size 128;
     charset utf-8;
     sendfile on;
     tcp_nopush on;
@@ -130,7 +133,7 @@ http {
     server_tokens off;
     log_not_found off;
     types_hash_max_size 4096;
-    client_max_body_size 16M;
+    client_max_body_size 1000M;
 
     # SSL
     ssl_prefer_server_ciphers on;

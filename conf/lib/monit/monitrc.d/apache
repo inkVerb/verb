@@ -1,4 +1,5 @@
-check process httpd with pidfile /var/run/httpd/httpd.pid
+#check process httpd with pidfile /var/run/httpd/httpd.pid
+check system localhost
   group www
   start program = "/usr/bin/systemctl start httpd"
   stop program = "/usr/bin/systemctl stop httpd"

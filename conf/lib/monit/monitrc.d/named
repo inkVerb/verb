@@ -1,0 +1,8 @@
+# This conflicts with a self-monitoring process, much like apache, so it is not included
+#check process nginx with pidfile /var/run/named/named.pid
+#  group named
+#  start program = "/usr/bin/systemctl start named"
+#  stop program = "/usr/bin/systemctl stop named"
+#  if 5 restarts within 5 cycles then timeout
+#  if loadavg (15min) > 15 for 5 times within 15 cycles then restart
+#  if memory usage > 80% for 4 cycles then restart
