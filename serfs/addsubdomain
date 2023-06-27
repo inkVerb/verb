@@ -111,7 +111,7 @@ In summary: ${subdomain}.${olddomain} will not have SSL certs until you run:
 "
 
 ## inkCert-CBSINGLE DONE for this subdomain
-if /bin/grep -Fq "InkCerted=DONE_CBSINGLE" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${subdomain}.${olddomain}; then
+elif /bin/grep -Fq "InkCerted=DONE_CBSINGLE" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${subdomain}.${olddomain}; then
   /bin/echo "FYI: inkCert has already been setup for this domain with Certbot single-cert, which should technically be impossible since that would normally require running this first.
 
 Try to completely purge this domain with:

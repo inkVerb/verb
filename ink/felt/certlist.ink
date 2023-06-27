@@ -42,13 +42,6 @@ while getopts "${optSerf}" Flag; do
  esac
 done
 
-# Message prep
-# Success message
-success_message="inkCert installed."
-
-# Fail message
-fail_message="inkCert failed to be installed."
-
 # Check requirements or defaults
 ## Help
 if [ "${SOh}" = "true" ]; then
@@ -60,6 +53,13 @@ Available flags:
 "
   exit 0
 fi
+
+# Message prep
+# Success message
+success_message="inkCert installed."
+
+# Fail message
+fail_message="inkCert failed to be installed."
 
 ## Already installed?
 inkCertInstallStatus

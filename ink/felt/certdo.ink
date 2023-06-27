@@ -91,6 +91,31 @@ while getopts "${optSerf}" Flag; do
  esac
 done
 
+# Fail message
+fail_message="$SOd cert failed to be obtained."
+
+# Check requirements or defaults
+## Help
+if [ "${SOh}" = "true" ]; then
+  /bin/echo "
+${aboutMsg}"
+  /bin/echo "
+Available flags:
+-h This help message
+
+Choose between -m -s -w flags, only one must be used
+-c ${optName[m]}: ${optDesc[m]}
+-s ${optName[s]}: ${optDesc[s]}
+-w ${optName[w]}: ${optDesc[w]}
+
+Choose between -a -d flags, only one must be used
+-a ${optName[a]}: ${optDesc[a]}
+-d ${optName[d]}: ${optDesc[d]}
+
+"
+  exit 0
+fi
+
 # Status
 # Message prep
 # Success message
@@ -116,31 +141,6 @@ if [ "$SOd" != "Verb domains" ]; then
 else
   REFRESHLEOPTION=""
   success_message="$SOd cert obtained."
-fi
-
-# Fail message
-fail_message="$SOd cert failed to be obtained."
-
-# Check requirements or defaults
-## Help
-if [ "${SOh}" = "true" ]; then
-  /bin/echo "
-${aboutMsg}"
-  /bin/echo "
-Available flags:
--h This help message
-
-Choose between -m -s -w flags, only one must be used
--c ${optName[m]}: ${optDesc[m]}
--s ${optName[s]}: ${optDesc[s]}
--w ${optName[w]}: ${optDesc[w]}
-
-Choose between -a -d flags, only one must be used
--a ${optName[a]}: ${optDesc[a]}
--d ${optName[d]}: ${optDesc[d]}
-
-"
-  exit 0
 fi
 
 ## Required flags & defaults
