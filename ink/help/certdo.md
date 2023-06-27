@@ -4,7 +4,7 @@
 - This obtains Letsencrypt certs for domains installed on the server
 
 ## Usage
-- `ink cert do -d domain.tld -c|s|w`
+- `ink cert do -d domain.tld -m|s|w`
   - Don't run this too often or you could be temporarily suspended from obtaining certs
   - Choose a type of cert:
     - -m : "multiple" domains and subdomains in one parent domain cert
