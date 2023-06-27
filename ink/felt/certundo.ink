@@ -63,11 +63,11 @@ fi
 inkCertSiteStatus
 inkCertServerConfStatus
 if [ "$inkCertSiteStatus" = "Letsencrypt multiple" ] && [ "$inkCertServerConfStatus" = "Letsencrypt multiple" ]; then
-  ENGINE="le"
+  engine="le"
 elif [ "$inkCertSiteStatus" = "Letsencrypt single" ] && [ "$inkCertServerConfStatus" = "Letsencrypt single" ]; then
-  ENGINE="cbsingle"
+  engine="cbsingle"
 elif [ "$inkCertSiteStatus" = "Letsencrypt wildcard" ] && [ "$inkCertServerConfStatus" = "Letsencrypt wildcard" ]; then
-  ENGINE="cb"
+  engine="cb"
 else
   /bin/echo "Something is broken. Domain uses $inkCertSiteStatus, but server conf uses $inkCertServerConfStatus."
   inkFail
@@ -86,7 +86,7 @@ if [ -z "${SOd}" ]; then
 fi
 
 # Prepare command
-serfcommand="${Serfs}/${surfroot}${ENGINE} ${SOd}"
+serfcommand="${Serfs}/${surfroot}${engine} ${SOd}"
 
 # Run the ink
 . $InkRun

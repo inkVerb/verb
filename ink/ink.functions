@@ -1087,6 +1087,116 @@ if [ "$3" != "n" ] && [ "${notInkCertSetApache}" = "false" ]; then
 exit 0; fi
 }
 
+## webWildOn
+### Check if wildcard subdomain is on for specified domain
+webWildOn() {
+local domain="$1"
+# LEMP
+if [ ${ServerType} = "lemp" ]; then
+  if [ -f "/etc/nginx/sites-available/${domain}.conf" ]; then
+		if /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf; then
+      webWildOn="true"; else
+      webWildOn="false"
+    fi
+  else
+    /bin/echo "Nginx server not configured."
+    exit 0;
+  fi
+# LAMP
+elif [ ${ServerType} = "lamp" ]; then
+  if [ -f "/etc/httpd/sites-available/${domain}.conf" ]; then
+    if /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf; then
+      webWildOn="true"; else
+      webWildOn="false"
+    fi
+  else
+    /bin/echo "Apache server not configured."
+    exit 0;
+  fi
+# LAEMP
+elif [ ${ServerType} = "laemp" ]; then
+  ## Apache
+  if [ -f "/etc/httpd/sites-available/${domain}.conf" ]; then
+    if /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf; then
+      webWildOn="true"; else
+      webWildOn="false"
+    fi
+  else
+    /bin/echo "Apache server not configured."
+    exit 0;
+  fi
+  ## Nginx
+  if [ -f "/etc/nginx/sites-available/${domain}.conf" ]; then
+    if /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf; then
+      webWildOn="true"; else
+      webWildOn="false"
+    fi
+  else
+    /bin/echo "Nginx server not configured."
+    exit 0;
+  fi
+fi
+
+if [ "$3" != "n" ] && [ "${webWildOn}" = "false" ]; then
+/bin/echo "Wildcard subdomain is off for ${domain}, turn it on first."
+exit 0; fi
+}
+
+## webWildOff
+### Check if wildcard subdomain is on for specified domain
+webWildOff() {
+local domain="$1"
+# LEMP
+if [ ${ServerType} = "lemp" ]; then
+  if [ -f "/etc/nginx/sites-available/${domain}.conf" ]; then
+		if ! /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf; then
+      webWildOff="true"; else
+      webWildOff="false"
+    fi
+  else
+    /bin/echo "Nginx server not configured."
+    exit 0;
+  fi
+# LAMP
+elif [ ${ServerType} = "lamp" ]; then
+  if [ -f "/etc/httpd/sites-available/${domain}.conf" ]; then
+    if ! /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf; then
+      webWildOff="true"; else
+      webWildOff="false"
+    fi
+  else
+    /bin/echo "Apache server not configured."
+    exit 0;
+  fi
+# LAEMP
+elif [ ${ServerType} = "laemp" ]; then
+  ## Apache
+  if [ -f "/etc/httpd/sites-available/${domain}.conf" ]; then
+    if ! /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf; then
+      webWildOff="true"; else
+      webWildOff="false"
+    fi
+  else
+    /bin/echo "Apache server not configured."
+    exit 0;
+  fi
+  ## Nginx
+  if [ -f "/etc/nginx/sites-available/${domain}.conf" ]; then
+    if ! /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf; then
+      webWildOff="true"; else
+      webWildOff="false"
+    fi
+  else
+    /bin/echo "Nginx server not configured."
+    exit 0;
+  fi
+fi
+
+if [ "$3" != "n" ] && [ "${webWildOff}" = "false" ]; then
+/bin/echo "Wildcard subdomain is on for ${domain}, turn it off first."
+exit 0; fi
+}
+
 ## inkCertServerConfStatus
 ### Checks for SSL install status in server config
 inkCertServerConfStatus() {

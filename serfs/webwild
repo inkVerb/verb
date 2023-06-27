@@ -30,7 +30,7 @@ fi
 if [ "$1" = "on" ]; then
 
 	if [ ${ServerType} = "lemp" ]; then
-		# Check to see if "fixwildcard" has already been added
+		# Check to see if "webwild" has already been added
 		if /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf; then
 			/bin/systemctl restart nginx; wait
 			/bin/echo "${domain} already has the wildcard subdomain fix. The server was just reloaded so the site should work."
@@ -48,9 +48,9 @@ if [ "$1" = "on" ]; then
 		fi
 
 	elif [ ${ServerType} = "lamp" ]; then
-		# Check to see if "fixwildcard" has already been added
+		# Check to see if "webwild" has already been added
 		if /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf; then
-		/usr/bin/systemctl restart httpd
+			/usr/bin/systemctl restart httpd
 			/bin/echo "${domain} already has the wildcard subdomain fix. The server was just reloaded so the site should work."
 		else
 
@@ -67,9 +67,9 @@ if [ "$1" = "on" ]; then
 
 	elif [ ${ServerType} = "laemp" ]; then
 		# Apache
-		## Check to see if "fixwildcard" has already been added
+		## Check to see if "webwild" has already been added
 		if /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf; then
-		/usr/bin/systemctl restart httpd
+			/usr/bin/systemctl restart httpd
 			/bin/echo "${domain} already has the wildcard subdomain fix. The server was just reloaded so the site should work."
 		else
 
@@ -85,7 +85,7 @@ if [ "$1" = "on" ]; then
 
 		fi
 	  # Nginx
-		## Check to see if "fixwildcard" has already been added
+		## Check to see if "webwild" has already been added
 		if /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf; then
 			/bin/systemctl restart nginx; wait
 			/bin/echo "${domain} already has the wildcard subdomain fix. The server was just reloaded so the site should work."

@@ -32,28 +32,31 @@ optDesc[w]="Obtain a wildcard subdomain cert, useful for the parent domain and a
 while getopts "${optSerf}" Flag; do
  case "${Flag}" in
   m)
-    if [ -n "$ENGINE" ]; then
+    if [ -n "$engine" ]; then
       /bin/echo "Choose either -m, -s, or -w flag"
       inkFail
     fi
+    webWildOff "${OPTARG}"
     SOm="true"
-    ENGINE="le"
+    engine="le"
   ;;
   s)
-    if [ -n "$ENGINE" ]; then
+    if [ -n "$engine" ]; then
       /bin/echo "Choose either -m, -s, or -w flag"
       inkFail
     fi
+    webWildOff "${OPTARG}"
     SOs="true"
-    ENGINE="cbsingle"
+    engine="cbsingle"
   ;;
   w)
-    if [ -n "$ENGINE" ]; then
+    if [ -n "$engine" ]; then
       /bin/echo "Choose either -m, -s, or -w flag"
       inkFail
     fi
+    webWildOn "${OPTARG}"
     SOw="true"
-    ENGINE="cb"
+    engine="cb"
   ;;
   d)
     if [ -n "$suffix" ]; then
@@ -123,7 +126,7 @@ if [ "$SOd" != "Verb domains" ]; then
   inkCertSiteStatus $SOd
   inkCertServerConfStatus $SOd
   if [ "$inkCertSiteStatus" = "Letsencrypt multiple" ] && [ "$inkCertServerConfStatus" = "Letsencrypt multiple" ]; then
-    REFRESHLEOPTION=" r"
+    refreshleoption=" r"
     success_message="$SOd cert refreshed. Don't do this too often or you could be briefly suspended from obtaining new certs."
   elif [ "$inkCertSiteStatus" = "Letsencrypt single" ] && [ "$inkCertServerConfStatus" = "Letsencrypt single" ]; then
     /bin/echo "Already certed using $inkCertSiteStatus certs. Nothing to do."
@@ -135,11 +138,11 @@ if [ "$SOd" != "Verb domains" ]; then
     /bin/echo "Something is broken. Current status isn't set properly in the server conf and ini settings."
     inkFail
   else
-    REFRESHLEOPTION=""
+    refreshleoption=""
     success_message="$SOd cert obtained."
   fi
 else
-  REFRESHLEOPTION=""
+  refreshleoption=""
   success_message="$SOd cert obtained."
 fi
 
@@ -152,7 +155,7 @@ if [ -z "${SOm}" ] && [ -z "${SOs}" ] && [ -z "${SOw}" ]; then
 fi
 
 # Prepare command
-serfcommand="${Serfs}/${surfroot}${ENGINE}${suffix}${REFRESHLEOPTION}"
+serfcommand="${Serfs}/${surfroot}${engine}${suffix}${refreshleoption}"
 
 # Run the ink
 . $InkRun
