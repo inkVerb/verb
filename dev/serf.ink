@@ -82,6 +82,20 @@ while getopts "${optSerf}" Flag; do
 done
 . $INKOPT
 
+# Check if help (before anything else, which we wouldn't need if so)
+if [ "${SOh}" = "true" ]; then
+  echo "${aboutMsg}"
+  echo "Available flags:
+  -h This help message
+  -a ${optName[a]} ${optDesc[a]}
+  -b ${optName[b]} ${optDesc[b]}
+  -d ${optName[d]} ${optDesc[d]}
+  -y/n ${optName[yn]}: ${optDesc[yn]}
+  -r ${optName[r]} ${optDesc[r]}
+  "
+  exit 0
+fi
+
 # # Success message
 # if $fail_log or $success_log are not set, they will default to $fail_message and $success_message respectively
 # success_message="$(cat <<EOU
@@ -103,20 +117,6 @@ success_message="$SOd domain Success message here"
 
 # Fail message
 fail_message="$SOd domain Fail message here"
-
-# Check if help
-if [ "${SOh}" = "true" ]; then
-  echo "${aboutMsg}"
-  echo "Available flags:
-  -h This help message
-  -a ${optName[a]} ${optDesc[a]}
-  -b ${optName[b]} ${optDesc[b]}
-  -d ${optName[d]} ${optDesc[d]}
-  -y/n ${optName[yn]}: ${optDesc[yn]}
-  -r ${optName[r]} ${optDesc[r]}
-  "
-  exit 0
-fi
 
 # Check requirements or defaults
 if [ -z "${SOa}" ]; then

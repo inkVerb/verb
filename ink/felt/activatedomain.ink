@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the serf name
-SURFNAME="activatedomain"
+surfname="activatedomain"
 
 # Include the settings & functions
 . ${InkSet}
@@ -55,6 +55,20 @@ while getopts "${optSerf}" Flag; do
  esac
 done
 
+# Check requirements or defaults
+## Help
+if [ "${SOh}" = "true" ]; then
+  /bin/echo "
+${aboutMsg}"
+  /bin/echo "
+Available flags:
+-h This help message
+-d ${optName[d]}: ${optDesc[d]}
+-v ${optName[v]}: ${optDesc[v]}
+"
+  exit 0
+fi
+
 # Message prep
 if [ -n "$MessageTarget" ]; then
   SuccessMessage="$MessageDomain activated for $MessageTarget Vapp."
@@ -70,20 +84,6 @@ success_message=$SuccessMessage
 # Fail message
 fail_message=$FailMessage
 
-# Check requirements or defaults
-## Help
-if [ "${SOh}" = "true" ]; then
-  /bin/echo "
-${aboutMsg}"
-  /bin/echo "
-Available flags:
--h This help message
--d ${optName[d]}: ${optDesc[d]}
--v ${optName[v]}: ${optDesc[v]}
-"
-  exit 0
-fi
-
 ## Required flags & defaults
 if [ -z "${SOd}" ]; then
   #SOd="DEFAULT" # Uncomment for optional default
@@ -95,7 +95,7 @@ if [ -z "${SOv}" ]; then
 fi
 
 # Prepare command
-serfcommand="${Serfs}/${SURFNAME} ${SOd} ${SOv}"
+serfcommand="${Serfs}/${surfname} ${SOd} ${SOv}"
 
 # Run the ink
 . $InkRun

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the serf name
-SURFNAME="adddomainfiler"
+surfname="adddomainfiler"
 
 # Include the settings & functions
 . ${InkSet}
@@ -53,13 +53,6 @@ while getopts "${optSerf}" Flag; do
  esac
 done
 
-# Message prep
-# Success message
-success_message="$SOf added to $SOd."
-
-# Fail message
-fail_message="$SOf could not be added to $SOd."
-
 # Check requirements or defaults
 ## Help
 if [ "${SOh}" = "true" ]; then
@@ -74,6 +67,13 @@ Available flags:
   exit 0
 fi
 
+# Message prep
+# Success message
+success_message="$SOf added to $SOd."
+
+# Fail message
+fail_message="$SOf could not be added to $SOd."
+
 ## Required flags & defaults
 if [ -z "${SOd}" ]; then
   #SOd="DEFAULT" # Uncomment for optional default
@@ -85,7 +85,7 @@ if [ -z "${SOf}" ]; then
 fi
 
 # Prepare command
-serfcommand="${Serfs}/${SURFNAME} ${SOd} ${SOf}"
+serfcommand="${Serfs}/${surfname} ${SOd} ${SOf}"
 
 # Run the ink
 . $InkRun

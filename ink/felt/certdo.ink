@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the serf name
-SURFROOT="inkcertdo"
+surfroot="inkcertdo"
 
 # Include the settings & functions
 . ${InkSet}
@@ -56,21 +56,21 @@ while getopts "${optSerf}" Flag; do
     ENGINE="cb"
   ;;
   d)
-    if [ -n "$SUFFIX" ]; then
+    if [ -n "$suffix" ]; then
       /bin/echo "Choose either -a or -d flag"
       inkFail
     fi
     isDomain "${OPTARG}" "${optName[d]}"
     SOd="${OPTARG}"
-    SUFFIX=" $SOd"
+    suffix=" $SOd"
   ;;
   a)
-    if [ -n "$SUFFIX" ]; then
+    if [ -n "$suffix" ]; then
       /bin/echo "Choose either -a or -d flag"
       inkFail
     fi
     SOd="Verb domains"
-    SUFFIX="-all-verbs"
+    suffix="-all-verbs"
   ;;
   # Standard flags
   c)
@@ -152,7 +152,7 @@ if [ -z "${SOm}" ] && [ -z "${SOs}" ] && [ -z "${SOw}" ]; then
 fi
 
 # Prepare command
-serfcommand="${Serfs}/${SURFROOT}${ENGINE}${SUFFIX}${REFRESHLEOPTION}"
+serfcommand="${Serfs}/${surfroot}${ENGINE}${suffix}${REFRESHLEOPTION}"
 
 # Run the ink
 . $InkRun

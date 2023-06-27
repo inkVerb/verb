@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the serf name
-SURFNAME="killinkdkim"
+surfname="killinkdkim"
 
 # Include the settings & functions
 . ${InkSet}
@@ -53,13 +53,6 @@ while getopts "${optSerf}" Flag; do
  esac
 done
 
-# Message prep
-# Success message
-success_message="$SOd domain OpenDKIM keys created and added."
-
-# Fail message
-fail_message="$SOd domain OpenDKIM keys failed to be created and added."
-
 # Check requirements or defaults
 ## Help
 if [ "${SOh}" = "true" ]; then
@@ -73,6 +66,13 @@ Available flags:
   exit 0
 fi
 
+# Message prep
+# Success message
+success_message="$SOd domain OpenDKIM keys created and added."
+
+# Fail message
+fail_message="$SOd domain OpenDKIM keys failed to be created and added."
+
 ## Required flags & defaults
 if [ -z "${SOd}" ]; then
   #SOd="DEFAULT" # Uncomment for optional default
@@ -80,7 +80,7 @@ if [ -z "${SOd}" ]; then
 fi
 
 # Prepare command
-serfcommand="${Serfs}/${SURFNAME} ${SOd}"
+serfcommand="${Serfs}/${surfname} ${SOd}"
 
 # Run the ink
 . $InkRun

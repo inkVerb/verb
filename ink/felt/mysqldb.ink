@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the serf name
-SURFNAME="mysqldb"
+surfname="mysqldb"
 
 # Include the settings & functions
 . ${InkSet}
@@ -46,13 +46,6 @@ while getopts "${optSerf}" Flag; do
  esac
 done
 
-# Message prep
-# Success message
-success_log="Database accessed: '$SOd'."
-
-# Fail message
-fail_log="Database failed to access: '$SOd'."
-
 # Check requirements or defaults
 ## Help
 if [ "${SOh}" = "true" ]; then
@@ -66,6 +59,13 @@ Available flags:
   exit 0
 fi
 
+# Message prep
+# Success message
+success_log="Database accessed: '$SOd'."
+
+# Fail message
+fail_log="Database failed to access: '$SOd'."
+
 ## Required flags & defaults
 if [ -z "${SOd}" ]; then
   #SOd="DEFAULT" # Uncomment for optional default
@@ -74,7 +74,7 @@ fi
 
 
 # Prepare command
-serfcommand="${Serfs}/${SURFNAME} ${SOd}"
+serfcommand="${Serfs}/${surfname} ${SOd}"
 
 # Run the ink
 . $InkRun

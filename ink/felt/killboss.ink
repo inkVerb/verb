@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the serf name
-SURFNAME="killboss"
+surfname="killboss"
 
 # Include the settings & functions
 . ${InkSet}
@@ -50,13 +50,6 @@ while getopts "${optSerf}" Flag; do
  esac
 done
 
-# Message prep
-# Success message
-success_message="$SOu boss user destroyed."
-
-# Fail messages
-fail_message="$SOu boss user failed to be destroyed."
-
 # Check requirements or defaults
 ## Help
 if [ "${SOh}" = "true" ]; then
@@ -71,6 +64,13 @@ Available flags:
   exit 0
 fi
 
+# Message prep
+# Success message
+success_message="$SOu boss user destroyed."
+
+# Fail messages
+fail_message="$SOu boss user failed to be destroyed."
+
 ## Required flags & defaults
 if [ -z "${SOu}" ]; then
   #SOd="DEFAULT" # Uncomment for optional default
@@ -82,7 +82,7 @@ if [ -z "${SOp}" ]; then
 fi
 
 # Prepare command
-serfcommand="${Serfs}/${SURFNAME} ${SOu} ${SOp}"
+serfcommand="${Serfs}/${surfname} ${SOu} ${SOp}"
 
 # Run the ink
 . $InkRun

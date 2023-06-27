@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the serf name
-SURFNAME="mysqladdusr"
+surfname="mysqladdusr"
 
 # Include the settings & functions
 . ${InkSet}
@@ -58,13 +58,6 @@ while getopts "${optSerf}" Flag; do
  esac
 done
 
-# Message prep
-# Success message
-success_message="User added to database '$SOu'."
-
-# Fail message
-fail_message="User failed to be added to database '$SOu'."
-
 # Check requirements or defaults
 ## Help
 if [ "${SOh}" = "true" ]; then
@@ -80,6 +73,13 @@ Available flags:
   exit 0
 fi
 
+# Message prep
+# Success message
+success_message="User added to database '$SOu'."
+
+# Fail message
+fail_message="User failed to be added to database '$SOu'."
+
 ## Required flags & defaults
 if [ -z "${SOd}" ]; then
   #SOd="DEFAULT" # Uncomment for optional default
@@ -91,7 +91,7 @@ if [ -z "${SOu}" ] && [ -n "${SOp}" ]; then
 fi
 
 # Prepare command
-serfcommand="${Serfs}/${SURFNAME} ${SOd} ${SOu} ${SOp}"
+serfcommand="${Serfs}/${surfname} ${SOd} ${SOu} ${SOp}"
 
 # Run the ink
 . $InkRun

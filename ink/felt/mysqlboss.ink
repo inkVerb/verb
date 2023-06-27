@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the serf name
-SURFNAME="mysqlboss"
+surfname="mysqlboss"
 
 # Include the settings & functions
 . ${InkSet}
@@ -46,14 +46,6 @@ while getopts "${optSerf}" Flag; do
  esac
 done
 
-# Message prep
-# Messages not needed for simple SQL terminal entry
-# Success log
-success_log="Admin database user created."
-
-# Fail log
-fail_log="Admin database user failed to be created."
-
 # Check requirements or defaults
 ## Help
 if [ "${SOh}" = "true" ]; then
@@ -69,8 +61,16 @@ Available flags:
   exit 0
 fi
 
+# Message prep
+# Messages not needed for simple SQL terminal entry
+# Success log
+success_log="Admin database user created."
+
+# Fail log
+fail_log="Admin database user failed to be created."
+
 # Prepare command
-serfcommand="${Serfs}/${SURFNAME} ${SOu}"
+serfcommand="${Serfs}/${surfname} ${SOu}"
 
 # Run the ink
 . $InkRun

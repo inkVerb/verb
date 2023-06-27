@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the serf name
-SURFNAME="mysqlnewdb"
+surfname="mysqlnewdb"
 
 # Include the settings & functions
 . ${InkSet}
@@ -58,13 +58,6 @@ while getopts "${optSerf}" Flag; do
  esac
 done
 
-# Message prep
-# Success message
-success_message="Database '$SOu' created for user ${SOu}."
-
-# Fail message
-fail_message="Database '$SOu' failed to be created for user ${SOu}."
-
 # Check requirements or defaults
 ## Help
 if [ "${SOh}" = "true" ]; then
@@ -80,6 +73,13 @@ Available flags:
   exit 0
 fi
 
+# Message prep
+# Success message
+success_message="Database '$SOu' created for user ${SOu}."
+
+# Fail message
+fail_message="Database '$SOu' failed to be created for user ${SOu}."
+
 ## Required flags & defaults
 if [ -z "${SOd}" ]; then
   #SOd="DEFAULT" # Uncomment for optional default
@@ -92,7 +92,7 @@ if [ -z "${SOu}" ]; then
 fi
 
 # Prepare command
-serfcommand="${Serfs}/${SURFNAME} ${SOd} ${SOu} ${SOp}"
+serfcommand="${Serfs}/${surfname} ${SOd} ${SOu} ${SOp}"
 
 # Run the ink
 . $InkRun

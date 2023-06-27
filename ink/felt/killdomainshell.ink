@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the serf name
-SURFNAME="killdomainshell"
+surfname="killdomainshell"
 
 # Include the settings & functions
 . ${InkSet}
@@ -47,13 +47,6 @@ while getopts "${optSerf}" Flag; do
  esac
 done
 
-# Message prep
-# Success message
-success_message="$SOd domain framework removed."
-
-# Fail message
-fail_message="$SOd domain framework failed to be removed."
-
 # Check requirements or defaults
 ## Help
 if [ "${SOh}" = "true" ]; then
@@ -67,6 +60,13 @@ Available flags:
   exit 0
 fi
 
+# Message prep
+# Success message
+success_message="$SOd domain framework removed."
+
+# Fail message
+fail_message="$SOd domain framework failed to be removed."
+
 ## Required flags & defaults
 if [ -z "${SOd}" ]; then
   #SOd="DEFAULT" # Uncomment for optional default
@@ -74,7 +74,7 @@ if [ -z "${SOd}" ]; then
 fi
 
 # Prepare command
-serfcommand="${Serfs}/${SURFNAME} ${SOd}"
+serfcommand="${Serfs}/${surfname} ${SOd}"
 
 # Run the ink
 . $InkRun

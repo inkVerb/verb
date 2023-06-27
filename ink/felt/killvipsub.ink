@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the serf name
-SURFNAME="newvipsub"
+surfname="newvipsub"
 
 # Include the settings & functions
 . ${InkSet}
@@ -46,13 +46,6 @@ while getopts "${optSerf}" Flag; do
  esac
 done
 
-# Message prep
-# Success message
-success_message="$SOs subdomain added."
-
-# Fail message
-fail_message="$SOs subdomain failed to be added."
-
 # Check requirements or defaults
 ## Help
 if [ "${SOh}" = "true" ]; then
@@ -66,6 +59,13 @@ Available flags:
   exit 0
 fi
 
+# Message prep
+# Success message
+success_message="$SOs subdomain added."
+
+# Fail message
+fail_message="$SOs subdomain failed to be added."
+
 ## Required flags & defaults
 if [ -z "${SOs}" ]; then
   #SOd="DEFAULT" # Uncomment for optional default
@@ -73,7 +73,7 @@ if [ -z "${SOs}" ]; then
 fi
 
 # Prepare command
-serfcommand="${Serfs}/${SURFNAME} ${SOs}"
+serfcommand="${Serfs}/${surfname} ${SOs}"
 
 # Run the ink
 . $InkRun

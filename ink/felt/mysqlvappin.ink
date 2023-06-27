@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the serf name
-SURFNAME="mysqlvappin"
+surfname="mysqlvappin"
 
 # Include the settings & functions
 . ${InkSet}
@@ -46,13 +46,6 @@ while getopts "${optSerf}" Flag; do
  esac
 done
 
-# Message prep
-# Success message
-success_message="Verb web app '$SOa' imported."
-
-# Fail message
-fail_message="Verb web app '$SOa' failed to be imported."
-
 # Check requirements or defaults
 ## Help
 if [ "${SOh}" = "true" ]; then
@@ -66,6 +59,13 @@ Available flags:
   exit 0
 fi
 
+# Message prep
+# Success message
+success_message="Verb web app '$SOa' imported."
+
+# Fail message
+fail_message="Verb web app '$SOa' failed to be imported."
+
 ## Required flags & defaults
 if [ -z "${SOa}" ]; then
   #SOa="DEFAULT" # Uncomment for optional default
@@ -73,7 +73,7 @@ if [ -z "${SOa}" ]; then
 fi
 
 # Prepare command
-serfcommand="${Serfs}/${SURFNAME} ${SOa}"
+serfcommand="${Serfs}/${surfname} ${SOa}"
 
 # Run the ink
 . $InkRun

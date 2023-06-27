@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the serf name
-SURFNAME="inkcertlist"
+surfname="inkcertlist"
 
 # Include the settings & functions
 . ${InkSet}
@@ -68,7 +68,7 @@ if [ "$inkCertInstallStatus" = "Installed" ]; then
 fi
 
 # Prepare command
-serfcommand="${Serfs}/${SURFNAME}"
+serfcommand="${Serfs}/${surfname}"
 
 # Run the ink
 . $InkRun

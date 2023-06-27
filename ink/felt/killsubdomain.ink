@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the serf name
-SURFNAME="killsubdomain"
+surfname="killsubdomain"
 
 # Include the settings & functions
 . ${InkSet}
@@ -53,15 +53,6 @@ while getopts "${optSerf}" Flag; do
  esac
 done
 
-# Message prep
-# Success message
-success_message="$SOs subdomain removed from $SOd domain."
-# Fail messages
-fail_message="$SOs subdomain could not be removed from $SOd domain."
-
-# Special double-check the final result
-isDomain "${SOs}.${SOd}" "Full length of the domain-to-be"
-
 # Check requirements or defaults
 ## Help
 if [ "${SOh}" = "true" ]; then
@@ -76,6 +67,15 @@ Available flags:
   exit 0
 fi
 
+# Message prep
+# Success message
+success_message="$SOs subdomain removed from $SOd domain."
+# Fail messages
+fail_message="$SOs subdomain could not be removed from $SOd domain."
+
+# Special double-check the final result
+isDomain "${SOs}.${SOd}" "Full length of the domain-to-be"
+
 ## Required flags & defaults
 if [ -z "${SOd}" ]; then
   #SOd="DEFAULT" # Uncomment for optional default
@@ -87,7 +87,7 @@ if [ -z "${SOd}" ]; then
 fi
 
 # Prepare command
-serfcommand="${Serfs}/${SURFNAME} ${SOs} ${SOd}"
+serfcommand="${Serfs}/${surfname} ${SOs} ${SOd}"
 
 # Run the ink
 . $InkRun

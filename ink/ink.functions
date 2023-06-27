@@ -1141,7 +1141,9 @@ inkCertSiteStatus() {
 local domain="$1"
 . ${Conf}/servertype
 # Check the site config
-if /bin/grep -Fq "InkCerted=NO_REMOVED" ${Conf}/inkcert/cli-ini/siteinkcert.${domain} ; then
+if [ ! -f "${Conf}/inkcert/cli-ini/siteinkcert.${domain}" ]; then
+  inkCertSiteStatus="No cert config for domain"
+elif /bin/grep -Fq "InkCerted=NO_REMOVED" ${Conf}/inkcert/cli-ini/siteinkcert.${domain} ; then
   inkCertSiteStatus="Removed"
 elif /bin/grep -Fq "InkCerted=NOT_YET" ${Conf}/inkcert/cli-ini/siteinkcert.${domain} ; then
   inkCertSiteStatus="Not yet"

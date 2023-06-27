@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the serf name
-SURFROOT="killdomain"
+surfroot="killdomain"
 
 # Include the settings & functions
 . ${InkSet}
@@ -32,7 +32,7 @@ while getopts "${optSerf}" Flag; do
     SOd="${OPTARG}"
   ;;
   p)
-   SUFFIX="hard"
+   suffix="hard"
   ;;
   # Standard flags
   c)
@@ -53,19 +53,6 @@ while getopts "${optSerf}" Flag; do
  esac
 done
 
-# Hard/soft kill and message prep
-if [ -n "${SUFFIX}" ] && [ "${SUFFIX}" = "hard" ]; then
-  # Success message
-  success_message="$SOd domain removed and hosted folder purged."
-
-else
-    SUFFIX="soft"
-    # Success message
-    success_message="$SOd domain removed; hosted folder remains."
-fi
-# Fail message
-fail_message="$SOd domain failed to be removed."
-
 # Check requirements or defaults
 ## Help
 if [ "${SOh}" = "true" ]; then
@@ -80,6 +67,19 @@ Available flags:
   exit 0
 fi
 
+# Hard/soft kill and message prep
+if [ -n "${suffix}" ] && [ "${suffix}" = "hard" ]; then
+  # Success message
+  success_message="$SOd domain removed and hosted folder purged."
+
+else
+    suffix="soft"
+    # Success message
+    success_message="$SOd domain removed; hosted folder remains."
+fi
+# Fail message
+fail_message="$SOd domain failed to be removed."
+
 ## Required flags & defaults
 if [ -z "${SOd}" ]; then
   #SOd="DEFAULT" # Uncomment for optional default
@@ -87,7 +87,7 @@ if [ -z "${SOd}" ]; then
 fi
 
 # Prepare command
-serfcommand="${Serfs}/${SURFROOT}${SUFFIX} ${SOd}"
+serfcommand="${Serfs}/${surfroot}${suffix} ${SOd}"
 
 # Run the ink
 . $InkRun

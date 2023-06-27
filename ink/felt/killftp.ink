@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the serf name
-SURFNAME="killftpuser"
+surfname="killftpuser"
 
 # Include the settings & functions
 . ${InkSet}
@@ -74,7 +74,7 @@ fail_message="$SOu FTP useer failed to be destroyed."
 
 
 # Prepare command
-serfcommand="${Serfs}/${SURFNAME} ${SOu}"
+serfcommand="${Serfs}/${surfname} ${SOu}"
 
 # Run the ink
 . $InkRun

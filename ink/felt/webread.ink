@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the serf name
-SURFNAME="webcgi"
+surfname="webcgi"
 
 # Include the settings & functions
 . ${InkSet}
@@ -62,13 +62,6 @@ while getopts "${optSerf}" Flag; do
  esac
 done
 
-# Message prep
-# Success message
-success_message="$SOd webfolder read access $SOyn"
-
-# Fail message
-fail_message="$SOd webfolder read access failed to turn $SOyn"
-
 # Check requirements or defaults
 ## Help
 if [ "${SOh}" = "true" ]; then
@@ -84,6 +77,13 @@ Available flags:
   exit 0
 fi
 
+# Message prep
+# Success message
+success_message="$SOd webfolder read access $SOyn"
+
+# Fail message
+fail_message="$SOd webfolder read access failed to turn $SOyn"
+
 ## Required flags & defaults
 if [ -z "${SOd}" ]; then
   /bin/echo "${optName[d]} option must be set."; inkFail # Uncomment if required
@@ -95,7 +95,7 @@ if [ -z "${SOyn}" ]; then
 fi
 
 # Prepare command
-serfcommand="${Serfs}/${SURFNAME} ${SOyn} ${SOd} ${SOo}"
+serfcommand="${Serfs}/${surfname} ${SOyn} ${SOd} ${SOo}"
 
 # Run the ink
 . $InkRun

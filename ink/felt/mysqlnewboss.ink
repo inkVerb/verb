@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the serf name
-SURFNAME="mysqlnewboss"
+surfname="mysqlnewboss"
 
 # Include the settings & functions
 . ${InkSet}
@@ -52,13 +52,6 @@ while getopts "${optSerf}" Flag; do
  esac
 done
 
-# Message prep
-# Success message
-success_message="Admin user '$SOu' added."
-
-# Fail message
-fail_message="Admin user '$SOu' failed to be added."
-
 # Check requirements or defaults
 ## Help
 if [ "${SOh}" = "true" ]; then
@@ -73,6 +66,13 @@ Available flags:
   exit 0
 fi
 
+# Message prep
+# Success message
+success_message="Admin user '$SOu' added."
+
+# Fail message
+fail_message="Admin user '$SOu' failed to be added."
+
 ## Required flags & defaults
 if [ -z "${SOu}" ]; then
   #SOd="DEFAULT" # Uncomment for optional default
@@ -80,7 +80,7 @@ if [ -z "${SOu}" ]; then
 fi
 
 # Prepare command
-serfcommand="${Serfs}/${SURFNAME} ${SOu} ${SOp}"
+serfcommand="${Serfs}/${surfname} ${SOu} ${SOp}"
 
 # Run the ink
 . $InkRun

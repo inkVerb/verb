@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the serf name
-SURFNAME="inkcertrenewcbleall"
+surfname="inkcertrenewcbleall"
 
 # Include the settings & functions
 . ${InkSet}
@@ -40,13 +40,6 @@ while getopts "${optSerf}" Flag; do
  esac
 done
 
-# Message prep
-# Success message
-success_message="inkCert certs renewed."
-
-# Fail message
-fail_message="inkCert certs failed to be renewed."
-
 # Check requirements or defaults
 ## Help
 if [ "${SOh}" = "true" ]; then
@@ -59,6 +52,13 @@ Available flags:
   exit 0
 fi
 
+# Message prep
+# Success message
+success_message="inkCert certs renewed."
+
+# Fail message
+fail_message="inkCert certs failed to be renewed."
+
 ## Already installed?
 inkCertInstallStatus
 if [ "$inkCertInstallStatus" != "Installed" ]; then
@@ -66,7 +66,7 @@ if [ "$inkCertInstallStatus" != "Installed" ]; then
 fi
 
 # Prepare command
-serfcommand="${Serfs}/${SURFNAME}"
+serfcommand="${Serfs}/${surfname}"
 
 # Run the ink
 . $InkRun

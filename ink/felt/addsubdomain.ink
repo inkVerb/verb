@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the serf name
-SURFNAME="addsubdomain"
+surfname="addsubdomain"
 
 # Include the settings & functions
 . ${InkSet}
@@ -60,6 +60,20 @@ while getopts "${optSerf}" Flag; do
  esac
 done
 
+# Check requirements or defaults
+## Help
+if [ "${SOh}" = "true" ]; then
+  /bin/echo "
+${aboutMsg}"
+  /bin/echo "
+Available flags:
+-h This help message
+-d ${optName[d]}: ${optDesc[d]}
+-s ${optName[s]}: ${optDesc[s]}
+"
+  exit 0
+fi
+
 # Message prep
 inkCertSiteStatus $SOd
 # Success message
@@ -85,20 +99,6 @@ fail_message="$SOs subdomain could not be added to $SOd domain."
 # Special double-check the final result
 isDomain "${SOs}.${SOd}" "Full length of the domain-to-be"
 
-# Check requirements or defaults
-## Help
-if [ "${SOh}" = "true" ]; then
-  /bin/echo "
-${aboutMsg}"
-  /bin/echo "
-Available flags:
--h This help message
--d ${optName[d]}: ${optDesc[d]}
--s ${optName[s]}: ${optDesc[s]}
-"
-  exit 0
-fi
-
 ## Required flags & defaults
 if [ -z "${SOd}" ]; then
   #SOd="DEFAULT" # Uncomment for optional default
@@ -110,7 +110,7 @@ if [ -z "${SOd}" ]; then
 fi
 
 # Prepare command
-serfcommand="${Serfs}/${SURFNAME} ${SOs} ${SOd}"
+serfcommand="${Serfs}/${surfname} ${SOs} ${SOd}"
 
 # Run the ink
 . $InkRun

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the serf name
-SURFNAME="adddomain"
+surfname="adddomain"
 
 # Include the settings & functions
 . ${InkSet}
@@ -54,13 +54,6 @@ while getopts "${optSerf}" Flag; do
  esac
 done
 
-# Message prep
-# Success message
-success_message="$SOd domain added."
-
-# Fail message
-fail_message="$SOd domain failed to be added."
-
 # Check requirements or defaults
 ## Help
 if [ "${SOh}" = "true" ]; then
@@ -74,6 +67,13 @@ Available flags:
   exit 0
 fi
 
+# Message prep
+# Success message
+success_message="$SOd domain added."
+
+# Fail message
+fail_message="$SOd domain failed to be added."
+
 ## Required flags & defaults
 if [ -z "${SOd}" ]; then
   #SOd="DEFAULT" # Uncomment for optional default
@@ -86,7 +86,7 @@ if [ -z "${SOa}" ]; then
 fi
 
 # Prepare command
-serfcommand="${Serfs}/${SURFNAME} ${SOd} ${SOa}"
+serfcommand="${Serfs}/${surfname} ${SOd} ${SOa}"
 
 # Run the ink
 . $InkRun

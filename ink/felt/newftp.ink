@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the serf name
-SURFROOT="newftp"
+surfroot="newftp"
 
 # Include the settings & functions
 . ${InkSet}
@@ -76,6 +76,13 @@ Available flags:
   exit 0
 fi
 
+# Message prep
+# Success message
+success_message="$SOu FTP ${SOt} created."
+
+# Fail message
+fail_message="$SOu FTP ${SOt} failed to be created."
+
 ## Required flags & defaults
 if [ -z "${SOu}" ]; then
   #SOd="DEFAULT" # Uncomment for optional default
@@ -90,16 +97,8 @@ if [ -z "${SOt}" ]; then
   #/bin/echo "${optName[t]} option must be set."; inkFail # Uncomment if required
 fi
 
-# Message prep
-# Success message
-success_message="$SOu FTP ${SOt} created."
-
-# Fail message
-fail_message="$SOu FTP ${SOt} failed to be created."
-
-
 # Prepare command
-serfcommand="${Serfs}/${SURFROOT}${SOt} ${SOu} ${SOp}"
+serfcommand="${Serfs}/${surfroot}${SOt} ${SOu} ${SOp}"
 
 # Run the ink
 . $InkRun

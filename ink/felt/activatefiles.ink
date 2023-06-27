@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the serf name
-SURFNAME="activatefiles"
+surfname="activatefiles"
 
 # Include the settings & functions
 . ${InkSet}
@@ -58,13 +58,6 @@ while getopts "${optSerf}" Flag; do
  esac
 done
 
-# Message prep
-# Success message
-success_message=$SuccessMessage
-
-# Fail message
-fail_message=$FailMessage
-
 # Check requirements or defaults
 ## Help
 if [ "${SOh}" = "true" ]; then
@@ -78,6 +71,13 @@ Available flags:
   exit 0
 fi
 
+# Message prep
+# Success message
+success_message=$SuccessMessage
+
+# Fail message
+fail_message=$FailMessage
+
 ## Y/N requirements
 if [ -z "${SOyn}" ]; then
   /bin/echo "${optName[yn]}  option must be set."; inkFail # Uncomment if required
@@ -87,7 +87,7 @@ if [ -n $yes ] && [ -n $no ]; then
 fi
 
 # Prepare command
-serfcommand="${Serfs}/${SURFNAME} ${SOyn}"
+serfcommand="${Serfs}/${surfname} ${SOyn}"
 
 # Run the ink
 . $InkRun

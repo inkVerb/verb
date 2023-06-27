@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the serf name
-SURFNAME="installinkvmail"
+surfname="installinkvmail"
 
 # Include the settings & functions
 . ${InkSet}
@@ -107,7 +107,7 @@ fail_message="Inkvmail failed to be installed."
 
 
 # Prepare command
-serfcommand="${Serfs}/${SURFNAME} ${SOr} ${SOp} ${SOs} ${SOb}"
+serfcommand="${Serfs}/${surfname} ${SOr} ${SOp} ${SOs} ${SOb}"
 
 # Run the ink
 . $InkRun

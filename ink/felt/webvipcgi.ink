@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the serf name
-SURFNAME="webvipcgi"
+surfname="webvipcgi"
 
 # Include the settings & functions
 . ${InkSet}
@@ -52,12 +52,6 @@ while getopts "${optSerf}" Flag; do
  esac
 done
 
-# Message prep
-success_message="FTP folder vip/cgi active with CGI, hosted at: v.${vipURI}/cgi/"
-
-# Fail message
-fail_message="v.${vipURI} CGI failed to turn $SOyn"
-
 # Check requirements or defaults
 ## Help
 if [ "${SOh}" = "true" ]; then
@@ -71,13 +65,19 @@ Available flags:
   exit 0
 fi
 
+# Message prep
+success_message="FTP folder vip/cgi active with CGI, hosted at: v.${vipURI}/cgi/"
+
+# Fail message
+fail_message="v.${vipURI} CGI failed to turn $SOyn"
+
 ## Y/N
 if [ -z "${SOyn}" ]; then
   /bin/echo "${optName[yn]}  option must be set."; inkFail # Uncomment if required
 fi
 
 # Prepare command
-serfcommand="${Serfs}/${SURFNAME} ${SOyn}"
+serfcommand="${Serfs}/${surfname} ${SOyn}"
 
 # Run the ink
 . $InkRun

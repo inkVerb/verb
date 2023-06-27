@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the serf name
-SURFROOT="inkcertundo"
+surfroot="inkcertundo"
 
 # Include the settings & functions
 . ${InkSet}
@@ -46,6 +46,19 @@ while getopts "${optSerf}" Flag; do
  esac
 done
 
+# Check requirements or defaults
+## Help
+if [ "${SOh}" = "true" ]; then
+  /bin/echo "
+${aboutMsg}"
+  /bin/echo "
+Available flags:
+-h This help message
+-d ${optName[d]}: ${optDesc[d]}
+"
+  exit 0
+fi
+
 # Which engine?
 inkCertSiteStatus
 inkCertServerConfStatus
@@ -67,26 +80,13 @@ success_message="$SOd cert removed."
 # Fail message
 fail_message="$SOd cert failed to be removed."
 
-# Check requirements or defaults
-## Help
-if [ "${SOh}" = "true" ]; then
-  /bin/echo "
-${aboutMsg}"
-  /bin/echo "
-Available flags:
--h This help message
--d ${optName[d]}: ${optDesc[d]}
-"
-  exit 0
-fi
-
 ## Required flags & defaults
 if [ -z "${SOd}" ]; then
   /bin/echo "${optName[d]} or ${optName[d]} must be set."; inkFail # Uncomment if required
 fi
 
 # Prepare command
-serfcommand="${Serfs}/${SURFROOT}${ENGINE} ${SOd}"
+serfcommand="${Serfs}/${surfroot}${ENGINE} ${SOd}"
 
 # Run the ink
 . $InkRun
