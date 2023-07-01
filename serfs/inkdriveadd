@@ -99,9 +99,9 @@ fi
 
 /usr/bin/mkdir /mnt/${Mnt}
 /usr/bin/touch /etc/fstab
-/usr/bin/echo "#/dev/${Dev}1               /mnt/${Mnt}       ext4    defaults,noatime,nofail 0 0" >> /etc/fstab
+/usr/bin/echo "#/dev/${Dev}1               /mnt/${Mnt}       ext4    defaults,noatime,nofail,x-systemd.required-by=php-fpm.service 0 0" >> /etc/fstab
 uuid="$(/usr/bin/lsblk -o UUID /dev/${Dev}1 | /usr/bin/awk 'FNR==2{print $0}')"
-/usr/bin/echo "UUID=${uuid}  /mnt/${Mnt}       ext4    defaults,noatime,nofail 0 0" >> /etc/fstab
+/usr/bin/echo "UUID=${uuid}  /mnt/${Mnt}       ext4    defaults,noatime,nofail,x-systemd.required-by=php-fpm.service 0 0" >> /etc/fstab
 /usr/bin/mount /mnt/${Mnt}
 /usr/bin/mkdir -p /mnt/${Mnt}/.conf/
 
