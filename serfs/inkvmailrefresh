@@ -38,8 +38,8 @@ if [ "$ServerMailStatus" != "VMAIL_SERVER" ]; then
 # Get ready
 cd /srv/vmail || /usr/bin/echo "No vmail directory, something is very wrong"; exit 9
 
-
 # Check the proper database setup
+/usr/bin/echo "Confirming proper database structure..."
 /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "CREATE TABLE IF NOT EXISTS mailbox (
     username varchar(255) NOT NULL UNIQUE,
     password varchar(255) NOT NULL,
@@ -114,20 +114,27 @@ cd /srv/vmail || /usr/bin/echo "No vmail directory, something is very wrong"; ex
   ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Postfix Vmail - Domain Admins';"
 
 # Iterate through each domain
+/usr/bin/echo "Checking mail boxes per domain..."
 for maildomain in *; do
   if [ "${maildomain}" = '*' ]; then
     continue
   fi
 
-  # Create the domain
+  ## List the domain
+  /usr/bin/echo "${maildomain} - "
+
+  ## Create the domain
   /opt/verb/serfs/inkvmaildomain "${maildomain}"
 
   # Create each user
   cd /srv/vmail/${maildomain} || /usr/bin/echo "No domain directory, something is very wrong"; exit 9
+
   for mailuser in *; do
     if [ "${mailuser}" = '*' ]; then
       continue
     fi
+      # List the user
+    /usr/bin/echo "- ${mailuser}"
     /opt/verb/serfs/inkvmailbox "${mailuser}" "${maildomain}"
   done
 
