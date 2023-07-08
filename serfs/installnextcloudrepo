@@ -91,7 +91,7 @@ GRANT ALL PRIVILEGES ON ${dBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '
 FLUSH PRIVILEGES;"
 
 # Write the config for backup
-/bin/echo "APPdBase=${dBase}
+/bin/echo "appDBase=${dBase}
 appDDBUsr=${dBaseUser}
 appDDBPass=${dBPassword}" > /opt/verb/conf/vapps/vapp.${cVappName}
 

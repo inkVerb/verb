@@ -57,7 +57,7 @@ FLUSH PRIVILEGES;"
 
 # Write the config for backup
 /bin/echo "#!/bin/bash
-APPdBase=${dBase}
+appDBase=${dBase}
 appDDBUsr=${dBaseUser}
 appDDBPass=${dBPassword}" > /opt/verb/conf/vapps/vapp.${cVappName}
 
