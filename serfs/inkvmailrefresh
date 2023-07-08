@@ -36,7 +36,7 @@ if [ "$ServerMailStatus" != "VMAIL_SERVER" ]; then
   exit 0; fi
 
 # Get ready
-cd /srv/vmail || /usr/bin/echo "No vmail directory, something is very wrong"; exit 9
+cd /srv/vmail || exit 9
 
 # Check the proper database setup
 /usr/bin/echo "Confirming proper database structure..."
@@ -127,7 +127,7 @@ for maildomain in *; do
   /opt/verb/serfs/inkvmaildomain "${maildomain}"
 
   # Create each user
-  cd /srv/vmail/${maildomain} || /usr/bin/echo "No domain directory, something is very wrong"; exit 9
+  cd /srv/vmail/${maildomain} || exit 9
 
   for mailuser in *; do
     if [ "${mailuser}" = '*' ]; then
