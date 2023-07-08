@@ -863,7 +863,7 @@ else
   exit 6
 fi
 
-# mySQL backup
+# MySQL backup
 /usr/bin/echo '*/5 * * * * root /opt/verb/donjon/mysqlbak.sh cronbak' > /etc/cron.d/mysqlbak
 /usr/bin/chmod 0644 /etc/cron.d/mysqlbak
 

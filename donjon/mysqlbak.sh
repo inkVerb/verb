@@ -15,7 +15,7 @@ elif [ -e "/mnt/ssd" ]; then
   backdir="/mnt/ssd/mysql.bak.d"
 else
   backdir="/var/lib/mysql.bak.d"
-el
+fi
 
 /usr/bin/mkdir -p ${backdir}
   
