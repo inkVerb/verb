@@ -1,0 +1,139 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This refreshes all virtual vmail users in the mail database based on the user folders in the vmail folder
+## This is intended for a database recovery or to follow up if having restored the vmail folder manually
+
+# How to use:
+## ./inkvmailrefresh
+
+
+usagenotes="This refreshes all virtual vmail users in the mail database based on the user folders in the vmail folder"
+usageformat="inkvmailrefresh"
+usageexample="inkvmailrefresh
+inkvmailrefresh someP433w0r6"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installinkvmail )
+prerequesite=( "vmail folder must have been restored or have domains and users" )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkvmailrefresh.replace" ]; then . /opt/verb/mods/inkvmailrefresh.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkvmailrefresh.before" ]; then . /opt/verb/mods/inkvmailrefresh.before; fi # Precedes this script
+
+
+# Check to see if inkvmail is installed
+. /opt/verb/conf/servermailpath
+if [ "$ServerMailStatus" != "VMAIL_SERVER" ]; then
+  /bin/echo "Vmail not installed, not adding $domain to PFA"
+  exit 0; fi
+
+# Get ready
+cd /srv/vmail || /usr/bin/echo "No vmail directory, something is very wrong"; exit 9
+
+
+# Check the proper database setup
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "CREATE TABLE IF NOT EXISTS mailbox (
+    username varchar(255) NOT NULL UNIQUE,
+    password varchar(255) NOT NULL,
+    name varchar(255) CHARACTER SET utf8 NOT NULL,
+    maildir varchar(255) NOT NULL,
+    quota bigint(20) NOT NULL DEFAULT '0',
+    local_part varchar(255) NOT NULL,
+    domain varchar(255) NOT NULL,
+    created datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    modified datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    active tinyint(1) NOT NULL DEFAULT '1',
+    phone varchar(30) CHARACTER SET utf8 NOT NULL DEFAULT '',
+    email_other varchar(255) CHARACTER SET utf8 NOT NULL DEFAULT '',
+    token varchar(255) CHARACTER SET utf8 NOT NULL DEFAULT '',
+    token_validity datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (username),
+    KEY domain (domain)
+  ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Postfix Vmail - Virtual Mailboxes';
+  CREATE TABLE IF NOT EXISTS alias (
+    address varchar(255) NOT NULL UNIQUE,
+    goto text NOT NULL,
+    domain varchar(255) NOT NULL,
+    created DATETIME,
+    modified DATETIME,
+    active tinyint(1) NOT NULL default '1',
+    PRIMARY KEY  (address),
+    KEY domain (domain)
+  ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Postfix Vmail - Virtual Aliases';
+  CREATE TABLE IF NOT EXISTS domain (
+    domain varchar(255) NOT NULL UNIQUE,
+    description varchar(255) NOT NULL,
+    aliases int(10) NOT NULL default '0',
+    mailboxes int(10) NOT NULL default '0',
+    maxquota bigint(20) NOT NULL default '0',
+    quota bigint(20) NOT NULL default '0',
+    transport varchar(255) default NULL,
+    backupmx tinyint(1) NOT NULL default '0',
+    created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    modified DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    active tinyint(1) NOT NULL default '1',
+    PRIMARY KEY (domain)
+  ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Postfix Vmail - Virtual Domains';
+  CREATE TABLE IF NOT EXISTS alias_domain (
+    alias_domain varchar(255) NOT NULL DEFAULT '',
+    target_domain varchar(255) NOT NULL DEFAULT '',
+    created datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    modified datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    active tinyint(1) NOT NULL DEFAULT '1',
+    PRIMARY KEY (alias_domain),
+    KEY active (active),
+    KEY target_domain (target_domain)
+  ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Postfix Admin - Domain Aliases';
+  CREATE TABLE IF NOT EXISTS admin (
+    username varchar(255) NOT NULL UNIQUE,
+    password varchar(255) NOT NULL,
+    superadmin tinyint(1) NOT NULL default '0',
+    created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    modified DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    active tinyint(1) NOT NULL DEFAULT '1',
+    phone varchar(30) CHARACTER SET utf8 NOT NULL DEFAULT '',
+    email_other varchar(255) CHARACTER SET utf8 NOT NULL DEFAULT '',IF NOT EXISTS
+    token varchar(255) CHARACTER SET utf8 NOT NULL DEFAULT '',
+    token_validity datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (username)
+  ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Postfix Vmail - Virtual Admins';
+  CREATE TABLE IF NOT EXISTS domain_admins (
+    username varchar(255) NOT NULL UNIQUE,
+    domain varchar(255) NOT NULL,
+    created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    active tinyint(1) NOT NULL default '1',
+    PRIMARY KEY (username)
+  ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Postfix Vmail - Domain Admins';"
+
+# Iterate through each domain
+for maildomain in *; do
+  if [ "${maildomain}" = '*' ]; then
+    continue
+  fi
+
+  # Create the domain
+  /opt/verb/serfs/inkvmaildomain "${maildomain}"
+
+  # Create each user
+  cd /srv/vmail/${maildomain} || /usr/bin/echo "No domain directory, something is very wrong"; exit 9
+  for mailuser in *; do
+    if [ "${mailuser}" = '*' ]; then
+      continue
+    fi
+    /opt/verb/serfs/inkvmailbox "${mailuser}" "${maildomain}"
+  done
+
+done
+
+
+
+
+if [ -e "/opt/verb/mods/inkvmailrefresh.after" ]; then . /opt/verb/mods/inkvmailrefresh.after; fi # Follows this script

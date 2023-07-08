@@ -340,6 +340,21 @@ if [ "$3" != "n" ] && [ "${isPassword}" = "false" ]; then
 exit 0; fi
 }
 
+## isGraphPassword (typical password with alnum and some special characters)
+isGraphPassword() {
+local password="$1"
+local vvar="$2"
+
+local passwordregex="^[[:graph:]]{4,32}$"
+if [[ "${password}" =~ ${passwordregex} ]] ; then
+isGraphPassword="true"; else
+isGraphPassword="false"; fi
+
+if [ "$3" != "n" ] && [ "${isPassword}" = "false" ]; then
+/bin/echo "${vvar} must be a valid password."
+exit 0; fi
+}
+
 ## isStrongPassword (a valid and strong Linux password)
 ### This will work for a Linux user, but also has additional requirements
 isStrongPassword() {

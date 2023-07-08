@@ -314,7 +314,7 @@ fi
     active tinyint(1) NOT NULL default '1',
     PRIMARY KEY (domain)
   ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Postfix Vmail - Virtual Domains';
-  CREATE TABLE alias_domain (
+  CREATE TABLE IF NOT EXISTS alias_domain (
     alias_domain varchar(255) NOT NULL DEFAULT '',
     target_domain varchar(255) NOT NULL DEFAULT '',
     created datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,

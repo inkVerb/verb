@@ -1,0 +1,41 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This makes a backup of the entire mysql directory, mainly for catastrophic recovery
+## This is essentially a link of donjon/mysqlbak.sh
+
+# How to use:
+## ./mysqlallbackup [ backup suffix ]
+
+usagenotes="This makes a backup of the entire mysql directory, mainly for catastrophic recovery"
+usageformat="mysqlallbackup [ backup suffix ]"
+usageexample="mysqlallbackup January
+mysqlallbackup after_wordpress_intalled"
+hierarchy=( primary )
+vsetnames=( "Backup suffix" )
+vsettypes=( isazAZ09underscore )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( mysqlinstall )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/mysqlallbackup.replace" ]; then . /opt/verb/mods/mysqlallbackup.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/mysqlallbackup.before" ]; then . /opt/verb/mods/mysqlallbackup.before; fi # Precedes this script
+
+# Credential
+if [ -z "$1" ]; then
+  /usr/bin/echo "Must argue suffix!"
+  exit 5
+fi
+
+# Run the donjon script
+/opt/verb/donjon/mysqlbak.sh "${1}"
+
+
+
+if [ -e "/opt/verb/mods/mysqlallbackup.after" ]; then . /opt/verb/mods/mysqlallbackupuser.after; fi # Follows this script

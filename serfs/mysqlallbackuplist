@@ -1,0 +1,56 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This lists all available mysql backups useful for mysqlallrestore
+## This is essentially lists backup suffixes made from mysqlallbackup or donjon/mysqlbak.sh
+
+# How to use:
+## ./mysqlallbackuplist
+
+usagenotes="This lists all available mysql backups"
+usageformat="mysqlallbackuplist [ backup suffix ]"
+usageexample="mysqlallbackuplist January
+mysqlallbackuplist after_wordpress_intalled"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( mysqlinstall mysqlallbackup )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/mysqlallbackuplist.replace" ]; then . /opt/verb/mods/mysqlallbackuplist.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/mysqlallbackuplist.before" ]; then . /opt/verb/mods/mysqlallbackuplist.before; fi # Precedes this script
+
+# Establish the backup directory
+if [ -e "/mnt/hdd" ]; then
+  backdir="/mnt/hdd/mysql.bak.d"
+elif [ -e "/mnt/ssd" ]; then
+  backdir="/mnt/ssd/mysql.bak.d"
+else
+  backdir="/var/lib/mysql.bak.d"
+fi
+
+# Get in the directory
+if [ ! -d "${backdir}" ]; then
+  /usr/bin/echo "No MySQL backups"
+  exit 0
+fi
+cd ${backdir} || exit 9
+
+# List
+for backdir in mysql.*; do
+  suffix="$(/usr/bin/echo "${backdir}" | sed 's/mysql.//')"
+  echo ${suffix}
+done
+
+
+
+
+
+if [ -e "/opt/verb/mods/mysqlallbackuplist.after" ]; then . /opt/verb/mods/mysqlallbackuplistuser.after; fi # Follows this script

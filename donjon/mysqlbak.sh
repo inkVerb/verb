@@ -23,14 +23,14 @@ if /usr/bin/systemctl is-active mysql; then
   # Service check
   /usr/bin/systemctl stop mysql
   
-  # Remove any old backup
-  if [ -d "${backdir}/mysql.${backsuffix}.old" ]; then
-    /usr/bin/rm -rf "${backdir}/mysql.${backsuffix}.old"
+  # Remove any old backup from yesterday
+  if [ -d "${backdir}/mysql.${backsuffix}.yesterday" ]; then
+    /usr/bin/rm -rf "${backdir}/mysql.${backsuffix}.yesterday"
   fi
   
   # Displace any backup
   if [ -d "${backdir}/mysql.${backsuffix}" ]; then
-    /usr/bin/mv "${backdir}/mysql.${backsuffix}" "${backdir}/mysql.${backsuffix}.old"
+    /usr/bin/mv "${backdir}/mysql.${backsuffix}" "${backdir}/mysql.${backsuffix}.yesterday"
   fi
 
   # Copy the directory

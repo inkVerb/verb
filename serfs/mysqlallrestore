@@ -1,0 +1,77 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This resores a backup of the entire mysql directory, mainly for catastrophic recovery
+## This is essentially restores a backup made from mysqlallbackup or donjon/mysqlbak.sh
+## DEV This could be expanded on to restore a specific database from the backup folder to the mysql folder
+
+# How to use:
+## ./mysqlallrestore [ backup suffix ]
+
+usagenotes="This resores a backup of the entire mysql directory, mainly for catastrophic recovery"
+usageformat="mysqlallrestore [ backup suffix ]"
+usageexample="mysqlallrestore January
+mysqlallrestore after_wordpress_intalled"
+hierarchy=( primary )
+vsetnames=( "Backup suffix" )
+vsettypes=( isazAZ09underscore )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( mysqlinstall mysqlallbackup )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/mysqlallrestore.replace" ]; then . /opt/verb/mods/mysqlallrestore.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/mysqlallrestore.before" ]; then . /opt/verb/mods/mysqlallrestore.before; fi # Precedes this script
+
+# Credential
+if [ -z "$1" ]; then
+  /usr/bin/echo "Must argue backup suffix! List them with: mysqlallbackuplist"
+  exit 5
+fi
+suffix="${1}"
+
+# Establish the backup directory
+if [ -e "/mnt/hdd" ]; then
+  backdir="/mnt/hdd/mysql.bak.d"
+elif [ -e "/mnt/ssd" ]; then
+  backdir="/mnt/ssd/mysql.bak.d"
+else
+  backdir="/var/lib/mysql.bak.d"
+fi
+
+# Backup in stages
+if [ -d "${backdir}/mysql_restoring" ]; then
+  /usr/bin/echo "An incomplete restore was in progress; restarting..."
+  /usr/bin/rm -rf "${backdir}/mysql_restoring"
+fi
+/usr/bin/mv /var/lib/mysql "${backdir}/mysql_restoring"
+/usr/bin/cp -r "${backdir}/mysql.${suffix}" /var/lib/mysql
+if [ "$?" != 0 ]; then
+  /usr/bin/echo "${suffix} could not be restored. Putting things back where they were."
+  /usr/bin/rm -rf /var/lib/mysql
+  /usr/bin/mv "${backdir}/mysql_restoring" /var/lib/mysql
+fi
+
+# Own & last restore check
+/usr/bin/chown -R mysql:mysql /var/lib/mysql
+if [ "$?" != 0 ]; then
+  /usr/bin/echo "Could not own the mysql directory, something is very wrong!"
+  exit 9
+fi
+
+# Backup the restored
+if [ -d "${backdir}/mysql_restored" ]; then
+  /usr/bin/rm -rf "${backdir}/mysql_restored"
+fi
+/usr/bin/mv "${backdir}/mysql_restoring" "${backdir}/mysql_restored"
+
+# Finish
+/usr/bin/echo "MySQL backup ${suffix} restored."
+
+
+if [ -e "/opt/verb/mods/mysqlallrestore.after" ]; then . /opt/verb/mods/mysqlallrestoreuser.after; fi # Follows this script
