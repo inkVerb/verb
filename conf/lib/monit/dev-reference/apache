@@ -1,4 +1,5 @@
-#check process httpd with pidfile /var/run/httpd/httpd.pid
+# Apache has a self-monitoring process that Monit uses; if we include this, it causes a conflict.
+check process httpd with pidfile /run/httpd/httpd.pid
 check system localhost
   group www
   start program = "/usr/bin/systemctl start httpd"
