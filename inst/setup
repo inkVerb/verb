@@ -850,7 +850,10 @@ FLUSH PRIVILEGES;"
 /usr/bin/echo "[client]
 user = mysqlboss
 password = ${mysqlbosspass}
-host = localhost" > /opt/verb/conf/mysqlboss.cnf
+host = localhost
+raw
+silent" > /opt/verb/conf/mysqlboss.cnf
+## raw and silent are from --raw and --silent that restrict output only to most basic contents after queries https://dev.mysql.com/doc/refman/8.1/en/mysql-command-options.html#option_mysql_defaults-extra-file
 
 ## New MySQL root password
 newmysqlpass=$(/usr/bin/pwgen -0 -1 -A -B 11)

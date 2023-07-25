@@ -193,6 +193,14 @@ EOF
 ## Alternate method of above Secure
 #/usr/bin/printf "${mysqlpass}\n y\n n\n y\n y\n y\n y\n" | /usr/bin/mysql_secure_installation
 
+# Increase the memory size for some MySQL resources
+/usr/bin/echo "
+[mysqld]
+key_buffer_size = 268435456 # 256
+innodb_buffer_pool_size = 536870912 # 512M
+innodb_log_buffer_size = 33554432 # 32M" >> /etc/my.cnf
+
+#DEV since we started using mariadb on Arch, this wasn't needed anymore
 ## MySQL conf for Postfix Admin
 #/usr/bin/echo "##### Added by inkVerb ######
 # This removes NO_ZERO_IN_DATE and NO_ZERO_DATE, which cause problems for

@@ -1,0 +1,50 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# MySQL is set to use
+
+# How to use:
+## ./mysqlmem
+
+usagenotes="This how much memory MySQL is set to use"
+usageformat="mysqlmem"
+usageexample="mysqlmem"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( mysqlinstall )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/mysqladdusr.replace" ]; then . /opt/verb/mods/mysqladdusr.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/mysqladdusr.before" ]; then . /opt/verb/mods/mysqladdusr.before; fi # Precedes this script
+
+
+# Thanks https://serverfault.com/a/1020847/487033
+
+/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+SELECT ROUND (
+    ( @@GLOBAL.key_buffer_size                     
+     + @@GLOBAL.query_cache_size 
+     + @@GLOBAL.tmp_table_size 
+     + @@GLOBAL.innodb_buffer_pool_size 
+     + @@GLOBAL.innodb_log_buffer_size 
+     + @@GLOBAL.max_connections * ( 
+         @@GLOBAL.sort_buffer_size
+       + @@GLOBAL.read_buffer_size 
+       + @@GLOBAL.read_rnd_buffer_size 
+       + @@GLOBAL.join_buffer_size 
+       + @@GLOBAL.thread_stack 
+       + @@GLOBAL.binlog_cache_size)
+    ) / 1024 / 1024, 1) '';"
+
+
+
+
+if [ -e "/opt/verb/mods/mysqladdusr.after" ]; then . /opt/verb/mods/mysqladdusr.after; fi # Follows this script
