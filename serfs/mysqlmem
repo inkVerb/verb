@@ -22,8 +22,8 @@ usedby=(  )
 useserfs=(  )
 useconfigs=(  )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
-if [ -e "/opt/verb/mods/mysqladdusr.replace" ]; then . /opt/verb/mods/mysqladdusr.replace; return 0; fi # Replaces this script
-if [ -e "/opt/verb/mods/mysqladdusr.before" ]; then . /opt/verb/mods/mysqladdusr.before; fi # Precedes this script
+if [ -e "/opt/verb/mods/mysqlmem.replace" ]; then . /opt/verb/mods/mysqlmem.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/mysqlmem.before" ]; then . /opt/verb/mods/mysqlmem.before; fi # Precedes this script
 
 
 # Thanks https://serverfault.com/a/1020847/487033
@@ -47,4 +47,4 @@ SELECT ROUND (
 
 
 
-if [ -e "/opt/verb/mods/mysqladdusr.after" ]; then . /opt/verb/mods/mysqladdusr.after; fi # Follows this script
+if [ -e "/opt/verb/mods/mysqlmem.after" ]; then . /opt/verb/mods/mysqlmem.after; fi # Follows this script
