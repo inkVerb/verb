@@ -1,0 +1,85 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This sets the amount of memory that MySQL should use using levels of 1, 2, 3, 4 & 5
+## The different levels only affect innodb_buffer_pool_size key_buffer_size
+## Level 1: 256M; 2: 512M; 3: 1G; 4: 2G; 5: 4G; 6: 8G if you need more then the server needs custom work
+## DEV: This needs to be put into a workflow automatically managed by Rink and/or automatically be run by setup based on actual RAM
+
+# How to use:
+## ./mysqlmemset
+
+usagenotes="This sets the amount of memory that MySQL should use using levels of 1, 2, 3, 4, 5 & 6"
+usageformat="mysqlmemset"
+usageexample="mysqlmemset 1
+mysqlmemset 5"
+hierarchy=( primary )
+vsetnames=( level )
+vsettypes=( isChoice )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( mysqlinstall )
+prerequesite=(  )
+usedby=( setup )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/mysqlmemset.replace" ]; then . /opt/verb/mods/mysqlmemset.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/mysqlmemset.before" ]; then . /opt/verb/mods/mysqlmemset.before; fi # Precedes this script
+
+
+# Thanks https://serverfault.com/a/1020847/487033
+# Thanks https://stackoverflow.com/q/60774938/10343144
+
+level="$1"
+case $level in
+
+  1)
+    innodbPool='256M'
+    keyBugger='256M'
+  ;;
+
+  2)
+    innodbPool='512M'
+    keyBugger='512M'
+  ;;
+
+  3)
+    innodbPool='1G'
+    keyBugger='1G'
+  ;;
+
+  4)
+    innodbPool='2G'
+    keyBugger='2G'
+  ;;
+
+  5)
+    innodbPool='4G'
+    keyBugger='4G'
+  ;;
+
+  6)
+    innodbPool='8G'
+    keyBugger='8G'
+  ;;
+
+esac
+
+/usr/bin/echo "# This is created by inkVerb to raise the RAM used for MySQL so it can handle more traffic
+[mysqld]
+innodb_io_capacity = 800 # from 200 to use more of your HDD IOPS
+open_files_limit = 20000 # not too big to allow OS support for other apps handles
+innodb_buffer_pool_size = $innodbPool # from 128M
+key_buffer_size = $keyBugger # from 128M
+innodb_log_buffer_size = 32M # from 16M as corrupted log files can prevent recovery attempts
+read_rnd_buffer_size = 128K  # down from 256K to reduce handler_read_rnd_next RPS of 42,434
+read_buffer_size = 512K  # from 128K to reduce handler_read_next RPS of 5,541" > /etc/my.cnf.d/memset.cnf
+/usr/bin/chmod 644 /etc/my.cnf.d/memset.cnf
+
+/usr/bin/systemctl restart mariadb; wait
+
+
+if [ -e "/opt/verb/mods/mysqlmemset.after" ]; then . /opt/verb/mods/mysqlmemset.after; fi # Follows this script

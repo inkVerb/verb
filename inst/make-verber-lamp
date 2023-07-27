@@ -193,13 +193,6 @@ EOF
 ## Alternate method of above Secure
 #/usr/bin/printf "${mysqlpass}\n y\n n\n y\n y\n y\n y\n" | /usr/bin/mysql_secure_installation
 
-# Increase the memory size for some MySQL resources
-/usr/bin/echo "
-[mysqld]
-key_buffer_size = 268435456 # 256
-innodb_buffer_pool_size = 536870912 # 512M
-innodb_log_buffer_size = 33554432 # 32M" >> /etc/my.cnf
-
 #DEV since we started using mariadb on Arch, this wasn't needed anymore
 ## MySQL conf for Postfix Admin
 #/usr/bin/echo "##### Added by inkVerb ######
@@ -208,6 +201,14 @@ innodb_log_buffer_size = 33554432 # 32M" >> /etc/my.cnf
 #sql_mode=ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
 ##### End inkVerb #####
 #" >> /etc/my.cnf
+
+# Prepare a MariaDB/MySQL service file and remove memory limits
+/usr/bin/cp /lib/systemd/system/mariadb.service /etc/systemd/system/
+/usr/bin/sed -i 's/^LimitNOFILE=/#LimitNOFILE=/' /etc/systemd/system/mariadb.service
+/usr/bin/sed -i 's/^LimitMEMLOCK=/#LimitMEMLOCK=/' /etc/systemd/system/mariadb.service
+/usr/bin/echo "LimitNOFILE=infinity
+LimitMEMLOCK=infinity" >> /etc/systemd/system/mariadb.service
+
 /usr/bin/systemctl restart mariadb; wait
 
 # Firewall

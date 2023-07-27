@@ -866,6 +866,9 @@ else
   exit 6
 fi
 
+# Increase the memory size for some MySQL resources
+/opt/verb/serfs/mysqlmemset 2
+
 # MySQL backup
 /usr/bin/echo '* 4 * * * root /opt/verb/donjon/mysqlbak.sh cronbak' > /etc/cron.d/mysqlbak
 /usr/bin/chmod 0644 /etc/cron.d/mysqlbak
