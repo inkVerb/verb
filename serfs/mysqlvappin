@@ -32,7 +32,7 @@ if [ -e "/opt/verb/mods/mysqlvappin.before" ]; then . /opt/verb/mods/mysqlvappin
 VAPPConf=$1
 
 # Include the vapp.config.file
-. /opt/verb/conf/${VAPPConf}
+. /opt/verb/conf/vapps/${VAPPConf}
 
 # Check if the database file exists
 if [ ! -f "/srv/vip/sql/${appDBase}.sql" ]; then

@@ -34,7 +34,7 @@ if [ -e "/opt/verb/mods/mysqlvappex.before" ]; then . /opt/verb/mods/mysqlvappex
 VAPPConf=$1
 
 # Include the vapp.config.file
-. /opt/verb/conf/${VAPPConf}
+. /opt/verb/conf/vapps/${VAPPConf}
 
 # Export the database
 /usr/bin/mysqldump --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${appDBase} > /srv/vip/sql/${appDBase}.sql
