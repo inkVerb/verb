@@ -27,7 +27,7 @@ if [ -e "/opt/verb/mods/rinkkilldomain.replace" ]; then . /opt/verb/mods/rinkkil
 if [ -e "/opt/verb/mods/rinkkilldomain.before" ]; then . /opt/verb/mods/rinkkilldomain.before; fi # Precedes this script
 
 
-servedomain=$1
+slavedomain=$1
 
 # Configs
 . /opt/verb/conf/servernameip
@@ -42,34 +42,34 @@ elif [ "$RinkConfigured" != "true" ]; then
 	exit 0
 else
   ns1="ns1"
-  ns2="ns1"
+  ns2="ns2"
 fi
 
 # Served or parked?
-if [ -f "/opt/verb/conf/inkdns/zones/db.${servedomain}" ]; then
+if [ -f "/opt/verb/conf/inkdns/zones/db.${slavedomain}" ]; then
   parkserve="served"
-elif [ -f "/opt/verb/conf/inkdns/parked/db.${servedomain}" ]; then
+elif [ -f "/opt/verb/conf/inkdns/parked/db.${slavedomain}" ]; then
   parkserve="parked"
 else
-  /usr/bin/echo "${servedomain} is neither served nor parked here; nothing to do"
+  /usr/bin/echo "${slavedomain} is neither served nor parked here; nothing to do"
   exit 8
 fi
 
 # Update the NS servers
 /usr/bin/ssh -T ns1 <<EOS
 /usr/bin/mkdir -p /srv/sns/${ServerName}-${ServerTLD}/domains/killed/fresh
-/usr/bin/mv /srv/sns/${ServerName}-${ServerTLD}/domains/${parkserve}/${servedomain} /srv/sns/${ServerName}-${ServerTLD}/domains/killed/fresh/
-/usr/bin/echo "verber-killed at $(date +'%Y-%m-%d_%H:%M:%S')" >> /srv/sns/${ServerName}-${ServerTLD}/domains/killed/fresh/${servedomain}
+/usr/bin/mv /srv/sns/${ServerName}-${ServerTLD}/domains/${parkserve}/${slavedomain} /srv/sns/${ServerName}-${ServerTLD}/domains/killed/fresh/
+/usr/bin/echo "verber-killed at $(date +'%Y-%m-%d_%H:%M:%S')" >> /srv/sns/${ServerName}-${ServerTLD}/domains/killed/fresh/${slavedomain}
 EOS
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
-/usr/bin/echo "Killed ${servedomain} as on NS1"
+/usr/bin/echo "Killed ${slavedomain} as on NS1"
 /usr/bin/ssh -T ns2 <<EOS
 /usr/bin/mkdir -p /srv/sns/${ServerName}-${ServerTLD}/domains/killed/fresh
-/usr/bin/mv /srv/sns/${ServerName}-${ServerTLD}/domains/${parkserve}/${servedomain} /srv/sns/${ServerName}-${ServerTLD}/domains/killed/fresh/
-/usr/bin/echo "verber-killed at $(date +'%Y-%m-%d_%H:%M:%S')" >> /srv/sns/${ServerName}-${ServerTLD}/domains/killed/fresh/${servedomain}
+/usr/bin/mv /srv/sns/${ServerName}-${ServerTLD}/domains/${parkserve}/${slavedomain} /srv/sns/${ServerName}-${ServerTLD}/domains/killed/fresh/
+/usr/bin/echo "verber-killed at $(date +'%Y-%m-%d_%H:%M:%S')" >> /srv/sns/${ServerName}-${ServerTLD}/domains/killed/fresh/${slavedomain}
 EOS
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
-/usr/bin/echo "Killed ${servedomain} as on NS2"
+/usr/bin/echo "Killed ${slavedomain} as on NS2"
 
 
 if [ -e "/opt/verb/mods/rinkkilldomain.after" ]; then . /opt/verb/mods/rinkkilldomain.after; fi # Follows this script
