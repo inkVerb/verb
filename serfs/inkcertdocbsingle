@@ -96,9 +96,8 @@ fi
 # Finish
 /bin/echo "
 Excellent!
-Verify above exits - IMPORTANT NOTES: ... - Congratulations!
 
-If so, then ${domain} and all subdomains are now live with inkCert Letsencrypt certificates.
+Now, ${domain} and all subdomains are now live with inkCert Letsencrypt certificates.
 "
 
 

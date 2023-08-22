@@ -93,6 +93,9 @@ cd yay || exit 6
 cd .. || exit 6
 /usr/bin/rm -rf yay
 
+## Let's use the yeo helper
+/usr/bin/ln -sfn /opt/verb/donjon/yeo.sh /usr/local/bin/yeo
+
 # Update yay
 /usr/bin/su worker -c '/usr/bin/yay -Syyu --noconfirm --needed'
 
