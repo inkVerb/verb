@@ -14,7 +14,7 @@ if [ -z ${1} ]; then
 /bin/echo "You must designate a folder."
 exit 8; fi
 
-DIRECTRY=${1}
+directry=${1}
 
 # Auto database
 if [ -z ${3} ]; then
@@ -45,15 +45,15 @@ e="$?"; [[ "$e" = "0" ]] || exit "$e"
 /opt/verb/serfs/mysqlnewboss "${dBaseUser}" "${dBPassword}"
 
 # Write the config for backup
-/bin/echo "SUBdir=${DIRECTRY}
+/bin/echo "subDir=${directry}
 appDDBUsr=${dBaseUser}
 appDDBPass=${dBPassword}" > /opt/verb/conf/vapps/vapp.${cVappName}
 
 # Prepare the config and web directory
 /bin/cp /srv/www/vapps/${cVappName}/config.sample.inc.php /srv/www/vapps/${cVappName}/config.inc.php
-BLOWFISH=$(/usr/bin/pwgen -c -1 32)
-/bin/sed -i "s/cfg\['blowfish_secret'\] = '';/cfg\['blowfish_secret'\] = '$BLOWFISH';/" /srv/www/vapps/${cVappName}/config.inc.php
-/bin/ln -sfn /srv/www/vapps/${cVappName} /srv/www/verb/${itsqlTLD}.sql/${DIRECTRY}; wait
+blowfish=$(/usr/bin/pwgen -c -1 32)
+/bin/sed -i "s/cfg\['blowfish_secret'\] = '';/cfg\['blowfish_secret'\] = '$blowfish';/" /srv/www/vapps/${cVappName}/config.inc.php
+/bin/ln -sfn /srv/www/vapps/${cVappName} /srv/www/verb/${itsqlTLD}.sql/${directry}; wait
 /bin/chown -R www:www /srv/www/verb/${itsqlTLD}.sql; wait
 /bin/chown -R www:www /srv/www/vapps/${cVappName}; wait
 
@@ -74,7 +74,7 @@ PHP My Admin now active & this MySQL admin is setup:
 Username: ${dBaseUser}
 Password: ${dBPassword}
 
-Use these credentials to log in at https://sql.${vipURI}/${DIRECTRY}
+Use these credentials to log in at https://sql.${vipURI}/${directry}
 "
 
 
