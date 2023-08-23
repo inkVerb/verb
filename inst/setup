@@ -1080,6 +1080,7 @@ fi
 ### IPv4?
 if [ -n "${ServerIPv4}" ] && [ "${ServerIPv4}" != "NOIP4" ]; then
   /usr/bin/echo "sql.${itsqlTLDURI}.	IN  A		hostipv4286" >> /opt/verb/conf/inkdns/inkzones/db.${ITsqlTLD}
+  /usr/bin/echo "sql.${itsqlTLDURI}.	IN  AAAA		hostipv6286" >> /opt/verb/conf/inkdns/inkzones/db.${ITsqlTLD}
   /usr/bin/echo "hostarpaipv4286  IN  PTR  sql.${itsqlTLDURI}." >> /opt/verb/conf/inkdns/inkzones/nv.${ITsqlTLD}
 ### IPv6?
 elif [ -n "${ServerIPv6}" ] && [ "${ServerIPv6}" != "NOIP6" ]; then
