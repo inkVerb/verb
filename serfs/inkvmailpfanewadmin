@@ -49,7 +49,7 @@ password=$(/usr/bin/pwgen -s -1 15)
 passHash="$(/bin/echo ${password} | /usr/bin/openssl passwd -1 -stdin)"
 
 # Make the database entry
-/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "INSERT INTO admin (username, password, superadmin, created, modified, active) VALUES ('${username}', '${passHash}', '${issuperadmin}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "INSERT INTO admin (username, password, superadmin, created, modified, active) VALUES ('${username}', '${passHash}', '${issuperadmin}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);
 INSERT INTO domain_admins (username, domain, created, active) VALUES ('${username}', '${adminsdomains}', CURRENT_TIMESTAMP, 1);"
 
 # Finish

@@ -61,7 +61,7 @@ dBaseUser=${dBase}; fi
 /bin/ln -sfn /srv/www/vapps/${cVappName}.${domain} /srv/www/html/${domain}/${directory}
 
 # Create the database and credentials
-/usr/bin/mysql --login-path=local -e "
+/usr/bin/mariadb --login-path=local -e "
 CREATE DATABASE  ${dBase};
 GRANT ALL PRIVILEGES ON ${dBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '${dBPassword}';
 FLUSH PRIVILEGES;"

@@ -245,7 +245,7 @@ else
 fi
 
 # Virtual mail SQL database
-/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
 CREATE DATABASE mail DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 GRANT ALL PRIVILEGES ON mail.* TO 'mail'@'localhost' IDENTIFIED BY 'mailpass${mailpassgen}';
 FLUSH PRIVILEGES;"
@@ -272,7 +272,7 @@ fi
 
 # Create the mailbox table
 ## We want these UNIQUE so we can update/insert appropriately with inkvmailsys* tools
-/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "CREATE TABLE IF NOT EXISTS mailbox (
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "CREATE TABLE IF NOT EXISTS mailbox (
     username varchar(255) NOT NULL UNIQUE,
     password varchar(255) NOT NULL,
     name varchar(255) CHARACTER SET utf8 NOT NULL,

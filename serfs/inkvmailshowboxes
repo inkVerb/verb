@@ -36,11 +36,11 @@ domain="$1"
 
 # All domains
 if [ -z "$1" ]; then
-  query=$(/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "SELECT username FROM mailbox;")
+  query=$(/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "SELECT username FROM mailbox;")
 # Specified domain
 else
   domain="$1"
-  query=$(/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "SELECT username FROM mailbox WHERE domain='$domain';")
+  query=$(/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "SELECT username FROM mailbox WHERE domain='$domain';")
 fi
 
 # Show the results

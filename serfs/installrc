@@ -99,12 +99,12 @@ if [ "$?" = 4 ]; then
   exit 4; fi
 
 # Create the MySQL database and user
-/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
 CREATE DATABASE rcmail DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 GRANT ALL PRIVILEGES ON rcmail.* TO 'rcmailusr'@'localhost' IDENTIFIED BY 'rcpass${RCPASSGEN}';
 FLUSH PRIVILEGES;"
 ## Initiate the database
-/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf rcmail < /srv/www/email/roundcube/SQL/mysql.initial.sql
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf rcmail < /srv/www/email/roundcube/SQL/mysql.initial.sql
 
 # Webserver
 ## Web directories

@@ -40,7 +40,7 @@ cd /srv/vmail || exit 9
 
 # Check the proper database setup
 /usr/bin/echo "Confirming proper database structure..."
-/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "CREATE TABLE IF NOT EXISTS mailbox (
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "CREATE TABLE IF NOT EXISTS mailbox (
     username varchar(255) NOT NULL UNIQUE,
     password varchar(255) NOT NULL,
     name varchar(255) CHARACTER SET utf8 NOT NULL,

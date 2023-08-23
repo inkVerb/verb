@@ -39,7 +39,7 @@ MYSQLBossPASS=$(/usr/bin/pwgen -s -1 10)
 /usr/bin/apt-get -y install mysql-server mysql-client
 
 # MySQL superuser to auto-create databases
-/usr/bin/mysql -uroot -p${mySQLpass} -e "
+/usr/bin/mariadb -uroot -p${mySQLpass} -e "
 CREATE USER mysqlboss@localhost;
 SET PASSWORD FOR mysqlboss@localhost=PASSWORD('${MYSQLBossPASS}');
 GRANT ALL PRIVILEGES ON *.* TO 'mysqlboss'@'localhost' IDENTIFIED BY '${MYSQLBossPASS}' WITH GRANT OPTION;

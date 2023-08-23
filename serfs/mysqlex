@@ -31,7 +31,7 @@ if [ -e "/opt/verb/mods/mysqlex.before" ]; then . /opt/verb/mods/mysqlex.before;
 INPUT=$1
 dBase=${INPUT%.sql}
 
-/usr/bin/mysqldump --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${dBase} > /srv/vip/sql/${dBase}.sql
+/usr/bin/mariadb-dump --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${dBase} > /srv/vip/sql/${dBase}.sql
 
 if [ $? = "0" ]; then
   echo "Database available at vip/sql/${dBase}.sql"

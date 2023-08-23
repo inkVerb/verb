@@ -841,7 +841,7 @@ fi
 mysqlpass="$(/usr/bin/cat /opt/verb/conf/mysqlrootpassword)"
 mysqlbosspass=$(/usr/bin/pwgen -s -1 10)
 ## MySQL superuser to auto-create databases
-/usr/bin/mysql -uroot -p${mysqlpass} -e "
+/usr/bin/mariadb -uroot -p${mysqlpass} -e "
 CREATE USER mysqlboss@localhost;
 SET PASSWORD FOR mysqlboss@localhost=PASSWORD('${mysqlbosspass}');
 GRANT ALL PRIVILEGES ON *.* TO 'mysqlboss'@'localhost' IDENTIFIED BY '${mysqlbosspass}' WITH GRANT OPTION;
@@ -857,7 +857,7 @@ silent" > /opt/verb/conf/mysqlboss.cnf
 
 ## New MySQL root password
 newmysqlpass=$(/usr/bin/pwgen -0 -1 -A -B 11)
-/usr/bin/mysql -uroot -p${mysqlpass} -e "
+/usr/bin/mariadb -uroot -p${mysqlpass} -e "
 SET PASSWORD FOR root@localhost = PASSWORD('${newmysqlpass}');FLUSH PRIVILEGES;"
 if [ "$?" = 0 ]; then
   /usr/bin/echo "${newmysqlpass}" > /opt/verb/conf/mysqlrootpassword
@@ -896,7 +896,7 @@ vnoremap <C-p> "+p' > /home/${newBoss}/.vimrc
 /usr/bin/chown -R ${newBoss}:${newBoss} /home/${newBoss}
 
 # New Boss MySQL root password
-/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
 CREATE USER ${newBoss}@localhost;
 SET PASSWORD FOR ${newBoss}@localhost=PASSWORD('${newBossPASS}');
 GRANT ALL PRIVILEGES ON *.* TO '${newBoss}'@'localhost' IDENTIFIED BY '${newBossPASS}' WITH GRANT OPTION;

@@ -28,7 +28,7 @@ if [ -e "/opt/verb/mods/mysqlkilldb.before" ]; then . /opt/verb/mods/mysqlkilldb
 
 dBase=$1
 
-/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
 DROP DATABASE ${dBase};"
 
 

@@ -235,14 +235,14 @@ if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 # MySQL (viz MariaDB)
 /usr/bin/pacman -S --noconfirm --needed mariadb
 if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
-/usr/bin/mysql_install_db --user=mysql --basedir=/usr --datadir=/var/lib/mysql
+/usr/bin/mariadb-install-db --user=mysql --basedir=/usr --datadir=/var/lib/mysql
 ## Start it now so it works when we run the secure installation
 /usr/bin/systemctl enable mariadb; wait
 /usr/bin/systemctl start mariadb; wait
 ## Set password before securing
-/usr/bin/mysql -e "SET PASSWORD FOR root@localhost = PASSWORD('${mysqlpass}');FLUSH PRIVILEGES;"
+/usr/bin/mariadb -e "SET PASSWORD FOR root@localhost = PASSWORD('${mysqlpass}');FLUSH PRIVILEGES;"
 ## Secure
-/usr/bin/mysql_secure_installation <<EOF
+/usr/bin/mariadb-secure-installation <<EOF
 ${mysqlpass}
 y
 n
@@ -252,7 +252,7 @@ y
 y
 EOF
 ## Alternate method of above Secure
-#/usr/bin/printf "${mysqlpass}\n y\n n\n y\n y\n y\n y\n" | /usr/bin/mysql_secure_installation
+#/usr/bin/printf "${mysqlpass}\n y\n n\n y\n y\n y\n y\n" | /usr/bin/mariadb-secure-installation
 
 #DEV since we started using mariadb on Arch, this wasn't needed anymore
 ## MySQL conf for Postfix Admin
@@ -316,7 +316,7 @@ if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 
 #DEV moved to setup
 # # MySQL superuser to auto-create databases
-# /usr/bin/mysql -uroot -p${mysqlpass} -e "
+# /usr/bin/mariadb -uroot -p${mysqlpass} -e "
 # CREATE USER mysqlboss@localhost;
 # SET PASSWORD FOR mysqlboss@localhost=PASSWORD('${mysqlbosspass}');
 # GRANT ALL PRIVILEGES ON *.* TO 'mysqlboss'@'localhost' IDENTIFIED BY '${mysqlbosspass}' WITH GRANT OPTION;

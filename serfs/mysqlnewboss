@@ -39,7 +39,7 @@ if [ -f "/opt/verb/conf/mysqlnewboss.${dbBUser}.cnf" ]; then
   echo " already exists."; exit 0
 fi
 
-/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
 GRANT ALL PRIVILEGES ON *.* TO '${dbBUser}'@'localhost' IDENTIFIED BY '${dbPassword}' WITH GRANT OPTION;
 FLUSH PRIVILEGES;"
 

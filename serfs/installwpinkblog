@@ -50,7 +50,7 @@ dBaseUser=${dBase}; fi
 /bin/chown -R www:www /srv/www/vapps/${cVappName}; wait
 
 # Create the database and credentials
-/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
 CREATE DATABASE  ${dBase};
 GRANT ALL PRIVILEGES ON ${dBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '${dBPassword}';
 FLUSH PRIVILEGES;"

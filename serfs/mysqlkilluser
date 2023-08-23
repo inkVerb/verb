@@ -28,7 +28,7 @@ if [ -e "/opt/verb/mods/mysqlkilluser.before" ]; then . /opt/verb/mods/mysqlkill
 
 dBaseUser=$1
 
-/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
 DROP USER ${dBaseUser}@localhost;"
 
 

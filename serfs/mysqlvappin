@@ -41,13 +41,13 @@ if [ ! -f "/srv/vip/sql/${appDBase}.sql" ]; then
 fi
 
 # Create a dummy database as a frame
-/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
 CREATE DATABASE ${appDBase};
 GRANT ALL PRIVILEGES ON ${appDBase}.* TO '${appDDBUsr}'@'localhost' IDENTIFIED BY '${appDDBPass}';
 FLUSH PRIVILEGES;"
 
 # Import the database
-/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${appDBase} < /srv/vip/sql/${appDBase}.sql
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${appDBase} < /srv/vip/sql/${appDBase}.sql
 
 
 

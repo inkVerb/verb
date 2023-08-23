@@ -35,7 +35,7 @@ if [ "$ServerMailStatus" != "VMAIL_SERVER" ]; then
 domain="$1"
 
 # Run the update
-/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "UPDATE domain SET active=1, modified=CURRENT_TIMESTAMP WHERE domain='$domain';"
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "UPDATE domain SET active=1, modified=CURRENT_TIMESTAMP WHERE domain='$domain';"
 
 # Finish
 /bin/echo "Domain $domain set to active"

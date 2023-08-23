@@ -49,7 +49,7 @@ domain="$2"
 username="$emailUser@$domain"
 
 # Check that the domain exists and get the default quota
-query="$(/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "SELECT quota FROM domain WHERE domain='$domain';")"
+query="$(/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "SELECT quota FROM domain WHERE domain='$domain';")"
 domquota="$(/bin/echo ${query} | sed "s/quota //")000000"
 # Oops, domain does not exist
 if [ -z "${query}" ]; then
@@ -58,12 +58,12 @@ if [ -z "${query}" ]; then
 fi
 
 #Check if the email exists
-query="$(/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "SELECT quota FROM mailbox WHERE username='$username';")"
+query="$(/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "SELECT quota FROM mailbox WHERE username='$username';")"
 oldquota="$(/bin/echo ${query} | sed "s/quota //")"
 # User exists
 if [ -n "${query}" ]; then
   # Get the name
-  query="$(/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "SELECT name FROM mailbox WHERE username='$username';")"
+  query="$(/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "SELECT name FROM mailbox WHERE username='$username';")"
   oldname="$(/bin/echo ${query} | sed "s/name //")"
   # Show user info if no changes
   if [ -z "$3" ]; then
@@ -92,7 +92,7 @@ Inbox size: $oldquota"
     fi
 
     # Run the update
-    /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "UPDATE mailbox SET name='$newname', quota='$newquota', modified=CURRENT_TIMESTAMP WHERE username='$username';"
+    /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "UPDATE mailbox SET name='$newname', quota='$newquota', modified=CURRENT_TIMESTAMP WHERE username='$username';"
     # Finish
     /bin/echo "Updated: $username
 Name: $newname
@@ -123,7 +123,7 @@ else
 
   # Make the database entry
   ## We need the alias entry for the mailbox to be active
-  /usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "INSERT INTO mailbox (username, password, name, maildir, quota, local_part, domain, created, modified, active) VALUES ('$username', '$password', '$newname', '$inkvmaildirectory', '$newquota', '$emailUser', '$domain', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);
+  /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "INSERT INTO mailbox (username, password, name, maildir, quota, local_part, domain, created, modified, active) VALUES ('$username', '$password', '$newname', '$inkvmaildirectory', '$newquota', '$emailUser', '$domain', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);
   INSERT INTO alias (address, goto, domain, created, modified, active) VALUES ('$username', '$username', '$domain', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);"
 
   # Finish

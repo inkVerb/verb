@@ -26,7 +26,7 @@ if [ -e "/opt/verb/mods/mysqldb.replace" ]; then . /opt/verb/mods/mysqldb.replac
 if [ -e "/opt/verb/mods/mysqldb.before" ]; then . /opt/verb/mods/mysqldb.before; fi # Precedes this script
 
 
-/usr/bin/mysql --defaults-extra-file=/opt/verb/conf/mysqldb.${1}.cnf
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqldb.${1}.cnf
 
 
 
