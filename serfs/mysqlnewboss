@@ -27,12 +27,12 @@ if [ -e "/opt/verb/mods/mysqlnewboss.replace" ]; then . /opt/verb/mods/mysqlnewb
 if [ -e "/opt/verb/mods/mysqlnewboss.before" ]; then . /opt/verb/mods/mysqlnewboss.before; fi # Precedes this script
 
 
-DBBuser=$1
+dbBUser=$1
 if [ -z ${2} ]; then
-dbPassword=$(/usr/bin/pwgen -s -1 10)
-serfOUT="New Password: ${dBPassword}"
+  dbPassword=$(/usr/bin/pwgen -s -1 10)
+  serfOUT="New Password: ${dBPassword}"
 else
-dbPassword=$2
+  dbPassword=$2
 fi
 
 if [ -f "/opt/verb/conf/mysqlnewboss.${dbBUser}.cnf" ]; then
