@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 #inkVerbMaker! verb.ink
 
 # This makes the initial inkVerb Verber server with a "boss" sudoer user, new SSH login port, the name286 namespace for setup
@@ -10,15 +10,15 @@
 ## This file is moved to verb/configs by setup
 ## On a healthy Verber server, you will never need the MySQL root password except for special maintanence
 ## Verber can create other superusers for MySQL with grant privileges for login to PHPMyAdmin
-## Should the MySQL root password become necessary it is a headache if lost. Hence, it is saved in this one lo/usr/bin/cation and you don't need to keep track of it.
+## Should the MySQL root password become necessary it is a headache if lost. Hence, it is saved in this one lo/bin/cation and you don't need to keep track of it.
 
 # How to use:
-## ./make-verber-lamp [swap-size, choose GB: 1, 2, 4, 8, 16, 32, 64 - optional (2 default, must be set for root password)] [mysql root password - optional]
+## ./make-verber-laemp [swap-size, choose GB: 1, 2, 4, 8, 16, 32, 64 - optional (2 default, must be set for root password)] [mysql root password - optional]
 
 # Eg:
-## ./make-verber-lamp 1 mysqlrootpass
-## ./make-verber-lamp 4
-## ./make-verber-lamp 2 chewcud62
+## ./make-verber-laemp 1 mysqlrootpass
+## ./make-verber-laemp 4
+## ./make-verber-laemp 2 chewcud62
 
 
 # Setup check
@@ -26,7 +26,7 @@ if [ -f "/opt/verb/inst/make-preverber" ]; then
   /usr/bin/echo "Run make-preverber first, then try again."
 exit 8; fi
 # File check
-if [ ! -f "/opt/verb/inst/make-verber-lamp" ]; then
+if [ ! -f "/opt/verb/inst/make-verber-laemp" ]; then
   /usr/bin/echo "I'm not where I'm supposed to be, I quit."
 exit 8; fi
 
@@ -67,8 +67,8 @@ fi
 
 # Live patch
 ## Learn more here https://wiki.archlinux.org/title/Kernel_live_patching
-#/usr/bin/su worker -c '/usr/bin/yay -S --noconfirm --needed kpatch'
-##/usr/local/bin/yeo -S --noconfirm --needed kpatch
+##/usr/bin/su worker -c '/usr/bin/yay -S --noconfirm --needed kpatch'
+#/usr/local/bin/yeo -S --noconfirm --needed kpatch
 
 # Link serfs & tools to boss box
 /usr/bin/ln -sfn /opt/verb/serfs /opt/verb/boss/
@@ -81,9 +81,9 @@ fi
 /usr/bin/ln -sfn /opt/verb /root/
 
 # Record the MySQL root password
-/usr/bin/echo "${mysqlpass}" > /opt/verb/inst/mysqlrootpassword
+/usr/bin/echo "${mysqlpass}" > /opt/verb/conf/mysqlrootpassword
 
-#  LAMP Server
+#  LAEMP Server
 ## Web directory
 /usr/bin/mkdir -p /srv/www/html
 /usr/bin/useradd -g www www
@@ -94,7 +94,7 @@ fi
 /usr/bin/mkdir -p /etc/ssl/server
 cd /etc/ssl/server || exit 6
 /usr/bin/rm -f server.key
-/usr/bin/openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:512 -out server.key
+/usr/bin/openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out server.key
 /usr/bin/chmod 400 server.key
 /usr/bin/rm -f /etc/ssl/server/server.csr
 /usr/bin/openssl req -new -sha256 -key server.key -out server.csr \
@@ -105,7 +105,7 @@ cd /etc/ssl/server || exit 6
 ## Diffie-Helman Group file (small file just so the server works)
 /usr/bin/rm -f /etc/ssl/server/dhparams.pem
 /usr/bin/openssl dhparam -out /etc/ssl/server/dhparams.pem 512
-/usr/bin/chmod 600 /etc/ssl/server/dhparams.pem
+/bin/chmod 600 /etc/ssl/server/dhparams.pem
 cd $OLDPWD || exit 6
 
 # Apache
@@ -131,6 +131,87 @@ if [ ! -d "/etc/httpd" ]; then echo "Apache installed, but /etc/httpd does not e
 </html>
 EOF
 
+# Nginx
+/usr/bin/pacman -S --noconfirm --needed nginx
+if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
+/usr/bin/mkdir -p /etc/nginx
+
+## Nginx Settings
+/usr/bin/cat <<'EOF' > /etc/nginx/nginx.conf
+user http;
+worker_processes auto;
+worker_cpu_affinity auto;
+
+events {
+    multi_accept on;
+    worker_connections 1024;
+}
+
+http {
+    # https://serverfault.com/a/419851/487033 all server names served are stored in a [hash table for lookup](http://nginx.org/en/docs/hash.html), more served means this must increase, either server_names_hash_max_size and/or the server_names_hash_bucket_size below
+    server_names_hash_max_size 1024;
+    server_names_hash_bucket_size 128;
+    charset utf-8;
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    server_tokens off;
+    log_not_found off;
+    types_hash_max_size 4096;
+    client_max_body_size 1000M;
+
+    # SSL
+    ssl_prefer_server_ciphers on;
+    ssl_ciphers ECDH+AESGCM:ECDH+AES256:ECDH+AES128:DH+3DES:!ADH:!AECDH:!MD5;
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;
+
+    # MIME
+    include mime.types;
+    default_type application/octet-stream;
+
+    # logging
+    access_log /var/log/nginx/access.log;
+    error_log /var/log/nginx/error.log warn;
+
+    # load configs
+    include /etc/nginx/conf.d/*.conf;
+    include /etc/nginx/sites-enabled/*;
+}
+EOF
+
+## Nginx site defaults
+/usr/bin/mkdir -p /etc/nginx/conf.d
+/usr/bin/cat <<'EOF' > /etc/nginx/conf.d/default.conf
+server {
+  listen 80 default_server;
+  listen [::]:80 default_server;
+  listen 443 ssl http2 default_server;
+  listen [::]:443 ssl http2 default_server;
+  server_name _;
+
+  location / {
+    root /etc/nginx/default;
+    index index.htm index.html;
+  }
+
+  ssl_certificate /etc/ssl/server/server.crt;
+  ssl_certificate_key /etc/ssl/server/server.key;
+  ssl_dhparam /etc/ssl/server/dhparams.pem;
+
+  #return 403;
+
+}
+EOF
+/usr/bin/mkdir -p /etc/nginx/default
+/usr/bin/cat <<'EOF' > /etc/nginx/default/index.htm
+<!DOCTYPE html>
+<html>
+<head><title>Hey, Boo!</title></head>
+<body><h1 style="text-align:center">Hey, Boo!</h1><hr></body>
+</html>
+EOF
+/usr/bin/chown -R www:www /etc/nginx/default
+
 ## PHP
 /usr/bin/pacman -S --noconfirm --needed php php-fpm
 if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
@@ -143,8 +224,6 @@ DirectoryIndex index.htm index.html index.php
 </FilesMatch>
 EOF
 
-/usr/bin/sed -i 's/^pm.max_children =.*/pm.max_children = 200/' /etc/php/php-fpm.d/www.conf
-
 /usr/bin/echo "
 # Added by inkVerb Verber #
 Include conf/extra/php-fpm.conf
@@ -153,6 +232,28 @@ Protocols h2 http/1.1
 # Include the virtual host configurations:
 IncludeOptional /etc/httpd/sites-enabled/*.conf" >> /etc/httpd/conf/httpd.conf
 
+/usr/bin/sed -i 's/^pm.max_children =.*/pm.max_children = 200/' /etc/php/php-fpm.d/www.conf
+
+/usr/bin/cat <<'EOF' > /etc/nginx/php_fastcgi.conf
+
+# 404
+  try_files $fastcgi_script_name =404;
+
+# default fastcgi_params
+  include fastcgi_params;
+
+# fastcgi settings
+  fastcgi_pass                    unix:/run/php-fpm/php-fpm.sock;
+  fastcgi_index                   index.php;
+  fastcgi_buffers                 8 16k;
+  fastcgi_buffer_size             32k;
+
+# fastcgi params
+  fastcgi_param DOCUMENT_ROOT     $realpath_root;
+  fastcgi_param SCRIPT_FILENAME   $realpath_root$fastcgi_script_name;
+  #fastcgi_param PHP_ADMIN_VALUE  "open_basedir=$base/:/usr/lib/php/:/tmp/";
+
+EOF
 ### Security extensions
 echo 'security.limit_extensions = .php .html .htm .shtml' >> /etc/php/php-fpm.d/www.conf
 ### Web user
@@ -165,7 +266,43 @@ echo 'security.limit_extensions = .php .html .htm .shtml' >> /etc/php/php-fpm.d/
 /usr/bin/pacman -S --noconfirm --needed pkg-config php-gd php-apcu nginx-mod-headers-more fcgiwrap php-imagick php-intl php-pspell
 if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 
+## Reverse proxy Apache-Nginx
+### Install mod_rpaf from AUR
+### https://aur.archlinux.org/packages/mod_rpaf
+/usr/bin/su worker -c '/usr/bin/yay -S --noconfirm --needed mod_rpaf'
+#/usr/local/bin/yeo -S --noconfirm --needed mod_rpaf
+### Install mod_rpaf manually
+# /usr/bin/mkdir -p /opt/verb/tmp
+# cd /opt/verb/tmp
+# /usr/bin/git clone https://github.com/gnif/mod_rpaf
+# cd mod_rpaf
+# /usr/bin/make
+# /usr/bin/make install
+# /usr/bin/libtool --finish /usr/lib/httpd/modules
+# cd ~/
+# /usr/bin/rm -rf /opt/verb/tmp
+### Reverse proxy for HTTPS
+/usr/bin/sed -i "s?Listen 80?Listen 127.0.0.1:8080?" /etc/httpd/conf/httpd.conf
+### Use the Apache module for HTTPS
+/usr/bin/echo '
+# Include Reverse Proxy Add Forward module:
+LoadModule rpaf_module modules/mod_rpaf.so
+Include /etc/httpd/conf/rpaf.conf' >> /etc/httpd/conf/httpd.conf
+/usr/bin/cat <<'EOF' > /etc/httpd/conf/rpaf.conf
+<IfModule mod_rpaf.c>
+  RPAF_Enable             On
+  RPAF_Header             X-Real-Ip
+  RPAF_ProxyIPs           127.0.0.1 10.0.0.0/24 ipv4286 ipv6286
+  RPAF_SetHostName        On
+  RPAF_SetHTTPS           On
+  RPAF_SetPort            On
+</IfModule>
+EOF
+
 ## Services
+###DEV commented because they are handled by setup
+/usr/bin/systemctl enable nginx; wait
+/usr/bin/systemctl start nginx; wait
 /usr/bin/systemctl enable php-fpm; wait
 /usr/bin/systemctl start php-fpm; wait
 /usr/bin/systemctl enable httpd; wait
@@ -197,7 +334,7 @@ EOF
 
 #DEV since we started using mariadb on Arch, this wasn't needed anymore
 ## MySQL conf for Postfix Admin
-#/usr/bin/echo "##### Added by inkVerb ######
+#/bin/echo "##### Added by inkVerb ######
 # This removes NO_ZERO_IN_DATE and NO_ZERO_DATE, which cause problems for
 # Postfix Admin code, from strict mode.
 #sql_mode=ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
@@ -271,19 +408,21 @@ if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 # Monit
 /usr/bin/pacman -S --noconfirm --needed monit
 if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
-## Copy configs (These seem to have precedence, files in /etc/monit seem to conflict with them but may be u/usr/bin/sed instead
-/usr/bin/mkdir -p /etc/monit/monitrc.d
+## Copy configs (These seem to have precedence, files in /etc/monit seem to conflict with them but may be u/bin/sed instead
+/bin/mkdir -p /etc/monit/monitrc.d
+# This is not where they are
 #/usr/bin/sed -i "s?#  include /etc/monit.d?  include /etc/monit/monit.d?" /etc/monitrc
 /usr/bin/echo "include /etc/monit/monitrc.d/*" >> /etc/monitrc
-/usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/acpid /etc/monit/monitrc.d/
-/usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/memcached /etc/monit/monitrc.d/
 /usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/mysql /etc/monit/monitrc.d/
-/usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/sshd /etc/monit/monitrc.d/
+/usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/nginx /etc/monit/monitrc.d/
+# /usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/acpid /etc/monit/monitrc.d/
+# /usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/memcached /etc/monit/monitrc.d/
+# /usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/sshd /etc/monit/monitrc.d/
 /usr/bin/systemctl enable monit; wait
 /usr/bin/systemctl start monit; wait
 
 # Server type
-/usr/bin/echo 'ServerType="lamp"' > /opt/verb/inst/servertype
+/usr/bin/echo 'ServerType="laemp"' > /opt/verb/inst/servertype
 
 # Pre-install Go (may be redundand as Go is a dependency in make-preverber)
 /usr/bin/pacman -S --noconfirm --needed go
@@ -294,7 +433,7 @@ if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 
 # Pre-install inkCert-LE
-/usr/bin/pacman -S --noconfirm --needed certbot certbot-apache
+/usr/bin/pacman -S --noconfirm --needed certbot certbot-nginx
 if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 
 # Pre-install inkDNS

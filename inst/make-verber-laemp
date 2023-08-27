@@ -130,8 +130,6 @@ DirectoryIndex index.htm index.html index.php
 </FilesMatch>
 EOF
 
-/usr/bin/sed -i 's/^pm.max_children =.*/pm.max_children = 200/' /etc/php/php-fpm.d/www.conf
-
 /usr/bin/echo "
 # Added by inkVerb Verber #
 Include conf/extra/php-fpm.conf
