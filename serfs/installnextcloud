@@ -125,7 +125,8 @@ elif [ ${ServerType} = "lemp" ]; then
   /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf.old
   /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf
 elif [ ${ServerType} = "lamp" ]; then
-  /usr/bin/su worker -c '/usr/bin/yay -S mod_itk --noconfirm'
+  #/usr/bin/su worker -c '/usr/bin/yay -S mod_itk --noconfirm'
+  /usr/local/bin/yeo -S mod_itk --noconfirm
   # Include the virtual host configurations:
   echo "# Load the mod_itk module so Apache can use the nextcloud user
   LoadModule mpm_itk_module modules/mpm_itk.so" >> /etc/httpd/conf/httpd.conf

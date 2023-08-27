@@ -97,7 +97,8 @@ cd .. || exit 6
 /usr/bin/ln -sfn /opt/verb/donjon/yeo.sh /usr/local/bin/yeo
 
 # Update yay
-/usr/bin/su worker -c '/usr/bin/yay -Syyu --noconfirm --needed'
+#/usr/bin/su worker -c '/usr/bin/yay -Syyu --noconfirm --needed'
+/usr/local/bin/yeo -Syyu --noconfirm --needed
 
 ## Now, use this to run non-root commands:
 ### /usr/bin/su worker -c '/usr/bin/yay --noconfirm -S some-package'
@@ -114,7 +115,8 @@ fi
 # Remove unneeded packages
 /usr/bin/pacman -Qdt --noconfirm
 /usr/bin/pacman -Scc --noconfirm
-/usr/bin/su worker -c '/usr/bin/yay -Scc --noconfirm'
+#/usr/bin/su worker -c '/usr/bin/yay -Scc --noconfirm'
+/usr/local/bin/yeo -Scc --noconfirm
 wait
 
 # Delete this one-time script
