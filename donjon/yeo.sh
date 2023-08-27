@@ -19,7 +19,7 @@ fi
 if [ "$?" != "0" ]; then
   /usr/bin/echo $@ | grep -q "'" 
   if [ "$?" != "0" ]; then
-    su worker -c "/usr/bin/yay $@"
+    /usr/bin/su worker -c "/usr/bin/yay $@"
     exit $?
   else
     /usr/bin/echo "No 'quotes' allowed!"

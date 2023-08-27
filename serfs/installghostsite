@@ -38,8 +38,8 @@ if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
 # Install NVM
 ## (We are not setting it for use on the command line in the bash startup script)
 ## Use installnvm to install NVM for use on the command line
-#/usr/bin/su worker -c '/usr/bin/yay -S --noconfirm --needed nvm'
-/usr/local/bin/yeo -S --noconfirm --needed nvm
+/usr/bin/su worker -c '/usr/bin/yay -S --noconfirm --needed nvm'
+#/usr/local/bin/yeo -S --noconfirm --needed nvm
 if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
 ## Source NVM
 source /usr/share/nvm/init-nvm.sh

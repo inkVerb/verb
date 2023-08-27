@@ -57,8 +57,8 @@ fi
 /usr/bin/pacman -Sy archlinux-keyring --noconfirm
 # Update Packages
 /usr/bin/pacman -Syyu --noconfirm --needed
-#/usr/bin/su worker -c '/usr/bin/yay -Syyu --noconfirm --needed'
-/usr/local/bin/yeo -Syyu --noconfirm --needed
+/usr/bin/su worker -c '/usr/bin/yay -Syyu --noconfirm --needed'
+#/usr/local/bin/yeo -Syyu --noconfirm --needed
 
 # Swap
 /opt/verb/serfs/setswapsize ${swapsizemake}; wait
@@ -269,8 +269,8 @@ if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 ## Reverse proxy Apache-Nginx
 ### Install mod_rpaf from AUR
 ### https://aur.archlinux.org/packages/mod_rpaf
-#/usr/bin/su worker -c '/usr/bin/yay -S --noconfirm --needed mod_rpaf'
-/usr/local/bin/yeo -S --noconfirm --needed mod_rpaf
+/usr/bin/su worker -c '/usr/bin/yay -S --noconfirm --needed mod_rpaf'
+#/usr/local/bin/yeo -S --noconfirm --needed mod_rpaf
 ### Install mod_rpaf manually
 # /usr/bin/mkdir -p /opt/verb/tmp
 # cd /opt/verb/tmp
@@ -448,8 +448,8 @@ if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 # Remove unneeded packages
 /usr/bin/pacman -Qdt --noconfirm
 /usr/bin/pacman -Scc --noconfirm
-#/usr/bin/su worker -c '/usr/bin/yay -Scc --noconfirm'
-/usr/local/bin/yeo -Scc --noconfirm
+/usr/bin/su worker -c '/usr/bin/yay -Scc --noconfirm'
+#/usr/local/bin/yeo -Scc --noconfirm
 
 # Restart Server and reconnect at the new port
 /usr/bin/echo "
