@@ -87,11 +87,11 @@ sed -i "s/#PermitRootLogin.*/PermitRootLogin prohibit-password/" /etc/ssh/sshd_c
 /usr/bin/pacman -S --noconfirm --needed base-devel # Dependencies
 if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 cd /opt/verb/worker || exit 6
-/usr/bin/su worker -c '/usr/bin/git clone https://aur.archlinux.org/yay.git'
-cd yay || exit 6
+/usr/bin/su worker -c '/usr/bin/git clone https://aur.archlinux.org/yay-bin.git'
+cd yay-bin || exit 6
 /usr/bin/su worker -c '/usr/bin/makepkg -si --noconfirm'
 cd .. || exit 6
-/usr/bin/rm -rf yay
+/usr/bin/rm -rf yay-bin
 
 # Let's use the yeo helper
 /usr/bin/ln -sfn /opt/verb/donjon/yeo.sh /usr/local/bin/yeo
