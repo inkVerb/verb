@@ -104,7 +104,7 @@ cd /etc/ssl/server || exit 6
 
 ## Diffie-Helman Group file (small file just so the server works)
 /usr/bin/rm -f /etc/ssl/server/dhparams.pem
-/usr/bin/openssl dhparam -out /etc/ssl/server/dhparams.pem 512
+/usr/bin/openssl dhparam -out /etc/ssl/server/dhparams.pem 512 # Nginx will reject this until setup builds a unique one at 2048; so ignore any error 'dh key too small'
 /usr/bin/chmod 600 /etc/ssl/server/dhparams.pem
 cd $OLDPWD || exit 6
 
