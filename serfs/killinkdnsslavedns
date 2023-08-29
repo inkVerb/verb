@@ -35,7 +35,7 @@ if [ -e "/opt/verb/mods/killinkdnsslavedns.before" ]; then . /opt/verb/mods/kill
 
 # Config check
 if [ ! -f "/opt/verb/conf/inkdns/sdns/dnshost" ]; then
-  /bin/echo "This server is not a DNS, I quit."; exit 0
+  /bin/echo "This server is not a DNS, nothing to do."; exit 0
 fi
 
 # Argument check
@@ -50,7 +50,7 @@ domain="$2"
 
 # Rink user check
 if [ ! -d "/srv/sns/${rink}" ]; then
-  /bin/echo "This server does not supply rink user ${rink}, I quit."; exit 0
+  /bin/echo "This server does not supply rink user ${rink}, nothing to do."; exit 0
 fi
 
 # Rink user settings check
@@ -60,7 +60,7 @@ fi
 
 # Does the rink user own the domain?
 if [ ! -f "/srv/sns/${rink}/domains/${domain}" ]; then
-  /bin/echo "This rink user ${rink} does not own domain ${domain}, I quit."; exit 0
+  /bin/echo "This rink user ${rink} does not own domain ${domain}, nothing to do."; exit 0
 fi
 
 . /srv/sns/${rink}/servertldstatus
@@ -69,7 +69,7 @@ fi
 
 # Already existing check
 if [ ! -f "/opt/verb/conf/inkdns/sdns/s.${domain}" ]; then
-  /bin/echo "No SDNS configuration for ${domain}, I quit."; exit 0
+  /bin/echo "No SDNS configuration for ${domain}, nothing to do."; exit 0
 fi
 
 # Remove the config

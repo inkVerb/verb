@@ -33,7 +33,7 @@ if [ -e "/opt/verb/mods/killinkdnsslavednsallverbs.before" ]; then . /opt/verb/m
 
 # Config check
 if [ ! -f "/opt/verb/conf/inkdns/sdns/dnshost" ]; then
-  /bin/echo "This server is not a DNS, I quit."; exit 0
+  /bin/echo "This server is not a DNS, nothing to do."; exit 0
 fi
 
 # Argument check
@@ -46,7 +46,7 @@ verber="$1"
 
 # Rink user check
 if [ ! -d "/srv/sns/${verber}" ]; then
-  /bin/echo "This server does not supply rink user ${verber}, I quit."; exit 0
+  /bin/echo "This server does not supply rink user ${verber}, nothing to do."; exit 0
 fi
 
 # Rink user settings check
