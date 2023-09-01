@@ -1,5 +1,5 @@
 $TTL    86400
-hostdomain286.		IN  SOA		ns1.DNsdnsDomainAIN286. dns.inkisaverb.com. (
+hostdomain286.		IN  SOA		ns1.dnsDomain286. dns.inkisaverb.com. (
 0000000001		; Serial No
 10800			; Refresh
 3600			; Retry
@@ -8,8 +8,8 @@ hostdomain286.		IN  SOA		ns1.DNsdnsDomainAIN286. dns.inkisaverb.com. (
 
 $ORIGIN hostdomain286.
 ; Nameserver Defaults
-@		IN  NS		ns1.DNsdnsDomainAIN286.
-@		IN  NS		ns2.DNsdnsDomainAIN286.
+@		IN  NS		ns1.dnsDomain286.
+@		IN  NS		ns2.dnsDomain286.
 
 ; Root Site Defaults
 @		IN  A		hostipv4286

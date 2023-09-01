@@ -40,7 +40,7 @@ $config['db_dsnw'] = 'mysql://rcmailusr:rcpass286@localhost/rcmail';
 // %d - domain (http hostname $_SERVER['HTTP_HOST'] without the first part)
 // %s - domain name after the '@' from e-mail address provided at login screen
 // For example %n = mail.domain.tld, %t = domain.tld
-$config['imap_host'] = 'tls://mail.nameURI286';
+$config['imap_host'] = 'tls://imap.nameURI286';
 
 // SMTP server host (for sending mails).
 // To use SSL/TLS connection, enter hostname with prefix ssl:// or tls://
@@ -54,7 +54,7 @@ $config['imap_host'] = 'tls://mail.nameURI286';
 // For example %n = mail.domain.tld, %t = domain.tld
 //$config['smtp_host'] = 'localhost'; // This breaks the SMTP sending
 //$config['smtp_host'] = 'ssl://mail.nameURI286';
-$config['smtp_host'] = 'tls://mail.nameURI286';
+$config['smtp_host'] = 'tls://smtp.nameURI286';
 
 // SMTP port (default is 25; use 587 for STARTTLS or 465 for the
 // deprecated SSL over SMTP (aka SMTPS))
