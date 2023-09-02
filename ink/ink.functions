@@ -1463,7 +1463,7 @@ if grep -q "^${action}" ${InkPB}; then
   for subname in ${Felt}/${action}*.ink; do
   listSubName=$(/usr/bin/echo "${subname}" | sed s:${Felt}/:: | sed "s/${action}//" | sed "s/\.ink//")
   listSubDesc=$(/usr/bin/grep "^##" "${InkHelpDir}/${action}${listSubName}.md" | head -1)
-  /usr/bin/printf '%s\n' "${listSubName}" "${listSubDesc}" | /usr/bin/pr -2 -t -s
+  /usr/bin/printf '%s\n' "${listSubName}" "${listSubDesc}" | /usr/bin/pr -4 -t -s
   done
 fi
 }
