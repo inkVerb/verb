@@ -15,7 +15,7 @@
   - *.subdomain.inkisaverb.com
 
 ## Usage
-- `ink web wild -y/n -d [ somedomain.tld ]`
+- `ink web wild -y|n -d [ somedomain.tld ]`
 
 - `ink web wild -y -d inkisaverb.com`
   - `sed` replaces options in `httpd`or`nginx` `/` `sites-available/inkisaverb.com.conf`

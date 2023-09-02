@@ -5,7 +5,7 @@
 - This uses `.htaccess` inside the web folder
 
 ## Usage
-- `ink web read -y/n -d [ somedomain.tld ]`
+- `ink web read -y|n -d [ somedomain.tld ]`
 
 - `ink web read -y -d inkisaverb.com`
   - `echo` adds and `sed` removes Apache options in `www/html/inkisaverb.com/`

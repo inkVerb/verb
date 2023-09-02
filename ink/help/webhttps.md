@@ -4,7 +4,7 @@
 - This is available on LAMP, LEMP, and LAEMP servers
 
 ## Usage
-- `ink web https -y/n -d [ somedomain.tld ]`
+- `ink web https -y|n -d [ somedomain.tld ]`
 
 - `ink web https -y -d inkisaverb.com`
   - `sed` replaces options in `sites-available/inkisaverb.com.conf`

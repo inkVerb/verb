@@ -17,7 +17,7 @@
 - This is technically a legacy option because 'www' stopped being necessary around the year 2001
 
 ## Usage
-- `ink web www -y/n -d [ somedomain.tld ]`
+- `ink web www -y|n -d [ somedomain.tld ]`
 
 - `ink web www -y -d inkisaverb.com`
   - `sed` replaces options in `sites-available/inkisaverb.com.conf`

@@ -1106,6 +1106,8 @@ exit 0; fi
 ### Check if wildcard subdomain is on for specified domain
 webWildOn() {
 local domain="$1"
+. ${Conf}/servertype
+
 # LEMP
 if [ ${ServerType} = "lemp" ]; then
   if [ -f "/etc/nginx/sites-available/${domain}.conf" ]; then
@@ -1161,6 +1163,8 @@ exit 0; fi
 ### Check if wildcard subdomain is on for specified domain
 webWildOff() {
 local domain="$1"
+. ${Conf}/servertype
+
 # LEMP
 if [ ${ServerType} = "lemp" ]; then
   if [ -f "/etc/nginx/sites-available/${domain}.conf" ]; then
@@ -1455,10 +1459,12 @@ getActions() {
 ## Get all schemas for the action
 getSchemas() {
 action="${1}"
-if grep -q "${action}" ${InkPB}; then
+if grep -q "^${action}" ${InkPB}; then
   for subname in ${Felt}/${action}*.ink; do
-  listSubName=$(/bin/echo "${subname}" | sed s:${Felt}/:: | sed "s/${action}//" | sed "s/\.ink//")
+  listSubName=$(/usr/bin/echo "${subname}" | sed s:${Felt}/:: | sed "s/${action}//" | sed "s/\.ink//")
+  listSubDesc=$(/usr/bin/grep "^##" "${subname}" | head -1)
   /bin/echo "${listSubName}"
+  /usr/bin/printf '%s\n' "${listSubName}" "${listSubDesc}" | /usr/bin/pr -2 -Ts^I
   done
 fi
 }

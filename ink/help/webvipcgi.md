@@ -5,7 +5,7 @@
 - The FTP folder `vip/cgi` will be publically available at `v.YOURNAME.verb.vip/cgi`
 
 ## Usage
-- `ink web vipcgi -y/n`
+- `ink web vipcgi -y|n`
 
 - `ink web vipcgi -y`
   - `sed` replaces Apache options in `httpd/sites-available/v.YOURNAME.verb.vip.conf`
