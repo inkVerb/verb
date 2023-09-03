@@ -434,7 +434,6 @@ fi
 /usr/bin/chmod 755 /usr/local/bin/ink
 ## Configs
 /usr/bin/mkdir -p /opt/verb/conf/vapps
-/usr/bin/mv /opt/verb/inst/mysqlrootpassword /opt/verb/conf/
 /usr/bin/mv /opt/verb/inst/servertype /opt/verb/conf/
 /usr/bin/mv /opt/verb/conf/servernameip286 /opt/verb/conf/servernameip
 /usr/bin/mv /opt/verb/conf/serverport286 /opt/verb/conf/serverport
@@ -837,7 +836,6 @@ if [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lamp" ]; then
 fi
 
 # MySQL root user updates
-/usr/bin/mkdir -p /opt/verb/conf/sql
 ## Password
 mysqlpass="$(/usr/bin/cat /opt/verb/conf/mysqlrootpassword)"
 mysqlbosspass=$(/usr/bin/pwgen -s -1 10)

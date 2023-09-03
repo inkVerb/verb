@@ -235,7 +235,7 @@ else
   elif [ "${VappSvc}" = "mysql" ]; then
     mysqlrootpasswordOrigin="$(/usr/bin/readlink /opt/verb/conf/sql/mysqlrootpassword)"
     /usr/bin/mv "${mysqlrootpasswordOrigin}" "/mnt/${Mnt}/.conf/"
-    /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/mysqlrootpassword" /opt/verb/conf/
+    /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/sql/mysqlrootpassword" /opt/verb/conf/sql/
     e="$?"; [[ "$e" = "0" ]] || exit "$e"
   ## Conf for www
   elif [ "${VappSvc}" = "www" ]; then
