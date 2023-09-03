@@ -18,9 +18,15 @@ directry=${1}
 
 # Auto database
 if [ -z ${3} ]; then
-dBPassword=$(/usr/bin/pwgen -c -1 20); fi
+dBPassword=$(/usr/bin/pwgen -c -1 20)
+else
+dBPassword="${3}"
+fi
 if [ -z ${2} ]; then
-dBaseUser=phpmy$(/usr/bin/pwgen -s -1 15); fi
+dBaseUser=phpmy$(/usr/bin/pwgen -s -1 15)
+else
+dBaseUser="${2}"
+fi
 
 # Include the configs
 . /opt/verb/conf/servernameip
