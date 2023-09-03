@@ -35,7 +35,7 @@ if [ "$ServerMailStatus" != "VMAIL_SERVER" ]; then
 address="$1"
 
 # Run the update
-/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "DELETE FROM mailbox WHERE username='$address';"
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqldb.vmail.cnf -e "DELETE FROM mailbox WHERE username='$address';"
 
 # Finish
 /bin/echo "Email address $address deleted...

@@ -62,7 +62,7 @@ EOF
 # Disable the old entry in the database
 if [ -n "${oldusername}" ]; then
   password="$(/bin/echo $PASSWORD | /usr/bin/openssl passwd -1 -stdin)"
-  /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "UPDATE mailbox
+  /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqldb.vmail.cnf -e "UPDATE mailbox
   SET username = 'nxc_${randomuser}@${nameURI}', password = '${password}', name = 'System', maildir = '${nameURI}/nxc_${randomuser}', domain = '${nameURI}', modified = CURRENT_TIMESTAMP, active = 1
   WHERE username = '${oldusername}';
   UPDATE alias

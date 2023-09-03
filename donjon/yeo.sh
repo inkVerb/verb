@@ -15,9 +15,9 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 # Check for quotes
-/usr/bin/echo $@ | grep -q '"' 
+/usr/bin/echo $@ | /usr/bin/grep -q '"'
 if [ "$?" != "0" ]; then
-  /usr/bin/echo $@ | grep -q "'" 
+  /usr/bin/echo $@ | /usr/bin/grep -q "'"
   if [ "$?" != "0" ]; then
     /usr/bin/su worker -c "/usr/bin/yay $@"
     exit $?

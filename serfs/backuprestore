@@ -61,14 +61,14 @@ cd /srv/www/vip || exit 6
 . /opt/verb/conf/vapps/vapp.${appName}
 
 # Create the SQL database
-/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
 CREATE DATABASE ${appDBase} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 GRANT ALL PRIVILEGES ON ${appDBase}.* TO '${appDDBUsr}'@'localhost' IDENTIFIED BY '${appDDBPass}';
 FLUSH PRIVILEGES;"
 
 # Restore the database
 cd /srv/www/vapps/${appName} || exit 6
-/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${appDBase} < /srv/www/vapps/${appName}/${appDBase}.sql; wait
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf ${appDBase} < /srv/www/vapps/${appName}/${appDBase}.sql; wait
 #/bin/rm -f ${appDBase}.sql
 /usr/bin/mv ${appDBase}.sql /srv/vip/sql/ ###DEV one-time migration to Arch
 /bin/rm -f /srv/www/vapps/${appName}/servernameip*

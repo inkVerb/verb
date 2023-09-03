@@ -38,7 +38,7 @@ if [ -e "/opt/verb/mods/killvapp.before" ]; then . /opt/verb/mods/killvapp.befor
 appName=$1
 
 # Kill the database and user
-/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
 DROP DATABASE ${appDBase};
 DROP USER ${appDDBUsr}@localhost;
 FLUSH PRIVILEGES;"

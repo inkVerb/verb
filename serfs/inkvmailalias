@@ -44,15 +44,15 @@ goto="$(echo "$@" | sed "s/ /,/g")"
 
 # Check for an existing entry
 email="${1}"
-query="$(/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "SELECT goto FROM alias WHERE address='$email' AND domain='$domain';")"
+query="$(/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqldb.vmail.cnf -e "SELECT goto FROM alias WHERE address='$email' AND domain='$domain';")"
 if [ -n "${query}" ]; then
   oldgoto="$(echo ${query} | sed "s/goto //")"
   newgoto="${oldgoto},${goto}"
-  /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "UPDATE alias SET goto='$newgoto', modified=CURRENT_TIMESTAMP WHERE address='$email' AND domain='$domain';"
+  /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqldb.vmail.cnf -e "UPDATE alias SET goto='$newgoto', modified=CURRENT_TIMESTAMP WHERE address='$email' AND domain='$domain';"
 else
   newgoto=${goto}
   # Make the database entry
-  /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "INSERT INTO alias (address, goto, domain, created, modified, active) VALUES ('$email', '$newgoto', '$domain', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);"
+  /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqldb.vmail.cnf -e "INSERT INTO alias (address, goto, domain, created, modified, active) VALUES ('$email', '$newgoto', '$domain', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);"
 fi
 
 # Finish

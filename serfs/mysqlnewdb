@@ -38,7 +38,7 @@ else
 fi
 
 # Create the SQL items
-/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
 CREATE DATABASE ${dBase} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 GRANT ALL PRIVILEGES ON ${dBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '${dBPassword}';
 FLUSH PRIVILEGES;"
@@ -47,7 +47,7 @@ FLUSH PRIVILEGES;"
 echo "dBase=\"${dBase}\"
 dBaseUser=\"${dBaseUser}\"
 dBPassword=\"${dBPassword}\"
-UTYPE=\"CLIENT\"" > /opt/verb/conf/mysqldb.${dBase}
+UTYPE=\"CLIENT\"" > /opt/verb/conf/sql/mysqldb.${dBase}
 
 # Create the MySQL login .cnf
 echo "[client]
@@ -55,7 +55,7 @@ user = ${dBaseUser}
 password = ${dBPassword}
 database = ${dBase}
 host = localhost
-" > /opt/verb/conf/mysqldb.${dBase}.cnf
+" > /opt/verb/conf/sql/mysqldb.${dBase}.cnf
 
 
 

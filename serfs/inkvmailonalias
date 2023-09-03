@@ -35,7 +35,7 @@ if [ "$ServerMailStatus" != "VMAIL_SERVER" ]; then
 address="$1"
 
 # Run the update
-/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "UPDATE alias SET active=1, modified=CURRENT_TIMESTAMP WHERE address='$address';"
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqldb.vmail.cnf -e "UPDATE alias SET active=1, modified=CURRENT_TIMESTAMP WHERE address='$address';"
 
 # Finish
 /bin/echo "Email alias $address set to active"

@@ -40,7 +40,7 @@ inkvmaildirectory="$nameURI/verberadmin/"
 mailboxsize="524288000" # 0.5GB, 2GB=2097152000, 1GB=1048576000, 5GB=5242880000
 
 # Run the database query, IGNORE if key already exists, FYI PRIMARY KEY is username.mail and address.alias
-/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "INSERT IGNORE INTO domain (domain, description, aliases, mailboxes, maxquota, quota, transport, backupmx, created, modified, active) VALUES ('$verberdomain', '$verberdomain', '1000', '1000', '10000', '2048', 'virtual', '0', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqldb.vmail.cnf -e "INSERT IGNORE INTO domain (domain, description, aliases, mailboxes, maxquota, quota, transport, backupmx, created, modified, active) VALUES ('$verberdomain', '$verberdomain', '1000', '1000', '10000', '2048', 'virtual', '0', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);
 INSERT IGNORE INTO mailbox (username, password, name, maildir, quota, local_part, domain, created, modified, active) VALUES ('$username', '$password', '$name', '$inkvmaildirectory', '$mailboxsize', 'verberadmin', '$nameURI', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);
 INSERT IGNORE INTO alias (address, goto, domain, created, modified, active) VALUES ('$username', '$username', '$nameURI', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);
 INSERT IGNORE INTO alias (address, goto, domain, created, modified, active) VALUES ('abuse@$nameURI', '$username', '$nameURI', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);

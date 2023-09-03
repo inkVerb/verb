@@ -39,7 +39,7 @@ fi
 . /opt/verb/conf/vapps/vapp.wp.${oDOMAIN}
 
 ## Export the database
-/usr/bin/mariadb-dump --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${appDBase} > ${appDBase}.sql
+/usr/bin/mariadb-dump --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf ${appDBase} > ${appDBase}.sql
 
 # Setup the new WP site
 ## Set the vapp in its directory
@@ -54,14 +54,14 @@ fi
 dBPassword=$(/usr/bin/pwgen -s -1 10)
 dBase=wp$(/bin/echo "wp" | cut -c1-24)$(/usr/bin/pwgen -s -1 6)
 dBaseUser=${dBase}
-/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
 CREATE DATABASE  ${dBase};
 GRANT ALL PRIVILEGES ON ${dBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '${dBPassword}';
 FLUSH PRIVILEGES;"
 
 ## Move & import the old database to the new one
 /bin/mv ${appDBase}.sql ${dBase}.sql
-/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${dBase} < ${dBase}.sql
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf ${dBase} < ${dBase}.sql
 /bin/rm ${dBase}.sql
 
 ## Write the config for backup

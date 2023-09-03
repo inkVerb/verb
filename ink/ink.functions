@@ -1437,7 +1437,7 @@ if [ -f "/srv/www/vip/${lfile}" ] && [[ "$lfile" =~ ^verb.vmail.*\.vbak$ ]]; the
     isBackupFile="false"; fi
 
 if [ "$3" != "n" ] && [ "${isBackupFile}" = "false" ]; then
-/bin/echo "${vvar} file must exist, currently it doesn't."
+/usr/bin/echo "${vvar} file must exist, currently it doesn't."
 exit 0; fi
 }
 
@@ -1459,10 +1459,10 @@ getActions() {
 ## Get all schemas for the action
 getSchemas() {
 action="${1}"
-if grep -q "^${action}" ${InkPB}; then
+if /usr/bin/grep -q "^${action}" ${InkPB}; then
   for subname in ${Felt}/${action}*.ink; do
-  listSubName=$(/usr/bin/echo "${subname}" | sed s:${Felt}/:: | sed "s/${action}//" | sed "s/\.ink//")
-  listSubDesc=$(/usr/bin/grep "^##" "${InkHelpDir}/${action}${listSubName}.md" | head -1)
+  listSubName=$(/usr/bin/echo "${subname}" | /usr/bin/sed s:${Felt}/:: | /usr/bin/sed "s/${action}//" | /usr/bin/sed "s/\.ink//")
+  listSubDesc=$(/usr/bin/grep "^##" "${InkHelpDir}/${action}${listSubName}.md" | /usr/bin/head -1)
   /usr/bin/printf '%s\n' "${listSubName}" "${listSubDesc}" | /usr/bin/pr -2 -t -s # This keeps the description alighed on the right, thanks https://unix.stackexchange.com/a/694627/315069
   done
 fi

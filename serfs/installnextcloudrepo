@@ -86,7 +86,7 @@ if [ -z ${3} ]; then
 dBaseUser=${dBase}; fi
 
 # Create the database and credentials
-/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
 CREATE DATABASE ${dBase} DEFAULT CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_general_ci';
 GRANT ALL PRIVILEGES ON ${dBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '${dBPassword}';
 FLUSH PRIVILEGES;"

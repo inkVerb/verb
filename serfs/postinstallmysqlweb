@@ -15,7 +15,7 @@ appName=$1
 # Include the config
 . /opt/verb/conf/vapps/vapp.${appName}
 
-/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
 REVOKE ALL PRIVILEGES ON *.* FROM '${appDDBUsr}'@'localhost';
 REVOKE GRANT OPTION ON *.* FROM '${appDDBUsr}'@'localhost';
 GRANT ALL PRIVILEGES ON ${appDBase}.* TO '${appDDBUsr}'@'localhost' IDENTIFIED BY '${appDDBPass}';

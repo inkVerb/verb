@@ -35,7 +35,7 @@ if [ "$ServerMailStatus" != "VMAIL_SERVER" ]; then
 address="$1"
 
 # Run the update
-/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "UPDATE mailbox SET active=0, modified=CURRENT_TIMESTAMP WHERE username='$address';"
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqldb.vmail.cnf -e "UPDATE mailbox SET active=0, modified=CURRENT_TIMESTAMP WHERE username='$address';"
 
 # Finish
 /bin/echo "Email address $address set to inactive"

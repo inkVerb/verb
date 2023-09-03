@@ -137,7 +137,7 @@ if [ "${Svc}" = "vmail" ]; then
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
 ## Conf for mysql
 elif [ "${Svc}" = "mysql" ]; then
-  /usr/bin/mv /opt/verb/conf/mysqlrootpassword "/mnt/${Mnt}/.conf/"
+  /usr/bin/mv /opt/verb/conf/sql/mysqlrootpassword "/mnt/${Mnt}/.conf/"
   /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/mysqlrootpassword" /opt/verb/conf/
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
 ## Conf for www

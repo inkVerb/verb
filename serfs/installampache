@@ -37,7 +37,7 @@ if [ -z ${2} ]; then
 dBaseUser=${dBase}; fi
 
 # Create the database user and credentials
-/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
 CREATE DATABASE  ${dBase};
 GRANT ALL PRIVILEGES ON *.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '${dBPassword}' WITH GRANT OPTION;
 FLUSH PRIVILEGES;"
@@ -49,7 +49,7 @@ FLUSH PRIVILEGES;"
 #sed -i "s/database_username = username/database_username = ${dBaseUser}/g" /srv/www/vapps/ampache/config/ampache.cfg.php
 #sed -i "s/database_password = password/database_password = ${dBPassword}/g" /srv/www/vapps/ampache/config/ampache.cfg.php
 ## Add the tables to the database
-#mysql --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${dBase} < /srv/www/vapps/ampache/sql/ampache.sql
+#mysql --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf ${dBase} < /srv/www/vapps/ampache/sql/ampache.sql
 
 # Write the config for backup
 /bin/echo "#!/bin/bash

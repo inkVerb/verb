@@ -37,7 +37,7 @@ VAPPConf=$1
 . /opt/verb/conf/vapps/${VAPPConf}
 
 # Export the database
-/usr/bin/mariadb-dump --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf ${appDBase} > /srv/vip/sql/${appDBase}.sql
+/usr/bin/mariadb-dump --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf ${appDBase} > /srv/vip/sql/${appDBase}.sql
 
 
 

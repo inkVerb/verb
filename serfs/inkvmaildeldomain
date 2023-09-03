@@ -35,7 +35,7 @@ if [ "$ServerMailStatus" != "VMAIL_SERVER" ]; then
 domain="$1"
 
 # Run the update
-/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "DELETE FROM domain WHERE domain='$domain';"
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqldb.vmail.cnf -e "DELETE FROM domain WHERE domain='$domain';"
 
 # Delete the vmail folder
 /usr/bin/rm -rf /srv/vmail/${domain}

@@ -29,13 +29,13 @@ if [ -e "/opt/verb/mods/mysqlboss.before" ]; then . /opt/verb/mods/mysqlboss.bef
 
 
 if [ -n "${1}" ]; then
-  if [ -f "/opt/verb/conf/mysqlboss.${1}.cnf" ]; then
-    /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqlboss.${1}.cnf
+  if [ -f "/opt/verb/conf/sql/mysqlboss.${1}.cnf" ]; then
+    /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.${1}.cnf
   else
     echo "MySQL boss ${1} does not exist."; exit 0
   fi
 else
-  /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf
+  /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf
 fi
 
 

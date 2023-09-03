@@ -81,7 +81,8 @@ fi
 /usr/bin/ln -sfn /opt/verb /root/
 
 # Record the MySQL root password
-/usr/bin/echo "${mysqlpass}" > /opt/verb/conf/mysqlrootpassword
+/usr/bin/mkdir -p /opt/verb/conf/sql
+/usr/bin/echo "${mysqlpass}" > /opt/verb/conf/sql/mysqlrootpassword
 
 #  LAEMP Server
 ## Web directory

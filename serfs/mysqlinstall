@@ -48,7 +48,7 @@ FLUSH PRIVILEGES;"
 /bin/echo "[client]
 user = mysqlboss
 password = ${MYSQLBossPASS}
-host = localhost" > /opt/verb/conf/mysqlboss.cnf
+host = localhost" > /opt/verb/conf/sql/mysqlboss.cnf
 
 
 

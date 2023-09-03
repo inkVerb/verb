@@ -104,13 +104,13 @@ if [ "${Svc}" = "vmail" ]; then
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
 ## Conf for mysql
 elif [ "${Svc}" = "mysql" ]; then
-  confOrigin="$(/usr/bin/readlink /opt/verb/conf/mysqlrootpassword)"
-  /usr/bin/rm -f /opt/verb/conf/mysqlrootpassword
-  if [ -e "/opt/verb/conf/mysqlrootpassword" ]; then
+  confOrigin="$(/usr/bin/readlink /opt/verb/conf/sql/mysqlrootpassword)"
+  /usr/bin/rm -f /opt/verb/conf/sql/mysqlrootpassword
+  if [ -e "/opt/verb/conf/sql/mysqlrootpassword" ]; then
     /usr/bin/echo "${Svc} config could not be properly prepared to relocate. Something is very wrong."
     exit 6
   fi
-  /usr/bin/mv "${confOrigin}" /opt/verb/conf/mysqlrootpassword
+  /usr/bin/mv "${confOrigin}" /opt/verb/conf/sql/mysqlrootpassword
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
 ## Conf for www
 elif [ "${Svc}" = "www" ]; then

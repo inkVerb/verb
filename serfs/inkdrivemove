@@ -175,13 +175,13 @@ if [ "${restore}" = "true" ]; then
     e="$?"; [[ "$e" = "0" ]] || exit "$e"
   ## Conf for mysql
   elif [ "${VappSvc}" = "mysql" ]; then
-    confOrigin="$(/usr/bin/readlink /opt/verb/conf/mysqlrootpassword)"
-    /usr/bin/rm -f /opt/verb/conf/mysqlrootpassword
-    if [ -e "/opt/verb/conf/mysqlrootpassword" ]; then
+    confOrigin="$(/usr/bin/readlink /opt/verb/conf/sql/mysqlrootpassword)"
+    /usr/bin/rm -f /opt/verb/conf/sql/mysqlrootpassword
+    if [ -e "/opt/verb/conf/sql/mysqlrootpassword" ]; then
       /usr/bin/echo "${VappSvcType} config could not be properly prepared to relocate. Something is very wrong."
       exit 6
     fi
-    /usr/bin/mv "${confOrigin}" /opt/verb/conf/mysqlrootpassword
+    /usr/bin/mv "${confOrigin}" /opt/verb/conf/sql/mysqlrootpassword
     e="$?"; [[ "$e" = "0" ]] || exit "$e"
   ## Conf for www
   elif [ "${VappSvc}" = "www" ]; then
@@ -233,7 +233,7 @@ else
     /usr/bin/chown -R ${Owner} /var/vmail
   ## Conf for mysql
   elif [ "${VappSvc}" = "mysql" ]; then
-    mysqlrootpasswordOrigin="$(/usr/bin/readlink /opt/verb/conf/mysqlrootpassword)"
+    mysqlrootpasswordOrigin="$(/usr/bin/readlink /opt/verb/conf/sql/mysqlrootpassword)"
     /usr/bin/mv "${mysqlrootpasswordOrigin}" "/mnt/${Mnt}/.conf/"
     /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/mysqlrootpassword" /opt/verb/conf/
     e="$?"; [[ "$e" = "0" ]] || exit "$e"

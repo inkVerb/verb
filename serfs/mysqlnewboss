@@ -35,11 +35,11 @@ else
   dbPassword=$2
 fi
 
-if [ -f "/opt/verb/conf/mysqlnewboss.${dbBUser}.cnf" ]; then
+if [ -f "/opt/verb/conf/sql/mysqlnewboss.${dbBUser}.cnf" ]; then
   echo " already exists."; exit 0
 fi
 
-/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
 GRANT ALL PRIVILEGES ON *.* TO '${dbBUser}'@'localhost' IDENTIFIED BY '${dbPassword}' WITH GRANT OPTION;
 FLUSH PRIVILEGES;"
 
@@ -47,7 +47,7 @@ FLUSH PRIVILEGES;"
 user = ${dbBUser}
 password = ${dbPassword}
 host = localhost
-" > /opt/verb/conf/mysqlnewboss.${dbBUser}.cnf
+" > /opt/verb/conf/sql/mysqlnewboss.${dbBUser}.cnf
 
 
 

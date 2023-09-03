@@ -28,7 +28,7 @@ if [ -e "/opt/verb/mods/mysqlmemcheck.before" ]; then . /opt/verb/mods/mysqlmemc
 
 # Thanks https://serverfault.com/a/1020847/487033
 
-/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqlboss.cnf -e "
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
 SELECT ROUND (
     ( @@GLOBAL.key_buffer_size                     
      + @@GLOBAL.query_cache_size 
