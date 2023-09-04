@@ -63,7 +63,8 @@ fi
 # Swap
 /opt/verb/serfs/setswapsize ${swapsizemake}; wait
 ## Enable swap at next startup
-/usr/bin/echo "/var/swap.img    none    swap    sw    0    0" >> /etc/fstab
+#DEV already done by setswapsize
+# /usr/bin/echo "/var/swap.img    none    swap    sw    0    0" >> /etc/fstab
 
 # Live patch
 ## Learn more here https://wiki.archlinux.org/title/Kernel_live_patching
