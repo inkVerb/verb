@@ -11,7 +11,7 @@
 swapSizeNo=$1
 
 ## Use SSD if mounted and system uses btrfs
-if /usr/bin/grep "^LABEL=" /etc/fstab | /usr/bin/grep '\s/\s' | /usr/bin/grep 'btrfs' || /usr/bin/grep "^UUID=" /etc/fstab | /usr/bin/grep '\s/\s' | /usr/bin/grep 'btrfs'; then
+if /usr/bin/grep -q "^LABEL=" /etc/fstab | /usr/bin/grep -q '\s/\s' | /usr/bin/grep -q 'btrfs' || /usr/bin/grep -q "^UUID=" /etc/fstab | /usr/bin/grep -q '\s/\s' | /usr/bin/grep -q 'btrfs'; then
     if [ -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
         . /opt/verb/conf/inkdrive/inkdriveinfo
         if [ -n "${SSDdefault}" ]; then
