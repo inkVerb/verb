@@ -190,9 +190,11 @@ We now will paste that long key from Vultr_Rink_Key.pub into /root/.ssh/authoriz
 | **Keyed-GitVim 1** #
 
 ```console
+chmod 700 /root/.ssh
 cat <<EOF >> /root/.ssh/authorized_keys
 abcdefg1234567thatLongKeyLongerThanThis= Vultr_Rink_Key
 EOF
+chmod 600 /root/.ssh/authorized_keys
 ```
 
 Power it down
@@ -696,9 +698,11 @@ systemctl enable --now sshd
 ## cat in Arch_Vultr SSH key to root
 ```
 mkdir /root/.ssh
+chmod 700 /root/.ssh
 cat <<EOF > /root/.ssh/authorized_keys
 some_key
 EOF
+chmod 600 /root/.ssh/authorized_keys
 ```
 
 ## Manage like normal server, after this
