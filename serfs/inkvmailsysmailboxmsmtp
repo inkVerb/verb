@@ -113,11 +113,12 @@ EOF
 /bin/chown www:www /etc/msmtprc
 /usr/bin/ln -sfn /etc/msmtprc /opt/verb/conf/
 
-# Confirm the php.ini entry
-/bin/sed -i 's?^;sendmail_path = "/usr/bin/msmtp -C /etc/msmtprc -t"?sendmail_path = "/usr/bin/msmtp -C /etc/msmtprc -t"?' /opt/verb/conf/php.ini
-/bin/sed -i 's?^sendmail_path = "/usr/sbin/sendmail -ti"?;sendmail_path = "/usr/sbin/sendmail -ti"?' /opt/verb/conf/php.ini
+#DEV We don't need this because Postfix automatically uses msmtp when installed
+# # Confirm the php.ini entry
+# /bin/sed -i 's?^;sendmail_path = "/usr/bin/msmtp -C /etc/msmtprc -t"?sendmail_path = "/usr/bin/msmtp -C /etc/msmtprc -t"?' /opt/verb/conf/php.ini
+# /bin/sed -i 's?^sendmail_path = "/usr/sbin/sendmail -ti"?;sendmail_path = "/usr/sbin/sendmail -ti"?' /opt/verb/conf/php.ini
 
-#DEV we don't need this because we want sendmail to work from the cli; PHP using this statement is enough for our purposes
+#DEV We don't need this because we want sendmail to work from the cli
 # # Update settings in postfix/main.cf
 # /bin/sed -i 's?^#sendmail_path = /usr/bin/msmtp -C /etc/msmtprc -t?sendmail_path = /usr/bin/msmtp -C /etc/msmtprc -t?' /etc/postfix/main.cf
 # /bin/sed -i 's?^sendmail_path = /usr/bin/sendmail?#sendmail_path = /usr/bin/sendmail?' /etc/postfix/main.cf

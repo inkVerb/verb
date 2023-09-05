@@ -329,7 +329,7 @@ if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 # /usr/bin/echo "[client]
 # user = mysqlboss
 # password = ${mysqlbosspass}
-# host = localhost" > /opt/verb/conf/mysqlboss.cnf
+# host = localhost" > /opt/verb/conf/sql/mysqlboss.cnf
 
 # Monit
 /usr/bin/pacman -S --noconfirm --needed monit

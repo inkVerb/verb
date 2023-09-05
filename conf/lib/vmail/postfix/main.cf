@@ -12,7 +12,7 @@ debug_peer_level = 2
 debugger_command =
 	 PATH=/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin
 	 ddd $daemon_directory/$process_name $process_id & sleep 5
-#sendmail_path = /usr/bin/msmtp -C /etc/msmtprc -t # We don't need this, so sendmail can still do its job; PHP using this is enough
+#sendmail_path = /usr/bin/msmtp -C /etc/msmtprc -t # We don't need this because Postfix handles this on the backend
 sendmail_path = /usr/bin/sendmail
 newaliases_path = /usr/bin/newaliases
 mailq_path = /usr/bin/mailq

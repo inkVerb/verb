@@ -18,7 +18,7 @@ password="$(/bin/echo $PASSWORD | /usr/bin/openssl passwd -1 -stdin)"
 
 # Make the database entry
 ## We need the alias entry for the mailbox to be active
-/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/mysqldb.vmail.cnf -e "
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqldb.vmail.cnf -e "
 INSERT INTO mailbox
   (username, password, name, maildir, quota, local_part, domain, created, modified, active)
 VALUES

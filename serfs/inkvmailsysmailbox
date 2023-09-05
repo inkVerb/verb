@@ -90,9 +90,15 @@ fi
 ## Permissions
 /bin/chmod 0644 /etc/cron.d/sysmailphp
 
-# Confirm the php.ini entry, comment the alternative
-/bin/sed -i 's?^;sendmail_path = "/usr/sbin/sendmail -ti"?sendmail_path = "/usr/sbin/sendmail -ti"?' /opt/verb/conf/php.ini
-/bin/sed -i 's?^sendmail_path = "/usr/bin/msmtp -C /etc/msmtprc -t"?;sendmail_path = "/usr/bin/msmtp -C /etc/msmtprc -t"?' /opt/verb/conf/php.ini
+#DEV These are already set by default and shouldn't even be changed by inkvmailsysmailboxmsmtp
+# # Confirm the php.ini entry
+# /bin/sed -i 's?^;sendmail_path = "/usr/sbin/sendmail -ti"?sendmail_path = "/usr/sbin/sendmail -ti"?' /opt/verb/conf/php.ini
+# /bin/sed -i 's?^sendmail_path = "/usr/bin/msmtp -C /etc/msmtprc -t"?;sendmail_path = "/usr/bin/msmtp -C /etc/msmtprc -t"?' /opt/verb/conf/php.ini
+
+#DEV We don't need msmtp anyway because we want sendmail to work from the cli
+# # Update settings in postfix/main.cf
+# /bin/sed -i 's?^sendmail_path = /usr/bin/msmtp -C /etc/msmtprc -t?#sendmail_path = /usr/bin/msmtp -C /etc/msmtprc -t?' /etc/postfix/main.cf
+# /bin/sed -i 's?^#sendmail_path = /usr/bin/sendmail?sendmail_path = /usr/bin/sendmail?' /etc/postfix/main.cf
 
 
 
