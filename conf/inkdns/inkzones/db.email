@@ -20,7 +20,4 @@ $ORIGIN hostdomain286.
 e.hostdomain286.		IN  A		hostipv4286
 e.hostdomain286.		IN  AAAA	hostipv6286
 
-; Aliase Default
-*.hostdomain286.		IN  CNAME	hostdomain286.
-
 ; Text Record Defaults

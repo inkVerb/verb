@@ -22,7 +22,4 @@ v.hostdomain286.		IN  AAAA	hostipv6286
 files.hostdomain286.		IN  A		hostipv4286
 files.hostdomain286.		IN  AAAA	hostipv6286
 
-; Aliase Default
-*.hostdomain286.		IN  CNAME	hostdomain286.
-
 ; Text Record Defaults
