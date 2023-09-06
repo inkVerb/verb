@@ -133,7 +133,7 @@ Tip: you can use an `ssh` config to make life easier...
  Host rink
   HostName new.arch.ipv4.addr
   User root
-  Port 22
+  Port 1222
   IdentityFile ~/.ssh/Vultr_Rink_Key
 ```
 
