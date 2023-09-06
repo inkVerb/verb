@@ -37,7 +37,14 @@ if [ "${InkDNSStat}" = "INSTALLED" ]; then
   /usr/bin/systemctl stop named
 
   # Refresh all DNS zone serial numbers
-  /opt/verb/serfs/inkdnsserialall
+  ## Send output to a temp file to check for irregularities
+  /opt/verb/serfs/inkdnsserialall > /opt/verb/conf/inkdns/serialall.tmp
+  ## If anything failed, output the status of each
+  if /usr/bin/grep -q 'Could not update DNS' /opt/verb/conf/inkdns/serialall.tmp; then
+    /usr/bin/cat /opt/verb/conf/inkdns/serialall.tmp
+  fi
+  ## Remove the temp file
+  /usr/bin/rm -f /opt/verb/conf/inkdns/serialall.tmp
 
   # Create the directories and configs
   /usr/bin/rm -rf /var/named/zones
