@@ -60,7 +60,7 @@ vnoremap <C-c> "+y
 nnoremap <C-p> "+p
 vnoremap <C-p> "+p
 syntax on' >> /etc/vimrc
-# >> /usr/share/vim/vimfiles/archlinux.vim
+# >> /usr/share/vim/vimfiles/archlinux.vim # The main file for Arch
 
 # SSH security
 sed -i "s/#PasswordAuthentication yes/PasswordAuthentication no/" /etc/ssh/sshd_config
