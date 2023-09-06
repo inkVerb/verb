@@ -1,0 +1,75 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This resets all DNS zone file serial numbers on the server
+## It loops through inkdnsserial for each entry in inkdns/zones inkdns/inkzones and inkdns/parked
+
+# How to use:
+## ./inkdnsserialall
+
+
+usagenotes="This resets all DNS zone file serial numbers on the server"
+usageformat="inkdnsserialall"
+usageexample="inkdnsserialall"
+hierarchy=(  )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkdnsinstall )
+prerequesite=(  )
+usedby=( inkdnsrefreshbind )
+useserfs=(  )
+useconfigs=( servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdnsserialall.replace" ]; then . /opt/verb/mods/inkdnsserialall.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdnsserialall.before" ]; then . /opt/verb/mods/inkdnsserialall.before; fi # Precedes this script
+
+
+# Verb domains
+if [ -d "/opt/verb/conf/inkdns/inkzones" ]; then
+  cd /opt/verb/conf/inkdns/inkzones
+  for zone in db.*; do
+    inkZone="$(/usr/bin/echo ${zone} | /usr/bin/sed 's/db\.//' )"
+    /opt/verb/serfs/inkdnsserial ${inkZone} verber
+    if [ "$?" = "0" ]; then
+      /usr/bin/echo "DNS serial updated for verb domain ${inkZone}"
+    else
+      /usr/bin/echo "Could not update DNS serial for served domain ${inkZone}"
+    fi
+  done
+fi
+
+# Served domains
+if [ -d "/opt/verb/conf/inkdns/zones" ]; then
+  cd /opt/verb/conf/inkdns/zones
+  for zone in db.*; do
+    inkZone="$(/usr/bin/echo ${zone} | /usr/bin/sed 's/db\.//' )"
+    /opt/verb/serfs/inkdnsserial ${inkZone}
+    if [ "$?" = "0" ]; then
+      /usr/bin/echo "DNS serial updated for served domain ${inkZone}"
+    else
+      /usr/bin/echo "Could not update DNS serial for served domain ${inkZone}"
+    fi
+  done
+fi
+
+# Parked domains
+if [ -d "/opt/verb/conf/inkdns/parked" ]; then
+  cd /opt/verb/conf/inkdns/parked
+  for zone in db.*; do
+    inkZone="$(/usr/bin/echo ${zone} | /usr/bin/sed 's/db\.//' )"
+    /opt/verb/serfs/inkdnsserial ${inkZone} parked
+    if [ "$?" = "0" ]; then
+      /usr/bin/echo "DNS serial updated for parked domain ${inkZone}"
+    else
+      /usr/bin/echo "Could not update DNS serial for served domain ${inkZone}"
+    fi
+  done
+fi
+
+
+
+if [ -e "/opt/verb/mods/inkdnsserialall.after" ]; then . /opt/verb/mods/inkdnsserialall.after; fi # Follows this script

@@ -36,6 +36,9 @@ if [ "${InkDNSStat}" = "INSTALLED" ]; then
   # Stop Bind
   /usr/bin/systemctl stop named
 
+  # Refresh all DNS zone serial numbers
+  /opt/verb/serfs/inkdnsserialall
+
   # Create the directories and configs
   /usr/bin/rm -rf /var/named/zones
   /usr/bin/cp -rf /opt/verb/conf/inkdns/zones /var/named/

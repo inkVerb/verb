@@ -5,12 +5,13 @@
 
 # How to use:
 ## ./inkdnsserial [ domain.tld ]
-## ./inkdnsserial [ domain.tld ] verber
+## ./inkdnsserial [ domain.tld ] [ verber|parked - must specify if a verb or parked domain ]
 
 usagenotes="This sets a new serial number for an existing DNS record in the inkDNS zone file on the server"
-usageformat="inkdnsserial [ domain.tld ] verber"
+usageformat="inkdnsserial [ domain.tld ] [ verber|parked - must specify if a verb or parked domain ]"
 usageexample="inkdnsserial inkisaverb.com
-inkdnsserial myself.verb.blue verber"
+inkdnsserial myself.verb.blue verber
+inkdnsserial parkeddomain.tld parked"
 hierarchy=( secondary )
 vsetnames=( "Domain" )
 vsettypes=( isDomain )
@@ -31,6 +32,8 @@ if [ -e "/opt/verb/mods/inkdnsserial.before" ]; then . /opt/verb/mods/inkdnsseri
 dnsDomain="$1"
 if [ -n $2 ] && [ "$2" = "verber" ]; then
   zonedir="inkzones"
+elif [ -n $2 ] && [ "$2" = "parked" ]; then
+  zonedir="parked"
 else
   zonedir="zones"
 fi
@@ -61,7 +64,8 @@ newSerial="0${newSerial}"; fi
 serno="${datestamp}${newSerial}\t\t; Serial No"
 ## Set it in the files
 /usr/bin/sed -i "/; Serial No/c ${serno}" /opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}
-
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+exit 0
 
 
 
