@@ -54,6 +54,13 @@ nnoremap <C-p> "+p
 vnoremap <C-p> "+p
 syntax on
 set number' > /root/.vimrc
+## Make them global, except line numbers
+/usr/bin/echo 'nnoremap <C-c> "+y
+vnoremap <C-c> "+y
+nnoremap <C-p> "+p
+vnoremap <C-p> "+p
+syntax on' >> /etc/vimrc
+# >> /usr/share/vim/vimfiles/archlinux.vim
 
 # SSH security
 sed -i "s/#PasswordAuthentication yes/PasswordAuthentication no/" /etc/ssh/sshd_config

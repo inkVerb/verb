@@ -8,6 +8,9 @@ These earlier steps assume creation of VPS instances described later
 - `rink.mynsdomain.tld` handles the rinks, so DNS records must be entered manually
 - all verb domains must point to `ns1.mynsdomain.tld` and `ns2.mynsdomain.tld` for NS records, along with all other domains that users plan to host
 
+# Installing Arch on a VPS
+Follow this guide: [Arch VPS Install](https://github.com/inkVerb/VIP/blob/master/Cheat-Sheets/Arch-VPS-Install.md)
+
 # Preparing the Rink server, NS servers, and Verber snapshots
 
 This presumes that your local machine is running Arch or Manjaro as your workstation
@@ -596,105 +599,6 @@ vultr-cli instance delete ID
 ssh-keyscan -H -p 22 IP4ADDRESS >> ~/.ssh/known_hosts
 ```
 
-# Reverse DNS workflow
-*These explain the workflow inside the serf scripts; a rink will manage these automatically*
-1. Add a domain on the regular verber, using normal tools like addomain
-2. The domain must be listed on the slave DNS rink using inkdns_slave serfs
-
-# Vultr Archlinux (https://www.vultr.com/docs/installing-2019-arch-linux-on-a-vultr-server)
-*This explains how to install Archlinux on a Vultr VPS instance from scratch*
-
-1. Vultr Arch ISO
-2. View Console
-3. In console:
-## Useful commands:
-lsblk # View partitions
-ping -c 1 archlinux.org # See if network is working
-
-## To set up disks: (commands by line)
-Enter
-```
-timedatectl set-ntp true
-pacman -Sy archlinux-keyring --noconfirm
-fdisk /dev/vda
-```
-Press: n, Enter (x5), w, Enter (x1)
-## Now disk is partitioned
-```
-mkfs.btrfs --label arch /dev/vda1
-mount /dev/disk/by-label/arch /mnt
-```
-## Now disk is mounted
-```
-pacstrap /mnt base linux linux-firmware --noconfirm
-genfstab -L /mnt >> /mnt/etc/fstab
-arch-chroot /mnt /bin/bash
-```
-## Now system is ready and automatically mounted to / at startup
-
-## Set up DHCP
-```
-cat <<EOF > /etc/systemd/network/enp1s0.network
-[Match]
-Name=enp1s0
-
-[Network]
-DHCP=ipv4
-EOF
-```
-
-## DHCP, DNS, resolv forwards
-```
-systemctl enable systemd-networkd
-systemctl enable systemd-resolved
-#ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf # redundant?
-```
-## Hosts
-```
-echo 'verber' > /etc/hostname
-cat <<EOF > /etc/hosts
-127.0.0.1 localhost
-127.0.1.1 verber.verberdomain verber
-::1 localhost
-EOF
-```
-
-## Rood password
-```
-passwd
-```
-
-## Grub
-```
-pacman -S grub --noconfirm
-grub-install --target=i386-pc /dev/vda
-sed 's/^GRUB_TIMEOUT=5$/GRUB_TIMEOUT=0/' -i /etc/default/grub
-grub-mkconfig -o /boot/grub/grub.cfg
-```
-
-## Exit chroot & poweroff
-```
-exit
-systemctl poweroff
-```
-
-## In Vultr settings: "Settings > Custom ISO > Remove ISO"
-```
-pacman -S sudo --noconfirm
-cp /etc/sudoers /etc/sudoers.new
-sed 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' -i /etc/sudoers.new
-visudo -c -f /etc/sudoers.new && mv /etc/sudoers.new /etc/sudoers
-```
-
-## SSH
-```
-pacman -S openssh --noconfirm
-sed 's/#Port 22/Port 22/' -i /etc/ssh/sshd_config
-systemctl enable --now sshd
-```
-
-## Now the server is ready to behave like a normal Arch installation
-
 ## cat in Arch_Vultr SSH key to root
 ```
 mkdir /root/.ssh
@@ -717,13 +621,14 @@ pacman -S vim git --noconfirm
 ## Install ssh keys
 ```
 mkdir /root/.ssh
-vim /root/.ssh/authorized_keys
+chmod 700 /root/.ssh
+vim /root/.ssh/authorized_keys # Paste in your keys
+chmod 600 /root/.ssh/authorized_keys
 ```
-## Paste in your keys
 
 ## Change port
 ```
-sed 's/#Port 22/Port 1222/' -i /etc/ssh/sshd_config
+sed -i 's/#Port 22/Port 1222/' /etc/ssh/sshd_config
 systemctl restart sshd
 ```
 
