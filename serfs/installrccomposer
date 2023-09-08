@@ -35,18 +35,18 @@ cd /srv/www/email/roundcube
 /usr/bin/cp composer.json-dist composer.json
 
 # Other plugins
-/usr/bin/sed -i '/"require": {/a "johndoh\/sauserprefs": ">=1.20.0"', /srv/www/email/roundcube/composer.json
-/usr/bin/sed -i '/"require": {/a "johndoh\/contextmenu": ">=3.3.1"', /srv/www/email/roundcube/composer.json
-/usr/bin/sed -i '/"require": {/a "prodrigestivill\/gravatar": ">=1.6"', /srv/www/email/roundcube/composer.json
-/usr/bin/sed -i '/"require": {/a "weird-birds\/thunderbird_labels": ">=0.6.3"', /srv/www/email/roundcube/composer.json
+/usr/bin/sed -i '/"require": {/a "johndoh\/sauserprefs": ">=1.20.0"', composer.json
+/usr/bin/sed -i '/"require": {/a "johndoh\/contextmenu": ">=3.3.1"', composer.json
+/usr/bin/sed -i '/"require": {/a "prodrigestivill\/gravatar": ">=1.6"', composer.json
+/usr/bin/sed -i '/"require": {/a "weird-birds\/thunderbird_labels": ">=0.6.3"', composer.json
 
 # Run the Composer installation
 ## Ignore requirements that trip false warnings: --ignore-platform-req=
 ## Use the www user so changes can be made to the web directory
-/usr/bin/su www -c 'php /srv/www/email/roundcube/composer.phar install -n --ignore-platform-req=php --ignore-platform-req=ext-gd --ignore-platform-req=ext-ldap --ignore-platform-req=ext-iconv'
+/usr/bin/su www -c 'php composer.phar install -n --ignore-platform-req=php --ignore-platform-req=ext-gd --ignore-platform-req=ext-ldap --ignore-platform-req=ext-iconv'
 ### Update if the install failed (for running later)
 if [ "$?" != "0" ]; then
-  /usr/bin/su www -c 'php /srv/www/email/roundcube/composer.phar update -n --ignore-platform-req=php --ignore-platform-req=ext-gd --ignore-platform-req=ext-ldap --ignore-platform-req=ext-iconv'
+  /usr/bin/su www -c 'php composer.phar update -n --ignore-platform-req=php --ignore-platform-req=ext-gd --ignore-platform-req=ext-ldap --ignore-platform-req=ext-iconv'
 fi
 
 # Confirm success status

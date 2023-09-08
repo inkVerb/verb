@@ -112,12 +112,12 @@ else
   /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
     USE spamass;
     CREATE TABLE IF NOT EXISTS userpref (
-    username varchar(100) NOT NULL default '',
-    preference varchar(50) NOT NULL default '',
-    value varchar(255) NOT NULL default '',
-    prefid int(11) NOT NULL auto_increment,
-    PRIMARY KEY  (prefid),
-    KEY username (username)
+      username varchar(100) NOT NULL default '',
+      preference varchar(50) NOT NULL default '',
+      value varchar(255) NOT NULL default '',
+      prefid int(11) NOT NULL auto_increment,
+      PRIMARY KEY  (prefid),
+      KEY username (username)
   ) ENGINE=MyISAM;"
 fi
 #### bayes_mysql
