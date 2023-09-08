@@ -121,7 +121,7 @@ $config['max_recipients'] = 50;
 $config['max_group_members'] = 50;
 
 // List of active plugins (in plugins/ directory)
-$config['plugins'] = array(  'archive',  'contextmenu',  'customizr',  'filesystem_attachments',  'gravatar',  'hide_blockquote',  'identity_select',  'jqueryui',  'markasjunk',  'newmail_notifier',  'password',  'sauserprefs',  'thunderbird_labels',  'vcard_attachments',  'virtuser_file',  'zipdownload');
+$config['plugins'] = array(  'archive',  'contextmenu',  'filesystem_attachments',  'gravatar',  'hide_blockquote',  'identity_select',  'jqueryui',  'markasjunk',  'newmail_notifier',  'password',  'sauserprefs',  'thunderbird_labels',  'vcard_attachments',  'virtuser_file',  'zipdownload');
 
 // the default locale setting (leave empty for auto-detection)
 // RFC1766 formatted language name like en_US, de_DE, de_CH, fr_FR, pt_BR
