@@ -56,11 +56,11 @@ if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
 
 # SpamAssassin
 ## Just making sure
-/usr/bin/mkdir -p /etc/mail/spamassassin
-/usr/bin/chmod 755 /etc/mail/spamassassin
 ## Other related files
-/usr/bin/mkdir -p /var/lib/dovecot/sieve/global_sieves /etc/mail/sa-update-keys /etc/mail/spamassassin/sa-update-keys
-/usr/bin/chown -R spamd:spamd /etc/mail/sa-update-keys /etc/mail/spamassassin/sa-update-keys
+/usr/bin/mkdir -p /var/lib/dovecot/sieve/global_sieves /etc/mail/sa-update-keys /etc/mail/spamassassin /etc/mail/spamassassin/sa-update-keys /etc/mail/sa-update-keys
+/usr/bin/chown -R spamd:spamd /etc/mail/spamassassin/ /etc/mail/sa-update-keys
+/usr/bin/chmod 755 /etc/mail/spamassassin
+/usr/bin/chmod 700 /etc/mail/spamassassin/sa-update-keys
 ## Update service
 /usr/bin/cat <<EOF > /etc/systemd/system/spamassassin-update.service
 [Unit]
@@ -85,6 +85,147 @@ Persistent=true
 
 [Install]
 WantedBy=timers.target
+EOF
+
+## Database # make-verber-* installs perl-dbd-mysql only for this, alongside mariadb
+sapassgen="$(/usr/bin/pwgen -s -1 5)"
+### Create the MySQL login .cnf
+/usr/bin/echo "[client]
+user = spamass
+password = spampass${sapassgen}
+database = spamass
+host = localhost
+" > /opt/verb/conf/sql/mysqldb.spamass.cnf
+/usr/bin/echo "ServerSpamPassApg=\"${sapassgen}"\" >> /opt/verb/conf/servermailpass
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
+CREATE DATABASE spamass DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+GRANT ALL PRIVILEGES ON spamass.* TO 'spamass'@'localhost' IDENTIFIED BY 'spampass${sapassgen}';
+FLUSH PRIVILEGES;"
+### SQL tables (try git first)
+cd ~ || exit 6
+/usr/bin/git clone https://github.com/apache/spamassassin.git
+#### userpref
+if [ -f "~/spamassassin/sql/userpref_mysql.sql" ]; then
+  /usr/bin/sed -i 's/TYPE/ENGINE/' ~/spamassassin/sql/userpref_mysql.sql
+  /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf spamass < ~/spamassassin/sql/userpref_mysql.sql
+else
+  /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
+    USE spamass;
+    CREATE TABLE IF NOT EXISTS userpref (
+    username varchar(100) NOT NULL default '',
+    preference varchar(50) NOT NULL default '',
+    value varchar(255) NOT NULL default '',
+    prefid int(11) NOT NULL auto_increment,
+    PRIMARY KEY  (prefid),
+    KEY username (username)
+  ) ENGINE=MyISAM;"
+fi
+#### bayes_mysql
+if [ -f "~/spamassassin/sql/bayes_mysql.sql" ]; then
+  /usr/bin/sed -i 's/TYPE/ENGINE/' ~/spamassassin/sql/bayes_mysql.sql
+  /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf spamass < ~/spamassassin/sql/bayes_mysql.sql
+else
+  /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
+    USE spamass;
+        
+    CREATE TABLE IF NOT EXISTS bayes_expire (
+      id int(11) NOT NULL default '0',
+      runtime int(11) NOT NULL default '0',
+      PRIMARY KEY  (id)
+    ) ENGINE=InnoDB;
+
+    CREATE TABLE IF NOT EXISTS bayes_global_vars (
+      variable varchar(30) NOT NULL default '',
+      value varchar(200) NOT NULL default '',
+      PRIMARY KEY  (variable)
+    ) ENGINE=InnoDB;
+
+    INSERT INTO bayes_global_vars VALUES ('VERSION','3');
+
+    CREATE TABLE IF NOT EXISTS bayes_seen (
+      id int(11) NOT NULL default '0',
+      msgid varchar(200) binary NOT NULL default '',
+      flag char(1) NOT NULL default '',
+      PRIMARY KEY  (id,msgid)
+    ) ENGINE=InnoDB;
+
+    CREATE TABLE IF NOT EXISTS bayes_token (
+      id int(11) NOT NULL default '0',
+      token binary(5) NOT NULL default '',
+      spam_count int(11) NOT NULL default '0',
+      ham_count int(11) NOT NULL default '0',
+      atime int(11) NOT NULL default '0',
+      PRIMARY KEY  (id, token),
+      INDEX bayes_token_idx1 (id, atime)
+    ) ENGINE=InnoDB;
+
+    CREATE TABLE IF NOT EXISTS bayes_vars (
+      id int(11) NOT NULL AUTO_INCREMENT,
+      username varchar(200) NOT NULL default '',
+      spam_count int(11) NOT NULL default '0',
+      ham_count int(11) NOT NULL default '0',
+      token_count int(11) NOT NULL default '0',
+      last_expire int(11) NOT NULL default '0',
+      last_atime_delta int(11) NOT NULL default '0',
+      last_expire_reduce int(11) NOT NULL default '0',
+      oldest_token_age int(11) NOT NULL default '2147483647',
+      newest_token_age int(11) NOT NULL default '0',
+      PRIMARY KEY  (id),
+      UNIQUE bayes_vars_idx1 (username)
+    ) ENGINE=InnoDB;"
+fi
+#### txrep_mysql
+if [ -f "~/spamassassin/sql/txrep_mysql.sql" ]; then
+  /usr/bin/sed -i 's/TYPE/ENGINE/' ~/spamassassin/sql/txrep_mysql.sql
+  /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf spamass < ~/spamassassin/sql/txrep_mysql.sql
+else
+  /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
+    USE spamass;
+    CREATE TABLE IF NOT EXISTS txrep (
+      username varchar(100) NOT NULL default '',
+      email varchar(255) NOT NULL default '',
+      ip varchar(40) NOT NULL default '',
+      msgcount int(11) NOT NULL default '0',
+      totscore float NOT NULL default '0',
+      signedby varchar(255) NOT NULL default '',
+      last_hit timestamp NOT NULL default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (username,email,signedby,ip),
+      KEY last_hit (last_hit)
+    ) ENGINE=InnoDB;"
+fi
+### Cleanup
+/usr/bin/rm -rf ~/spamassassin
+### Database in SA settings
+/usr/bin/cat <<EOF >> /etc/mail/spamassassin/local.cf
+
+## MySQL database setup
+# User scores
+user_scores_dsn             DBI:mysql:spamass:localhost
+user_scores_sql_username    spamass
+user_scores_sql_password    spampass${sapassgen}
+
+# Bayesian filter
+bayes_store_module          Mail::SpamAssassin::BayesStore::MySQL
+bayes_sql_dsn               DBI:mysql:spamass:localhost
+bayes_sql_username          spamass
+bayes_sql_password          spampass${sapassgen}
+
+# TxRep plugin
+txrep_factory               Mail::SpamAssassin::SQLBasedAddrList
+user_awl_dsn                DBI:mysql:spamass:localhost
+user_awl_sql_username       spamass
+user_awl_sql_password       spampass${sapassgen}
+EOF
+
+## Activate TxRep
+/usr/bin/sed -i 's/^# loadplugin Mail::SpamAssassin::Plugin::TxRep/loadplugin Mail::SpamAssassin::Plugin::TxRep/' /etc/mail/spamassassin/v341.pre
+/usr/bin/cat <<EOF >> /etc/mail/spamassassin/local.cf
+
+## TxRep
+header         TXREP   eval:check_senders_reputation()
+describe       TXREP   Score normalizing based on sender's reputation
+tflags         TXREP   userconf noautolearn
+priority       TXREP   1000
 EOF
 
 ## System service

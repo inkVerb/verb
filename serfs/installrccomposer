@@ -46,6 +46,15 @@ else
   composersuccess="true"
 fi
 
+## SauserPrefs plugin database setting
+
+/usr/bin/cat <<EOF >> /srv/www/email/roundcube/config/config.inc.php
+
+// saucerprefs plugin db settings
+\$config['sauserprefs_db_dsnw'] = 'mysql://spamass:${ServerSpamPassApg}${sapassgen}@localhost/spamass?new_link=true';
+EOF
+
+
 
 
 

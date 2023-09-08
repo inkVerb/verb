@@ -179,6 +179,7 @@ if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 /usr/bin/pacman -S --noconfirm --needed mariadb
 if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 /usr/bin/mariadb-install-db --user=mysql --basedir=/usr --datadir=/var/lib/mysql
+/usr/bin/pacman -S --noconfirm --needed perl-dbd-mysql # For Spamassassin's database
 ## Start it now so it works when we run the secure installation
 /usr/bin/systemctl enable mariadb; wait
 /usr/bin/systemctl start mariadb; wait
