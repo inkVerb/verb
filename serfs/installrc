@@ -182,12 +182,15 @@ fi
 /usr/bin/sed -i "s/if (PHP_VERSION_ID >= .*/if (PHP_VERSION_ID >= 110000) {/" /srv/www/email/roundcube/program/include/iniset.php
 
 # Sledgehammertime (Composer Plugins)
-## Download Composer
-cd /srv/www/email/roundcube
-/usr/bin/curl -s https://getcomposer.org/installer | php
-/usr/bin/cp composer.json-dist composer.json
 ## Run the Composer installation
 /opt/verb/serfs/installrccomposer
+
+## SauserPrefs plugin database setting
+/usr/bin/cat <<EOF >> /srv/www/email/roundcube/config/config.inc.php
+
+// saucerprefs plugin db settings
+\$config['sauserprefs_db_dsnw'] = 'mysql://spamass:${ServerSpamPassApg}${sapassgen}@localhost/spamass?new_link=true';
+EOF
 
 # Remove the installer so it is ready to go
 #/opt/verb/serfs/postinstallrc # uncomment when everything works
