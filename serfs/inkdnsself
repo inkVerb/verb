@@ -1,0 +1,99 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This sets the verber to be its own authoritative NS nameserver
+## This is mainly used for wildcard certbot certs because of DNS challenge requirements
+
+# How to use:
+## ./inkdnsself
+
+usagenotes="This sets the verber to be its own authoritative NS nameserver"
+usageformat="inkdnsself"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkdnsinstall )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servernameip siteurilist inklists/inkdnsnameservers )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdnsself.replace" ]; then . /opt/verb/mods/inkdnsself.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdnsself.before" ]; then . /opt/verb/mods/inkdnsself.before; fi # Precedes this script
+
+
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/inklists/inkdnsnameservers
+
+if [ "${VerberType}" != "Verber" ]; then
+  /usr/bin/echo "Not a verber, cannot self host DNS!"
+  exit 9
+fi
+
+
+# The default new domain file
+## SOA
+/usr/bin/sed -i "s/IN[[:blank:]]*SOA[[:blank:]]*${DefaultNS1}/IN  SOA \t${hostURI}/" /opt/verb/conf/inkdns/db.dnsdomain
+## Ensure the NS record
+if ! /usr/bin/grep -q '^@' /opt/verb/conf/inkdns/db.dnsdomain | /usr/bin/grep IN | /usr/bin/grep NS | /usr/bin/grep "${hostURI}." ; then
+  /usr/bin/sed -i "s/; Nameserver Defaults/; Nameserver Defaults\n@\t\tIN  NS\t\t${hostURI}./" /opt/verb/conf/inkdns/db.dnsdomain
+fi
+
+# Hosted zones
+cd /opt/verb/conf/inkdns/zones || exit 6
+for inkZoneDB in db.*; do
+  # Sanitize just to be safe
+  inkZone="$(/usr/bin/echo ${inkZoneDB} | /usr/bin/sed 's/db\.//' )"
+  if [ "${inkZone}" = '*' ]; then continue; fi
+  ## SOA
+  /usr/bin/sed -i "s/IN[[:blank:]]*SOA[[:blank:]]*${DefaultNS1}/IN  SOA \t${hostURI}/" db.${inkZone}
+  ## Ensure the NS record
+  if ! /usr/bin/grep -q '^@' db.${inkZone} | /usr/bin/grep IN | /usr/bin/grep NS | /usr/bin/grep "${hostURI}." ; then
+    /usr/bin/sed -i "s/; Nameserver Defaults/; Nameserver Defaults\n@\t\tIN  NS\t\t${hostURI}./" db.${inkZone}
+  fi
+done
+
+# Parked zones
+cd /opt/verb/conf/inkdns/parked || exit 6
+for inkZoneDB in db.*; do
+  # Sanitize just to be safe
+  inkZone="$(/usr/bin/echo ${inkZoneDB} | /usr/bin/sed 's/db\.//' )"
+  if [ "${inkZone}" = '*' ]; then continue; fi
+  ## SOA
+  /usr/bin/sed -i "s/IN[[:blank:]]*SOA[[:blank:]]*${DefaultNS1}/IN  SOA \t${hostURI}/" db.${inkZone}
+  ## Ensure the NS record
+  if ! /usr/bin/grep -q '^@' db.${inkZone} | /usr/bin/grep IN | /usr/bin/grep NS | /usr/bin/grep "${hostURI}." ; then
+    /usr/bin/sed -i "s/; Nameserver Defaults/; Nameserver Defaults\n@\t\tIN  NS\t\t${hostURI}./" db.${inkZone}
+  fi
+done
+
+# Verb zones
+cd /opt/verb/conf/inkdns/inkzones || exit 6
+for inkZoneDB in db.*; do
+  ## Sanitize just to be safe
+  inkZone="$(/usr/bin/echo ${inkZoneDB} | /usr/bin/sed 's/db\.//' )"
+  if [ "${inkZone}" = '*' ]; then continue; fi
+  ## SOA
+  /usr/bin/sed -i "s/IN[[:blank:]]*SOA[[:blank:]]*${DefaultNS1}/IN  SOA \t${hostURI}/" db.${inkZone}
+  ## Ensure the NS record
+  if ! /usr/bin/grep -q '@' db.${inkZone} | /usr/bin/grep IN | /usr/bin/grep NS | /usr/bin/grep "${hostURI}." ; then
+    /usr/bin/sed -i "s/; Nameserver Defaults/; Nameserver Defaults\n@\t\tIN  NS\t\t${hostURI}./" db.${inkZone}
+  fi
+done
+
+# Note the change
+/usr/bin/echo "VerberSelfDNS="TRUE"" >> /opt/verb/conf/servernameip
+
+# Finish
+/usr/bin/echo "Verber is now self-parking on its own nameserver
+
+Set your domain registrar to also use '${hostURI}' as one of the nameservers for this to take effect!
+"
+
+
+if [ -e "/opt/verb/mods/inkdnsself.after" ]; then . /opt/verb/mods/inkdnsself.after; fi # Follows this script

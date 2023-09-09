@@ -1074,9 +1074,9 @@ fi
 ## Box and PO
 ### These are added to inkCert cli-ini files here in setup, so they are added to DNS zone files also
 /usr/bin/sed -i "s/; Email Control Records/; Email Control Records\npo.${emailTLDURI}.  \tIN  A \t${ServerIPv4}\npo.${emailTLDURI}.  \tIN  AAAA \t${ServerIPv6}/" /opt/verb/conf/inkdns/inkzones/db.${emailTLDURI}
-/usr/bin/sed -i "s/; Email Control Records/; Email Control Records\n${ServerARPAIPv4} \tIN  PTR \tpo.${emailTLDURI}.\n${ServerARPAIPv6} \tIN  PTR \tpo.${emailTLDURI}./" /opt/verb/conf/inkdns/inkzones/nv.${emailTLDURI}
+/usr/bin/sed -i "s/; Email Control PTR Records/; Email Control PTR Records\n${ServerARPAIPv4} \tIN  PTR \tpo.${emailTLDURI}.\n${ServerARPAIPv6} \tIN  PTR \tpo.${emailTLDURI}./" /opt/verb/conf/inkdns/inkzones/nv.${emailTLDURI}
 /usr/bin/sed -i "s/; Email Control Records/; Email Control Records\nbox.${emailTLDURI}. \tIN  A \t${ServerIPv4}\nbox.${emailTLDURI}. \tIN  AAAA \t${ServerIPv6}/" /opt/verb/conf/inkdns/inkzones/db.${emailTLDURI}
-/usr/bin/sed -i "s/; Email Control Records/; Email Control Records\n${ServerARPAIPv4} \tIN  PTR \tbox.${emailTLDURI}.\n${ServerARPAIPv6} \tIN  PTR \tbox.${emailTLDURI}./" /opt/verb/conf/inkdns/inkzones/nv.${emailTLDURI}
+/usr/bin/sed -i "s/; Email Control PTR Records/; Email Control PTR Records\n${ServerARPAIPv4} \tIN  PTR \tbox.${emailTLDURI}.\n${ServerARPAIPv6} \tIN  PTR \tbox.${emailTLDURI}./" /opt/verb/conf/inkdns/inkzones/nv.${emailTLDURI}
 
 ## Set the itsql TLD URI
 /usr/bin/echo "

@@ -13,4 +13,4 @@
   - `sed` replaces Apache options in `/sites-available/inkisaverb.com.conf`
   - And will either:
     - Apply to subdomains thereof and all .conf files for its subdomains
-    - Not apply to subdomains if the certs were installed using the -s flag wtih `ink cert do -s`
+    - Not apply to subdomains if the certs were installed using the `-s` flag wtih `ink cert do -s`
