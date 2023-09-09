@@ -419,6 +419,7 @@ if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 /usr/bin/echo "include /etc/monit/monitrc.d/*" >> /etc/monitrc
 /usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/mysql /etc/monit/monitrc.d/
 /usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/nginx /etc/monit/monitrc.d/
+# These have their own monitoring resources and monit will conflict
 # /usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/acpid /etc/monit/monitrc.d/
 # /usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/memcached /etc/monit/monitrc.d/
 # /usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/sshd /etc/monit/monitrc.d/

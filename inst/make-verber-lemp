@@ -339,11 +339,12 @@ if [ "$?" != "0" ]; then e="$?"; /usr/bin/echo 'Failed: !!'; exit "$e"; fi
 /usr/bin/mkdir -p /etc/monit/monitrc.d
 #/usr/bin/sed -i "s?#  include /etc/monit.d?  include /etc/monit/monit.d?" /etc/monitrc
 /usr/bin/echo "include /etc/monit/monitrc.d/*" >> /etc/monitrc
-/usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/acpid /etc/monit/monitrc.d/
-/usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/nginx /etc/monit/monitrc.d/
-/usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/memcached /etc/monit/monitrc.d/
 /usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/mysql /etc/monit/monitrc.d/
-/usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/sshd /etc/monit/monitrc.d/
+/usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/nginx /etc/monit/monitrc.d/
+# These have their own monitoring resources and monit will conflict
+# /usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/acpid /etc/monit/monitrc.d/
+# /usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/memcached /etc/monit/monitrc.d/
+# /usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/sshd /etc/monit/monitrc.d/
 /usr/bin/systemctl enable monit; wait
 /usr/bin/systemctl start monit; wait
 

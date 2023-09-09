@@ -1,16 +1,41 @@
-This dev/ folder will be deleted upon running "setup"
-# Dev Notes
-DEV version numbers have an extra digit and never end in 0, skipping it. This reserves the final number of the stable channel for vital patches.
-eg:
-stable version: 1.04.00 (main release), 1.04.01 (vital update, no new features), 1.04.02 (vital update, no new features)
-develp version: 1.04.19, (NEVER 1.04.20), 1.04.21, 1.04.22
+This dev/ folder will be deleted upon running `setup`
 
-IMPORTANT: As of v0.86.00, serfs are being integrated into the "yeo" tool in the inkverb/yeo repo. This will manage the serfs by providing validation, help, and making them somewhat "mistake-proof". This is a work in progress, but will make this software ready for early beta testing.
+# Dev Notes
+
+Version numbers after the first decimal always use two digits and leading zeros: 1.05.00, never 1.5 nor 1.5.1 etc
+
+Developer release version numbers never end in 0. This reserves the final number of the stable channel for vital updates.
+
+eg:
+
+stable version examples:
+
+- 1.04.00 (main release with new features)
+- 1.04.10 (vital update, no new features)
+- 1.04.20 (vital update, no new features)
+- 1.05.00 (main release with new features)
+
+develper version examples:
+
+- 1.04.03 (developer testing release)
+- (NEVER 1.04.10)
+- 1.04.19 (developer testing release)
+- (NEVER 1.04.20)
+- 1.04.21 (developer testing release)
+- 1.04.22 (developer testing release)
 
 ## Note on Updates
-Note: Update version numbers reference the framework. Ongoing updates continue for the serfs, etc job scripts. Framework needs rated, sequential alteration, which is why "version" numbers apply to them. Any update will update job scripts, regardless of the current version number.
+Note: Update version numbers reference the framework. Ongoing updates continue for the serfs, etc job scripts. Framework needs version rated, sequential alteration, which is why "version" numbers apply to them. Any update will update job scripts and tools, regardless of the current version number.
 
 The "repo" update list at verb/configs/inklists/repoverlist is updated with each update. To customize this, refer to repolinks in the same directory for versions and hashes, and run setrepocust to have your changes stick.
+
+Files updated with `updateverber` can be seen at in several "Update..." blocks at the top of `verb-update/update` from the verb-update repo. These generally include:
+
+- verb/ink
+- verb/serfs
+- verb/donjon
+- verb/conf/lib
+- verb/conf/inklists/ (some files, never verberverno)
 
 ## File & Script Structure Basics
 
@@ -242,35 +267,59 @@ IX. Other notes
 	  - These entries would then be sorted and formed into proper `db.*` and `nv.*` files via `inkdnsrefreshbind`
 	- Another tool would allow dropping user prepared `db.*` and `nv.*` files into a `parked/domain.tld/` folder for validation
 
-## ink cli tool
+## serfs integration `ink`
 
-This is additional help information not included with `ink -h`
+IMPORTANT: As of v0.90.00, serfs are being integrated into the `ink` tool in verb/ink. This will manage the serfs by providing validation, help, and making them somewhat "mistake-proof". This is slowly rolling out to all serfs.
+
+Scripts in verb/serfs are called "serfs". These have comment instructions and notes at the head of each script. These notes could extend past 10 and 20 lines, usually `head serfname` could give a good understanding and possible usage examples of how a serf is used.
+
+The general serf help tool is the `info` serf, usage: `/opt/verb/serfs/info serfname`
+
+This `info` serf displays other "meta" information available in most serfs via BASH arrays, just below the commented instructions, usually beginning wtih `usagenotes=`. These explain more details about prerequesite serfs, included serfs, other serfs that include the given serf, verb/conf/ files used, and the regEx validation checks used by `ink` for arguments.
+
+The meta information is intended to be processed by the `serfs/info` serf, and the information will be displayed in an human readable arrangement in the terminal. This is for developers to understand serfs easily. The `vsettypes` and `vopttypes` arrays list, in respective order, the specific functions used by ink/ink.functions to validate those arguments when the serf is executed by the `ink` CLI command.
+
+While still in early development, not all serfs have these variables and arrays, especially if they are meant to be included deep within sub scripts and not used alone. Eventually, all serfs need these blocks. The meta block (along with the three `if` statements for `.replace`, `.before` & `.after` files in verb/mods/) are mandatory for a serf to be considered fully valid. No pull requests will be approved for new serfs not containing these blocks properly arranged.
+
+Using serfs directly is second preference to the `ink` command line tool, but may be 
+
+Much of the information found with the `info` serf is redundant in the verb/ink/help/*.md files, which explain more how the server is affected by `ink` commands. See the section below on using `ink` as the primary command line tool.
+
+
+## ink CLI tool
+
+`ink` is the CLI for a verber, handling most common commands needed to maintain a server. This section provides additional help information not included with `ink -h`...
 
 ### Dev & Debug options
-These will not display in Help menues for individual actions and schema, only here:
+These will not display in Help menues for individual actions and schema, only here in these notes!
 
--v Verbose output (no log): ink [ action ] [ schema ] [ args & -flags ] -v
+Additional `ink` flags:
+
+`-v` Verbose output (no log): `ink [ action ] [ schema ] [ args & -flags ] -v`
 Normally, all output (STDERR & STDOUT) goes to: ink/log/outputlog
-With the -v flag, all output (STDERR & STDOUT) will go to the terminal, rather than to ink/log/outputlog
+With the `-v` flag, all output (STDERR & STDOUT) will go to the terminal, rather than to ink/log/outputlog
 This is for developers wanting to watch what happens on the server live
 However, output goes to either ink/log/outputlog or terminal
-If you want output both in the terminal and a file, use '-v | tee custom_log_file' at the end of your 'ink' command for your own output file
+If you want output both in the terminal and a file, use `-v | tee custom_log_file` at the end of your `ink` command for your own output file
 
--c CLI: ink [ action ] [ schema ] [ args & -flags ] -c
-This will display only the 'serf/' script command that results from the 'ink' CLI command
+`-c` CLI: `ink [ action ] [ schema ] [ args & -flags ] -c`
+This will display only the 'serf/' script command that results from the `ink` CLI command
 
--r Richtext response: ink [ action ] [ schema ] [ args & -flags ] -r
+`-r` Richtext response: `ink [ action ] [ schema ] [ args & -flags ] -r`
 Success/fail ourput will use HTML vsuccess/verror classes (success/error, respectively)
 
 ### SDK
-#### The 'ink' command prepares scripts based on getopts arguments
+
+verb supports mods!
+
+#### The `ink` command prepares scripts based on getopts arguments
 - These are sorted and validated in ink/*.ink files
   - Validation happens through functions in ink/ink.functions
-- Help files are in ink/help/*.md files, output with -h for actions and schema
+- Help files are in ink/help/*.md files, output with `-h` for actions and schema
 - The result in a script command at serfs/*
+
 #### Writing your own mods
-- Every 'serf/' script includes these files if they exist in 'mods/'
-  - SERFNAME.replace - Replaces the entire script and finishes with 'return'
+- Every serf script includes these files if they exist in verb/mods/
+  - SERFNAME.replace - Replaces the entire script and finishes with `return`
   - SERFNAME.before - Runs before anything in the script starts
   - SERFNAME.after - Runs after everything in the script finishes
-- Using the -c flag can be useful to identify which 'serf/*' script with arguments runs as a result of the 'ink ...' command
