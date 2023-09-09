@@ -1,0 +1,64 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This removes the Roundcube database
+## Prerequisite: Uninstall Roundcube using installrcremove
+
+
+# How to use:
+## ./installrcremovedb
+
+
+usagenotes="This removes the Roundcube database"
+usageformat="installrcremovedb"
+usageexample="installrcremovedb"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( installrcremove )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servermailpass servermailpath )	# List config files of any kind used in this serf, please preserve order of appearance
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/installrcremovedb.replace" ]; then . /opt/verb/mods/installrcremovedb.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installrcremovedb.before" ]; then . /opt/verb/mods/installrcremovedb.before; fi # Precedes this script
+
+
+cVappName="roundcube"
+
+# Include the config files
+. /opt/verb/conf/servermailpass
+. /opt/verb/conf/servermailpath
+
+# Check if uninstalled
+if [ "${ServerRCPath}" != "RC_NOT_INSTALLED" ]; then
+/bin/echo "
+Roundcube is installed; cannot remove database.
+"
+exit 0; fi
+if [ "${ServerRCPassApg}" = "NOT_INSTALLED" ]; then
+/bin/echo "
+Roundcube has no database to remove; nothing to do.
+"
+exit 0; fi
+
+# Drop database and user
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
+DROP DATABASE rcmail DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+DROP USER 'rcmailusr'@'localhost';
+FLUSH PRIVILEGES;"
+
+# Remove db password appendage
+/usr/bin/sed -i "s/ServerRCPassApg.*/ServerRCPassApg=\"NOT_INSTALLED\"/g" /opt/verb/conf/servermailpass
+
+# Finish
+/usr/bin/echo "Roundcube database successfully deleted"
+
+
+
+if [ -e "/opt/verb/mods/installrcremovedb.after" ]; then . /opt/verb/mods/installrcremovedb.after; fi # Follows this script

@@ -4,8 +4,8 @@
 # This uninstalls Roundcube
 ## Prerequisite: Roundcube must be installed using installrc
 ## Sometimes Roundcube acts up and needs a fresh start. This supplies that
-## This does not remove the Roundcube database
-##DEV another serf needs to be created that only removes the Roundcube database and resets ServerRCPassApg="NOT_INSTALLED" in servermailpass
+## This does not remove the Roundcube database, which can only be done by installrcremovedb after this is complete
+## Removing the database is optional; Roundcube can be re-installed with installrc after removing it with this, even without removing the database via installrcremovedb 
 
 # How to use:
 ## ./installrcremove
@@ -36,7 +36,7 @@ if [ -e "/opt/verb/mods/installrcremove.before" ]; then . /opt/verb/mods/install
 
 # Check if even installed
 if [ ${ServerRCPath} = "RC_NOT_INSTALLED" ]; then
-/bin/echo "
+/usr/bin/echo "
 Roundcube is not installed; nothing to uninstall.
 "
 exit 0; fi
@@ -47,6 +47,8 @@ exit 0; fi
 # Cleanup
 /usr/bin/sed -i "s/ServerRCPath.*/ServerRCPath=\"RC_NOT_INSTALLED\"/g" /opt/verb/conf/servermailpath
 
+# Finish
+/usr/bin/echo "Roundcube completely removed, but the database is still in tact"
 
 
 if [ -e "/opt/verb/mods/installrcremove.after" ]; then . /opt/verb/mods/installrcremove.after; fi # Follows this script
