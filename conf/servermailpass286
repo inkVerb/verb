@@ -1,2 +1,3 @@
 ServerMailPassApg="EMAIL_NOT_INSTALLED"
-ServerBoxPassApg="RC_NOT_INSTALLED"
+ServerBoxPassApg="NOT_INSTALLED"
+ServerRCPassApg="NOT_INSTALLED"

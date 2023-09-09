@@ -1,0 +1,52 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This uninstalls Roundcube
+## Prerequisite: Roundcube must be installed using installrc
+## Sometimes Roundcube acts up and needs a fresh start. This supplies that
+## This does not remove the Roundcube database
+##DEV another serf needs to be created that only removes the Roundcube database and resets ServerRCPassApg="NOT_INSTALLED" in servermailpass
+
+# How to use:
+## ./installrcremove
+
+
+usagenotes="This uninstalls Roundcube"
+usageformat="installrcremove"
+usageexample="installrcremove"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=( "" )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( installrc )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servermailpath )	# List config files of any kind used in this serf, please preserve order of appearance
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/installrcremove.replace" ]; then . /opt/verb/mods/installrcremove.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installrcremove.before" ]; then . /opt/verb/mods/installrcremove.before; fi # Precedes this script
+
+
+# Include the config files
+. /opt/verb/conf/servermailpath
+
+# Check if even installed
+if [ ${ServerRCPath} = "RC_NOT_INSTALLED" ]; then
+/bin/echo "
+Roundcube is not installed; nothing to uninstall.
+"
+exit 0; fi
+
+# Remove the web folder
+/usr/bin/rm -rf /srv/www/email/roundcube
+
+# Cleanup
+/usr/bin/sed -i "s/ServerRCPath.*/ServerRCPath=\"RC_NOT_INSTALLED\"/g" /opt/verb/conf/servermailpath
+
+
+
+if [ -e "/opt/verb/mods/installrcremove.after" ]; then . /opt/verb/mods/installrcremove.after; fi # Follows this script

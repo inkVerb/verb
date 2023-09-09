@@ -44,26 +44,21 @@ cVappName="postfixadmin"
 . /opt/verb/conf/servermailpath
 
 # Check dependencies and to see if already installed
-if [ ${ServerMailStatus} != "VMAIL_SERVER" ]; then
+if [ "${ServerMailStatus}" != "VMAIL_SERVER" ]; then
 /bin/echo "
 The email server must be installed first. Run: installpostfix
 "
 exit 8; fi
-if [ ${ServerPFAPath} = "PFA_NOT_ALLOWED" ]; then
+if [ "${ServerPFAPath}" = "PFA_NOT_ALLOWED" ]; then
 /bin/echo "
 This is a backup email server and PostfixAdmin is not allowed.
 "
 exit 0; fi
-if [ ${ServerPFAPath} != "PFA_NOT_INSTALLED" ]; then
+if [ "${ServerPFAPath}" != "PFA_NOT_INSTALLED" ]; then
 /bin/echo "
 PostfixAdmin is already installed.
 "
 exit 0; fi
-if [ ${ServerMailStatus} = "EMAIL_NOT_INSTALLED" ]; then
-/bin/echo "
-Email is not yet installed, do that first.
-"
-exit 8; fi
 if /bin/grep -Fq "Email Control Records" /opt/verb/conf/inkdns/inkzones/db.${emailTLDURI}; then
 /bin/echo "Proceeding..."; else
 /bin/echo "
@@ -157,10 +152,6 @@ elif [ "${InkCerted}" = "DONE_CBSINGLE" ]; then
 elif [ "${InkCerted}" = "DONE_SC" ]; then
   /opt/verb/serfs/inkcertaddsc po.${emailURI}
 fi
-
-# DNS
-/bin/sed -i "s/; Email Control Records/; Email Control Records\npo.${emailTLDURI}. \tIN  A \t${ServerIPv4}\npo.${emailTLDURI}. \tIN  AAAA \t${ServerIPv6}/" /opt/verb/conf/inkdns/inkzones/db.${emailTLDURI}
-/bin/sed -i "s/; Email Control Records/; Email Control Records\n${ServerARPAIPv4} \tIN  PTR \tpo.${emailTLDURI}.\n${ServerARPAIPv6} \tIN  PTR \tpo.${emailTLDURI}./" /opt/verb/conf/inkdns/inkzones/nv.${emailTLDURI}
 
 # Write the config
 /bin/sed -i "s/ServerPFAPath.*/ServerPFAPath=\"${pfaFolder}\"/g" /opt/verb/conf/servermailpath
