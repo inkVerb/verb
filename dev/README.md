@@ -155,10 +155,23 @@ IV. The "donjon" - assets or "native apps"
 V. inklists is meant for lists and repoes
 	A. It contains universal, non-verber-specific config files that get updated regularly with the updateverber serf, such as version info
 	B. It may contain more files once certain apps are installed
+VI. conf is for configs and assets
+    A. It contains various folders that are modified by `setup` and used elsewhere to manage the server
+		- Some of these match the name of serfs that utilize them (not changed by `updateverber`)
+			- inkdns (where DNS Zone files originate, either as ghost-master files or records you need to manually create where your domains are parked)
+			- inkcert
+		- site-files (for domain hosting configs and default web folders)
+			- Not changed by `updateverber`
+		- inklists (version numbers, including web app install versions and download package confirmation hashes used by the `inkget` serf)
+			- Some files updated with `updateverber`
+		- lib (assets used by instal serfs)
+			- Folder is entirely replaced with `updateverber`
+		- sql (created on installation, where database configs and `mariadb` .cnf files are stored by the system)
+			- Not changed by `updateverber`
 
-VI. tools contains common files and special root serfs needed for other CLI Clients logging in to do jobs on the verber (may be phased out)
+VII. tools contains common files and special root serfs needed for other CLI Clients logging in to do jobs on the verber (may be phased out)
 
-VII. Special user services and folders
+VIII. Special user services and folders
 	A. VIP (tech tools)
 		1. VIP users are often known as "ftpvips" created by newftpvip, sharing the srv/vip folder as "home", granting wide access to all other users' spaces
 		2. VIP governs many other special users and folders for FTP, web control, directly managing files for "vipdomains" via the serf adddomainvip or adddomainfiler
@@ -179,7 +192,7 @@ VII. Special user services and folders
 		3. Bosses do not have direct access to config files in their home folders
 		4. The "boss box" is at local/verb/boss, but boss home folders are in home/
 
-VIII. Server names
+IX. Server names
 	A. The hostname of your server will be the main TLD
 		1. For a normal, stand-alone, this means it will be: ink.YOURNAME.verb.ink
 		2. For secondary installs, it will be such as blue.YOURNAME.verb.blue, etc.
@@ -192,7 +205,7 @@ VIII. Server names
 			- Still uses the same file structure for inkVerb apps in the www/html directory
 			- Retains nearly all other capabilities on the actual server
 
-IX. Other notes
+X. Other notes
 	A. Exit codes from bash scripts
 		1. Scripts are ordered to minimize damage if exited from an error. WordPress, for example, will finish the basic install requirements before attempting a plugin download.
 		2. Note: All bash scropts have a `set -e` declaration, so included scripts that `exit` other than `0` will abort the entire process. Here are some codes:
@@ -211,6 +224,42 @@ IX. Other notes
 		2. Many "if" checks and "usage" messages could be included in serfs, but are not because the user should more or less know what he is doing. Such errors will be in the yoeman tool for easier command line use and a GUI.
 		3. The main purpose of "if" checks is for complex situations or to provide contingency alternatives for factors outside of the verber, such as failing to download a webapp for installation.
 		4. Generally, failed "plugins" won't break an entire script; failing to download the core webapp will `exit 4` and the webapp won't be installed at all.
+XI. Web host directory structure
+	A. The /srv/www folder:
+		- html: where all web folders link to and are found via apache or nginx config files
+		- domains: hosted domains default web folders (keeping things simple for FTP client managent of personal projects)
+		- email: roundcube & pfa apps
+			- These apps are known as "Box" and "PO" at box. and po. subdomains of verb.email
+		- forwards: where forwarding files go when a domain is set to forward
+		- mailcatch: web folder greeting for mail subdomains (ie: mail. smtp. imap. pop.), used in SSL validation
+		- one: used by verb.one subdomains, highly customizable
+		- vapps: where most serfs install non-email web apps, such as Nextcloud and WordPress for specific domains
+			- WordPress uses a `wp.` prefix on the name of the domain it is installed to
+		- verb: where *.verb.* domain folders are hosted
+	B. Hosting services (LAEMP/LAMP/LEMP)
+		- The primary preferred stack is LAEMP, using an Apache-Nginx reverse proxy
+			- This works very well with all the main web apps and services used on a verber
+			- The LAMP or LEMP servers should only be used in special cases
+			- The decision of LAEMP/LAMP/LEMP is decided by `verb/inst/make-verber-*` scripts run before `setup`
+		- The actual services are:
+			- `nginx` (Nginx)
+			- `httpd` (Apache)
+		- The web user is: `www` (not `www-data` nor `apache` etc)
+		- The actual nginx & httpd .conf files are located in: verb/conf/webserver
+			- These are structured as 'sites-available/nginx' etc, not `nginx/sites-available` (making CLI navigation easier)
+			- These are linked to the normal locations, ie:
+				- `/etc/nginx/sites-available -> /opt/verb/conf/webserver/sites-available/nginx`
+				- `/etc/httpd/sites-available -> /opt/verb/conf/webserver/sites-available/httpd`
+			- Properly enable sites with the `ensitenginx` and `ensiteapache` serfs, but normal links should also work
+		- php.ini is at verb/conf/php.ini and linked to /etc/php/php.ini (so you don't need to hunt for it)
+XII. Mounted volumes
+	- Volume mounting is an option, placing man of the web hosted folders at various places on SSD and HDD mounted volumes
+		- This is handled by the Rink, which creates and manages verb VPS instances in the first place. If you are managing a stand-alone verber installed manually, mounted volume systems will simply be non-existant by the system. But, don't delete any volume config files because the framework still depends on them, even if to remain at their default values.
+	- Volumes actually reside in /mnt/
+	- When SSD is mounted, entire web app folders are automatically installed to the SSD volume in /mnt/
+	- When HDD is mounted, media and data folders (ie wp-content or nextcloud/data) are installed to the HDD volume in /mnt/
+	- The serfs and verb framework is very good at automatically detecting where things go
+	- Adding a volume after a web app is installed is generally no problem since the mounting scripts simply move the folders described in the section on web host directories
 
 ## Specific Script Families & `ink` tools
 
@@ -285,7 +334,6 @@ Using serfs directly is second preference to the `ink` command line tool, but ma
 
 Much of the information found with the `info` serf is redundant in the verb/ink/help/*.md files, which explain more how the server is affected by `ink` commands. See the section below on using `ink` as the primary command line tool.
 
-
 ## ink CLI tool
 
 `ink` is the CLI for a verber, handling most common commands needed to maintain a server. This section provides additional help information not included with `ink -h`...
@@ -309,7 +357,6 @@ This will display only the 'serf/' script command that results from the `ink` CL
 Success/fail ourput will use HTML vsuccess/verror classes (success/error, respectively)
 
 ### SDK
-
 verb supports mods!
 
 #### The `ink` command prepares scripts based on getopts arguments
