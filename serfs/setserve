@@ -93,13 +93,13 @@ fi
 /bin/echo "; Subdomain PTR Records Added by inkDNS ${serveURI}" >> /opt/verb/conf/inkdns/inkzones/nv.${!nServeURI}
 ## IP4?
 if [ "${ServerIPv4}" != "NOIP4" ]; then
-  /bin/echo "${serveURI}   IN  A    ${ServerIPv4}" >> /opt/verb/conf/inkdns/inkzones/db.${!nServeURI}
-  /bin/echo "${ServerARPAIPv4}  IN  PTR  ${serveURI}" >> /opt/verb/conf/inkdns/inkzones/nv.${!nServeURI}
+  /bin/echo "${serveURI}.   IN  A    ${ServerIPv4}" >> /opt/verb/conf/inkdns/inkzones/db.${!nServeURI}
+  /bin/echo "${ServerARPAIPv4}  IN  PTR  ${serveURI}." >> /opt/verb/conf/inkdns/inkzones/nv.${!nServeURI}
 fi
 ## IP6?
 if [ "${ServerIPv6}" != "NOIP6" ]; then
-  /bin/echo "${serveURI}   IN  AAAA   ${ServerIPv6}" >> /opt/verb/conf/inkdns/inkzones/db.${!nServeURI}
-  /bin/echo "${ServerARPAIPv6}  IN  PTR  ${serveURI}" >> /opt/verb/conf/inkdns/inkzones/nv.${!nServeURI}
+  /bin/echo "${serveURI}.   IN  AAAA   ${ServerIPv6}" >> /opt/verb/conf/inkdns/inkzones/db.${!nServeURI}
+  /bin/echo "${ServerARPAIPv6}  IN  PTR  ${serveURI}." >> /opt/verb/conf/inkdns/inkzones/nv.${!nServeURI}
 fi
 
 ## Set the Serial No

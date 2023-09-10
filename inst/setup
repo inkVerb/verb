@@ -1051,47 +1051,59 @@ fi
 ## Include config
 . /opt/verb/conf/servernameip
 
-# Serve URI
-/opt/verb/serfs/setserve
-
 # Set the FQDN host (only for normal verbers)
 if [ ! -f "/opt/verb/conf/inkdns/sdns/dnshost" ]; then
   /usr/bin/echo "
   ; FQDN Host Records
   ${hostURI}.	IN  A		hostipv4286
-  ${hostURI}.	IN  AAAA	hostipv6286" >> /opt/verb/conf/inkdns/inkzones/db.${nameURI}
+  ${hostURI}.	IN  AAAA	hostipv6286
+  " >> /opt/verb/conf/inkdns/inkzones/db.${serverTLD}
   /usr/bin/echo "
   ; FQDN PTR Host Records
   hostarpaipv4286  IN  PTR  ${hostURI}.
-  hostarpaipv6286  IN  PTR  ${hostURI}." >> /opt/verb/conf/inkdns/inkzones/nv.${nameURI}
+  hostarpaipv6286  IN  PTR  ${hostURI}.
+  " >> /opt/verb/conf/inkdns/inkzones/nv.${serverTLD}
 fi
 
 ## Set the email TLD URI
 /usr/bin/echo "
-; Email Control Records" >> /opt/verb/conf/inkdns/inkzones/db.${SvMailTLD}
+; Email Control Records
+" >> /opt/verb/conf/inkdns/inkzones/db.${SvMailTLD}
 /usr/bin/echo "
-; Email Control PTR Records" >> /opt/verb/conf/inkdns/inkzones/nv.${SvMailTLD}
+; Email Control PTR Records
+" >> /opt/verb/conf/inkdns/inkzones/nv.${SvMailTLD}
 ## Box and PO
 ### These are added to inkCert cli-ini files here in setup, so they are added to DNS zone files also
-/usr/bin/sed -i "s/; Email Control Records/; Email Control Records\npo.${emailTLDURI}.  \tIN  A \t${ServerIPv4}\npo.${emailTLDURI}.  \tIN  AAAA \t${ServerIPv6}/" /opt/verb/conf/inkdns/inkzones/db.${emailTLDURI}
-/usr/bin/sed -i "s/; Email Control PTR Records/; Email Control PTR Records\n${ServerARPAIPv4} \tIN  PTR \tpo.${emailTLDURI}.\n${ServerARPAIPv6} \tIN  PTR \tpo.${emailTLDURI}./" /opt/verb/conf/inkdns/inkzones/nv.${emailTLDURI}
-/usr/bin/sed -i "s/; Email Control Records/; Email Control Records\nbox.${emailTLDURI}. \tIN  A \t${ServerIPv4}\nbox.${emailTLDURI}. \tIN  AAAA \t${ServerIPv6}/" /opt/verb/conf/inkdns/inkzones/db.${emailTLDURI}
-/usr/bin/sed -i "s/; Email Control PTR Records/; Email Control PTR Records\n${ServerARPAIPv4} \tIN  PTR \tbox.${emailTLDURI}.\n${ServerARPAIPv6} \tIN  PTR \tbox.${emailTLDURI}./" /opt/verb/conf/inkdns/inkzones/nv.${emailTLDURI}
+/usr/bin/sed -i "s/; Email Control Records/; Email Control Records\npo.${emailTLDURI}.  \tIN  A \t${ServerIPv4}\npo.${emailTLDURI}.  \tIN  AAAA \t${ServerIPv6}/" /opt/verb/conf/inkdns/inkzones/db.${SvMailTLD}
+/usr/bin/sed -i "s/; Email Control PTR Records/; Email Control PTR Records\n${ServerARPAIPv4} \tIN  PTR \tpo.${emailTLDURI}.\n${ServerARPAIPv6} \tIN  PTR \tpo.${emailTLDURI}./" /opt/verb/conf/inkdns/inkzones/nv.${SvMailTLD}
+/usr/bin/sed -i "s/; Email Control Records/; Email Control Records\nbox.${emailTLDURI}. \tIN  A \t${ServerIPv4}\nbox.${emailTLDURI}. \tIN  AAAA \t${ServerIPv6}/" /opt/verb/conf/inkdns/inkzones/db.${SvMailTLD}
+/usr/bin/sed -i "s/; Email Control PTR Records/; Email Control PTR Records\n${ServerARPAIPv4} \tIN  PTR \tbox.${emailTLDURI}.\n${ServerARPAIPv6} \tIN  PTR \tbox.${emailTLDURI}./" /opt/verb/conf/inkdns/inkzones/nv.${SvMailTLD}
 
 ## Set the itsql TLD URI
 /usr/bin/echo "
-; IT Control Records" >> /opt/verb/conf/inkdns/inkzones/db.${ITsqlTLD}
+; IT Control Records
+" >> /opt/verb/conf/inkdns/inkzones/db.${ITsqlTLD}
 /usr/bin/echo "
-; IT Control PTR Records" >> /opt/verb/conf/inkdns/inkzones/nv.${ITsqlTLD}
+; IT Control PTR Records
+" >> /opt/verb/conf/inkdns/inkzones/nv.${ITsqlTLD}
 ### IPv4?
 if [ -n "${ServerIPv4}" ] && [ "${ServerIPv4}" != "NOIP4" ]; then
-  /usr/bin/echo "sql.${itsqlTLDURI}.	IN  A		hostipv4286" >> /opt/verb/conf/inkdns/inkzones/db.${ITsqlTLD}
-  /usr/bin/echo "sql.${itsqlTLDURI}.	IN  AAAA		hostipv6286" >> /opt/verb/conf/inkdns/inkzones/db.${ITsqlTLD}
-  /usr/bin/echo "hostarpaipv4286  IN  PTR  sql.${itsqlTLDURI}." >> /opt/verb/conf/inkdns/inkzones/nv.${ITsqlTLD}
+  # /usr/bin/echo "sql.${itsqlTLDURI}.	IN  A		hostipv4286" >> /opt/verb/conf/inkdns/inkzones/db.${ITsqlTLD}
+  # /usr/bin/echo "sql.${itsqlTLDURI}.	IN  AAAA		hostipv6286" >> /opt/verb/conf/inkdns/inkzones/db.${ITsqlTLD}
+  #DEV above two properly replaced below
+  /usr/bin/sed -i "s/; IT Control Records/; IT Control Records\nsql.${itsqlTLDURI}. \tIN  A \thostipv4286\nsql.${itsqlTLDURI}. \tIN  AAAA \thostipv6286/" /opt/verb/conf/inkdns/inkzones/db.${ITsqlTLD}
+  # /usr/bin/echo "hostarpaipv4286  IN  PTR  sql.${itsqlTLDURI}." >> /opt/verb/conf/inkdns/inkzones/nv.${ITsqlTLD}
+  #DEV above one properly replaced with both v4 and v6 below
+  /usr/bin/sed -i "s/; IT Control PTR Records/; IT Control PTR Records\nhostarpaipv4286 \tIN  PTR \tsql.${itsqlTLDURI}.\nhostarpaipv6286 \tIN  PTR \tsql.${itsqlTLDURI}./" /opt/verb/conf/inkdns/inkzones/nv.${ITsqlTLD}
+
 ### IPv6?
 elif [ -n "${ServerIPv6}" ] && [ "${ServerIPv6}" != "NOIP6" ]; then
-  /usr/bin/echo "sql.${itsqlTLDURI}.	IN  AAAA	hostipv6286" >> /opt/verb/conf/inkdns/inkzones/db.${ITsqlTLD}
-  /usr/bin/echo "hostarpaipv6286  IN  PTR  sql.${itsqlTLDURI}." >> /opt/verb/conf/inkdns/inkzones/nv.${ITsqlTLD}
+  # /usr/bin/echo "sql.${itsqlTLDURI}.	IN  AAAA	hostipv6286" >> /opt/verb/conf/inkdns/inkzones/db.${ITsqlTLD}
+  #DEV above properly replaced below
+  /usr/bin/sed -i "s/; IT Control Records/; IT Control Records\n\nsql.${itsqlTLDURI}. \tIN  AAAA \thostipv6286/" /opt/verb/conf/inkdns/inkzones/db.${ITsqlTLD}
+  # /usr/bin/echo "hostarpaipv6286  IN  PTR  sql.${itsqlTLDURI}." >> /opt/verb/conf/inkdns/inkzones/nv.${ITsqlTLD}
+  #DEV above properly replaced below
+  /usr/bin/sed -i "s/; IT Control PTR Records/; IT Control PTR Records\nhostarpaipv6286 \tIN  PTR \tsql.${itsqlTLDURI}./" /opt/verb/conf/inkdns/inkzones/nv.${ITsqlTLD}
 fi
 
 ## Set the namespace, TLD, and IP values
@@ -1128,9 +1140,7 @@ fi
 /usr/bin/sed -i "s/hostdomain286/${vipURI}/g" /opt/verb/conf/inkdns/inkzones/nv.vip
 /usr/bin/sed -i "s/hostdomain286/${kiwiURI}/g" /opt/verb/conf/inkdns/inkzones/nv.kiwi
 /usr/bin/sed -i "s/hostdomain286/${redURI}/g" /opt/verb/conf/inkdns/inkzones/nv.red
-## Set host FQDN
-#/usr/bin/sed -i "s/;; End Root Site Defaults/${hostURI}\.\t\tIN  A\t\t${ServerIPv4}\n${hostURI}\.\t\tIN  AAAA\t${ServerIPv6}\n;; End Root Site Defaults/" /opt/verb/conf/inkdns/inkzones/db.${serverTLD}
-## Set the URI names
+## Set the URI names from the simple tld names
 /usr/bin/mv /opt/verb/conf/inkdns/inkzones/db.email /opt/verb/conf/inkdns/inkzones/db.${emailURI}
 /usr/bin/mv /opt/verb/conf/inkdns/inkzones/db.one /opt/verb/conf/inkdns/inkzones/db.${oneURI}
 /usr/bin/mv /opt/verb/conf/inkdns/inkzones/db.ink /opt/verb/conf/inkdns/inkzones/db.${inkURI}
@@ -1145,6 +1155,8 @@ fi
 /usr/bin/mv /opt/verb/conf/inkdns/inkzones/nv.vip /opt/verb/conf/inkdns/inkzones/nv.${vipURI}
 /usr/bin/mv /opt/verb/conf/inkdns/inkzones/nv.kiwi /opt/verb/conf/inkdns/inkzones/nv.${kiwiURI}
 /usr/bin/mv /opt/verb/conf/inkdns/inkzones/nv.red /opt/verb/conf/inkdns/inkzones/nv.${redURI}
+## Serve URI (depends on full name of db. files)
+/opt/verb/serfs/setserve
 ## Serial Nos
 cd /opt/verb/conf/inkdns/inkzones || exit 6
 for inkZoneDB in db.*; do

@@ -16,7 +16,7 @@ $ORIGIN hostdomain286.
 @		IN  AAAA	hostipv6286
 ;; End Root Site Defaults
 
-; Hostname Record Defaults
+; Site Record Defaults
 b.hostdomain286.		IN  A		hostipv4286
 b.hostdomain286.		IN  AAAA	hostipv6286
 
