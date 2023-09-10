@@ -1155,7 +1155,7 @@ fi
 /usr/bin/mv /opt/verb/conf/inkdns/inkzones/nv.vip /opt/verb/conf/inkdns/inkzones/nv.${vipURI}
 /usr/bin/mv /opt/verb/conf/inkdns/inkzones/nv.kiwi /opt/verb/conf/inkdns/inkzones/nv.${kiwiURI}
 /usr/bin/mv /opt/verb/conf/inkdns/inkzones/nv.red /opt/verb/conf/inkdns/inkzones/nv.${redURI}
-## Serve URI (depends on full name of db. files)
+## Serve URI (depends on full name of cli-ini and db. files)
 /opt/verb/serfs/setserve
 ## Serial Nos
 cd /opt/verb/conf/inkdns/inkzones || exit 6
