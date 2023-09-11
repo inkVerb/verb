@@ -146,11 +146,6 @@ ${scriptname} unix -    n    n    -    -     pipe flags=Rq user=vmail argv=${scr
 /usr/bin/echo "
 # inkVmail script filters (automatically managed, do not change)
 ${emailaddress} FILTER ${scriptname}:dummy # script filter default" >> /etc/postfix/transport
-## Add an important setting
-/usr/bin/cat <<EOF >> /etc/services
-smtp 587/tcp # inkVerb
-smtp 587/udp # inkVerb
-EOF
 /usr/bin/postmap /etc/postfix/transport
 ## Service
 /usr/bin/systemctl enable postfix
@@ -383,19 +378,19 @@ cd ${oldPwd} || exit 6
 # UFW (services and ports below them if known)
 /usr/bin/ufw allow smtp
 /usr/bin/ufw allow 25
-/usr/bin/ufw deny smtps
-/usr/bin/ufw deny 465
 /usr/bin/ufw allow 587
-#/usr/bin/ufw allow pop3
+#/usr/bin/ufw deny smtps # no such rule profile
+/usr/bin/ufw deny 465
 /usr/bin/ufw allow pop3s
 /usr/bin/ufw allow 995
+/usr/bin/ufw deny pop3
 /usr/bin/ufw deny 110
-#/usr/bin/ufw allow imap
 /usr/bin/ufw allow imaps
 /usr/bin/ufw allow 993
+/usr/bin/ufw deny imap
 /usr/bin/ufw deny 143
 
-# for OpenDKIM
+# Close OpenDKIM (validation is through DNS records, not contacting the server)
 /usr/bin/ufw deny 8891
 /usr/bin/ufw deny 12301
 
