@@ -13,5 +13,5 @@
 
 SITEOFF=$1
 
-/bin/sed -i "s/VERB${SITEOFF}=.*/VERB${SITEOFF}=false/g" /opt/verb/conf/servertldstatus286
+/bin/sed -i "s/VERB${SITEOFF}=.*/VERB${SITEOFF}=false/g" /opt/verb/conf/servertldstatus
 

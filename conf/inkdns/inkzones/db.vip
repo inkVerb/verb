@@ -1,12 +1,12 @@
 $TTL    86400
-hostdomain286.		IN  SOA		ns1.dnsDomain286. dns.inkisaverb.com. (
+vipURI286.		IN  SOA		ns1.dnsDomain286. dns.inkisaverb.com. (
 0000000001		; Serial No
 10800			; Refresh
 3600			; Retry
 604800			; Expire
 1800 )			; Minimum TTL
 
-$ORIGIN hostdomain286.
+$ORIGIN vipURI286.
 ; Nameserver Defaults
 @		IN  NS		ns1.dnsDomain286.
 @		IN  NS		ns2.dnsDomain286.
@@ -17,9 +17,9 @@ $ORIGIN hostdomain286.
 ;; End Root Site Defaults
 
 ; Site Record Defaults
-v.hostdomain286.		IN  A		hostipv4286
-v.hostdomain286.		IN  AAAA	hostipv6286
-files.hostdomain286.		IN  A		hostipv4286
-files.hostdomain286.		IN  AAAA	hostipv6286
+v.vipURI286.		IN  A		hostipv4286
+v.vipURI286.		IN  AAAA	hostipv6286
+files.vipURI286.		IN  A		hostipv4286
+files.vipURI286.		IN  AAAA	hostipv6286
 
 ; Text Record Defaults
