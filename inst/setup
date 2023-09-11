@@ -1213,6 +1213,7 @@ redURI286="${redURI}"
 vipURI286="${vipURI}"
 itsqlTLD286="${itsqlTLD}"
 itsqlTLDURI286="${itsqlTLDURI}"
+setupSettings="$@"
 EOF
 
 # Security check
