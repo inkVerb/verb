@@ -86,7 +86,7 @@ if [ -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
   fi
 fi
 if [ -z "${!default}" ]; then
-  /usr/bin/echo "${TypDescr}default=${Mnt}" >> /opt/verb/conf/inkdrive/inkdriveinfo
+  /usr/bin/echo "${TypDescr}default=\"${Mnt}\"" >> /opt/verb/conf/inkdrive/inkdriveinfo
   /usr/bin/echo "Setting '${Mnt}' as the default ${TypDescr} drive."
 elif [ -n "${defaultMnt}" ]; then
   /usr/bin/echo "Default ${TypDescr} is already set to '${defaultMnt}'. Setting '${Mnt}' an additional ${TypDescr} drive."

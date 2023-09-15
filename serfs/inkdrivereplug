@@ -1,0 +1,64 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+# This re-mounts all block storage based on the inkDrive configs
+# How to use:
+## ./inkdrivereplug
+
+# Eg:
+## ./inkdrivereplug
+
+
+usagenotes="This re-mounts all block storage based on the inkDrive configs"
+usageformat="inkdrivereplug"
+usageexample="inkdrivereplug"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( rink::adddrive rink::replugdrive )
+useserfs=(  )
+useconfigs=( inkdrive/inkdriveinfo )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdrivereplug.replace" ]; then . /opt/verb/mods/inkdrivereplug.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdrivereplug.before" ]; then . /opt/verb/mods/inkdrivereplug.before; fi # Precedes this script
+
+# Check
+if [ ! -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
+  /usr/bin/echo "No drives attached; nothing to do."
+  exit 8
+fi
+
+# Start looping
+cd /opt/verb/conf/inkdrive || exit 6
+for eachDrive in *.*; do
+  if [ "${eachDrive}" = '*.*' ]; then continue; fi
+  . /opt/verb/conf/inkdrive/${eachDrive}
+  Dev=${Device}
+  Mnt=${Mount}
+  Typ=${Type}
+  uuid=${Uuid}
+  if [ "${uuid}" != "$(/usr/bin/lsblk -o UUID /dev/${Dev}1 | /usr/bin/awk 'FNR==2{print $0}')" ]; then
+    /usr/bin/echo "UUID does not match proper records; something is wrong."
+    exit 6
+  fi
+
+  # Mount
+  /usr/bin/echo "#/dev/${Dev}1               /mnt/${Mnt}       ext4    defaults,noatime,nofail,x-systemd.required-by=php-fpm.service 0 0" >> /etc/fstab
+  /usr/bin/echo "UUID=${uuid}  /mnt/${Mnt}       ext4    defaults,noatime,nofail,x-systemd.required-by=php-fpm.service 0 0" >> /etc/fstab
+  /usr/bin/mount /mnt/${Mnt}
+
+  # Note
+  /usr/bin/echo "${eachDrive} mounted"
+done
+
+
+# Finish
+/usr/bin/echo "All drives re-pluged."
+
+
+if [ -e "/opt/verb/mods/inkdrivereplug.after" ]; then . /opt/verb/mods/inkdrivereplug.after; fi # Follows this script

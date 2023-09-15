@@ -83,7 +83,10 @@ case $Svc in
   mysql) SrcPath="/var/lib/mysql"; Owner="mysql:mysql";
     # MySQL won't work becuase we need to figure out how to properly set it up
     # Consider this: https://unix.stackexchange.com/questions/151523/mysql-different-database-location
-    /usr/bin/echo "MySQL is not yet configured to be able to work on a cloud drive."; exit 0
+    /usr/bin/echo "Note MySQL is not yet configured to be able to work on a cloud drive."
+  ;;
+  postgres) SrcPath="/var/lib/postgres"; Owner="postgres:postgres";
+    /usr/bin/echo "Note PostgreSQL is not yet configured to be able to work on a cloud drive."
   ;;
   vmail) SrcPath="/srv/vmail"; Owner="vmail:vmail" ;;
 esac
@@ -139,6 +142,11 @@ if [ "${Svc}" = "vmail" ]; then
 elif [ "${Svc}" = "mysql" ]; then
   /usr/bin/mv /opt/verb/conf/sql/mysqlrootpassword "/mnt/${Mnt}/.conf/sql/"
   /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/sql/mysqlrootpassword" /opt/verb/conf/sql/
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
+## Conf for postgres
+elif [ "${Svc}" = "postgres" ]; then
+  /usr/bin/mv /opt/verb/conf/sql/postgresrootpassword "/mnt/${Mnt}/.conf/sql/"
+  /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/sql/postgresrootpassword" /opt/verb/conf/sql/
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
 ## Conf for www
 elif [ "${Svc}" = "www" ]; then

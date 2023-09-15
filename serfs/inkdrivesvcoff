@@ -50,6 +50,7 @@ Svc="${1}"
 case $Svc in
   www) SrcPath="/srv/www"; Owner="www:www" ;;
   mysql) SrcPath="/var/lib/mysql"; Owner="mysql:mysql" ;;
+  postgres) SrcPath="/var/lib/postgres"; Owner="postgres:postgres" ;;
   vmail) SrcPath="/srv/vmail"; Owner="vmail:vmail" ;;
 esac
 
@@ -111,6 +112,16 @@ elif [ "${Svc}" = "mysql" ]; then
     exit 6
   fi
   /usr/bin/mv "${confOrigin}" /opt/verb/conf/sql/mysqlrootpassword
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
+## Conf for postgres
+elif [ "${Svc}" = "postgres" ]; then
+  confOrigin="$(/usr/bin/readlink /opt/verb/conf/sql/postgresrootpassword)"
+  /usr/bin/rm -f /opt/verb/conf/sql/postgresrootpassword
+  if [ -e "/opt/verb/conf/sql/postgresrootpassword" ]; then
+    /usr/bin/echo "${Svc} config could not be properly prepared to relocate. Something is very wrong."
+    exit 6
+  fi
+  /usr/bin/mv "${confOrigin}" /opt/verb/conf/sql/postgresrootpassword
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
 ## Conf for www
 elif [ "${Svc}" = "www" ]; then
