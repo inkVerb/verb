@@ -83,14 +83,15 @@ else
   /usr/bin/echo "${Vapp} is not a vapp that can be mounted to a drive."
   exit 5
 fi
+## Check against its VappDrive setting, which is set to Mnt at the end of this script
 . "/opt/verb/conf/vapps/vapp.${Vapp}"
-if [ -d "/mnt/${Mnt}/${Vapp}" ] && [ -n "${VappDrive}" ] && [ "${VappDrive}" = "${Mnt}" ]; then
+if [ -d "/mnt/${Mnt}/vapps/${Vapp}" ] && [ -n "${VappDrive}" ] && [ "${VappDrive}" = "${Mnt}" ]; then
   /usr/bin/echo "That vapp is already mounted to that drive."
   exit 0
-elif [ -d "/mnt/${VappDrive}/${Vapp}" ] && [ -n "${VappDrive}" ]; then
+elif [ -n "${VappDrive}" ] && [ -d "/mnt/${VappDrive}/vapps/${Vapp}" ]; then
   /usr/bin/echo "That vapp is already mounted to another drive."
   exit 7
-elif [ -e "/mnt/${Mnt}/${Vapp}" ]; then
+elif [ -e "/mnt/${Mnt}/vapps/${Vapp}" ]; then
   /usr/bin/echo "A vapp by that name is already on that drive, but shouldn't be. Something is very wrong."
   exit 6
 elif [ -n "${VappDrive}" ]; then
@@ -113,11 +114,11 @@ if [ ! -d "${VappData}" ]; then
   /usr/bin/echo "That vapp is already linked somewhere it shouldn't be: $(/usr/bin/ls -l "${VappData}")"
   exit 6
 else
-  /usr/bin/mkdir -p "/mnt/${Mnt}/${Vapp}"
-  /usr/bin/mv "${VappData}" "/mnt/${Mnt}/${Vapp}/"
-  /usr/bin/ln -sfn "/mnt/${Mnt}/${Vapp}/${DataName}" "${VappData}"
+  /usr/bin/mkdir -p "/mnt/${Mnt}/vapps/${Vapp}"
+  /usr/bin/mv "${VappData}" "/mnt/${Mnt}/vapps/${Vapp}/"
+  /usr/bin/ln -sfn "/mnt/${Mnt}/vapps/${Vapp}/${DataName}" "${VappData}"
   /usr/bin/chown -R www:www "${VappData}"
-  /usr/bin/chown -R www:www "/mnt/${Mnt}/${Vapp}/${DataName}"
+  /usr/bin/chown -R www:www "/mnt/${Mnt}/vapps/${Vapp}/${DataName}"
 fi
 if [ "$?" != 0 ]; then
   /usr/bin/echo "Vapp's data folder could not be mounted. Something is very wrong."
@@ -129,7 +130,7 @@ fi
 /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/vapp.${Vapp}" /opt/verb/conf/vapps/
 
 # Finish
-if [ -d "/mnt/${Mnt}/${Vapp}" ] && [ -e "${VappData}" ]; then
+if [ -d "/mnt/${Mnt}/vapps/${Vapp}" ] && [ -e "${VappData}" ]; then
   /usr/bin/sed -i "s/VappDrive=.*/VappDrive=\"${Mnt}\"/" "/opt/verb/conf/vapps/vapp.${Vapp}"
   /usr/bin/echo "${VappType} successfully mounted to '${Mnt}'."
 fi

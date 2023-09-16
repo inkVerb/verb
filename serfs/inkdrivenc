@@ -40,13 +40,13 @@ fi
 
 # Check if installed
 if [ ! -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
-  /usr/bin/echo "inkDrive not installed. Nothing to show."
+  /usr/bin/echo "inkDrive not installed. Nothing to do."
 fi
 
 OnOff="${1}"
 
 if [ "${OnOff}" != "on" ] && [ "${OnOff}" != "off" ]; then
-  /usr/bin/echo "WP must be set to 'on' or 'off', see usage."
+  /usr/bin/echo "Must be set to 'on' or 'off', see usage."
   exit 5
 fi
 
@@ -99,7 +99,7 @@ fi
 
 # Finish
 if [ "$?" = 0 ]; then
-  /usr/bin/echo "Automatic inkDrive for Nextcloud is set to '${OnOff}'\""
+  /usr/bin/echo "Automatic inkDrive for Nextcloud is set to '${OnOff}'"
 fi
 
 if [ -e "/opt/verb/mods/inkdrivenc.after" ]; then . /opt/verb/mods/inkdrivenc.after; fi # Follows this script

@@ -1,0 +1,207 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+# This moves inkcert and letsencrypt to a mounted drive
+## The drive must be added first, if none is specified, then ssd or hdd defaults will be used in that order of preference
+## All directory structure is preserved, but resides on the drive
+##DEV This is different from inkdrivenc and inkdrivewp, which only set the drive, and from inkdriveapp, which moves from the www/vapps folder
+##DEV inkCert and Letsencrypt are more complex and need to be moved with their own method, hence this
+
+# How to use:
+## ./inkdriveinkcert [ on/off ] [ drive name - optional ]
+
+# Eg:
+## ./inkdriveinkcert on myssd
+## ./inkdriveinkcert on
+## ./inkdriveinkcert off
+
+
+usagenotes="This moves inkcert and letsencrypt to a mounted drive"
+usageformat="inkdriveinkcert [ on/off ] [ drive name - optional ]"
+usageexample="inkdriveinkcert on myssd
+inkdriveinkcert on
+inkdriveinkcert off"
+hierarchy=( primary )
+vsetnames=( "Drive name" "on/off" )
+vsettypes=( isChoice isExists )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( inkdriveadd )
+usedby=(  )
+useserfs=(  )
+useconfigs=( inkdrive/inkdriveinfo )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdriveinkcert.replace" ]; then . /opt/verb/mods/inkdriveinkcert.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdriveinkcert.before" ]; then . /opt/verb/mods/inkdriveinkcert.before; fi # Precedes this script
+
+if [ -z "${1}" ]; then
+  /usr/bin/echo "Must desegnate on or off."
+  exit 5
+fi
+
+# Check if installed
+if [ ! -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
+  /usr/bin/echo "inkDrive not installed. Nothing to do."
+fi
+
+OnOff="${1}"
+
+if [ "${OnOff}" != "on" ] && [ "${OnOff}" != "off" ]; then
+  /usr/bin/echo "Must be set to 'on' or 'off', see usage."
+  exit 5
+fi
+
+# Config check
+if [ ! -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
+  /usr/bin/echo "No drives installed; do that first."
+  exit 8
+else
+  . /opt/verb/conf/inkdrive/inkdriveinfo
+fi
+
+# Defaults (prefer HDD)
+if [ -n "${2}" ]; then
+  Mnt="${2}"
+elif [ -n "${HDDdefault}" ]; then
+  Mnt=${HDDdefault}
+elif [ -n "${SSDdefault}" ]; then
+  Mnt=${SSDdefault}
+else
+  /usr/bin/echo "There is no default drive. Something is very wrong."
+  exit 6
+fi
+
+# Redundancy
+if [ -n "${InkDriveIC}" ] && [ "${InkDriveIC}" = "${OnOff}" ]; then
+  /usr/bin/echo "inkCert inkDrive is already set to '${InkDriveIC}'; nothing to do."
+  exit 0
+fi
+
+# Setting
+if [ "${OnOff}" = "on" ]; then
+  OnOff="${Mnt}"
+fi
+
+# Check mount
+if [ ! -d "/mnt/${Mnt}" ] && [ -n "$2" ]; then
+  /usr/bin/echo "That drive is not mounted on the system. Choose a drive that exists."
+  echo 8
+elif [ ! -d "/mnt/${Mnt}" ]; then
+  /usr/bin/echo "Default drive is not mounted. Something is very wrong."
+  echo 6
+fi
+
+# Set
+if [ -n "${InkDriveIC}" ]; then
+  /usr/bin/sed -i "s/InkDriveIC=.*/InkDriveIC=\"${OnOff}\"/" /opt/verb/conf/inkdrive/inkdriveinfo
+else
+  /usr/bin/echo "InkDriveIC=\"${OnOff}\"" >> /opt/verb/conf/inkdrive/inkdriveinfo
+fi
+
+# Confirm the letsencrypt link to inkcert
+if [ $(/usr/bin/readlink -f /etc/inkcert/le) != "/etc/letsencrypt" ]; then
+  /usr/bin/echo "inkCert is not properly setup with the Letsencrypt folder. The server needs to be repaired before continuing!"
+  exit 6
+fi
+
+# Start with our updated config
+. /opt/verb/conf/inkdrive/inkdriveinfo
+
+# Test for space
+## Turning on?
+if [ "${OnOff}" = "off" ]; then
+  SrcPathIC="/etc/inkcert"
+  SrcPathLE="/etc/letsencrypt"
+  Destination="/mnt/${Mnt}"
+## Turning off?
+else
+  SrcPathIC="/mnt/${Mnt}/ic/inkcert"
+  SrcPathLE="/mnt/${Mnt}/ic/letsencrypt"
+  Destination="/mnt/${Mnt}"
+fi
+
+SpaceAvail="$(/usr/bin/df -k "${Destination}" | /usr/bin/awk 'NR==2 { print $4 }')"
+## du the size of each, then add
+SpaceNeedIC="$(/usr/bin/du -s "${SrcPathIC}" | /usr/bin/awk '{ print $1 }')"
+SpaceNeedLE="$(/usr/bin/du -s "${SrcPathLE}" | /usr/bin/awk '{ print $1 }')"
+SpaceNeedALL="$(($SpaceNeedIC + $SpaceNeedLE))"
+## Test available space, report each IC/LE space needed on fail (more helpful to itemize, math adding human-readable numbers too complex)
+if [ "${SpaceNeedALL}" -gt "${SpaceAvail}" ]; then
+  SpaceAvailH="$(/usr/bin/df -h "${Destination}" | /usr/bin/awk 'NR==2 { print $4 }')"
+  SpaceNeedICH="$(/usr/bin/du -sh "${SrcPathIC}" | /usr/bin/awk '{ print $1 }')"
+  SpaceNeedLEH="$(/usr/bin/du -sh "${SrcPathLE}" | /usr/bin/awk '{ print $1 }')"
+  /usr/bin/echo "Not enough space. inkCert needs ${SpaceNeedICH} and Letsencrypt needs ${SpaceNeedLEH}, but only ${SpaceAvailH} available."
+  exit 4
+fi
+
+# Move
+
+## Back to system
+if [ "${OnOff}" = "off" ]; then
+  if [ ! -d "/mnt/${InkDriveIC}/ic/inkcert" ] || [ ! -d "/mnt/${InkDriveIC}/ic/letsencrypt" ]; then
+    /usr/bin/echo "inkCert is not on the drive, nothing to move back."
+    exit 8
+  fi
+  ### inkCert
+  if [ -L "/etc/inkcert" ]; then
+    /usr/bin/rm -rf /etc/inkcert
+  elif [ -d "/etc/inkcert" ]; then
+    /usr/bin/rm -rf /etc/inkcert.bak
+    /usr/bin/mv /etc/inkcert /etc/inkcert.bak
+  else
+    /usr/bin/echo "IC folder is neither link nor directory, something is wrong."
+    exit 6
+  fi
+  /usr/bin/cp -r /mnt/${InkDriveIC}/ic/inkcert /etc/
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
+  ### LE
+  if [ -L "/etc/letsencrypt" ]; then
+    /usr/bin/rm -rf /etc/letsencrypt
+  elif [ -d "/etc/letsencrypt" ]; then
+    /usr/bin/rm -rf /etc/letsencrypt.bak
+    /usr/bin/mv /etc/inkcert /etc/letsencrypt.bak
+  else
+    /usr/bin/echo "LE folder is neither link nor directory, something is wrong."
+    exit 6
+  fi
+  /usr/bin/cp -r /mnt/${InkDriveIC}/ic/letsencrypt /etc/
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
+  /usr/bin/ln -sfn /etc/letsencrypt /etc/inkcert/le
+  ### Cleanup
+  /usr/bin/rm -r /mnt/${InkDriveIC}/ic
+
+## On to drive
+else
+  if [ -d "/mnt/${InkDriveIC}/ic/inkcert" ] || [ -d "/mnt/${InkDriveIC}/ic/letsencrypt" ]; then
+    /usr/bin/echo "inkCert is already on the drive, can't move it again."
+    exit 8
+  fi
+  /usr/bin/mkdir -p /mnt/${InkDriveIC}/ic
+  ### inkCert
+  /usr/bin/cp -r /etc/inkcert /mnt/${InkDriveIC}/ic/
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
+  /usr/bin/rm -rf /etc/inkcert.bak
+  /usr/bin/mv /etc/inkcert /etc/inkcert.bak
+  /usr/bin/ln -sfn /mnt/${InkDriveIC}/ic/inkcert /etc/
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
+  ### LE
+  ### Note, we must move the 'le' link so we don't get too many levels of links
+  /usr/bin/cp -r /etc/letsencrypt /mnt/${InkDriveIC}/ic/
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
+  /usr/bin/ln -sfn /mnt/${InkDriveIC}/ic/letsencrypt /mnt/${InkDriveIC}/ic/inkcert/le
+  /usr/bin/rm -rf /etc/letsencrypt.bak
+  /usr/bin/mv /etc/letsencrypt /etc/letsencrypt.bak
+  /usr/bin/ln -sfn /mnt/${InkDriveIC}/ic/letsencrypt /etc/
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
+fi
+
+# Finish
+if [ "${OnOff}" = "off" ]; then
+  /usr/bin/echo "inkDrive for inkCert is now '${OnOff}' and inkCert resides on the system itself"
+else
+  /usr/bin/echo "inkDrive for inkCert moved to '${OnOff}'"
+fi
+
+if [ -e "/opt/verb/mods/inkdriveinkcert.after" ]; then . /opt/verb/mods/inkdriveinkcert.after; fi # Follows this script

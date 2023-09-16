@@ -480,9 +480,9 @@ emailURI="email.${baseDOM}"
 oneURI="one.${baseDOM}"
 inkURI="ink.${baseDOM}"
 blueURI="blue.${baseDOM}"
-vipURI="vip.${baseDOM}"
 kiwiURI="kiwi.${baseDOM}"
 redURI="red.${baseDOM}"
+vipURI="vip.${baseDOM}"
 EOF
 ## Normal verb domains
 else
@@ -549,7 +549,7 @@ serveDIR="$(/usr/bin/pwgen -s -1 6)"
 /bin/sed -i "s/${expip6286}/${ServerIPv6EXP}/" /opt/verb/conf/servernameip
 /bin/sed -i "s/${arpaipv4286}/${ServerIPv4ARPA}/" /opt/verb/conf/servernameip
 /bin/sed -i "s/${arpaip6286}/${ServerIPv6ARPA}/" /opt/verb/conf/servernameip
-/bin/sed -i "s:${timecity286}:${phpcity}:" /opt/verb/conf/servernameip
+/bin/sed -i "s:${phptimecity286}:${phpcity}:" /opt/verb/conf/servernameip
 /bin/sed -i "s/${updaterepo286}/${vUpRepo}/" /opt/verb/conf/servernameip
 /bin/sed -i "s/${updateorg286}/${vUpOrg}/" /opt/verb/conf/servernameip
 /bin/sed -i "s/ServerEmailTLD=.*/ServerEmailTLD=\"${SvMailTLD}\"/" /opt/verb/conf/servermailpath
@@ -1110,7 +1110,6 @@ fi
 /usr/bin/sed -i "s/${hostURI286}/${hostURI}/g" /opt/verb/conf/inkdns/inkzones/db.*
 /usr/bin/sed -i "s/${hostURI286}/${hostURI}/g" /opt/verb/conf/inkdns/db.dnsdomain
 /usr/bin/sed -i "s/${sitename286}/${ServerName}/g" /opt/verb/conf/inkdns/inkzones/db.*
-/usr/bin/sed -i "s/${sitetld286}/${ServerTLD}/g" /opt/verb/conf/inkdns/inkzones/db.*
 
 ### nv.*
 /usr/bin/sed -i "s/${hostarpaipv4286}/${ServerARPAIPv4}/g" /opt/verb/conf/inkdns/inkzones/nv.*
@@ -1183,7 +1182,6 @@ tldserve286="${serverTLD}"
 servedir286="${serveDIR}"
 serveuri286="${serveURI}"
 sitename286="${ServerName}"
-sitetld286="${ServerTLD}"
 hostarpaipv4286="${ServerARPAIPv4}"
 hostipv4286="${ServerIPv4}"
 arpaipv4286="${ServerIPv4ARPA}"
@@ -1193,7 +1191,6 @@ hostipv6286="${ServerIPv6}"
 arpaip6286="${ServerIPv6ARPA}"
 expip6286="${ServerIPv6EXP}"
 ipv6286="${ServerIPv6}"
-timecity286="${phpcity}"
 updaterepo286="${vUpRepo}"
 updateorg286="${vUpOrg}"
 phplimit286="${phplimit}"
@@ -1213,7 +1210,6 @@ redURI286="${redURI}"
 vipURI286="${vipURI}"
 itsqlTLD286="${itsqlTLD}"
 itsqlTLDURI286="${itsqlTLDURI}"
-setupSettings="$@"
 EOF
 
 # Security check

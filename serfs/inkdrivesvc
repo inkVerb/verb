@@ -2,18 +2,19 @@
 #inkVerbSerf! verb.ink
 # This relocates a service directory to an inkDrive mounted with inkdriveadd; directories will be double such as www/www/ vmail/vmail/ mysql/mysql/
 ## All credentials must be entered correctly for accurate confirmation
+## Mounting www to hdd is not allowed
 
 # How to use:
 ## ./inkdrivesvc [ service ] [ mount dir - optional ]
 
 # Eg:
-## ./inkdrivesvc www hdd 
+## ./inkdrivesvc www ssd 
 ## ./inkdrivesvc mysql
 
 
 usagenotes="This relocates a service directory to an inkDrive mounted with inkdriveadd; directories will be double such as www/www/ vmail/vmail/ mysql/mysql/"
 usageformat="inkdrivesvc [ service ] [ mount dir - optional ]"
-usageexample="inkdrivesvc www hdd
+usageexample="inkdrivesvc www ssd
 inkdrivesvc mysql"
 hierarchy=( primary )
 vsetnames=( "Service name" )
@@ -115,7 +116,7 @@ SpaceNeed="$(/usr/bin/du -s "${SrcPath}" | /usr/bin/awk '{ print $1 }')"
 if [ "${SpaceNeed}" -gt "${SpaceAvail}" ]; then
   SpaceAvailH="$(/usr/bin/df -h "/mnt/${Mnt}" | /usr/bin/awk 'NR==2 { print $4 }')"
   SpaceNeedH="$(/usr/bin/du -sh "${SrcPath}" | /usr/bin/awk '{ print $1 }')"
-  echo "Not enough space. ${SpaceNeedH} needed, but only ${SpaceAvailH} available."
+  /usr/bin/echo "Not enough space. ${SpaceNeedH} needed, but only ${SpaceAvailH} available."
   exit 4
 fi
 
