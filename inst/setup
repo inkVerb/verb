@@ -1230,22 +1230,22 @@ fi
 
 # Next step instructions
 if [ "${ServerIPv4}" != "NOIP4" ] && [ "${ServerIPv6}" != "NOIP6" ]; then
-  IPADDRBLOCKroot="'ssh root@${ServerIPv4} -p ${newport} 'or 'ssh root@${ServerIPv6} -p ${newport}'"
-  IPADDRBLOCKboss="'ssh ${newBoss}@${ServerIPv4} -p ${newport} 'or 'ssh root@${ServerIPv6} -p ${newport}'"
+  IPaddBlockroot="'ssh root@${ServerIPv4} -p ${newport} 'or 'ssh root@${ServerIPv6} -p ${newport}'"
+  IPaddBlockboss="'ssh ${newBoss}@${ServerIPv4} -p ${newport} 'or 'ssh root@${ServerIPv6} -p ${newport}'"
 ## IPv4?
 elif [ "${ServerIPv4}" != "NOIP4" ]; then
-  IPADDRBLOCKroot="'ssh root@${ServerIPv4} -p ${newport}'"
-  IPADDRBLOCKboss="'ssh ${newBoss}@${ServerIPv4} -p ${newport}'"
+  IPaddBlockroot="'ssh root@${ServerIPv4} -p ${newport}'"
+  IPaddBlockboss="'ssh ${newBoss}@${ServerIPv4} -p ${newport}'"
 ## IPv6?
 elif [ "${ServerIPv6}" != "NOIP6" ]; then
-  IPADDRBLOCKroot="'ssh root@${ServerIPv6} -p ${newport}'"
-  IPADDRBLOCKboss="'ssh ${newBoss}@${ServerIPv6} -p ${newport}'"
+  IPaddBlockroot="'ssh root@${ServerIPv6} -p ${newport}'"
+  IPaddBlockboss="'ssh ${newBoss}@${ServerIPv6} -p ${newport}'"
 fi
 /bin/echo "Setup is finished, this verber is unique
 1. reboot
 2. Then for SSH,
-  - login root: ${IPADDRBLOCKroot}
-  - login boss: ${IPADDRBLOCKboss}
+  - login root: ${IPaddBlockroot}
+  - login boss: ${IPaddBlockboss}
 3. Run:
   - inkVmail installer ('serfs/installinkvmail')
 4. Once DNS records are populated...

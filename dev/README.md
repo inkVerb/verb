@@ -213,7 +213,7 @@ X. Other notes
 		- `1` - used by Linux
 		- `2` - used by Linux
 		- `3` - aborted by user at prompt (changed mind, didn't type 'yes', etc.)
-		- `4` - failed attempt, such as a file not downloaded, not enough space, package not available/installed, or login credentials rejected, thus cannot proceed
+		- `4` - failed attempt, such as a file not downloaded, not enough space, package not available/installed, argued file/value not listed, or login credentials rejected, thus cannot proceed
 		- `5` - unmet/invalid credentials (ie arguments for a bash script are incomplete or incorrect or incompatible or inappropriate, it could cause a problem if continuing)
 		- `6` - impossible error (something is wrong that shouldn't be possible, such as a script is messed up or something was changed manually-incorrectly, this error status is only for circumstances that creat a problem that didn't exist before, errors that notice a pre-existing problem should `exit 0`)
 		- `7` - already done dilemma ('already installed' reports `7` only if it would cause a problem to continue, this is a mass abort `exit` status to avoid conflict. A benign 'already installed' will `exit 0`)
