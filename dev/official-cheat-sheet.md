@@ -78,8 +78,7 @@ Tighten security
 ```console
 sed -i "s/#PasswordAuthentication yes/PasswordAuthentication no/" /etc/ssh/sshd_config
 sed -i "s/#PermitRootLogin.*/PermitRootLogin prohibit-password/" /etc/ssh/sshd_config
-sed -i "s/#Port.*/Port 1543/" /etc/ssh/sshd_config
-ufw allow 1543
+sed -i "s/#Port.*/Port 1222/" /etc/ssh/sshd_config
 systemctl restart sshd
 ```
 
