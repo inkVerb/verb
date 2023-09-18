@@ -354,11 +354,7 @@ LimitMEMLOCK=infinity" >> /etc/systemd/system/mariadb.service
 
 /usr/bin/systemctl restart mariadb; wait
 
-# Firewall
-/usr/bin/pacman -S --noconfirm --needed ufw
-e="$?"; [[ "$e" = "0" ]] || /usr/bin/echo 'Failed: !!'; exit "$e"
-/usr/bin/systemctl enable ufw; wait
-/usr/bin/systemctl start ufw; wait
+# Firewall web ports
 /usr/bin/ufw allow 80/tcp
 /usr/bin/ufw allow 443/tcp
 

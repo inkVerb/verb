@@ -39,6 +39,12 @@ e="$?"; [[ "$e" = "0" ]] || /usr/bin/echo 'Failed: !!'; exit "$e"
 #/usr/bin/systemctl enable --now systemd-timesyncd
 /usr/bin/systemctl enable --now ntpd
 
+# Firewall
+/usr/bin/pacman -S --noconfirm --needed ufw
+e="$?"; [[ "$e" = "0" ]] || /usr/bin/echo 'Failed: !!'; exit "$e"
+/usr/bin/systemctl enable ufw; wait
+/usr/bin/systemctl start ufw; wait
+
 # Remove unneeded packages
 /usr/bin/pacman -Qdt --noconfirm
 /usr/bin/pacman -Scc --noconfirm
@@ -63,8 +69,8 @@ syntax on' >> /etc/vimrc
 # >> /usr/share/vim/vimfiles/archlinux.vim # The main file for Arch
 
 # SSH security
-sed -i "s/#PasswordAuthentication yes/PasswordAuthentication no/" /etc/ssh/sshd_config
-sed -i "s/#PermitRootLogin.*/PermitRootLogin prohibit-password/" /etc/ssh/sshd_config
+/usr/bin/sed -i "s/#PasswordAuthentication yes/PasswordAuthentication no/" /etc/ssh/sshd_config
+/usr/bin/sed -i "s/#PermitRootLogin.*/PermitRootLogin prohibit-password/" /etc/ssh/sshd_config
 
 # Good housekeeping
 /usr/bin/chmod 750 /opt/verb/serfs/*
