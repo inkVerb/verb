@@ -39,8 +39,9 @@ e="$?"; [[ "$e" = "0" ]] || ( /usr/bin/echo 'Failed: !!' && exit "$e" )
 #/usr/bin/systemctl enable --now systemd-timesyncd
 /usr/bin/systemctl enable --now ntpd
 
+#DEV Only use this line in the future if some trouble arises, but IPv6 access should be tested prior to installing verb
 # Make sure we don't get a "No rout to host" error when connecting via IPv6 (this config is optional and can mess with stuff)
-/usr/bin/rm -f /etc/dhcpcd.conf
+#/usr/bin/rm -f /etc/dhcpcd.conf
 
 # Firewall
 /usr/bin/pacman -S --noconfirm --needed ufw
