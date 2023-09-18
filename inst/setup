@@ -1157,8 +1157,6 @@ inkZone="$(/usr/bin/echo ${inkZoneDB} | /usr/bin/sed 's/db\.//' )"
 done
 cd $OLDPWD || exit 6
 
-# Set for IPV6 (should be set already, but just to be sure)
-/bin/sed -i "s/IPV6=.*/IPV6=yes/" /etc/default/ufw
 # Port (set to something to avoid attacks)
 /bin/sed -i "/Port.*/ c\Port ${newport}" /etc/ssh/sshd_config
 /bin/sed -i "/ServerPort.*/ c\ServerPort=${newport}" /opt/verb/conf/serverport

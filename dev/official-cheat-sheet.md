@@ -98,11 +98,19 @@ Update and install `git` and `vim` so we can do more work...
 
 To be fully tidy, so you don't get that "add these keys permanently" message, on your local machine...
 
-| **Local 1** $
+| **Local 1** $ IPv4
 
 ```console
-ssh-keyscan -H -p 22 arch.ipv4.four.addr >> ~/.ssh/known_hosts
+ssh-keyscan -H -p 1222 arch.ipv4.four.addr >> ~/.ssh/known_hosts
 ```
+
+| **Local 2** $ IPv6
+
+```console
+ssh-keyscan -H -p 1222 arch::ipv6:six:addr >> ~/.ssh/known_hosts
+```
+
+*Note: if you want to connect via IPv6, but get a "No rout to host" error, and if the file exists, try deleting /etc/dhcpcd.conf in the terminal `rm -f /etc/dhcpcd.conf` (That file holds optional settings which may be more than needed and thus cause trouble)*
 
 Now, you have a Vultr Arch VPS that you can access from your local machine
 
@@ -595,7 +603,7 @@ vultr-cli instance delete ID
 
 # Add key to local ssh (so you won't be prompted the first time you ssh in)
 ```
-ssh-keyscan -H -p 22 IP4ADDRESS >> ~/.ssh/known_hosts
+ssh-keyscan -H -p 1222 IP4ADDRESS >> ~/.ssh/known_hosts
 ```
 
 ## cat in Arch_Vultr SSH key to root
