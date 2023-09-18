@@ -75,9 +75,6 @@ fi
 /usr/bin/ln -sfn /opt/verb/serfs /opt/verb/boss/
 /usr/bin/ln -sfn /opt/verb/tools /opt/verb/boss/
 
-# Link setup to serfs
-/usr/bin/ln -sfn /opt/verb/inst/setup /opt/verb/serfs/
-
 # Link verb to root home
 /usr/bin/ln -sfn /opt/verb /root/
 
@@ -450,6 +447,9 @@ e="$?"; [[ "$e" = "0" ]] || ( /usr/bin/echo 'Failed: !!' && exit "$e" )
 /usr/bin/pacman -Scc --noconfirm
 /usr/bin/su worker -c '/usr/bin/yay -Scc --noconfirm'
 #/usr/local/bin/yeo -Scc --noconfirm
+
+# Link setup to serfs
+/usr/bin/ln -sfn /opt/verb/inst/setup /opt/verb/serfs/setup
 
 # Restart Server and reconnect at the new port
 /usr/bin/echo "
