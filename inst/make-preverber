@@ -33,7 +33,7 @@ exit 8; fi
 
 # Install tools (tmux for unstable ssh connections, reconnect with tmux attach)
 /usr/bin/pacman -S --noconfirm --needed tmux ntp pwgen zip unzip htop which vim curl wget make cronie gcc autoconf imagemagick git parted perl net-tools inetutils man sudo
-e="$?"; [[ "$e" = "0" ]] || /usr/bin/echo 'Failed: !!'; exit "$e"
+e="$?"; [[ "$e" = "0" ]] || ( /usr/bin/echo 'Failed: !!' && exit "$e" )
 
 # Enable NTP for accurate time (the standard service is commented below)
 #/usr/bin/systemctl enable --now systemd-timesyncd
@@ -41,7 +41,7 @@ e="$?"; [[ "$e" = "0" ]] || /usr/bin/echo 'Failed: !!'; exit "$e"
 
 # Firewall
 /usr/bin/pacman -S --noconfirm --needed ufw
-e="$?"; [[ "$e" = "0" ]] || /usr/bin/echo 'Failed: !!'; exit "$e"
+e="$?"; [[ "$e" = "0" ]] || ( /usr/bin/echo 'Failed: !!' && exit "$e" )
 /usr/bin/systemctl enable ufw; wait
 /usr/bin/systemctl start ufw; wait
 
@@ -98,7 +98,7 @@ syntax on' >> /etc/vimrc
 
 # AUR package manager
 /usr/bin/pacman -S --noconfirm --needed base-devel # Dependencies
-e="$?"; [[ "$e" = "0" ]] || /usr/bin/echo 'Failed: !!'; exit "$e"
+e="$?"; [[ "$e" = "0" ]] || ( /usr/bin/echo 'Failed: !!' && exit "$e" )
 cd /opt/verb/worker || exit 6
 /usr/bin/su worker -c '/usr/bin/git clone https://aur.archlinux.org/yay-bin.git'
 cd yay-bin || exit 6
