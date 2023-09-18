@@ -1228,6 +1228,10 @@ if [ "${RinkConfigured}" = "true" ]; then
   # Other commands could be put here for verber instantiation as needed in the future
 fi
 
+# Reset identity keys
+/usr/bin/rm /etc/ssh/ssh_host_*
+ssh-keygen -A
+
 # Next step instructions
 if [ "${ServerIPv4}" != "NOIP4" ] && [ "${ServerIPv6}" != "NOIP6" ]; then
   IPaddBlockroot="'ssh root@${ServerIPv4} -p ${newport} 'or 'ssh root@${ServerIPv6} -p ${newport}'"
