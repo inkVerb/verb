@@ -180,6 +180,19 @@ fi
 sleep 1
 ## We may need `yes n |` as alternatives to --server https://acme-v02.api.letsencrypt.org/directory --agree-tos
 if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
+  #DEV avoid trouble with nginx: `[emerg] bind() to [::]:80 failed (98: Address already in use)` also: 0.0.0.0:80, 0.0.0.0:443, [::]:443
+  if [ "$(/usr/bin/systemctl is-active --quiet nginx)" != "0" ]; then
+    /usr/bin/systemctl stop nginx
+    if [ ${ServerType} = "laemp" ]; then
+      /usr/bin/systemctl stop httpd
+    fi
+    /usr/bin/fuser -k 443/tcp # Thank you https://stackoverflow.com/a/49548253/10343144
+    /usr/bin/systemctl start nginx
+    if [ ${ServerType} = "laemp" ]; then
+      /usr/bin/systemctl start httpd
+    fi
+  fi
+  
   #yes n | /usr/bin/certbot --nginx certonly --expand --renew-by-default -c /opt/verb/conf/inkcert/cli-ini/cli.${domain}.ini
   /usr/bin/certbot --nginx certonly --expand --server https://acme-v02.api.letsencrypt.org/directory --agree-tos --no-eff-email --renew-by-default -c /opt/verb/conf/inkcert/cli-ini/cli.${domain}.ini
   if [ "$?" != "0" ]; then
@@ -190,8 +203,6 @@ if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
     /usr/bin/echo "inkCert certs do not exist"
     exit 4
   fi
-  #DEV avoid trouble with nginx: `[emerg] bind() to [::]:80 failed (98: Address already in use)` also: 0.0.0.0:80, 0.0.0.0:443, [::]:443
-  /usr/bin/fuser -k 443/tcp # Thank you https://stackoverflow.com/a/49548253/10343144
   /bin/systemctl restart nginx; wait
 elif [ ${ServerType} = "lamp" ]; then
   /usr/bin/certbot --apache certonly --expand --server https://acme-v02.api.letsencrypt.org/directory --agree-tos --no-eff-email --renew-by-default -c /opt/verb/conf/inkcert/cli-ini/cli.${domain}.ini
