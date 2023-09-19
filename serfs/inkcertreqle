@@ -190,6 +190,8 @@ if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
     /usr/bin/echo "inkCert certs do not exist"
     exit 4
   fi
+  #DEV avoid trouble with nginx: `[emerg] bind() to [::]:80 failed (98: Address already in use)` also: 0.0.0.0:80, 0.0.0.0:443, [::]:443
+  /usr/bin/fuser -k 443/tcp # Thank you https://stackoverflow.com/a/49548253/10343144
   /bin/systemctl restart nginx; wait
 elif [ ${ServerType} = "lamp" ]; then
   /usr/bin/certbot --apache certonly --expand --server https://acme-v02.api.letsencrypt.org/directory --agree-tos --no-eff-email --renew-by-default -c /opt/verb/conf/inkcert/cli-ini/cli.${domain}.ini
