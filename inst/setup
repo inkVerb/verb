@@ -1049,15 +1049,15 @@ fi
 # Set the FQDN host (only for normal verbers)
 if [ ! -f "/opt/verb/conf/inkdns/sdns/dnshost" ]; then
   /usr/bin/echo "
-  ; FQDN Host Records
-  ${hostURI}.	IN  A		${hostipv4286}
-  ${hostURI}.	IN  AAAA	${hostipv6286}
-  " >> /opt/verb/conf/inkdns/inkzones/db.${serverTLD}
-  /usr/bin/echo "
-  ; FQDN PTR Host Records
-  ${hostarpaipv4286}  IN  PTR  ${hostURI}.
-  ${hostipv6286}  IN  PTR  ${hostURI}.
-  " >> /opt/verb/conf/inkdns/inkzones/nv.${serverTLD}
+; FQDN Host Records
+${hostURI}.	IN  A		${hostipv4286}
+${hostURI}.	IN  AAAA	${hostipv6286}
+" >> /opt/verb/conf/inkdns/inkzones/db.${serverTLD}
+/usr/bin/echo "
+; FQDN PTR Host Records
+${hostarpaipv4286}  IN  PTR  ${hostURI}.
+${hostipv6286}  IN  PTR  ${hostURI}.
+" >> /opt/verb/conf/inkdns/inkzones/nv.${serverTLD}
 fi
 
 ## Set the email TLD URI
