@@ -200,6 +200,9 @@ if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
       /usr/bin/systemctl start httpd
     fi
   fi
+  if [ "$(/usr/bin/systemctl is-active --quiet nginx)" != "0" ]; then
+    /usr/bin/echo "Nginx has a problem; can't get CB single cert!"
+  fi
   
   /usr/bin/certbot --nginx certonly --expand --server https://acme-v02.api.letsencrypt.org/directory --agree-tos --no-eff-email --renew-by-default -d "${domain}"
   #DEV Replaced by aboe line until dns keys can start working

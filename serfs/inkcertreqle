@@ -192,6 +192,9 @@ if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
       /usr/bin/systemctl start httpd
     fi
   fi
+  if [ "$(/usr/bin/systemctl is-active --quiet nginx)" != "0" ]; then
+    /usr/bin/echo "Nginx has a problem; can't get LE certs!"
+  fi
   
   #yes n | /usr/bin/certbot --nginx certonly --expand --renew-by-default -c /opt/verb/conf/inkcert/cli-ini/cli.${domain}.ini
   /usr/bin/certbot --nginx certonly --expand --server https://acme-v02.api.letsencrypt.org/directory --agree-tos --no-eff-email --renew-by-default -c /opt/verb/conf/inkcert/cli-ini/cli.${domain}.ini
