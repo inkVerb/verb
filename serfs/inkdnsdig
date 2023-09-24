@@ -92,6 +92,8 @@ for digdom in ${domains}; do
       exit 6
     fi
   elif [ ${ServerType} = "laemp" ]; then
+  ### We only check Nginx configs on LAEMP servers because only Nginx is used for certbot/inkcert validation; this is not a full web host audit
+  #### This is closely related to the reason that mail domains only reside in Nginx on LAEMP servers
     if [ ! -f /opt/verb/conf/webserver/sites-available/nginx/${newdomain}.conf ] || [ ! -e /opt/verb/conf/webserver/sites-enabled/nginx/${newdomain}.conf ]; then
       /usr/bin/echo "No site config file on the server! Something is wrong."
       exit 6
