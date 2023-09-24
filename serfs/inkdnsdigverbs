@@ -39,9 +39,11 @@ fi
 . /opt/verb/conf/servertldstatus
 
 # Primary VPS host
-/opt/verb/serfs/inkdnsdig ${nameURI} mail
-e="$?"; [[ "$e" = "0" ]] || exit "$e"
+#DEV this is here for mail, which is obsolete since the cli-ini loop were added to inkdnsdig
+# /opt/verb/serfs/inkdnsdig ${nameURI} mail
+# e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
+# Each verb domain
 if [ ${VERBemail} = "true" ]; then
   /opt/verb/serfs/inkdnsdig ${emailURI}
   e="$?"; [[ "$e" = "0" ]] || exit "$e"

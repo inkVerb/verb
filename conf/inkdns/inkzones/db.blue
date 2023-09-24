@@ -19,5 +19,7 @@ $ORIGIN blueURI286.
 ; Site Record Defaults
 b.blueURI286.		IN  A		hostipv4286
 b.blueURI286.		IN  AAAA	hostipv6286
+cloud.blueURI286.		IN  A		hostipv4286
+cloud.blueURI286.		IN  AAAA	hostipv6286
 
 ; Text Record Defaults

@@ -2,7 +2,7 @@
 # inkVerb donjon asset, verb.ink
 ## This is run as a fast-repeating cron task at initial VPS setup to run inkCert for hosted verb domains as soon as their DNS records have populated
 
-/opt/verb/serfs/inkdnsdig "${1}" mail
+/opt/verb/serfs/inkdnsdig "${1}"
 
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 

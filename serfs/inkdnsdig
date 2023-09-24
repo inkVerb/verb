@@ -61,28 +61,43 @@ domain="$1"
 output="/opt/verb/dig/digverbs-${domain}-$(date +'%Y-%m-%d_%H:%M:%S')"
 outraw="${output}-raw"
 
-# Check mail?
-if [ -n "$2" ] && [ "$2" = "mail" ]; then
-  /usr/bin/dig @${ServerNS1DNS} ${domain} ns | tee -a ${outraw} | /usr/bin/grep "${ServerNS1DNS}" >> ${output} 2>&1 || ( /usr/bin/echo "No NS record for ${ServerNS1DNS}" && /usr/bin/rm -f /opt/verb/dig/.digging && exit 4 ) >> ${output} 2>&1
-  /usr/bin/dig @${ServerNS1DNS} ${domain} ns | tee -a ${outraw} | /usr/bin/grep "${ServerNS2DNS}" >> ${output} 2>&1 || ( /usr/bin/echo "No NS record for ${ServerNS2DNS}" && /usr/bin/rm -f /opt/verb/dig/.digging && exit 4 ) >> ${output} 2>&1
-  /usr/bin/dig @${ServerNS1DNS} ${domain} mx | tee -a ${outraw} | /usr/bin/grep MX | tee -a ${output} | /usr/bin/grep "mail.${domain}." >> ${output} 2>&1 || ( /usr/bin/echo "No MX record for ${domain}" && /usr/bin/rm -f /opt/verb/dig/.digging && exit 4 ) >> ${output} 2>&1
-  /usr/bin/dig @${ServerNS1DNS} inkdkim._domainkey.${outraw} txt | tee -a ${output} | /usr/bin/grep TXT | tee -a ${output} | /usr/bin/grep "inkdkim" >> ${output} 2>&1 || ( /usr/bin/echo "No TXT record for DKIM" && /usr/bin/rm -f /opt/verb/dig/.digging && exit 4 ) >> ${output} 2>&1
-  /usr/bin/dig @${ServerNS1DNS} ${domain} a | tee -a ${outraw} | /usr/bin/grep A | tee -a ${output} | /usr/bin/grep "${ServerIPv4}" >> ${output} 2>&1 || ( /usr/bin/echo "No A record for ${ServerIPv4}" && /usr/bin/rm -f /opt/verb/dig/.digging && exit 4 ) >> ${output} 2>&1
-  /usr/bin/dig @${ServerNS1DNS} ${domain} aaaa | tee -a ${outraw} | /usr/bin/grep AAAA | tee -a ${output} | /usr/bin/grep "${ServerIPv6}" >> ${output} 2>&1 || ( /usr/bin/echo "No AAAA record for ${ServerIPv6}" && /usr/bin/rm -f /opt/verb/dig/.digging && exit 4 ) >> ${output} 2>&1
-  /usr/bin/dig @${ServerNS1DNS} mail.${domain} a | tee -a ${outraw} | /usr/bin/grep A | tee -a ${output} | /usr/bin/grep "${ServerIPv4}" >> ${output} 2>&1 || ( /usr/bin/echo "No A mail record for ${ServerIPv4}" && /usr/bin/rm -f /opt/verb/dig/.digging && exit 4 ) >> ${output} 2>&1
-  /usr/bin/dig @${ServerNS1DNS} mail.${domain} aaaa | tee -a ${outraw} | /usr/bin/grep AAAA | tee -a ${output} | /usr/bin/grep "${ServerIPv6}" >> ${output} 2>&1 || ( /usr/bin/echo "No AAAA mail record for ${ServerIPv6} " && /usr/bin/rm -f /opt/verb/dig/.digging && exit 4 ) >> ${output} 2>&1
-  /usr/bin/dig @${ServerNS1DNS} smtp.${domain} a | tee -a ${outraw} | /usr/bin/grep A | tee -a ${output} | /usr/bin/grep "${ServerIPv4}" >> ${output} 2>&1 || ( /usr/bin/echo "No A smtp record for ${ServerIPv4}" && /usr/bin/rm -f /opt/verb/dig/.digging && exit 4 ) >> ${output} 2>&1
-  /usr/bin/dig @${ServerNS1DNS} smtp.${domain} aaaa | tee -a ${outraw} | /usr/bin/grep AAAA | tee -a ${output} | /usr/bin/grep "${ServerIPv6}" >> ${output} 2>&1 || ( /usr/bin/echo "No AAAA smtp record for ${ServerIPv6} " && /usr/bin/rm -f /opt/verb/dig/.digging && exit 4 ) >> ${output} 2>&1
-  /usr/bin/dig @${ServerNS1DNS} imap.${domain} a | tee -a ${outraw} | /usr/bin/grep A | tee -a ${output} | /usr/bin/grep "${ServerIPv4}" >> ${output} 2>&1 || ( /usr/bin/echo "No A imap record for ${ServerIPv4}" && /usr/bin/rm -f /opt/verb/dig/.digging && exit 4 ) >> ${output} 2>&1
-  /usr/bin/dig @${ServerNS1DNS} imap.${domain} aaaa | tee -a ${outraw} | /usr/bin/grep AAAA | tee -a ${output} | /usr/bin/grep "${ServerIPv6}" >> ${output} 2>&1 || ( /usr/bin/echo "No AAAA imap record for ${ServerIPv6} " && /usr/bin/rm -f /opt/verb/dig/.digging && exit 4 ) >> ${output} 2>&1
-  /usr/bin/dig @${ServerNS1DNS} pop3.${domain} a | tee -a ${outraw} | /usr/bin/grep A | tee -a ${output} | /usr/bin/grep "${ServerIPv4}" >> ${output} 2>&1 || ( /usr/bin/echo "No A pop3 record for ${ServerIPv4}" && /usr/bin/rm -f /opt/verb/dig/.digging && exit 4 ) >> ${output} 2>&1
-  /usr/bin/dig @${ServerNS1DNS} pop3.${domain} aaaa | tee -a ${outraw} | /usr/bin/grep AAAA | tee -a ${output} | /usr/bin/grep "${ServerIPv6}" >> ${output} 2>&1 || ( /usr/bin/echo "No AAAA pop3 record for ${ServerIPv6}" && /usr/bin/rm -f /opt/verb/dig/.digging && exit 4 ) >> ${output} 2>&1
-else
-  /usr/bin/dig @${ServerNS1DNS} ${domain} ns | tee -a ${outraw} | /usr/bin/grep "${ServerNS1DNS}" >> ${output} 2>&1 || ( /usr/bin/echo "No NS record for ${ServerNS1DNS}" && /usr/bin/rm -f /opt/verb/dig/.digging && exit 4 ) >> ${output} 2>&1
-  /usr/bin/dig @${ServerNS1DNS} ${domain} ns | tee -a ${outraw} | /usr/bin/grep "${ServerNS2DNS}" >> ${output} 2>&1 || ( /usr/bin/echo "No NS record for ${ServerNS2DNS}" && /usr/bin/rm -f /opt/verb/dig/.digging && exit 4 ) >> ${output} 2>&1
-  /usr/bin/dig @${ServerNS1DNS} ${domain} a | tee -a ${outraw} | /usr/bin/grep A | tee -a ${output} | /usr/bin/grep "${ServerIPv4}" >> ${output} 2>&1 || ( /usr/bin/echo "No A record for ${ServerIPv4} " && /usr/bin/rm -f /opt/verb/dig/.digging && exit 4 ) >> ${output} 2>&1
-  /usr/bin/dig @${ServerNS1DNS} ${domain} aaaa | tee -a ${outraw} | /usr/bin/grep AAAA | tee -a ${output} | /usr/bin/grep "${ServerIPv6}" >> ${output} 2>&1 || ( /usr/bin/echo "No AAAA record for ${ServerIPv6} " && /usr/bin/rm -f /opt/verb/dig/.digging && exit 4 ) >> ${output} 2>&1
+# Check for inkCert and OpenDKIM frameworks
+if [ ! -f "/opt/verb/conf/inkcert/cli-ini/cli.${domain}.ini" ] || [ -d "/etc/opendkim/keys/${domain}" ]; then
+  /usr/bin/echo "Domain framework for '${domain}' does not exist! Nothing to do."
+  exit 0
 fi
+
+# Dig basic domain entries
+/usr/bin/dig @${ServerNS1DNS} ${domain} ns | /usr/bin/tee -a ${outraw} | /usr/bin/grep "${ServerNS1DNS}" >> ${output} 2>&1 || ( /usr/bin/echo "No NS record for ${ServerNS1DNS}" && /usr/bin/rm -f /opt/verb/dig/.digging && exit 4 ) >> ${output} 2>&1
+/usr/bin/dig @${ServerNS1DNS} ${domain} ns | /usr/bin/tee -a ${outraw} | /usr/bin/grep "${ServerNS2DNS}" >> ${output} 2>&1 || ( /usr/bin/echo "No NS record for ${ServerNS2DNS}" && /usr/bin/rm -f /opt/verb/dig/.digging && exit 4 ) >> ${output} 2>&1
+/usr/bin/dig @${ServerNS1DNS} ${domain} mx | /usr/bin/tee -a ${outraw} | /usr/bin/grep MX | /usr/bin/tee -a ${output} | /usr/bin/grep "mail.${domain}." >> ${output} 2>&1 || ( /usr/bin/echo "No MX record for ${domain}" && /usr/bin/rm -f /opt/verb/dig/.digging && exit 4 ) >> ${output} 2>&1
+/usr/bin/dig @${ServerNS1DNS} inkdkim._domainkey.${outraw} txt | /usr/bin/tee -a ${output} | /usr/bin/grep TXT | /usr/bin/tee -a ${output} | /usr/bin/grep "inkdkim" >> ${output} 2>&1 || ( /usr/bin/echo "No TXT record for DKIM" && /usr/bin/rm -f /opt/verb/dig/.digging && exit 4 ) >> ${output} 2>&1
+
+# Loop through each to-certify domain based on cli-ini files
+domains="$(/usr/bin/grep 'domains = ' /opt/verb/conf/inkcert/cli-ini/cli.${domain}.ini | /usr/bin/sed 's/domains = //')"
+for digdom in ${domains}; do
+  digdom="$(/usr/bin/echo ${digdom} | /usr/bin/sed 's/,//')"
+  ## dig the domain
+  /usr/bin/dig @${ServerNS1DNS} ${digdom} a | /usr/bin/tee -a ${outraw} | /usr/bin/grep A | /usr/bin/tee -a ${output} | /usr/bin/grep "${ServerIPv4}" >> ${output} 2>&1 || ( /usr/bin/echo "No A record for ${ServerIPv4}" && /usr/bin/rm -f /opt/verb/dig/.digging && exit 4 ) >> ${output} 2>&1
+  /usr/bin/dig @${ServerNS1DNS} ${digdom} aaaa | /usr/bin/tee -a ${outraw} | /usr/bin/grep AAAA | /usr/bin/tee -a ${output} | /usr/bin/grep "${ServerIPv6}" >> ${output} 2>&1 || ( /usr/bin/echo "No AAAA record for ${ServerIPv6}" && /usr/bin/rm -f /opt/verb/dig/.digging && exit 4 ) >> ${output} 2>&1
+  ## Verify the server files
+  if [ ${ServerType} = "lemp" ]; then
+    if [ ! -f /opt/verb/conf/webserver/sites-available/nginx/${newdomain}.conf ] || [ ! -e /opt/verb/conf/webserver/sites-enabled/nginx/${newdomain}.conf ]; then
+      /usr/bin/echo "No site config fils on the server! Something is wrong."
+      exit 6
+    fi
+  elif [ ${ServerType} = "lamp" ]; then
+    if [ ! -f /opt/verb/conf/webserver/sites-available/httpd/${newdomain}.conf ] || [ ! -f /opt/verb/conf/webserver/sites-enabled/httpd/${newdomain}.conf ]; then
+      /usr/bin/echo "No site config file on the server! Something is wrong."
+      exit 6
+    fi
+  elif [ ${ServerType} = "laemp" ]; then
+    if [ ! -f /opt/verb/conf/webserver/sites-available/nginx/${newdomain}.conf ] || [ ! -e /opt/verb/conf/webserver/sites-enabled/nginx/${newdomain}.conf ]; then
+      /usr/bin/echo "No site config file on the server! Something is wrong."
+      exit 6
+    fi
+  fi  
+done
 
 # Cleanup
 /usr/bin/rm -rf /opt/verb/dig
