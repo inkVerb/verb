@@ -360,18 +360,18 @@ LimitMEMLOCK=infinity" >> /etc/systemd/system/mariadb.service
 /usr/bin/chmod -R 777 /srv/www/tmp
 
 ## Create vip & vsftp web mod directories
-/usr/bin/mkdir -p /srv/vip
-/usr/bin/mkdir -p /srv/vip/_domains
-/usr/bin/mkdir -p /srv/vip/_filecabinet
-/usr/bin/mkdir -p /srv/vip/ftpusers
-/usr/bin/mkdir -p /srv/vip/files
-/usr/bin/mkdir -p /srv/vip/sql
-/usr/bin/mkdir -p /srv/vip/repo
-/usr/bin/mkdir -p /srv/vip/_webapps
-/usr/bin/mkdir -p /srv/vip/_subs.vip
-/usr/bin/ln -sfn /srv/vip /srv/www/
-/usr/bin/ln -sfn /srv/vip /opt/verb/boss/
-/usr/bin/ln -sfn /srv/vip /root/
+/usr/bin/mkdir -p /srv/www/vip
+/usr/bin/mkdir -p /srv/www/vip/_domains
+/usr/bin/mkdir -p /srv/www/vip/_filecabinet
+/usr/bin/mkdir -p /srv/www/vip/ftpusers
+/usr/bin/mkdir -p /srv/www/vip/files
+/usr/bin/mkdir -p /srv/www/vip/sql
+/usr/bin/mkdir -p /srv/www/vip/repo
+/usr/bin/mkdir -p /srv/www/vip/_webapps
+/usr/bin/mkdir -p /srv/www/vip/_subs.vip
+/usr/bin/ln -sfn /srv/www/vip /srv/
+/usr/bin/ln -sfn /srv/www/vip /opt/verb/boss/
+/usr/bin/ln -sfn /srv/www/vip /root/
 ## And the domains directory for hosted domains
 /usr/bin/mkdir -p /srv/www/verb
 /usr/bin/mkdir -p /srv/www/domains

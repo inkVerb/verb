@@ -31,6 +31,8 @@ if [ -e "/opt/verb/mods/inkdrivereplugall.before" ]; then . /opt/verb/mods/inkdr
 if [ ! -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
   /usr/bin/echo "No drives attached; nothing to do."
   exit 8
+else
+  . /opt/verb/conf/inkdrive/inkdriveinfo
 fi
 
 # Start looping
@@ -61,9 +63,82 @@ for eachDrive in *.*; do
   /usr/bin/echo "${eachDrive} mounted"
 done
 
-
-# Finish
+# Note progress
 /usr/bin/echo "All drives re-pluged."
+
+# Mount web folder?
+if [ -n "${SSDdefault}" ]; then
+  wMnt=${SSDdefault}
+  if [ -d "/mnt/${wMnt}/web/www" ]; then
+    /usr/bin/mv /srv/www "/srv/www.replug.$(/usr/bin/date +%Y-%m-%d_%T)"
+    e="$?"; [[ "$e" = "0" ]] || exit "$e"
+    /usr/bin/ln -sfn "/mnt/${wMnt}/web/www" /srv/
+    e="$?"; [[ "$e" = "0" ]] || exit "$e"
+    /usr/bin/chown -R www:www /srv/www
+    e="$?"; [[ "$e" = "0" ]] || exit "$e"
+    /usr/bin/echo "Web folder successfully resides on the mounted ${wMnt} drive."
+  else
+    /usr/bin/echo "No web drive folder found; web folder still resides on the server."
+  fi
+else
+  /usr/bin/echo "No SSD drive mounted; web folder still resides on the server."
+fi
+
+# Vmail?
+if [ -n "${SSDdefault}" ] && [ -d "/mnt/${SSDdefault}/mail/vmail" ]; then
+  vMnt=${SSDdefault}
+elif [ -n "${HDDdefault}" ] && [ -d "/mnt/${HDDdefault}/mail/vmail" ]; then
+  vMnt=${HDDdefault}
+else
+  /usr/bin/echo "No vmail drive folder found; vmail still resides on the server."
+fi
+if [ -n "${vMnt}" ]; then
+  /usr/bin/mv /srv/vmail "/srv/vmail.replug.$(/usr/bin/date +%Y-%m-%d_%T)"
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
+  /usr/bin/ln -sfn "/mnt/${vMnt}/mail/vmail" /srv/
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
+  /usr/bin/chown -R vmail:vmail /srv/vmail
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
+  /usr/bin/echo "Vmail folder successfully resides on the mounted ${vMnt} drive."
+fi
+
+#DEV if we can get SQL services to work on mounted drives, then uncomment the SQL block below and modify actions in rink/run/remakevps
+# # SQL?
+# ## MySQL
+# if [ -n "${SSDdefault}" ] && [ -d "/mnt/${SSDdefault}/sql/mysql" ]; then
+#   mMnt=${SSDdefault}
+# elif [ -n "${HDDdefault}" ] && [ -d "/mnt/${HDDdefault}/sql/mysql" ]; then
+#   mMnt=${HDDdefault}
+# else
+#   /usr/bin/echo "No mysql drive folder found; mysql still resides on the server."
+# fi
+# if [ -n "${mMnt}" ]; then
+#   /usr/bin/mv /var/lib/mysql "/var/lib/mysql.replug.$(/usr/bin/date +%Y-%m-%d_%T)"
+#   e="$?"; [[ "$e" = "0" ]] || exit "$e"
+#   /usr/bin/ln -sfn "/mnt/${mMnt}/sql/mysql" /var/lib/
+#   e="$?"; [[ "$e" = "0" ]] || exit "$e"
+#   /usr/bin/chown -R mysql:mysql /var/lib/mysql
+#   e="$?"; [[ "$e" = "0" ]] || exit "$e"
+#   /usr/bin/echo "MySQL folder successfully resides on the mounted ${mMnt} drive."
+# fi
+# ##PostgreSQL
+# if [ -n "${SSDdefault}" ] && [ -d "/mnt/${SSDdefault}/sql/postgres" ]; then
+#   pMnt=${SSDdefault}
+# elif [ -n "${HDDdefault}" ] && [ -d "/mnt/${HDDdefault}/sql/postgres" ]; then
+#   pMnt=${HDDdefault}
+# else
+#   /usr/bin/echo "No postgres drive folder found; postgres still resides on the server."
+# fi
+# if [ -n "${pMnt}" ]; then
+#   /usr/bin/mv /var/lib/postgres "/var/lib/postgres.replug.$(/usr/bin/date +%Y-%m-%d_%T)"
+#   e="$?"; [[ "$e" = "0" ]] || exit "$e"
+#   /usr/bin/ln -sfn "/mnt/${pMnt}/sql/postgres" /var/lib/
+#   e="$?"; [[ "$e" = "0" ]] || exit "$e"
+#   /usr/bin/chown -R postgres:postgres /var/lib/postgres
+#   e="$?"; [[ "$e" = "0" ]] || exit "$e"
+#   /usr/bin/echo "PostrgreSQL folder successfully resides on the mounted ${pMnt} drive."
+# fi
+
 
 
 if [ -e "/opt/verb/mods/inkdrivereplugall.after" ]; then . /opt/verb/mods/inkdrivereplugall.after; fi # Follows this script

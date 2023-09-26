@@ -1,0 +1,58 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This runs rinkadddomain for every hosted and parked domain on the Verber
+## Note, hosted domains will have priority if there is also a parked file
+## This is run automatically by rink/run/remakevps; it normally should not be run independently
+## This does not handle verb domains; use rinkupdateallverbs instead
+
+# How to use:
+## ./rinkupdatealldomains
+
+usagenotes="This runs rinkadddomain for every hosted and parked domain on the Verber"
+usageformat="rinkupdatealldomains"
+usageexample="rinkupdatealldomains"
+hierarchy=( secondary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( "Controlled by Rink" )
+prerequesite=(  )
+usedby=( newdomainshell rinkimportme )
+useserfs=(  )
+useconfigs=( servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/rinkupdatealldomains.replace" ]; then . /opt/verb/mods/rinkupdatealldomains.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/rinkupdatealldomains.before" ]; then . /opt/verb/mods/rinkupdatealldomains.before; fi # Precedes this script
+
+
+
+# Configs
+. /opt/verb/conf/servernameip
+
+# Already configured for rink?
+if [ "$RinkConfigured" != "true" ]; then
+	echo "Rink NS nameserver keys not configured, DNS nameserver zone files must be updated manually"
+	exit 5
+fi
+
+# Loop through hosted domains
+cd /opt/verb/conf/inkdns/zones
+for inkZoneDB in db.*; do
+  inkZone="$(/usr/bin/echo ${inkZoneDB} | /usr/bin/sed 's/db\.//' )"
+  if [ "${inkZone}" = '*' ]; then continue; fi
+    /opt/verb/serfs/rinkadddomain ${inkZone}
+done
+
+# Loop through hosted domains
+cd /opt/verb/conf/inkdns/parked
+for inkZoneDB in db.*; do
+  inkZone="$(/usr/bin/echo ${inkZoneDB} | /usr/bin/sed 's/db\.//' )"
+  if [ "${inkZone}" = '*' ]; then continue; fi
+    /opt/verb/serfs/rinkadddomain ${inkZone}
+done
+
+if [ -e "/opt/verb/mods/rinkupdatealldomains.after" ]; then . /opt/verb/mods/rinkupdatealldomains.after; fi # Follows this script

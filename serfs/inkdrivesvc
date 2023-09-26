@@ -80,32 +80,32 @@ fi
 
 # Service
 case $Svc in
-  www) SrcPath="/srv/www"; Owner="www:www" ;;
-  mysql) SrcPath="/var/lib/mysql"; Owner="mysql:mysql";
+  www) SrcPath="/srv/www"; Owner="www:www"; Service='web' ;;
+  mysql) SrcPath="/var/lib/mysql"; Owner="mysql:mysql"; Service='sql'
     # MySQL won't work becuase we need to figure out how to properly set it up
     # Consider this: https://unix.stackexchange.com/questions/151523/mysql-different-database-location
     /usr/bin/echo "Note MySQL is not yet configured to be able to work on a cloud drive."
   ;;
-  postgres) SrcPath="/var/lib/postgres"; Owner="postgres:postgres";
+  postgres) SrcPath="/var/lib/postgres"; Owner="postgres:postgres"; Service='sql'
     /usr/bin/echo "Note PostgreSQL is not yet configured to be able to work on a cloud drive."
   ;;
-  vmail) SrcPath="/srv/vmail"; Owner="vmail:vmail" ;;
+  vmail) SrcPath="/srv/vmail"; Owner="vmail:vmail"; Service='mail' ;;
 esac
 
 # Checks
-if [ -d "/mnt/${Mnt}/${Svc}" ] && [ "$(/usr/bin/readlink -f "${SrcPath}")" = "/mnt/${Mnt}/${Svc}" ]; then
+if [ -d "/mnt/${Mnt}/${Service}/${Svc}" ] && [ "$(/usr/bin/readlink -f "${SrcPath}")" = "/mnt/${Mnt}/${Service}/${Svc}" ]; then
   /usr/bin/echo "That service is already mounted to that drive."
   exit 0
-elif [ -d "/mnt/${Mnt}/${Svc}" ] && [ "$(/usr/bin/readlink -f "${SrcPath}")" ]; then
+elif [ -d "/mnt/${Mnt}/${Service}/${Svc}" ] && [ "$(/usr/bin/readlink -f "${SrcPath}")" ]; then
   /usr/bin/echo "That service is already mounted to $(/usr/bin/readlink -f "${SrcPath}")."
   exit 7
-elif [ -d "/mnt/${Mnt}/${Svc}" ]; then
+elif [ -d "/mnt/${Mnt}/${Service}/${Svc}" ]; then
   /usr/bin/echo "'${Svc}' already exists on that drive, but it isn't for any service on the server. Something is wrong."
   exit 6
-elif [ -e "/mnt/${Mnt}/${Svc}" ] && [ "$(/usr/bin/readlink -f /mnt/${Mnt}/${Svc})" ]; then
-  /usr/bin/echo "'${Svc}' is a link on that drive pointing to $(/usr/bin/readlink -f /mnt/${Mnt}/${Svc}). Something is wrong."
+elif [ -e "/mnt/${Mnt}/${Service}/${Svc}" ] && [ "$(/usr/bin/readlink -f /mnt/${Mnt}/${Service}/${Svc})" ]; then
+  /usr/bin/echo "'${Svc}' is a link on that drive pointing to $(/usr/bin/readlink -f /mnt/${Mnt}/${Service}/${Svc}). Something is wrong."
   exit 6
-elif [ -f "/mnt/${Mnt}/${Svc}" ]; then
+elif [ -f "/mnt/${Mnt}/${Service}/${Svc}" ]; then
   /usr/bin/echo "A file '${Svc}' is already on that drive. Something is very wrong."
   exit 6
 fi
@@ -121,13 +121,13 @@ if [ "${SpaceNeed}" -gt "${SpaceAvail}" ]; then
 fi
 
 # Move & link
-/usr/bin/mkdir -p "/mnt/${Mnt}/${Svc}"
+/usr/bin/mkdir -p "/mnt/${Mnt}/${Service}"
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
-/usr/bin/mv "${SrcPath}" "/mnt/${Mnt}/${Svc}/"
-/usr/bin/ln -sfn "/mnt/${Mnt}/${Svc}/${Svc}" "${SrcPath}"
+/usr/bin/mv "${SrcPath}" "/mnt/${Mnt}/${Service}/"
+/usr/bin/ln -sfn "/mnt/${Mnt}/${Service}/${Svc}" "${SrcPath}"
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 /usr/bin/chown -R ${Owner} "${SrcPath}"
-/usr/bin/chown -R ${Owner} "/mnt/${Mnt}/${Svc}"
+/usr/bin/chown -R ${Owner} "/mnt/${Mnt}/${Service}"
 ## Conf for vmail
 if [ "${Svc}" = "vmail" ]; then
   /usr/bin/mv /opt/verb/conf/servermailpass "/mnt/${Mnt}/.conf/"
@@ -157,7 +157,7 @@ elif [ "${Svc}" = "www" ]; then
 fi
 
 # Finish
-if [ -d "/mnt/${Mnt}/${Svc}/${Svc}" ] && [ "$(/usr/bin/readlink -f "${SrcPath}")" = "/mnt/${Mnt}/${Svc}/${Svc}" ]; then
+if [ -d "/mnt/${Mnt}/${Service}/${Svc}" ] && [ "$(/usr/bin/readlink -f "${SrcPath}")" = "/mnt/${Mnt}/${Service}/${Svc}" ]; then
   /usr/bin/echo "${Svc} folder successfully mounted on ${Typ} drive at /mnt/${Mnt}"
 else
   /usr/bin/echo "${Svc} folder is not where it should be. Something is very wrong."
