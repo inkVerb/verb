@@ -10,11 +10,11 @@ fi
 backsuffix="$1"
 
 if [ -e "/mnt/hdd" ]; then
-  backdir="/mnt/hdd/mysql.bak.d"
+  backdir="/mnt/hdd/sql.bak.d"
 elif [ -e "/mnt/ssd" ]; then
-  backdir="/mnt/ssd/mysql.bak.d"
+  backdir="/mnt/ssd/sql.bak.d"
 else
-  backdir="/var/lib/mysql.bak.d"
+  backdir="/var/lib/sql.bak.d"
 fi
 
 /usr/bin/mkdir -p ${backdir}
