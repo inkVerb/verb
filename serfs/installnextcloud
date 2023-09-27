@@ -138,16 +138,16 @@ fi
 . /opt/verb/conf/inkcert/cli-ini/siteinkcert.${blueURI}
 case ${InkCerted} in
   DONE_SC)
-  /opt/verb/serfs/inkcertaddsc ${blueURI}
+  /opt/verb/serfs/inkcertaddsc cloud.${blueURI} ${blueURI}
   ;;
   DONE_LE)
-  /opt/verb/serfs/inkcertaddle ${blueURI}
+  /opt/verb/serfs/inkcertaddle cloud.${blueURI} ${blueURI}
   ;;
   DONE_CBSINGLE)
-  /opt/verb/serfs/inkcertaddcbsingle ${blueURI}
+  /opt/verb/serfs/inkcertaddcbsingle cloud.${blueURI} ${blueURI}
   ;;
   DONE_CB)
-  /opt/verb/serfs/inkcertaddcb ${blueURI}
+  /opt/verb/serfs/inkcertaddcb cloud.${blueURI} ${blueURI}
   ;;
   NO|NOT_YET)
     /bin/echo "Nextcloud is currently using Snakeoil certs, ready for inkCert"
