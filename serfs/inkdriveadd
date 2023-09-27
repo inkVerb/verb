@@ -11,7 +11,7 @@
 
 # Eg:
 ## ./inkdriveadd vdb mydrive ssd
-## ./inkdriveadd vdc harddrive hdd
+## ./inkdriveadd vdc hdd1 hdd
 
 
 usagenotes="This mounts a block storage drive in /dev/ to the /mnt/ directory and makes an entry in /etc/fstab"
@@ -97,9 +97,10 @@ fi
 /usr/bin/parted -s "/dev/${Dev}" unit mib mkpart primary 0% 100%
 /usr/bin/mkfs.ext4 "/dev/${Dev}1"
 
-/usr/bin/mkdir /mnt/${Mnt}
+/usr/bin/mkdir -p /mnt/${Mnt}
 /usr/bin/touch /etc/fstab
-/usr/bin/echo "#/dev/${Dev}1               /mnt/${Mnt}       ext4    defaults,noatime,nofail,x-systemd.required-by=php-fpm.service 0 0" >> /etc/fstab
+#DEV this line isn't necessacy since se use UUID and inkdrivereplace could make it lie anyway; we may put it back in later if needed and if it won't lie
+#/usr/bin/echo "#/dev/${Dev}1               /mnt/${Mnt}       ext4    defaults,noatime,nofail,x-systemd.required-by=php-fpm.service 0 0" >> /etc/fstab
 uuid="$(/usr/bin/lsblk -o UUID /dev/${Dev}1 | /usr/bin/awk 'FNR==2{print $0}')"
 /usr/bin/echo "UUID=${uuid}  /mnt/${Mnt}       ext4    defaults,noatime,nofail,x-systemd.required-by=php-fpm.service 0 0" >> /etc/fstab
 /usr/bin/systemctl daemon-reload

@@ -1,0 +1,185 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+# This replaces a default inkDrive with a new drive
+## This moves content from the old default to the new default, then changes the name in the configs
+## Both must have been mounted with inkdriveadd, probably from rink::adddrive
+## Both must be the same type of drive
+## This does not update the device name (ie vdb1); for that use inkdriveupdatedevs
+
+
+# How to use:
+## ./inkdrivereplace [ new dev ] [ new drive name ] [ disk type: hdd/ssd ]
+
+# Eg:
+## ./inkdrivereplace vdb mydrive ssd
+## ./inkdrivereplace vdc h hdd
+
+
+usagenotes="This replaces a default inkDrive with a new drive"
+usageformat="inkdrivereplace [ new dev ] [ new drive name ] [ disk type: hdd/ssd ]"
+usageexample="inkdrivereplace vdb mydrive ssd
+inkdrivereplace vdc hdd1 hdd
+inkdrivereplace vdd nvme ssd
+inkdrivereplace vde slow ssd"
+hierarchy=( primary )
+vsetnames=( "Device" "Drive name" "Disk type" )
+vsettypes=( isExists isFilename isChoice )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( rink::adddrive rink::replugdrive )
+useserfs=(  )
+useconfigs=( inkdrive/inkdriveinfo )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdriveadd.replace" ]; then . /opt/verb/mods/inkdriveadd.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdriveadd.before" ]; then . /opt/verb/mods/inkdriveadd.before; fi # Precedes this script
+
+Dev="$1"
+Mnt="$2"
+Typ="$3"
+
+# Filter arguments
+if [ "${Typ}" = "ssd" ]; then
+  TypDescr="SSD"
+  driveDefault="SSDdefault"
+elif [ "${Typ}" = "hdd" ]; then
+  TypDescr="HDD"
+  driveDefault="HDDdefault"
+else
+  /usr/bin/echo "Type must be 'ssd' or 'hdd'"
+  exit 0
+fi
+
+# Checks
+if [ ! -f "/opt/verb/conf/inkdrive/${Typ}.${Mnt}" ]; then
+  /usr/bin/echo "No such drive exists! I quit."
+  exit 8
+else
+  . /opt/verb/conf/inkdrive/${Typ}.${Mnt}
+fi
+if [ "${Type}" != "${Typ}" ]; then
+  /usr/bin/echo "New drive configs are broken; I quit."
+  exit 6
+fi
+. /opt/verb/conf/inkdrive/inkdriveinfo
+if [ "${!driveDefault}" = "${Mount}" ]; then
+  /usr/bin/echo "Old drive and new drive are the same; nothing to do."
+  exit 7
+fi
+
+# Set and get info on both drives
+newMnt="${Mount}"
+newUuid="${Uuid}"
+newDevice="${Device}"
+. /opt/verb/conf/inkdrive/${Typ}.${!driveDefault}
+if [ "${Type}" != "${Typ}" ]; then
+  /usr/bin/echo "Old drive configs are broken; I quit."
+  exit 6
+fi
+oldMnt="${Mount}"
+oldUuid="${Uuid}"
+oldDevice="${Device}"
+
+# Space check
+/usr/bin/echo "Checking space..."
+SpaceAvail="$(/usr/bin/df -k "/mnt/${newMnt}" | /usr/bin/awk 'NR==2 { print $4 }')"
+SpaceNeed="$(/usr/bin/du -s "/mnt/${oldMnt}" | /usr/bin/awk '{ print $1 }')"
+SpaceNeedH="$(/usr/bin/du -sh "/mnt/${oldMnt}" | /usr/bin/awk '{ print $1 }')" # We use this below
+if [ "${SpaceNeed}" -gt "${SpaceAvail}" ]; then
+  SpaceAvailH="$(/usr/bin/df -h "/mnt/${newMnt}" | /usr/bin/awk 'NR==2 { print $4 }')"
+  #SpaceNeedH="$(/usr/bin/du -sh "/mnt/${oldMnt}" | /usr/bin/awk '{ print $1 }')"
+  /usr/bin/echo "Not enough space. ${SpaceNeedH} needed, but only ${SpaceAvailH} available."
+  exit 4
+fi
+
+# System check
+if [ -d "/mnt/${oldMnt}/sql/mysql" ]; then svcMySQL="true"; fi
+if [ -d "/mnt/${oldMnt}/sql/postgres" ]; then svcPostgreSQL="true"; fi
+if [ -d "/mnt/${oldMnt}/vmail" ]; then svcVmail="true"; fi
+if [ -d "/mnt/${oldMnt}/web/www" ] || [ -d "/mnt/${oldMnt}/vapps" ]; then svcWeb="true"; fi
+
+# Stop served services
+if [ -n "${svcMySQL}" ] && [ "${svcMySQL}" = "true" ]; then
+  /usr/bin/systemctl stop mysql
+fi
+if [ -n "${svcPostgreSQL}" ] && [ "${svcPostgreSQL}" = "true" ]; then
+  /usr/bin/systemctl stop postgres
+fi
+if [ -n "${svcVmail}" ] && [ "${svcVmail}" = "true" ]; then
+  /usr/bin/systemctl stop postfix
+  /usr/bin/systemctl stop dovecot
+fi
+if [ -n "${svcWeb}" ] && [ "${svcWeb}" = "true" ]; then
+. /opt/verb/conf/servertype
+  if [ ${ServerType} = "lemp" ]; then
+    /usr/bin/systemctl stop nginx
+  elif [ ${ServerType} = "lamp" ]; then
+    /usr/bin/systemctl stop httpd
+  elif [ ${ServerType} = "laemp" ]; then
+    /usr/bin/systemctl stop nginx
+    /usr/bin/systemctl stop httpd
+  fi
+fi
+
+# Copy files to new space
+/usr/bin/echo "Copying ${SpaceNeedH} of files..."
+/usr/bin/cp -r /mnt/${oldMnt}/ /mnt/${newMnt}/
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+
+# Update /etc/fstab with the new drive
+/usr/bin/sed -i "/^UUID=${newUuid}/d" /etc/fstab # Delete the new UUID from pointing to the old mount point
+/usr/bin/sed -i "s/^UUID=${oldUuid}/UUID=${newUuid}/" /etc/fstab # Drop in the new UUID pointing to the same mount point
+## Make sure the entry is there
+if ! /usr/bin/grep -q "^UUID=${newUuid}" /etc/fstab; then
+  /usr/bin/echo "UUID=${newUuid}  /mnt/${oldMnt}       ext4    defaults,noatime,nofail,x-systemd.required-by=php-fpm.service 0 0" >> /etc/fstab
+fi
+
+# Update the inkDrive configs
+/usr/bin/mv /opt/verb/conf/inkdrive/${Typ}.${oldMnt} /opt/verb/conf/inkdrive/${Typ}.${oldMnt}.removed
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+/usr/bin/mv /opt/verb/conf/inkdrive/${Typ}.${newMnt} /opt/verb/conf/inkdrive/${Typ}.${newMnt}
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+
+# Refresh the system
+/usr/bin/unmount /mnt/${oldMnt}
+/usr/bin/unmount /mnt/${newMnt}
+/usr/bin/systemctl daemon-reload
+/usr/bin/mount /mnt/${Mnt}
+
+# Restart served services and set ownership
+if [ -n "${svcMySQL}" ] && [ "${svcMySQL}" = "true" ]; then
+  /usr/bin/chown -R mysql:mysql /mnt/${oldMnt}/sql/mysql
+  /usr/bin/systemctl start mysql
+fi
+if [ -n "${svcPostgreSQL}" ] && [ "${svcPostgreSQL}" = "true" ]; then
+  /usr/bin/chown -R postgres:postgres /mnt/${oldMnt}/sql/postgres
+  /usr/bin/systemctl start postgres
+fi
+if [ -n "${svcVmail}" ] && [ "${svcVmail}" = "true" ]; then
+  /usr/bin/chown -R vmail:vmail /mnt/${oldMnt}/mail/vmail
+  /usr/bin/systemctl start postfix
+  /usr/bin/systemctl start dovecot
+fi
+if [ -n "${svcWeb}" ] && [ "${svcWeb}" = "true" ]; then
+  if [ -d "/mnt/${oldMnt}/web/www" ]; then
+    /usr/bin/chown -R www:www /mnt/${oldMnt}/web/www
+  fi
+  if [ -d "/mnt/${oldMnt}/vapps" ]; then
+    /usr/bin/chown -R www:www /mnt/${oldMnt}/vapps
+  fi
+. /opt/verb/conf/servertype
+  if [ ${ServerType} = "lemp" ]; then
+    /usr/bin/systemctl start nginx
+  elif [ ${ServerType} = "lamp" ]; then
+    /usr/bin/systemctl start httpd
+  elif [ ${ServerType} = "laemp" ]; then
+    /usr/bin/systemctl start nginx
+    /usr/bin/systemctl start httpd
+  fi
+fi
+
+
+if [ -e "/opt/verb/mods/inkdriveadd.after" ]; then . /opt/verb/mods/inkdriveadd.after; fi # Follows this script
