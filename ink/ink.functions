@@ -989,10 +989,10 @@ exit 0; fi
 isInkCertDoneApache() {
 local domain="$1"
 local vvar="$2"
-if [ -f "/opt/verb/conf/webserver/sites-available/nginx/${domain}.conf" ]; then
-  if /bin/grep -Fq "#INKVERB-INKCERT=DONE" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf; then
+if [ -f "/opt/verb/conf/webserver/sites-available/httpd/${domain}.conf" ]; then
+  if /bin/grep -Fq "#INKVERB-INKCERT=DONE" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf; then
     isInkCertDoneApache="true";
-  elif /bin/grep -Fq "#INKVERB-INKCERT=NO" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf; then
+  elif /bin/grep -Fq "#INKVERB-INKCERT=NO" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf; then
     isInkCertDoneApache="false";
   else
     /bin/echo "${vvar} inkCert Apache server installation is broken."
@@ -1012,10 +1012,10 @@ exit 0; fi
 notInkCertDoneApache() {
 local domain="$1"
 local vvar="$2"
-if [ -f "/opt/verb/conf/webserver/sites-available/nginx/${domain}.conf" ]; then
-  if /bin/grep -Fq "#INKVERB-INKCERT=NO" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf; then
+if [ -f "/opt/verb/conf/webserver/sites-available/httpd/${domain}.conf" ]; then
+  if /bin/grep -Fq "#INKVERB-INKCERT=NO" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf; then
     notInkCertDoneApache="true";
-  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf; then
+  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf; then
     notInkCertDoneApache="false";
   else
     /bin/echo "${vvar} inkCert Apache server installation is broken."
