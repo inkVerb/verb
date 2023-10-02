@@ -792,7 +792,6 @@ fi
 ### Checks for keys installed for inkDKIM in /etc/opendkim/
 isInkDKIMset() {
 local domain="$1"
-local vvar="$2"
 if [ -f "/etc/opendkim/SigningTable" ] && [ -f "/etc/opendkim/KeyTable" ] && [ -f "/etc/opendkim/keys/${domain}/inkdkim.private" ] && [ -f "/etc/opendkim/keys/${domain}/inkdkim.txt" ]; then
   if /bin/grep -Eq "(^\s|^\t|^)+inkdkim._domainkey.${domain}(\s|\t)+${domain}:inkdkim:/etc/opendkim/keys/${domain}/inkdkim.private" /etc/opendkim/KeyTable; then
     if /bin/grep -Eq "(^\s|^\t|^)+${domain}(\s|\t)+inkdkim._domainkey.${domain}" /etc/opendkim/SigningTable; then
@@ -812,59 +811,55 @@ else
   exit 0
 fi
 if [ "$3" != "n" ] && [ "${isInkDKIMset}" = "false" ]; then
-/bin/echo "${vvar} inkDKIM keys not installed."
+/bin/echo "${domain} inkDKIM keys not installed."
 exit 0; fi
 }
 
 ## Nginx available
 isNginxAvail() {
 local domain="$1"
-local vvar="$2"
 if [ -f "/etc/nginx/sites-available/${domain}.conf" ]; then
     isNginxAvail="true"; else
     isNginxAvail="false"; fi
 
 if [ "$3" != "n" ] && [ "${isNginxAvail}" = "false" ]; then
-/bin/echo "${vvar} Nginx config must be available, currently it isn't."
+/bin/echo "${domain} Nginx config must be available, currently it isn't."
 exit 0; fi
 }
 
 ## Nginx enabled
 isNginxEnabled() {
 local domain="$1"
-local vvar="$2"
 if [ "$(readlink -- "/etc/nginx/sites-enabled/${domain}")" = "/etc/nginx/sites-available/${domain}" ] && [ -f "/etc/nginx/sites-available/${domain}.conf" ]; then
     isNginxEnabled="true"; else
     isNginxEnabled="false"; fi
 
 if [ "$3" != "n" ] && [ "${isNginxEnabled}" = "false" ]; then
-/bin/echo "${vvar} Nginx config must be enabled, currently it isn't."
+/bin/echo "${domain} Nginx config must be enabled, currently it isn't."
 exit 0; fi
 }
 
 ## Apache available
 isApacheAvail() {
 local domain="$1"
-local vvar="$2"
 if [ -f "/etc/httpd/sites-available/${domain}.conf" ]; then
     isApacheAvail="true"; else
     isApacheAvail="false"; fi
 
 if [ "$3" != "n" ] && [ "${isApacheAvail}" = "false" ]; then
-/bin/echo "${vvar} Apache config must be available, currently it isn't."
+/bin/echo "${domain} Apache config must be available, currently it isn't."
 exit 0; fi
 }
 
 ## Apache enabled
 isApacheEnabled() {
 local domain="$1"
-local vvar="$2"
 if [ "$(readlink -- "/etc/httpd/sites-enabled/${domain}")" = "/etc/httpd/sites-available/${domain}" ] && [ -f "/etc/httpd/sites-available/${domain}.conf" ]; then
     isApacheEnabled="true"; else
     isApacheEnabled="false"; fi
 
 if [ "$3" != "n" ] && [ "${isApacheEnabled}" = "false" ]; then
-/bin/echo "${vvar} Apache config must be enabled, currently it isn't."
+/bin/echo "${domain} Apache config must be enabled, currently it isn't."
 exit 0; fi
 }
 
@@ -872,13 +867,12 @@ exit 0; fi
 ### Works for CertBot and Letsencrypt certs from inkCert alike
 isInkCertLELive() {
 local domain="$1"
-local vvar="$2"
 if [ -d "/etc/inkcert/le/live/${domain}" ] && [ -f "$(readlink -- "/etc/inkcert/le/live/$DOMAIN/cert.pem")" ] && [ -f "$(readlink -- "/etc/inkcert/le/live/$DOMAIN/chain.pem")" ] && [ -f "$(readlink -- "/etc/inkcert/le/live/$DOMAIN/fullchain.pem")" ] && [ -f "$(readlink -- "/etc/inkcert/le/live/$DOMAIN/privkey.pem")" ]; then
     isInkCertLELive="true"; else
     isInkCertLELive="false"; fi
 
 if [ "$3" != "n" ] && [ "${isInkCertLELive}" = "false" ]; then
-/bin/echo "${vvar} inkCert certificate is either broken or not installed."
+/bin/echo "${domain} inkCert certificate is either broken or not installed."
 exit 0; fi
 }
 
@@ -886,13 +880,12 @@ exit 0; fi
 ### Works for CertBot and Letsencrypt certs from inkCert alike
 notInkCertLELive() {
 local domain="$1"
-local vvar="$2"
 if [ ! -d "/etc/inkcert/le/live/${domain}" ] && [ -f "$(readlink -- "/etc/inkcert/le/live/$DOMAIN/cert.pem")" ] && [ -f "$(readlink -- "/etc/inkcert/le/live/$DOMAIN/chain.pem")" ] && [ -f "$(readlink -- "/etc/inkcert/le/live/$DOMAIN/fullchain.pem")" ] && [ -f "$(readlink -- "/etc/inkcert/le/live/$DOMAIN/privkey.pem")" ]; then
     notInkCertLELive="true"; else
     notInkCertLELive="false"; fi
 
 if [ "$3" != "n" ] && [ "${notInkCertLELive}" = "false" ]; then
-/bin/echo "${vvar} inkCert certificate is already installed."
+/bin/echo "${domain} inkCert certificate is already installed."
 exit 0; fi
 }
 
@@ -900,20 +893,19 @@ exit 0; fi
 ### Checks for inkcert/cli-ini file status & inclusion
 isInkCerted() {
 local domain="$1"
-local vvar="$2"
 if [ -f "/opt/verb/conf/inkcert/cli-ini/cli.${domain}.ini" ] && [ -f "/opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}" ]; then
   if /bin/grep -Fq "InkCerted=DONE" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
     isInkCerted="true";
   elif /bin/grep -Fq "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
     isInkCerted="false";
   else
-    /bin/echo "${vvar} inkCert certificate installation is broken."
+    /bin/echo "${domain} inkCert certificate installation is broken."
     exit 0;
   fi
 
 fi
 if [ "$3" != "n" ] && [ "${isInkCerted}" = "false" ]; then
-/bin/echo "${vvar} inkCert certificate is not installed."
+/bin/echo "${domain} inkCert certificate is not installed."
 exit 0; fi
 }
 
@@ -921,20 +913,19 @@ exit 0; fi
 ### Checks for inkcert/cli-ini file status & inclusion
 notInkCerted() {
 local domain="$1"
-local vvar="$2"
 if [ -f "/opt/verb/conf/inkcert/cli-ini/cli.${domain}.ini" ] && [ -f "/opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}" ]; then
   if /bin/grep -Fq "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
     notInkCerted="true";
   elif /bin/grep -Fq "InkCerted=DONE" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
     notInkCerted="false";
   else
-    /bin/echo "${vvar} inkCert certificate installation is broken."
+    /bin/echo "${domain} inkCert certificate installation is broken."
     exit 0;
   fi
 
 fi
 if [ "$3" != "n" ] && [ "${notInkCerted}" = "false" ]; then
-/bin/echo "${vvar} inkCert certificate is already installed."
+/bin/echo "${domain} inkCert certificate is already installed."
 exit 0; fi
 }
 
@@ -942,22 +933,21 @@ exit 0; fi
 ### Checks for inkcert declarations
 isInkCertDoneNginx() {
 local domain="$1"
-local vvar="$2"
 if [ -f "/etc/nginx/sites-available/${domain}.conf" ]; then
   if /bin/grep -Fq "#INKVERB-INKCERT=DONE" /etc/nginx/sites-available/${domain}.conf; then
     isInkCertDoneNginx="true";
   elif /bin/grep -Fq "#INKVERB-INKCERT=NO" /etc/nginx/sites-available/${domain}.conf; then
     isInkCertDoneNginx="false";
   else
-    /bin/echo "${vvar} inkCert Nginx server installation is broken."
+    /bin/echo "${domain} inkCert Nginx server installation is broken."
     exit 0;
   fi
 else
-  /bin/echo "${vvar} Nginx server not configured."
+  /bin/echo "${domain} Nginx server not configured."
   exit 0;
 fi
 if [ "$3" != "n" ] && [ "${isInkCertDoneNginx}" = "false" ]; then
-/bin/echo "${vvar} inkCert is not installed on the Nginx server."
+/bin/echo "${domain} inkCert is not installed on the Nginx server."
 exit 0; fi
 }
 
@@ -965,22 +955,21 @@ exit 0; fi
 ### Checks for inkcert declarations
 notInkCertDoneNginx() {
 local domain="$1"
-local vvar="$2"
 if [ -f "/etc/nginx/sites-available/${domain}.conf" ]; then
   if /bin/grep -Fq "#INKVERB-INKCERT=NO" /etc/nginx/sites-available/${domain}.conf; then
     notInkCertDoneNginx="true";
   elif /bin/grep -Fq "#INKVERB-INKCERT=DONE" /etc/nginx/sites-available/${domain}.conf; then
     notInkCertDoneNginx="false";
   else
-    /bin/echo "${vvar} inkCert Nginx server installation is broken."
+    /bin/echo "${domain} inkCert Nginx server installation is broken."
     exit 0;
   fi
 else
-  /bin/echo "${vvar} Nginx server not configured."
+  /bin/echo "${domain} Nginx server not configured."
   exit 0;
 fi
 if [ "$3" != "n" ] && [ "${notInkCertDoneNginx}" = "false" ]; then
-/bin/echo "${vvar} inkCert is already installed on the Nginx server."
+/bin/echo "${domain} inkCert is already installed on the Nginx server."
 exit 0; fi
 }
 
@@ -988,22 +977,21 @@ exit 0; fi
 ### Checks for inkcert declarations
 isInkCertDoneApache() {
 local domain="$1"
-local vvar="$2"
 if [ -f "/etc/httpd/sites-available/${domain}.conf" ]; then
   if /bin/grep -Fq "#INKVERB-INKCERT=DONE" /etc/httpd/sites-available/${domain}.conf; then
     isInkCertDoneApache="true";
   elif /bin/grep -Fq "#INKVERB-INKCERT=NO" /etc/httpd/sites-available/${domain}.conf; then
     isInkCertDoneApache="false";
   else
-    /bin/echo "${vvar} inkCert Apache server installation is broken."
+    /bin/echo "${domain} inkCert Apache server installation is broken."
     exit 0;
   fi
 else
-  /bin/echo "${vvar} Apache server not configured."
+  /bin/echo "${domain} Apache server not configured."
   exit 0;
 fi
 if [ "$3" != "n" ] && [ "${isInkCertDoneApache}" = "false" ]; then
-/bin/echo "${vvar} inkCert is not installed on the Apache Server."
+/bin/echo "${domain} inkCert is not installed on the Apache Server."
 exit 0; fi
 }
 
@@ -1011,22 +999,21 @@ exit 0; fi
 ### Checks for inkcert declarations
 notInkCertDoneApache() {
 local domain="$1"
-local vvar="$2"
 if [ -f "/etc/httpd/sites-available/${domain}.conf" ]; then
   if /bin/grep -Fq "#INKVERB-INKCERT=NO" /etc/httpd/sites-available/${domain}.conf; then
     notInkCertDoneApache="true";
   elif /bin/grep -Fq "#INKVERB-INKCERT=DONE" /etc/httpd/sites-available/${domain}.conf; then
     notInkCertDoneApache="false";
   else
-    /bin/echo "${vvar} inkCert Apache server installation is broken."
+    /bin/echo "${domain} inkCert Apache server installation is broken."
     exit 0;
   fi
 else
-  /bin/echo "${vvar} Apache server not configured."
+  /bin/echo "${domain} Apache server not configured."
   exit 0;
 fi
 if [ "$3" != "n" ] && [ "${notInkCertDoneApache}" = "false" ]; then
-/bin/echo "${vvar} inkCert is already installed on the Apache Server."
+/bin/echo "${domain} inkCert is already installed on the Apache Server."
 exit 0; fi
 }
 
@@ -1034,17 +1021,16 @@ exit 0; fi
 ### Checks for SSL file settings inside the webserver config file
 isInkCertSetNginx() {
 local domain="$1"
-local vvar="$2"
 if [ -f "/etc/nginx/sites-available/${domain}.conf" ]; then
   if /bin/grep -Eq "(^\s|^\t|^)+ssl_certificate\s/etc/inkcert/le/live/${domain}/fullchain.pem;" /etc/nginx/sites-available/${domain}.conf && /bin/grep -Eq "(^\s|^\t|^)+ssl_certificate_key\s/etc/inkcert/le/live/${domain}/privkey.pem;" /etc/nginx/sites-available/${domain}.conf; then
     isInkCertSetNginx="true"; else
     isInkCertSetNginx="false"; fi
 else
-  /bin/echo "${vvar} Nginx server not configured."
+  /bin/echo "${domain} Nginx server not configured."
   exit 0;
 fi
 if [ "$3" != "n" ] && [ "${isInkCertSetNginx}" = "false" ]; then
-/bin/echo "${vvar} inkCert certificates not configured on the Nginx server."
+/bin/echo "${domain} inkCert certificates not configured on the Nginx server."
 exit 0; fi
 }
 
@@ -1052,17 +1038,16 @@ exit 0; fi
 ### Checks for SSL file settings inside the webserver config file
 notInkCertSetNginx() {
 local domain="$1"
-local vvar="$2"
 if [ -f "/etc/nginx/sites-available/${domain}.conf" ]; then
   if ! /bin/grep -Eq "(^\s|^\t|^)+ssl_certificate\s/etc/inkcert/le/live/${domain}/fullchain.pem;" /etc/nginx/sites-available/${domain}.conf && /bin/grep -Eq "(^\s|^\t|^)+ssl_certificate_key\s/etc/inkcert/le/live/${domain}/privkey.pem;" /etc/nginx/sites-available/${domain}.conf; then
     notInkCertSetNginx="true"; else
     notInkCertSetNginx="false"; fi
 else
-  /bin/echo "${vvar} Nginx server not configured."
+  /bin/echo "${domain} Nginx server not configured."
   exit 0;
 fi
 if [ "$3" != "n" ] && [ "${notInkCertSetNginx}" = "false" ]; then
-/bin/echo "${vvar} inkCert certificates already configured on the Nginx server."
+/bin/echo "${domain} inkCert certificates already configured on the Nginx server."
 exit 0; fi
 }
 
@@ -1070,17 +1055,16 @@ exit 0; fi
 ### Checks for SSL file settings inside the webserver config file
 isInkCertSetApache() {
 local domain="$1"
-local vvar="$2"
 if [ -f "/etc/httpd/sites-available/${domain}.conf" ]; then
   if /bin/grep -Eq "(^\s|^\t|^)+ssl_certificate\s/etc/inkcert/le/live/${domain}/fullchain.pem;" /etc/httpd/sites-available/${domain}.conf && /bin/grep -Eq "(^\s|^\t|^)+ssl_certificate_key\s/etc/inkcert/le/live/${domain}/privkey.pem;" /etc/httpd/sites-available/${domain}.conf; then
     isInkCertSetApache="true"; else
     isInkCertSetApache="false"; fi
 else
-  /bin/echo "${vvar} Apache server not configured."
+  /bin/echo "${domain} Apache server not configured."
   exit 0;
 fi
 if [ "$3" != "n" ] && [ "${isInkCertSetApache}" = "false" ]; then
-/bin/echo "${vvar} inkCert certificates not configured on the Apache server."
+/bin/echo "${domain} inkCert certificates not configured on the Apache server."
 exit 0; fi
 }
 
@@ -1088,17 +1072,16 @@ exit 0; fi
 ### Checks for SSL file settings inside the webserver config file
 notInkCertSetApache() {
 local domain="$1"
-local vvar="$2"
 if [ -f "/etc/httpd/sites-available/${domain}.conf" ]; then
   if ! /bin/grep -Eq "(^\s|^\t|^)+ssl_certificate\s/etc/inkcert/le/live/${domain}/fullchain.pem;" /etc/httpd/sites-available/${domain}.conf && /bin/grep -Eq "(^\s|^\t|^)+ssl_certificate_key\s/etc/inkcert/le/live/${domain}/privkey.pem;" /etc/httpd/sites-available/${domain}.conf; then
     notInkCertSetApache="true"; else
     notInkCertSetApache="false"; fi
 else
-  /bin/echo "${vvar} Apache server not configured."
+  /bin/echo "${domain} Apache server not configured."
   exit 0;
 fi
 if [ "$3" != "n" ] && [ "${notInkCertSetApache}" = "false" ]; then
-/bin/echo "${vvar} inkCert certificates already configured on the Apache server."
+/bin/echo "${domain} inkCert certificates already configured on the Apache server."
 exit 0; fi
 }
 
