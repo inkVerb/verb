@@ -36,7 +36,6 @@ while getopts "${optSerf}" Flag; do
       /bin/echo "Choose either -m, -s, or -w flag"
       inkFail
     fi
-    webWildOff "${OPTARG}"
     SOm="true"
     engine="le"
   ;;
@@ -45,7 +44,6 @@ while getopts "${optSerf}" Flag; do
       /bin/echo "Choose either -m, -s, or -w flag"
       inkFail
     fi
-    webWildOff "${OPTARG}"
     SOs="true"
     engine="cbsingle"
   ;;
@@ -54,7 +52,6 @@ while getopts "${optSerf}" Flag; do
       /bin/echo "Choose either -m, -s, or -w flag"
       inkFail
     fi
-    webWildOn "${OPTARG}"
     SOw="true"
     engine="cb"
   ;;
@@ -93,6 +90,13 @@ while getopts "${optSerf}" Flag; do
   ;;
  esac
 done
+
+# Server checks
+if [ "${engine}" = "le" ] || [ "${engine}" = "cbsingle" ]; then
+  webWildOff "${SOd}"
+elif [ "${engine}" = "cb" ]; then
+  webWildOn "${SOd}"
+fi
 
 # Fail message
 fail_message="$SOd cert failed to be obtained."
