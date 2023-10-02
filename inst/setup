@@ -568,7 +568,7 @@ fi
 # PHP ini file
 /bin/sed -i "s/${phplimit286}/${phplimit}/g" /opt/verb/conf/php.ini
 /bin/sed -i "s/${phpsize286}/${phpsize}/g" /opt/verb/conf/php.ini
-/bin/sed -i "s:${phptimecity286}}:${phpcity}:g" /opt/verb/conf/php.ini
+/bin/sed -i "s:${phptimecity286}:${phpcity}:g" /opt/verb/conf/php.ini
 /bin/sed -i "s/${name286}/${vName}/g" /opt/verb/conf/php.ini
 /bin/sed -i "s/;.*.open_basedir =.*/open_basedir = \/var\/www/" /opt/verb/conf/php.ini
 /bin/sed -i "s/;.*.sys_temp_dir =.*/sys_temp_dir = \/var\/www\/tmp/" /opt/verb/conf/php.ini
@@ -614,10 +614,10 @@ fi
 ## Apache
 if [ -d "/opt/verb/conf/webserver/sites-available/httpd" ]; then
   ### Replace
-  /bin/sed -i "s/${emailTLD286}/${emailTLD}/g" /opt/verb/conf/webserver/sites-available/httpd/*.conf
-  /bin/sed -i "s/${vipURI286}/${itsqlTLD}/g" /opt/verb/conf/webserver/sites-available/httpd/*.conf
-  /bin/sed -i "s/${itsqlTLDURI286}/${itsqlTLDURI}/g" /opt/verb/conf/webserver/sites-available/httpd/*.conf
   /bin/sed -i "s/${emailURI286}/${emailURI}/g" /opt/verb/conf/webserver/sites-available/httpd/*.conf
+  /bin/sed -i "s/${emailTLD286}/${emailTLD}/g" /opt/verb/conf/webserver/sites-available/httpd/*.conf
+  /bin/sed -i "s/${itsqlTLDURI286}/${itsqlTLDURI}/g" /opt/verb/conf/webserver/sites-available/httpd/*.conf
+  /bin/sed -i "s/${itsqlTLD286}/${itsqlTLD}/g" /opt/verb/conf/webserver/sites-available/httpd/*.conf
   /bin/sed -i "s/${oneURI286}/${oneURI}/g" /opt/verb/conf/webserver/sites-available/httpd/*.conf
   /bin/sed -i "s/${inkURI286}/${inkURI}/g" /opt/verb/conf/webserver/sites-available/httpd/*.conf
   /bin/sed -i "s/${blueURI286}/${blueURI}/g" /opt/verb/conf/webserver/sites-available/httpd/*.conf
@@ -661,10 +661,10 @@ fi
 ## Nginx
 if [ -d "/opt/verb/conf/webserver/sites-available/nginx" ]; then
   ### Replace
-  /bin/sed -i "s/${emailTLD286}/${emailTLD}/g" /opt/verb/conf/webserver/sites-available/nginx/*.conf
-  /bin/sed -i "s/${vipURI286}/${itsqlTLD}/g" /opt/verb/conf/webserver/sites-available/nginx/*.conf
-  /bin/sed -i "s/${itsqlTLDURI286}/${itsqlTLDURI}/g" /opt/verb/conf/webserver/sites-available/nginx/*.conf
   /bin/sed -i "s/${emailURI286}/${emailURI}/g" /opt/verb/conf/webserver/sites-available/nginx/*.conf
+  /bin/sed -i "s/${emailTLD286}/${emailTLD}/g" /opt/verb/conf/webserver/sites-available/nginx/*.conf
+  /bin/sed -i "s/${itsqlTLDURI286}/${itsqlTLDURI}/g" /opt/verb/conf/webserver/sites-available/nginx/*.conf
+  /bin/sed -i "s//${itsqlTLD286}/${itsqlTLD}/g" /opt/verb/conf/webserver/sites-available/nginx/*.conf
   /bin/sed -i "s/${oneURI286}/${oneURI}/g" /opt/verb/conf/webserver/sites-available/nginx/*.conf
   /bin/sed -i "s/${inkURI286}/${inkURI}/g" /opt/verb/conf/webserver/sites-available/nginx/*.conf
   /bin/sed -i "s/${blueURI286}/${blueURI}/g" /opt/verb/conf/webserver/sites-available/nginx/*.conf
@@ -712,10 +712,10 @@ fi
 /usr/bin/chmod -R 750 /opt/verb/conf/site-files/newvipsubdir
 /usr/bin/chmod -R 750 /opt/verb/conf/site-files/newonesubdir
 ## Replace
-/usr/bin/sed -i "s/${emailTLD286}/${emailTLD}/g" /opt/verb/conf/site-files/conf/*
 /usr/bin/sed -i "s/${emailTLDURI286}/${emailTLDURI}/g" /opt/verb/conf/site-files/conf/*
-/usr/bin/sed -i "s/${vipURI286}/${itsqlTLD}/g" /opt/verb/conf/site-files/conf/*
+/usr/bin/sed -i "s/${emailTLD286}/${emailTLD}/g" /opt/verb/conf/site-files/conf/*
 /usr/bin/sed -i "s/${itsqlTLDURI286}/${itsqlTLDURI}/g" /opt/verb/conf/site-files/conf/*
+/usr/bin/sed -i "s//${itsqlTLD286}/${itsqlTLD}/g" /opt/verb/conf/site-files/conf/*
 /usr/bin/sed -i "s/${emailURI286}/${emailURI}/g" /opt/verb/conf/site-files/conf/*
 /usr/bin/sed -i "s/${oneURI286}/${oneURI}/g" /opt/verb/conf/site-files/conf/*
 /usr/bin/sed -i "s/${inkURI286}/${inkURI}/g" /opt/verb/conf/site-files/conf/*

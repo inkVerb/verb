@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash
 #inkVerbSerf! verb.ink
 
 # This downloads and installs Nextcloud manually and linnks it to ....verb.blue
@@ -24,15 +24,15 @@ cVappName=nextcloud
 # Check if already installed
 ## Config
 if [ -f /opt/verb/conf/vapps/vapp.${cVappName} ]; then
-/bin/echo "This is already installed."
+/usr/bin/echo "This is already installed."
 exit 0; fi
 ## Directory
 if [ -d /srv/www/vapps/${cVappName} ]; then
-/bin/echo "Nextcloud already exists in the system. If it isn't working, look deeper on the server. For now, doing nothing."
+/usr/bin/echo "Nextcloud already exists in the system. If it isn't working, look deeper on the server. For now, doing nothing."
 exit 8; fi
 
 # Auto database
-cleanName=$(/bin/echo $cVappName | sed -e 's/\.//g')
+cleanName=$(/usr/bin/echo $cVappName | sed -e 's/\.//g')
 if [ -z ${3} ]; then
 dBPassword=$(/usr/bin/pwgen -s -1 10)
 else
@@ -57,8 +57,8 @@ e="$?"; [[ "$e" = "0" ]] || exit "$e"
 ## Install it
 /opt/verb/serfs/setvapplinkon ${cVappName}; wait
 /usr/bin/mkdir -p /srv/www/vapps/nextcloud/data
-/bin/chown -R www:www /srv/www/vapps/${cVappName}; wait
-/bin/chown -R www:www /srv/www/verb/blue; wait
+/usr/bin/chown -R www:www /srv/www/vapps/${cVappName}; wait
+/usr/bin/chown -R www:www /srv/www/verb/blue.cloud; wait
 
 # Create the database and credentials
 /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
@@ -67,7 +67,7 @@ GRANT ALL PRIVILEGES ON ${dBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '
 FLUSH PRIVILEGES;"
 
 # Write the config for backup
-/bin/echo "appDBase=${dBase}
+/usr/bin/echo "appDBase=${dBase}
 appDDBUsr=${dBaseUser}
 appDDBPass=${dBPassword}" > /opt/verb/conf/vapps/vapp.${cVappName}
 
@@ -126,7 +126,7 @@ elif [ ${ServerType} = "lemp" ]; then
   /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf
 elif [ ${ServerType} = "lamp" ]; then
   /usr/bin/su worker -c '/usr/bin/yay -S mod_itk --noconfirm'
-  #/usr/local/bin/yeo -S mod_itk --noconfirm
+  #/usr/local/usr/bin/yeo -S mod_itk --noconfirm
   # Include the virtual host configurations:
   echo "# Load the mod_itk module so Apache can use the nextcloud user
   LoadModule mpm_itk_module modules/mpm_itk.so" >> /etc/httpd/conf/httpd.conf
@@ -150,14 +150,14 @@ case ${InkCerted} in
   /opt/verb/serfs/inkcertaddcb cloud.${blueURI} ${blueURI}
   ;;
   NO|NOT_YET)
-    /bin/echo "Nextcloud is currently using Snakeoil certs, ready for inkCert"
+    /usr/bin/echo "Nextcloud is currently using Snakeoil certs, ready for inkCert"
   ;;
   *)
-    if ! /bin/grep -q "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
-      /bin/echo "Something's wrong with the inkCert siteinkcert configs! Aborting"
+    if ! /usr/bin/grep -q "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
+      /usr/bin/echo "Something's wrong with the inkCert siteinkcert configs! Aborting"
       exit 6
     else
-      /bin/echo "Nextcloud is currently using Snakeoil certs, ready for inkCert"
+      /usr/bin/echo "Nextcloud is currently using Snakeoil certs, ready for inkCert"
     fi
   ;;
 esac
@@ -213,14 +213,15 @@ EOF
 /opt/verb/serfs/inkvmailsysnextcloud
 
 # Verify ownership
-/bin/chown -R www:www /srv/www/vapps/${cVappName}; wait
+/usr/bin/chown -R www:www /srv/www/vapps/${cVappName}; wait
+/usr/bin/chmod -R 770 /srv/www/vapps/${cVappName}; wait
 
 # Set up bg jobs cron
 ## Nextcloud background jobs (manage the crontab files directly)
-/bin/echo '*/15 * * * *  www php -f /srv/www/vapps/nextcloud/cron.php
+/usr/bin/echo '*/15 * * * *  www php -f /srv/www/vapps/nextcloud/cron.php
 ' > /etc/cron.d/nextcloud
 ## Permissions
-/bin/chmod 0644 /etc/cron.d/nextcloud
+/usr/bin/chmod 0644 /etc/cron.d/nextcloud
 
 #DEV handling this automatically now
 # # See if PFA is installed
@@ -231,7 +232,7 @@ EOF
 # fi
 
 # Finish
-/bin/echo "
+/usr/bin/echo "
 Go to https://cloud.${blueURI} to install.
 
 Tip: https://cloud.${blueURI}/index.php/settings/admin

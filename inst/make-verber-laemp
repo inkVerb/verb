@@ -261,6 +261,8 @@ echo 'security.limit_extensions = .php .html .htm .shtml' >> /etc/php/php-fpm.d/
 /usr/bin/sed -i "s?group = http?group = www?" /etc/php/php-fpm.d/www.conf
 /usr/bin/sed -i "s?listen.owner = http?listen.owner = www?" /etc/php/php-fpm.d/www.conf
 /usr/bin/sed -i "s?listen.group = http?listen.group = www?" /etc/php/php-fpm.d/www.conf
+### Only start PHP-FPM service after file system target
+/usr/bin/sed -i '/\[Service\]/a After=local-fs.target' /lib/systemd/system/php-fpm.service
 
 ## PHP extras
 /usr/bin/pacman -S --noconfirm --needed pkg-config php-gd php-apcu nginx-mod-headers-more fcgiwrap php-imagick php-intl php-pspell
