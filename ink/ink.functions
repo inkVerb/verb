@@ -943,10 +943,10 @@ exit 0; fi
 isInkCertDoneNginx() {
 local domain="$1"
 local vvar="$2"
-if [ -f "/opt/verb/conf/webserver/sites-available/nginx/${domain}.conf" ]; then
-  if /bin/grep -Fq "#INKVERB-INKCERT=DONE" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf; then
+if [ -f "/etc/nginx/sites-available/${domain}.conf" ]; then
+  if /bin/grep -Fq "#INKVERB-INKCERT=DONE" /etc/nginx/sites-available/${domain}.conf; then
     isInkCertDoneNginx="true";
-  elif /bin/grep -Fq "#INKVERB-INKCERT=NO" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf; then
+  elif /bin/grep -Fq "#INKVERB-INKCERT=NO" /etc/nginx/sites-available/${domain}.conf; then
     isInkCertDoneNginx="false";
   else
     /bin/echo "${vvar} inkCert Nginx server installation is broken."
@@ -966,10 +966,10 @@ exit 0; fi
 notInkCertDoneNginx() {
 local domain="$1"
 local vvar="$2"
-if [ -f "/opt/verb/conf/webserver/sites-available/nginx/${domain}.conf" ]; then
-  if /bin/grep -Fq "#INKVERB-INKCERT=NO" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf; then
+if [ -f "/etc/nginx/sites-available/${domain}.conf" ]; then
+  if /bin/grep -Fq "#INKVERB-INKCERT=NO" /etc/nginx/sites-available/${domain}.conf; then
     notInkCertDoneNginx="true";
-  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf; then
+  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE" /etc/nginx/sites-available/${domain}.conf; then
     notInkCertDoneNginx="false";
   else
     /bin/echo "${vvar} inkCert Nginx server installation is broken."
@@ -989,10 +989,10 @@ exit 0; fi
 isInkCertDoneApache() {
 local domain="$1"
 local vvar="$2"
-if [ -f "/opt/verb/conf/webserver/sites-available/httpd/${domain}.conf" ]; then
-  if /bin/grep -Fq "#INKVERB-INKCERT=DONE" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf; then
+if [ -f "/etc/httpd/sites-available/${domain}.conf" ]; then
+  if /bin/grep -Fq "#INKVERB-INKCERT=DONE" /etc/httpd/sites-available/${domain}.conf; then
     isInkCertDoneApache="true";
-  elif /bin/grep -Fq "#INKVERB-INKCERT=NO" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf; then
+  elif /bin/grep -Fq "#INKVERB-INKCERT=NO" /etc/httpd/sites-available/${domain}.conf; then
     isInkCertDoneApache="false";
   else
     /bin/echo "${vvar} inkCert Apache server installation is broken."
@@ -1012,10 +1012,10 @@ exit 0; fi
 notInkCertDoneApache() {
 local domain="$1"
 local vvar="$2"
-if [ -f "/opt/verb/conf/webserver/sites-available/httpd/${domain}.conf" ]; then
-  if /bin/grep -Fq "#INKVERB-INKCERT=NO" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf; then
+if [ -f "/etc/httpd/sites-available/${domain}.conf" ]; then
+  if /bin/grep -Fq "#INKVERB-INKCERT=NO" /etc/httpd/sites-available/${domain}.conf; then
     notInkCertDoneApache="true";
-  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf; then
+  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE" /etc/httpd/sites-available/${domain}.conf; then
     notInkCertDoneApache="false";
   else
     /bin/echo "${vvar} inkCert Apache server installation is broken."
@@ -1111,7 +1111,7 @@ local domain="$1"
 # LEMP
 if [ ${ServerType} = "lemp" ]; then
   if [ -f "/etc/nginx/sites-available/${domain}.conf" ]; then
-		if /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf; then
+		if /bin/grep -q "INKWILDFIX=fixed" /etc/nginx/sites-available/${domain}.conf; then
       webWildOn="true"; else
       webWildOn="false"
     fi
@@ -1122,7 +1122,7 @@ if [ ${ServerType} = "lemp" ]; then
 # LAMP
 elif [ ${ServerType} = "lamp" ]; then
   if [ -f "/etc/httpd/sites-available/${domain}.conf" ]; then
-    if /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf; then
+    if /bin/grep -q "INKWILDFIX=fixed" /etc/httpd/sites-available/${domain}.conf; then
       webWildOn="true"; else
       webWildOn="false"
     fi
@@ -1134,7 +1134,7 @@ elif [ ${ServerType} = "lamp" ]; then
 elif [ ${ServerType} = "laemp" ]; then
   ## Apache
   if [ -f "/etc/httpd/sites-available/${domain}.conf" ]; then
-    if /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf; then
+    if /bin/grep -q "INKWILDFIX=fixed" /etc/httpd/sites-available/${domain}.conf; then
       webWildOn="true"; else
       webWildOn="false"
     fi
@@ -1144,7 +1144,7 @@ elif [ ${ServerType} = "laemp" ]; then
   fi
   ## Nginx
   if [ -f "/etc/nginx/sites-available/${domain}.conf" ]; then
-    if /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf; then
+    if /bin/grep -q "INKWILDFIX=fixed" /etc/nginx/sites-available/${domain}.conf; then
       webWildOn="true"; else
       webWildOn="false"
     fi
@@ -1168,7 +1168,7 @@ local domain="$1"
 # LEMP
 if [ ${ServerType} = "lemp" ]; then
   if [ -f "/etc/nginx/sites-available/${domain}.conf" ]; then
-		if ! /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf; then
+		if ! /bin/grep -q "INKWILDFIX=fixed" /etc/nginx/sites-available/${domain}.conf; then
       webWildOff="true"; else
       webWildOff="false"
     fi
@@ -1179,7 +1179,7 @@ if [ ${ServerType} = "lemp" ]; then
 # LAMP
 elif [ ${ServerType} = "lamp" ]; then
   if [ -f "/etc/httpd/sites-available/${domain}.conf" ]; then
-    if ! /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf; then
+    if ! /bin/grep -q "INKWILDFIX=fixed" /etc/httpd/sites-available/${domain}.conf; then
       webWildOff="true"; else
       webWildOff="false"
     fi
@@ -1191,7 +1191,7 @@ elif [ ${ServerType} = "lamp" ]; then
 elif [ ${ServerType} = "laemp" ]; then
   ## Apache
   if [ -f "/etc/httpd/sites-available/${domain}.conf" ]; then
-    if ! /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf; then
+    if ! /bin/grep -q "INKWILDFIX=fixed" /etc/httpd/sites-available/${domain}.conf; then
       webWildOff="true"; else
       webWildOff="false"
     fi
@@ -1201,7 +1201,7 @@ elif [ ${ServerType} = "laemp" ]; then
   fi
   ## Nginx
   if [ -f "/etc/nginx/sites-available/${domain}.conf" ]; then
-    if ! /bin/grep -q "INKWILDFIX=fixed" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf; then
+    if ! /bin/grep -q "INKWILDFIX=fixed" /etc/nginx/sites-available/${domain}.conf; then
       webWildOff="true"; else
       webWildOff="false"
     fi
@@ -1224,19 +1224,19 @@ local domain="$1"
 
 if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
   ## Check Apache config status
-  if /bin/grep -Fq "#INKVERB-INKCERT=INK_NO_REMOVED" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf ; then
+  if /bin/grep -Fq "#INKVERB-INKCERT=INK_NO_REMOVED" /etc/httpd/sites-available/${domain}.conf ; then
     inkCertServerConfStatus="Removed"
-  elif /bin/grep -Fq "#INKVERB-INKCERT=INK_NOT_YET" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf ; then
+  elif /bin/grep -Fq "#INKVERB-INKCERT=INK_NOT_YET" /etc/httpd/sites-available/${domain}.conf ; then
     inkCertServerConfStatus="Not yet"
-  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_CBSINGLE" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf ; then
+  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_CBSINGLE" /etc/nginx/sites-available/${domain}.conf ; then
     inkCertServerConfStatus="Letsencrypt single"
-  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_CB" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf ; then
+  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_CB" /etc/nginx/sites-available/${domain}.conf ; then
     inkCertServerConfStatus="Letsencrypt wildcard"
-  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_LE" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf ; then
+  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_LE" /etc/nginx/sites-available/${domain}.conf ; then
     inkCertServerConfStatus="Letsencrypt combined"
-  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_SC" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf ; then
+  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_SC" /etc/nginx/sites-available/${domain}.conf ; then
     inkCertServerConfStatus="Self-Cert"
-  elif /bin/grep -Fq "#INKVERB-INKCERT=NA" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf ; then
+  elif /bin/grep -Fq "#INKVERB-INKCERT=NA" /etc/nginx/sites-available/${domain}.conf ; then
     inkCertServerConfStatus="NA"
   else
     inkCertServerConfStatus="Broken"
@@ -1244,19 +1244,19 @@ if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
 
 elif [ ${ServerType} = "lamp" ]; then
   ## Check Apache config status
-  if /bin/grep -Fq "#INKVERB-INKCERT=INK_NO_REMOVED" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf ; then
+  if /bin/grep -Fq "#INKVERB-INKCERT=INK_NO_REMOVED" /etc/httpd/sites-available/${domain}.conf ; then
     inkCertServerConfStatus="Removed"
-  elif /bin/grep -Fq "#INKVERB-INKCERT=INK_NOT_YET" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf ; then
+  elif /bin/grep -Fq "#INKVERB-INKCERT=INK_NOT_YET" /etc/httpd/sites-available/${domain}.conf ; then
     inkCertServerConfStatus="Not yet"
-  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_CBSINGLE" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf ; then
+  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_CBSINGLE" /etc/httpd/sites-available/${domain}.conf ; then
     inkCertServerConfStatus="Letsencrypt single"
-  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_CB" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf ; then
+  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_CB" /etc/httpd/sites-available/${domain}.conf ; then
     inkCertServerConfStatus="Letsencrypt wildcard"
-  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_LE" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf ; then
+  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_LE" /etc/httpd/sites-available/${domain}.conf ; then
     inkCertServerConfStatus="Letsencrypt combined"
-  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_SC" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf ; then
+  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_SC" /etc/httpd/sites-available/${domain}.conf ; then
     inkCertServerConfStatus="Self-Cert"
-  elif /bin/grep -Fq "#INKVERB-INKCERT=NA" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf ; then
+  elif /bin/grep -Fq "#INKVERB-INKCERT=NA" /etc/httpd/sites-available/${domain}.conf ; then
     inkCertServerConfStatus="NA"
   else
     inkCertServerConfStatus="Broken"
