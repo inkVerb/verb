@@ -138,8 +138,8 @@ if ! /usr/bin/grep -q "^UUID=${newUuid}" /etc/fstab; then
 fi
 
 # Update the PHP-FPM drop-in
-/usr/bin/sed -i "s/^Requires=mnt-${oldMnt}.mount/Requires=mnt-${newMnt}.mount/" /usr/lib/systemd/system/php-fpm.d/php-fpm.conf
-/usr/bin/sed -i "s/^After=mnt-${oldMnt}.mount/After=mnt-${newMnt}.mount/" /usr/lib/systemd/system/php-fpm.d/php-fpm.conf
+/usr/bin/sed -i "s/^Requires=mnt-${oldMnt}.mount/Requires=mnt-${newMnt}.mount/" /etc/systemd/system/php-fpm.service.d/mount.conf
+/usr/bin/sed -i "s/^After=mnt-${oldMnt}.mount/After=mnt-${newMnt}.mount/" /etc/systemd/system/php-fpm.service.d/mount.conf
 
 # Update the inkDrive configs
 /usr/bin/mv /opt/verb/conf/inkdrive/${Typ}.${oldMnt} /opt/verb/conf/inkdrive/${Typ}.${oldMnt}.removed

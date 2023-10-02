@@ -108,13 +108,13 @@ uuid="$(/usr/bin/lsblk -o UUID /dev/${Dev}1 | /usr/bin/awk 'FNR==2{print $0}')"
 /usr/bin/mkdir -p /mnt/${Mnt}/.conf/
 
 # Tell PHP-FPM to wait for it to be mounted
-if [ ! -f "/usr/lib/systemd/system/php-fpm.d/php-fpm.conf" ]; then
-  /usr/bin/mkdir -p /usr/lib/systemd/system/php-fpm.d
-  /usr/bin/echo '[Unit]' > /usr/lib/systemd/system/php-fpm.d/php-fpm.conf
+if [ ! -f "/etc/systemd/system/php-fpm.service.d/mount.conf" ]; then
+  /usr/bin/mkdir -p /etc/systemd/system/php-fpm.service.d
+  /usr/bin/echo '[Unit]' > /etc/systemd/system/php-fpm.service.d/mount.conf
 fi
 /usr/bin/echo "Requires=mnt-${Mnt}.mount
-After=mnt-${Mnt}.mount" >> /usr/lib/systemd/system/php-fpm.d/php-fpm.conf
-/usr/bin/systemctl restrat php-fpm
+After=mnt-${Mnt}.mount" >> /etc/systemd/system/php-fpm.service.d/mount.conf
+/usr/bin/systemctl restart php-fpm
 #DEV check that the above system works from https://wiki.archlinux.org/title/systemd and apply also to indrivereplace
 
 # Update config
