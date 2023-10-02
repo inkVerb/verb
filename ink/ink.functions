@@ -1099,7 +1099,7 @@ if [ ${ServerType} = "lemp" ]; then
       webWildOn="false"
     fi
   else
-    /bin/echo "Nginx server not configured."
+    /bin/echo "${domain} Nginx server not configured."
     exit 0;
   fi
 # LAMP
@@ -1110,7 +1110,7 @@ elif [ ${ServerType} = "lamp" ]; then
       webWildOn="false"
     fi
   else
-    /bin/echo "Apache server not configured."
+    /bin/echo "${domain} Apache server not configured."
     exit 0;
   fi
 # LAEMP
@@ -1122,7 +1122,7 @@ elif [ ${ServerType} = "laemp" ]; then
       webWildOn="false"
     fi
   else
-    /bin/echo "Apache server not configured."
+    /bin/echo "${domain} Apache server not configured."
     exit 0;
   fi
   ## Nginx
@@ -1132,7 +1132,7 @@ elif [ ${ServerType} = "laemp" ]; then
       webWildOn="false"
     fi
   else
-    /bin/echo "Nginx server not configured."
+    /bin/echo "${domain} Nginx server not configured."
     exit 0;
   fi
 fi
@@ -1156,7 +1156,7 @@ if [ ${ServerType} = "lemp" ]; then
       webWildOff="false"
     fi
   else
-    /bin/echo "Nginx server not configured."
+    /bin/echo "${domain} Nginx server not configured."
     exit 0;
   fi
 # LAMP
@@ -1167,7 +1167,7 @@ elif [ ${ServerType} = "lamp" ]; then
       webWildOff="false"
     fi
   else
-    /bin/echo "Apache server not configured."
+    /bin/echo "${domain} Apache server not configured."
     exit 0;
   fi
 # LAEMP
@@ -1179,7 +1179,7 @@ elif [ ${ServerType} = "laemp" ]; then
       webWildOff="false"
     fi
   else
-    /bin/echo "Apache server not configured."
+    /bin/echo "${domain} Apache server not configured."
     exit 0;
   fi
   ## Nginx
@@ -1189,7 +1189,7 @@ elif [ ${ServerType} = "laemp" ]; then
       webWildOff="false"
     fi
   else
-    /bin/echo "Nginx server not configured."
+    /bin/echo "${domain} Nginx server not configured."
     exit 0;
   fi
 fi
