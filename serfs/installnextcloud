@@ -175,7 +175,7 @@ elif [ ${ServerType} = "lamp" ]; then
 fi
 
 # PHP version spoof
-sed -i "s/if (PHP_VERSION_ID >=.*/if (PHP_VERSION_ID >= 90000) {/" /srv/www/vapps/nextcloud/lib/versioncheck.php
+/usr/bin/sed -i "s/if (PHP_VERSION_ID >=.*/if (PHP_VERSION_ID >= 90000) {/" /srv/www/vapps/nextcloud/lib/versioncheck.php
 
 # Autoconfig (so user does not need to enter database info)
 /usr/bin/cat <<EOF > /srv/www/vapps/nextcloud/config/autoconfig.php
