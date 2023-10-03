@@ -119,8 +119,10 @@ EOF
 if [ ${ServerType} = "laemp" ]; then
   /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf.old
   /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud-tar.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf
-  /usr/bin/mv /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf.old
-  /usr/bin/rm /opt/verb/conf/webserver/sites-enabled/httpd/cloud.${blueURI}.conf
+  if [ -e "/opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf" ]; then
+    /usr/bin/mv /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf.old
+    /usr/bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/cloud.${blueURI}.conf
+  fi
 elif [ ${ServerType} = "lemp" ]; then
   /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf.old
   /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf
