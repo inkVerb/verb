@@ -259,6 +259,11 @@ if [ -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
   fi
 fi
 
+# Finalize permissions (the right way https://help.nextcloud.com/t/permission-problem-after-moving-data-folder/138928/5 viz https://help.nextcloud.com/t/permission-problem-after-moving-data-folder/138928/7)
+/usr/bin/chown -R www:www /srv/www/vapps/nextcloud
+/usr/bin/find /srv/www/vapps/nextcloud/ -type d -exec /usr/bin/chmod 750 {} \;
+/usr/bin/find /srv/www/vapps/nextcloud/ -type f -exec /usr/bin/chmod 640 {} \;
+
 
 
 if [ -e "/opt/verb/mods/installnextcloud.after" ]; then . /opt/verb/mods/installnextcloud.after; fi # Follows this script

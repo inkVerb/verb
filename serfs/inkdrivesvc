@@ -120,11 +120,33 @@ if [ "${SpaceNeed}" -gt "${SpaceAvail}" ]; then
   exit 4
 fi
 
+# Stop services
+case $Svc in
+  www)
+    /usr/bin/systemctl stop php-fpm
+    if [ ${ServerType} = "laemp" ]; then
+      /usr/bin/systemctl stop nginx httpd
+    elif [ ${ServerType} = "lemp" ]; then
+      /usr/bin/systemctl stop nginx
+    elif [ ${ServerType} = "lamp" ]; then
+      /usr/bin/systemctl stop httpd
+    fi
+  ;;
+  mysql) /usr/bin/systemctl stop postfix dovecot mariadb ;;
+  postgres) /usr/bin/systemctl stop postgres ;;
+  vmail) /usr/bin/systemctl stop postfix dovecot mariadb ;;
+esac
+
 # Move & link
 /usr/bin/mkdir -p "/mnt/${Mnt}/${Service}"
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 /usr/bin/mv "${SrcPath}" "/mnt/${Mnt}/${Service}/"
-/usr/bin/ln -sfn "/mnt/${Mnt}/${Service}/${Svc}" "${SrcPath}"
+/usr/bin/mkdir -p ${SrcPath}
+/usr/bin/echo "/mnt/${Mnt}/${Service}/${Svc} ${SrcPath} bind defaults,bind 0 0 #inkdrive-${Svc}" >> /etc/fstab
+# Not mount the drive
+/usr/bin/mount --bind /mnt/${Mnt}/${Service}/${Svc} ${SrcPath}
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+#/usr/bin/ln -sfn "/mnt/${Mnt}/${Service}/${Svc}" "${SrcPath}" #DEV this link was replaced with the fstab bind above, more effective
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 /usr/bin/chown -R ${Owner} "${SrcPath}"
 /usr/bin/chown -R ${Owner} "/mnt/${Mnt}/${Service}"
@@ -155,6 +177,23 @@ elif [ "${Svc}" = "www" ]; then
   /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/vapps" /opt/verb/conf/
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
+
+# Start services
+case $Svc in
+  www)
+    /usr/bin/systemctl start php-fpm
+    if [ ${ServerType} = "laemp" ]; then
+      /usr/bin/systemctl start nginx httpd
+    elif [ ${ServerType} = "lemp" ]; then
+      /usr/bin/systemctl start nginx
+    elif [ ${ServerType} = "lamp" ]; then
+      /usr/bin/systemctl start httpd
+    fi
+  ;;
+  mysql) /usr/bin/systemctl start postfix dovecot mariadb ;;
+  postgres) /usr/bin/systemctl start postgres ;;
+  vmail) /usr/bin/systemctl start postfix dovecot mariadb ;;
+esac
 
 # Finish
 if [ -d "/mnt/${Mnt}/${Service}/${Svc}" ] && [ "$(/usr/bin/readlink -f "${SrcPath}")" = "/mnt/${Mnt}/${Service}/${Svc}" ]; then

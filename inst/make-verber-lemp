@@ -217,7 +217,7 @@ e="$?"; [[ "$e" = "0" ]] || /usr/bin/echo 'Failed: !!'; exit "$e"
 
 EOF
 ### Security extensions
-echo 'security.limit_extensions = .php .html .htm .shtml' >> /etc/php/php-fpm.d/www.conf
+/usr/bin/echo 'security.limit_extensions = .php .html .htm .shtml' >> /etc/php/php-fpm.d/www.conf
 ### Web user
 /usr/bin/sed -i "s?user = http?user = www?" /etc/php/php-fpm.d/www.conf
 /usr/bin/sed -i "s?group = http?group = www?" /etc/php/php-fpm.d/www.conf

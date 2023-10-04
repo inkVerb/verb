@@ -73,7 +73,31 @@ if [ "${SpaceNeed}" -gt "${SpaceAvail}" ]; then
   exit 4
 fi
 
+# Stop services
+case $Svc in
+  www)
+    /usr/bin/systemctl stop php-fpm
+    if [ ${ServerType} = "laemp" ]; then
+      /usr/bin/systemctl stop nginx httpd
+    elif [ ${ServerType} = "lemp" ]; then
+      /usr/bin/systemctl stop nginx
+    elif [ ${ServerType} = "lamp" ]; then
+      /usr/bin/systemctl stop httpd
+    fi
+  ;;
+  mysql) /usr/bin/systemctl stop postfix dovecot mariadb ;;
+  postgres) /usr/bin/systemctl stop postgres ;;
+  vmail) /usr/bin/systemctl stop postfix dovecot mariadb ;;
+esac
+
 # Remove link & relocate
+## fstab entry
+/usr/bin/sed -i "/ #inkdrive-${Svc}/d" /etc/fstab
+## Reload fstab entries
+/usr/bin/umount ${SrcPath}
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+/usr/bin/systemctl daemon-reload
+## Restore original file structure
 /usr/bin/rm -f ${SrcPath}
 if [ -e "${SrcPath}" ]; then
   /usr/bin/echo "${Svc} could not be properly prepared to relocate. Something is very wrong."
@@ -134,6 +158,23 @@ elif [ "${Svc}" = "www" ]; then
   /usr/bin/mv "${confOrigin}" /opt/verb/conf/vapps
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
+
+# Start services
+case $Svc in
+  www)
+    /usr/bin/systemctl start php-fpm
+    if [ ${ServerType} = "laemp" ]; then
+      /usr/bin/systemctl start nginx httpd
+    elif [ ${ServerType} = "lemp" ]; then
+      /usr/bin/systemctl start nginx
+    elif [ ${ServerType} = "lamp" ]; then
+      /usr/bin/systemctl start httpd
+    fi
+  ;;
+  mysql) /usr/bin/systemctl start postfix dovecot mariadb ;;
+  postgres) /usr/bin/systemctl start postgres ;;
+  vmail) /usr/bin/systemctl start postfix dovecot mariadb ;;
+esac
 
 # Finish
 if [ -d "${SrcPath}" ]; then
