@@ -163,8 +163,8 @@ IncludeOptional /etc/httpd/sites-enabled/*.conf" >> /etc/httpd/conf/httpd.conf
 /usr/bin/sed -i "s?listen.owner = http?listen.owner = www?" /etc/php/php-fpm.d/www.conf
 /usr/bin/sed -i "s?listen.group = http?listen.group = www?" /etc/php/php-fpm.d/www.conf
 ### Only start PHP-FPM service after file system target
-/usr/bin/mkdir -p /usr/lib/systemd/system/php-fpm.d
-/usr/bin/echo '[Unit]' > /usr/lib/systemd/system/php-fpm.d/php-fpm.conf
+/usr/bin/mkdir -p /usr/lib/systemd/system/php-fpm.service.d
+/usr/bin/echo '[Unit]' > /etc/systemd/system/php-fpm.service.d/mount.conf
 ###DEV upgrades may overwrite the below change, but not the above change
 #/usr/bin/sed -i '/\[Service\]/a After=local-fs.target' /lib/systemd/system/php-fpm.service
 

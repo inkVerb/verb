@@ -109,7 +109,7 @@ ReadWritePaths=/srv/www/vapps/nextcloud/apps
 ReadWritePaths=/srv/www/vapps/nextcloud/config
 
 # Optional: add if you want to use Nextcloud's internal update process
-# ReadWritePaths=/srv/www/vapps/nextcloud
+ReadWritePaths=/srv/www/vapps/nextcloud
 EOF
 ## For trouble shooting
 #/usr/bin/sed -i 's?;env\[PATH\] = /usr/local/bin:/usr/bin:/bin?env\[PATH\] = /usr/local/bin:/usr/bin:/bin?' /etc/php/php-fpm.d/www.conf
@@ -118,11 +118,16 @@ EOF
 # Webserver setup
 if [ ${ServerType} = "laemp" ]; then
   /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf.old
+  /usr/bin/mv /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf.old
   /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud-tar.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf
-  if [ -e "/opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf" ]; then
-    /usr/bin/mv /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf.old
-    /usr/bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/cloud.${blueURI}.conf
-  fi
+  #These are for a revers-proxy configuration, but the .conf files don't work correctly and still need tweaking; Nginx alone works for this
+  # /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud-nginx.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf
+  # /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud-httpd.conf /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf
+  #DEV remove this block, no need to check if a LAEMP server has both A and E configs
+  #if [ -e "/opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf" ]; then
+  #  /usr/bin/mv /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf.old
+  #  /usr/bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/cloud.${blueURI}.conf
+  #fi
 elif [ ${ServerType} = "lemp" ]; then
   /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf.old
   /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf

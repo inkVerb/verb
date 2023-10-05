@@ -191,6 +191,9 @@ EOF
 EOF
 /usr/bin/chown -R www:www /etc/nginx/default
 
+## Nginx needs a second user, which is already http
+/usr/bin/usermod -a -G www http
+
 ## PHP
 /usr/bin/pacman -S --noconfirm --needed php php-fpm
 e="$?"; [[ "$e" = "0" ]] || /usr/bin/echo 'Failed: !!'; exit "$e"
@@ -225,7 +228,7 @@ EOF
 /usr/bin/sed -i "s?listen.group = http?listen.group = www?" /etc/php/php-fpm.d/www.conf
 ### Only start PHP-FPM service after file system target
 /usr/bin/mkdir -p /etc/systemd/system/php-fpm.service.d
-/usr/bin/echo '[Unit]' > /etc/systemd/system/php-fpm.service.d/mount.con
+/usr/bin/echo '[Unit]' > /etc/systemd/system/php-fpm.service.d/mount.conf
 ###DEV upgrades may overwrite the below change, but not the above change
 #/usr/bin/sed -i '/\[Service\]/a After=local-fs.target' /lib/systemd/system/php-fpm.service
 
