@@ -31,7 +31,7 @@ if [ -e "/opt/verb/mods/mysqluninstall.before" ]; then . /opt/verb/mods/mysqluni
 
 
 /bin/systemctl stop mysql
-killall -KILL mysql mysqld_safe mysqld
+killall -KILL mariadb mariadbd-safe mysqld
 /usr/bin/apt-get --yes purge mysql-server mysql-client
 /usr/bin/apt-get --yes autoremove --purge
 /usr/bin/apt-get autoclean
