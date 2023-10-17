@@ -71,13 +71,11 @@ if [ "${ServerIPv6}" != "NOIP6" ]; then
 fi
 
 # Set the Serial No
-/opt/verb/serfs/inkdnsserial ${dnsDomain}
+#DEV redundant from inkdnsrefreshbind
+#/opt/verb/serfs/inkdnsserial ${dnsDomain}
 
 # Refresh zones
-if [ -f "/opt/verb/conf/inkdnsconf" ]; then
-  . /opt/verb/conf/inkdnsconf
-  if [ "${InkDNSStat}" = "INSTALLED" ]; then
-/opt/verb/serfs/inkdnsrefreshbind; fi; fi
+/opt/verb/serfs/inkdnsrefreshbind
 
 # Finish
 /bin/echo "The subdomain ${dnsSubDom} has been added to the ${dnsDomain} DNS zone file."
