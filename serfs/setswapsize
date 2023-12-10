@@ -2,13 +2,19 @@
 #inkVerbSerf! verb.ink
 
 # This sets or activates swap to a set size
-## Options are 1, 2, 4, 8, 16, 32, 64 GB
+## 1GB should display something like:
+#. 1000+0 records in
+#. 1000+0 records out
+#. 1048576000 bytes (1.0 GB) copied, 4.0868896 s, 253 MB/s
 
 # How to use:
-## ./setswapsize [swap-size, choose 1, 2, 4, 8, 16, 32, 64]
+## ./setswapsize [swap-size in GB]
+
+# Eg:
+## ./setswapsize 4
 
 
-swapSizeNo=$1
+swapSize=$1
 
 ## Use SSD if mounted and system uses btrfs
 if /usr/bin/grep -q "^LABEL=" /etc/fstab | /usr/bin/grep -q '\s/\s' | /usr/bin/grep -q 'btrfs' || /usr/bin/grep -q "^UUID=" /etc/fstab | /usr/bin/grep -q '\s/\s' | /usr/bin/grep -q 'btrfs'; then
@@ -32,79 +38,21 @@ fi
 ## Make sure it's off, quietly
 /usr/bin/swapoff /${swapDir}/swap.img 2>/dev/null
 cd /var || exit 6
-/usr/bin/touch swap.img
-/usr/bin/chmod 600 swap.img
+/usr/bin/touch /${swapDir}/swap.img
+/usr/bin/chmod 600 /${swapDir}/swap.img
 
-# Options from command parameters
-if [ "${swapSizeNo}" = "1" ]; then
-## 1GB
-/usr/bin/dd if=/dev/zero of=/${swapDir}/swap.img bs=1024k count=1000
-### Should display something like:
-#. 1000+0 records in
-#. 1000+0 records out
-#. 1048576000 bytes (1.0 GB) copied, 4.0868896 s, 253 MB/s
-###
-fi
+# Create the swap file
+/usr/bin/dd if=/dev/zero of=/${swapDir}/swap.img bs=${swapSize}M count=1024
 
-if [ "${swapSizeNo}" = "2" ]; then
-## 2GB
-/usr/bin/dd if=/dev/zero of=/${swapDir}/swap.img bs=2048k count=1000
-### Should display something like:
-#. 1000+0 records in
-#. 1000+0 records out
-#. 2097152000 bytes (2.1 GB) copied, 31.6348 s, 66.3 MB/s
-###
-fi
 
-if [ "${swapSizeNo}" = "4" ]; then
-## 4GB
-/usr/bin/dd if=/dev/zero of=/${swapDir}/swap.img bs=4096k count=1000
-### Should display something like:
-#. 1000+0 records in
-#. 1000+0 records out
-#. 4097152000 bytes (4.1 GB) copied, 62.6348 s, 33.3 MB/s
-###
-fi
-
-if [ "${swapSizeNo}" = "8" ]; then
-## 8GB
-/usr/bin/dd if=/dev/zero of=/${swapDir}/swap.img bs=8192k count=1000
-### Should display something like:
-#. 1000+0 records in
-#. 1000+0 records out
-#. 8194304000 bytes (8.1 GB) copied, 124.6348 s, 16.3 MB/s
-###
-fi
-
-if [ "${swapSizeNo}" = "16" ]; then
-## 16GB
-/usr/bin/dd if=/dev/zero of=/${swapDir}/swap.img bs=16384k count=1000
-### Should display something like:
-#. 1000+0 records in
-#. 1000+0 records out
-#. 16388608000 bytes (16.1 GB) copied, 248.6348 s, 16.3 MB/s
-###
-fi
-
-if [ "${swapSizeNo}" = "32" ]; then
-## 32GB
-/usr/bin/dd if=/dev/zero of=/${swapDir}/swap.img bs=32768k count=1000
-### Should display something like:
-#. 1000+0 records in
-#. 1000+0 records out
-#. 32777216000 bytes (32.2 GB) copied, 496.6348 s, 16.3 MB/s
-###
-fi
-
-if [ "${swapSizeNo}" = "64" ]; then
-## 64GB
-/usr/bin/dd if=/dev/zero of=/${swapDir}/swap.img bs=65536k count=1000
-### Should display something like:
-#. 1000+0 records in
-#. 1000+0 records out
-#. 65554432000 bytes (64.4 GB) copied, 992.6348 s, 16.3 MB/s
-###
-fi
+## Old example of 2gb
+# ## 2GB
+# /usr/bin/dd if=/dev/zero of=/${swapDir}/swap.img bs=2048k count=1000
+# ### Should display something like:
+# #. 1000+0 records in
+# #. 1000+0 records out
+# #. 2097152000 bytes (2.1 GB) copied, 31.6348 s, 66.3 MB/s
+# ###
 
 ## Initialize
 /usr/bin/mkswap /${swapDir}/swap.img

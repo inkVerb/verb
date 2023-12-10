@@ -10,6 +10,7 @@ $ORIGIN kiwiURI286.
 ; Nameserver Defaults
 @		IN  NS		ns1.dnsDomain286.
 @		IN  NS		ns2.dnsDomain286.
+@		IN  CAA		0 issue "letsencrypt.org"
 
 ; Root Site Defaults
 @		IN  A		hostipv4286
