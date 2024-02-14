@@ -3,6 +3,8 @@
 
 For installation, see: [INSTALL.md](https://github.com/inkVerb/verb-dev/blob/master/INSTALL.md)
 
+For Developer info, see: [dev/README.md](https://github.com/inkVerb/verb/blob/main/dev/README.md)
+
 # ink
 `ink` is a CLI tool to manage the "Verber" server, once installed
 

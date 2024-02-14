@@ -7,20 +7,39 @@
 # How to use:
 ## ./installdocker
 
+usagenotes="This installs Docker, which is used by various apps, including Collabora Online for Nextcloud"
+usageformat="installdocker"
+usageexample="installdocker"
+hierarchy=( secondary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/installdocker.replace" ]; then . /opt/verb/mods/installdocker.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installdocker.before" ]; then . /opt/verb/mods/installdocker.before; fi # Precedes this script
+
 
 # Check if already installed
 if [ -f /opt/verb/conf/dockerinstalled ]; then
-/bin/echo "Docker is already installed."
+/usr/bin/echo "Docker is already installed."
 exit 0; fi
 
 # Install Docker
-/usr/bin/apt-get install -y docker.io
+/usr/bin/pacman -Syy docker --needed --noconfirm
 
 # Record config
 /usr/bin/touch /opt/verb/conf/dockerinstalled
 
 # Finish
-/bin/echo "Docker installed."
+/usr/bin/echo "Docker installed."
 
 
 

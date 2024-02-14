@@ -33,6 +33,12 @@ ampache)
 /bin/echo "${vAppName} symlink is set."
 ;;
 
+ldap)
+/bin/rm -rf /srv/www/verb/blue.ldap
+/bin/ln -sfn /srv/www/vapps/${vAppName} /srv/www/verb/blue.ldap
+/bin/echo "${vAppName} symlink is set."
+;;
+
 mediawiki)
 /bin/rm -rf /srv/www/verb/ink.i/wiki
 /bin/ln -sfn /srv/www/vapps/${vAppName} /srv/www/verb/ink.i/wiki

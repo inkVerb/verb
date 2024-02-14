@@ -3,6 +3,7 @@
 
 # This script allows all of a user's main inkVerb subdomains to point to preferred apps, 
 # This is mainly aesthetic, defining a particular web app to be the king of its color
+##DEV this is out of date and may be depreciated; review the need and use of this serf
 
 # How to use:
 ## ./pointink [subdomain only]

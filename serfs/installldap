@@ -1,0 +1,266 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This installs LDAP
+## https://wiki.archlinux.org/title/openLDAP
+##DEV future serf/ink tools may be useful for managing users based on:
+### https://wiki.archlinux.org/title/LDAP_authentication#Populate_LDAP_tree_with_base_data
+### Passwords hashed with: slappasswd -h '{SHA}' -s 12345somepassword OR slappasswd -s 12345somepassword
+### The first-contact example here could be useful
+### A .ink ldapuser add/update tool should:
+#### use slappasswd to create the file
+#### then employ a 'ldapuser' serf that only updates/adds with only the hashed password as an argument
+#### then deletes/ommits its own 'ink ...' command from BASH history
+
+# How to use:
+## ./installldap
+
+usagenotes="This installs LDAP"
+usageformat="installldap"
+usageexample="installldap"
+hierarchy=( secondary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/installldap.replace" ]; then . /opt/verb/mods/installldap.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installldap.before" ]; then . /opt/verb/mods/installldap.before; fi # Precedes this script
+
+
+# Check if already installed
+if [ -f /opt/verb/conf/ldap/ldapinstalled ]; then
+/usr/bin/echo "LDAP is already installed."
+exit 0; fi
+
+# Include the configs
+. /opt/verb/conf/siteurilist
+
+# Install LDAP
+/usr/bin/pacman -Syy openldap --needed --noconfirm
+
+## Server
+### Process Domain Components
+dcstring=$(/usr/bin/echo "${blueURI}" | /usr/bin/sed 's/^/DC=/; s/\./,DC=/g')
+
+### Create our password & hash
+ldapPass=$(/usr/bin/pwgen -s -1 27)
+ldapPassHash="$(/usr/bin/slappasswd -s ${ldapPass})"
+/usr/bin/mkdir -p /opt/verb/conf/ldap/users /srv/ldap
+/usr/bin/chown -R ldap:ldap /srv/ldap
+/usr/bin/chmod 660 -R /opt/verb/conf/ldap
+/usr/bin/echo "${ldapPass}" > /opt/verb/conf/ldap/ldaprootpassword
+
+### Settings
+/usr/bin/chown -R ldap:ldap /etc/openldap/*
+/usr/bin/install -m 0700 -o ldap -g ldap -d /var/lib/openldap/openldap-data/
+#### Note: don't skip lines in these groups, skipped lines corrupt the file
+/usr/bin/cat <<EOF > /etc/openldap/config.ldif
+# The root config entry
+dn: cn=config
+objectClass: olcGlobal
+cn: config
+olcArgsFile: /run/openldap/slapd.args
+olcPidFile: /run/openldap/slapd.pid
+
+# Schemas
+dn: cn=schema,cn=config
+objectClass: olcSchemaConfig
+cn: schema
+
+# TODO: Include further schemas as necessary
+include: file:///etc/openldap/schema/core.ldif
+
+# The config database
+dn: olcDatabase=config,cn=config
+objectClass: olcDatabaseConfig
+olcDatabase: config
+olcRootDN: cn=Manager,${dcstring}
+
+# The database for our entries
+dn: olcDatabase=mdb,cn=config
+objectClass: olcDatabaseConfig
+objectClass: olcMdbConfig
+olcDatabase: mdb
+olcSuffix: ${dcstring}
+olcRootDN: cn=Manager,${dcstring}
+olcRootPW: ${ldapPassHash}
+olcDbDirectory: /var/lib/openldap/openldap-data
+# TODO: Create further indexes
+olcDbIndex: objectClass eq
+
+# TODO: Create further indexes
+olcDbIndex: objectClass eq
+olcDbIndex: uid pres,eq
+olcDbIndex: mail pres,sub,eq
+olcDbIndex: cn,sn pres,sub,eq
+olcDbIndex: dc eq
+
+# Additional schemas
+# RFC1274: Cosine and Internet X.500 schema
+include: file:///etc/openldap/schema/cosine.ldif
+# RFC2307: An Approach for Using LDAP as a Network Information Service
+# Check RFC2307bis for nested groups and an auxiliary posixGroup objectClass (way easier)
+include: file:///etc/openldap/schema/nis.ldif
+# RFC2798: Internet Organizational Person
+include: file:///etc/openldap/schema/inetorgperson.ldif
+
+# SSL Certificates via inkCert
+dn: cn=config
+add: olcTLSCACertificateFile
+olcTLSCACertificateFile: /etc/inkcert/le/live/${blueURI}/chain.pem
+-
+add: olcTLSCertificateFile
+olcTLSCertificateFile: /etc/inkcert/le/live/${blueURI}/cert.pem
+-
+add: olcTLSCertificateKeyFile
+olcTLSCertificateKeyFile: /etc/inkcert/le/live/${blueURI}/privkey.pem
+-
+add: olcTLSCACertificatePath
+olcTLSCACertificatePath: /usr/share/ca-certificates/trust-source
+EOF
+/usr/bin/chown -R ldap:ldap /etc/openldap/config.ldif
+
+### Import settings as the ldap user
+/usr/bin/su ldap -c 'slapadd -n 0 -F /etc/openldap/slapd.d/ -l /etc/openldap/config.ldif'
+
+### Set the environment service to use ldaps (SSL) in addition to 127 localhost
+/usr/bin/cat <<EOF > /etc/conf.d/slapd
+SLAPD_URLS="ldap://127.0.0.1 ldaps:///"
+SLAPD_OPTIONS=
+EOF
+
+### Start the service
+/usr/bin/systemctl enable slapd
+/usr/bin/systemctl start slapd
+
+## Client
+### Set up the self-client
+/usr/bin/cat <<EOF > /etc/openldap/ldap.conf
+BASE            dc=localhost,dc=localdomain
+URI             ldap://localhost
+EOF
+
+### Create base.ldif to import for allowing authentication
+/usr/bin/cat <<EOF > /etc/openldap/base.ldif
+# ${blueURI}
+dn: ${dcstring}
+dc: ${blueURI}
+o: ${blueURI}
+objectClass: dcObject
+objectClass: organization
+
+# Manager, ${blueURI}
+dn: cn=Manager,${dcstring}
+cn: Manager
+description: LDAP Administrator
+objectClass: organizationalRole
+objectClass: top
+roleOccupant: ${dcstring}
+
+# People, ${blueURI}
+dn: ou=People,${dcstring}
+ou: People
+objectClass: top
+objectClass: organizationalUnit
+
+# Groups, ${blueURI}
+dn: ou=Group,${dcstring}
+ou: Group
+objectClass: top
+objectClass: organizationalUnit
+EOF
+/usr/bin/chown ldap:ldap /etc/openldap/base.ldif
+
+### Import base.ldif
+/usr/bin/ldapadd -D "cn=Manager,$dcstring" -W -f base.ldif
+
+### Allow PAM authentication
+#### /etc/pam.d/system-auth
+/usr/bin/sed -i "/^auth.*pam_unix.so/i auth    sufficient          pam_ldap.so" /etc/pam.d/system-auth
+/usr/bin/sed -i "/^account.*pam_unix.so/i account    sufficient          pam_ldap.so" /etc/pam.d/system-auth
+/usr/bin/sed -i "/^password.*pam_unix.so/i password    sufficient          pam_ldap.so" /etc/pam.d/system-auth
+/usr/bin/sed -i "/^session.*pam_unix.so/a session    optional            pam_ldap.so" /etc/pam.d/system-auth
+
+#DEV we don't want to enable use of su through LDAP users at this time, that's that this does
+# #### Allow su with PAM login
+# ##### /etc/pam.d/su
+# /usr/bin/sed -i "/^auth.*pam_rootok.so/a auth    sufficient          pam_ldap.so" /etc/pam.d/su
+# /usr/bin/sed -i "/^auth.*pam_unix.so/ s/$/ use_first_pass/" /etc/pam.d/su
+# /usr/bin/sed -i "/^account.*pam_unix.so/i account    sufficient            pam_ldap.so" /etc/pam.d/su
+# /usr/bin/sed -i "/^session.*pam_unix.so/i session    sufficient            pam_ldap.so" /etc/pam.d/su
+# ##### /etc/pam.d/su-l
+# /usr/bin/sed -i "/^auth.*pam_rootok.so/a auth    sufficient          pam_ldap.so" /etc/pam.d/su-l
+# /usr/bin/sed -i "/^auth.*pam_unix.so/ s/$/ use_first_pass/" /etc/pam.d/su-l
+# /usr/bin/sed -i "/^account.*pam_unix.so/i account    sufficient            pam_ldap.so" /etc/pam.d/su-l
+# /usr/bin/sed -i "/^session.*pam_unix.so/i session    sufficient            pam_ldap.so" /etc/pam.d/su-l
+
+#### Users change own password /etc/pam.d/passwd
+/usr/bin/sed -i "/^password.*pam_unix.so/i password    sufficient            pam_ldap.so" /etc/pam.d/passwd
+#### Create home on login /etc/pam.d/system-login
+if /usr/bin/grep ^session /etc/pam.d/system-login | /usr/bin/grep -q sufficient; then # if a 'sufficient' entry
+  /usr/bin/sed -i "/^session.*sufficient/i session    required   pam_mkhomedir.so skel=/etc/skel umask=0077" /etc/pam.d/system-login # adds before every occurrance
+  /usr/bin/awk -i inplace '/session    required   pam_mkhomedir.so skel=\/etc\/skel umask=0077/&&c++>0 {next} 1' /etc/pam.d/system-login # removes all but first entry
+else
+  /usr/bin/sed -i -e :a -e '/^\n*$/{$d;N;ba' -e '}' /etc/pam.d/system-login # Delete the last line of the file if it is empty
+  /usr/bin/echo 'session    required   pam_mkhomedir.so skel=/etc/skel umask=0077' >> /etc/pam.d/system-login # Just add it to the end of the file
+fi
+
+### Add first entry
+adminPass=$(/usr/bin/pwgen -s -1 15)
+adminPassHash="$(/usr/bin/slappasswd -s ${ldapPass})"
+/usr/bin/mkdir -p /srv/ldap/admin
+/usr/bin/chown -R ldap:ldap /srv/ldap/admin
+/usr/bin/echo ${adminPass} > /opt/verb/conf/ldap/users/admin.passwd
+/usr/bin/chmod 660 /opt/verb/conf/ldap/users/admin.passwd
+/usr/bin/cat <<EOF > /srv/ldap/admin.ldif
+dn: uid=johndoe,ou=People,${dcstring}
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: admin
+cn: ${blueURI} Admin
+sn: Admin
+givenName: ${blueURI}
+title: LDAP Admin
+telephoneNumber: +0 000 000 0000
+mobile: +0 000 000 0000
+postalAddress: AddressLine1\$AddressLine2\$AddressLine3
+userPassword: ${adminPassHash}
+labeledURI: https://${blueURI}
+loginShell: /bin/bash
+uidNumber: 9999
+gidNumber: 9999
+homeDirectory: /srv/ldap/admin/
+description: Admin and first user in the system
+EOF
+/usr/bin/chown ldap:ldap /srv/ldap/admin.ldif
+/usr/bin/ldapadd -D "cn=Manager,dc=example,dc=org" -W -f /srv/ldap/admin.ldif
+
+# Cron task for backup
+/bin/echo '* 5 * * * root /opt/verb/donjon/ldapbak.sh cronbak' > /etc/cron.d/ldapbak
+/bin/chmod 0644 /etc/cron.d/ldapbak
+
+# Record config
+/usr/bin/touch /opt/verb/conf/ldap/ldapinstalled
+
+# Finish
+/usr/bin/echo "LDAP installed; change the admin password quickly
+Login: admin
+First admin password is: ${adminPass}"
+
+
+
+
+
+if [ -e "/opt/verb/mods/installldap.after" ]; then . /opt/verb/mods/installldap.after; fi # Follows this script

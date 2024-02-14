@@ -225,9 +225,7 @@ EOF
 
 # Set up bg jobs cron
 ## Nextcloud background jobs (manage the crontab files directly)
-/usr/bin/echo '*/15 * * * *  www php -f /srv/www/vapps/nextcloud/cron.php
-' > /etc/cron.d/nextcloud
-## Permissions
+/usr/bin/echo '*/15 * * * *  www php -f /srv/www/vapps/nextcloud/cron.php' > /etc/cron.d/nextcloud
 /usr/bin/chmod 0644 /etc/cron.d/nextcloud
 
 #DEV handling this automatically now

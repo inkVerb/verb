@@ -12,6 +12,7 @@ stable version examples:
 
 - 1.04.00 (main release with new features)
 - 1.04.10 (vital update, no new features)
+- 1.04.13 (small update, no new features)
 - 1.04.20 (vital update, no new features)
 - 1.05.00 (main release with new features)
 
@@ -151,6 +152,22 @@ III. inst/ contains files only used at installation and updates and some importa
 IV. The "donjon" - assets or "native apps"
 	A. This is where native apps are kept. They may be written in Python or any other language.
 	B. These apps are essential for the work of some routine tasks, often tied to cron tasks
+	  - List of cron task times: (you may want to either avoid or be aware these times)
+	    - `* 4 * * * root /opt/verb/donjon/mysqlbak.sh`
+		- `* 5 * * * root /opt/verb/donjon/ldapbak.sh`
+		- `15 1 * * * root /opt/verb/donjon/vapp.mysql.vbak.sh`
+		- `*/5 * * * * root /opt/verb/donjon/digverbs.sh`
+		- `*/5 * * * * root /opt/verb/donjon/digdomain.sh`
+		- `*/15 * * * *  www-data php -f /usr/share/webapps/nextcloud/cron.php`
+		- `* * * * * cd /srv/www/vapps/suitecrm; php -f cron.php > /dev/null 2>&1`
+		- `22 * * * * root /opt/verb/donjon/sysmails.sh phpmail`/`msmtp`
+		- `44 * * * * root /opt/verb/donjon/sysmails.sh nextcloud`
+		- `14,44 * * * * root /opt/verb/donjon/rmdldirs.sh`
+		- `15,55 * * * * root /opt/verb/conf/inknet/inknetrmcertdldirs.sh`
+		- `0 0 * * * root /opt/verb/donjon/rmserial.sh > /dev/null 2>&1`
+		- `3 3 * * * root /opt/verb/donjon/inkcert-renew-allsc.sh`
+	    - `2 2 * * * root /opt/verb/donjon/inkcertcble-renew-all.sh`
+		- `4 4 * * * root /opt/verb/donjon/inkcertcble-renew-all.sh`
 
 V. inklists is meant for lists and repoes
 	A. It contains universal, non-verber-specific config files that get updated regularly with the updateverber serf, such as version info
@@ -317,7 +334,6 @@ XII. Mounted volumes
 	- Another tool would allow dropping user prepared `db.*` and `nv.*` files into a `parked/domain.tld/` folder for validation
 
 ## serfs integration `ink`
-
 IMPORTANT: As of v0.90.00, serfs are being integrated into the `ink` tool in verb/ink. This will manage the serfs by providing validation, help, and making them somewhat "mistake-proof". This is slowly rolling out to all serfs.
 
 Scripts in verb/serfs are called "serfs". These have comment instructions and notes at the head of each script. These notes could extend past 10 and 20 lines, usually `head serfname` could give a good understanding and possible usage examples of how a serf is used.
@@ -333,6 +349,11 @@ While still in early development, not all serfs have these variables and arrays,
 Using serfs directly is second preference to the `ink` command line tool, but may be 
 
 Much of the information found with the `info` serf is redundant in the verb/ink/help/*.md files, which explain more how the server is affected by `ink` commands. See the section below on using `ink` as the primary command line tool.
+
+## `verb` TLD impact
+Every subdomain of each verb TLD (ie cloud.NAME.verb.blue or cloud.blue.DOMAINMOD.tld) impacts several settings and serfs
+
+A complete list of affected files and scripts is at [dev/each-verb.md](https://github.com/inkVerb/verb/blob/main/dev/each-verb.md)
 
 ## ink CLI tool
 
@@ -370,3 +391,4 @@ verb supports mods!
   - SERFNAME.replace - Replaces the entire script and finishes with `return`
   - SERFNAME.before - Runs before anything in the script starts
   - SERFNAME.after - Runs after everything in the script finishes
+

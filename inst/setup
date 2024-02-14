@@ -785,7 +785,7 @@ if [ ${VERBink} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "
   /opt/verb/serfs/ensitenginx ${inkURI} i.${inkURI}
 fi
 if [ ${VERBblue} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
-  /opt/verb/serfs/ensitenginx ${blueURI} b.${blueURI} cloud.${blueURI}
+  /opt/verb/serfs/ensitenginx ${blueURI} b.${blueURI} cloud.${blueURI} ldap.${blueURI}
 fi
 if [ ${VERBvip} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
   /opt/verb/serfs/ensitenginx ${vipURI} v.${vipURI} files.${vipURI}
@@ -814,7 +814,7 @@ if [ ${VERBink} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "
   /opt/verb/serfs/ensiteapache ${inkURI} i.${inkURI}
 fi
 if [ ${VERBblue} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lamp" ]; then
-  /opt/verb/serfs/ensiteapache ${blueURI} b.${blueURI} cloud.${blueURI}
+  /opt/verb/serfs/ensiteapache ${blueURI} b.${blueURI} cloud.${blueURI} ldap.${blueURI}
 fi
 if [ ${VERBvip} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lamp" ]; then
   /opt/verb/serfs/ensiteapache ${vipURI} v.${vipURI}

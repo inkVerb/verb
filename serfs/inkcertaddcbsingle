@@ -141,7 +141,7 @@ if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
     /bin/sed -i "s/FirstInkCertAddCB=\"NOT_YET\"/FirstInkCertAddCB=\"DONE\"/g" /opt/verb/conf/inkcertstatus
     ### Create the cron job
     #### Add CB's auto updater to the cron
-    /bin/echo '4 4 * * * root /opt/verb/donjon/inkcertcble-renew-all.sh' > /etc/cron.d/inkcertrenewcblecron
+    /bin/echo '2 2 * * * root /opt/verb/donjon/inkcertcble-renew-all.sh' > /etc/cron.d/inkcertrenewcblecron
     /bin/chmod 0644 /etc/cron.d/inkcertrenewcblecron
   fi
 
@@ -206,7 +206,7 @@ elif [ ${ServerType} = "lamp" ]; then
     /bin/sed -i "s/FirstInkCertAddCB=\"NOT_YET\"/FirstInkCertAddCB=\"DONE\"/g" /opt/verb/conf/inkcertstatus
     ### Create the cron job
     #### Add CB's auto updater to the cron
-    /bin/echo '4 4 * * * root /opt/verb/donjon/inkcertcble-renew-all.sh' > /etc/cron.d/inkcertrenewcblecron
+    /bin/echo '2 2 * * * root /opt/verb/donjon/inkcertcble-renew-all.sh' > /etc/cron.d/inkcertrenewcblecron
     /bin/chmod 0644 /etc/cron.d/inkcertrenewcblecron
   fi
 

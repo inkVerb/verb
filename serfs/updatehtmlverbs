@@ -48,6 +48,7 @@ if [ ! -e "ink.i" ]; then /bin/cp -r 0ne ink.i; fi
 if [ ! -e "blue" ]; then /bin/cp -r 0ne blue; fi
 if [ ! -e "blue.b" ]; then /bin/cp -r 0ne blue.b; fi
 if [ ! -e "blue.cloud" ]; then /bin/cp -r 0ne blue.cloud; fi
+if [ ! -e "blue.ldap" ]; then /bin/cp -r 0ne blue.ldap; fi
 if [ ! -e "vip" ]; then /bin/cp -r 0ne vip; fi
 if [ ! -e "vip.v" ]; then /bin/cp -r 0ne vip.v; fi
 if [ ! -e "vip.files" ]; then /bin/cp -r 0ne vip.files; fi
@@ -100,6 +101,7 @@ fi
 /bin/chmod -R 750 blue
 /bin/chmod -R 750 blue.b
 /bin/chmod -R 750 blue.cloud
+/bin/chmod -R 750 blue.ldap
 /bin/chmod -R 750 vip
 /bin/chmod -R 750 vip.v
 /bin/chmod -R 750 vip.files
