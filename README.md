@@ -36,3 +36,7 @@ Help:
 - `journalctl -t verber.ink` # all logs
 - `journalctl -t verber.ink -p err SYSLOG_FACILITY=22` # errors
 - `journalctl -t verber.ink -p info SYSLOG_FACILITY=22` # standard info
+
+___
+
+Licensing disclaimer: This is distributed "as is" and may install third party software. By using this, you fully accept any related licensing responsibility and/or obligation(s) that of any software and related agreements of whatever may be consequently installed.
