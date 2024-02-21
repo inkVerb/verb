@@ -46,7 +46,7 @@ fi
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 # Remove unneeded packages
-/usr/bin/pacman -Qdt --noconfirm
+/usr/bin/pacman -Rsc --noconfirm
 /usr/bin/pacman -Scc --noconfirm
 
 # ClamAV

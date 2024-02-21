@@ -33,7 +33,7 @@ To be clean and fresh, update the VPS and reset the identity RSA keys...
 pacman -Sy archlinux-keyring --noconfirm
 pacman -Syyu --noconfirm
 pacman -S git vim --noconfirm
-pacman -Qdt --noconfirm
+pacman -Rsc --noconfirm
 pacman -Scc --noconfirm
 rm /etc/ssh/ssh_host_*
 ssh-keygen -A
@@ -89,10 +89,10 @@ Update and install `git` and `vim` so we can do more work...
 ```console
 /usr/bin/pacman -Sy archlinux-keyring --noconfirm
 /usr/bin/pacman -Syyu --noconfirm
-/usr/bin/pacman -Qdt --noconfirm
+/usr/bin/pacman -Rsc --noconfirm
 /usr/bin/pacman -Scc --noconfirm
 /usr/bin/pacman -S git vim --noconfirm
-/usr/bin/pacman -Qdt --noconfirm
+/usr/bin/pacman -Rsc --noconfirm
 /usr/bin/pacman -Scc --noconfirm
 ```
 

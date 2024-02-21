@@ -1,6 +1,6 @@
 # Verb
 sed -i "s/apt-get install -y/pacman -S --noconfirm/g" *
-sed -i "s/apt-get autoremove -y/pacman -Qdt/g" *
+sed -i "s/apt-get autoremove -y/pacman -Rsc/g" *
 sed -i "s/apt-get upgrade -y/pacman -Syyu --noconfirm/g" *
 
 

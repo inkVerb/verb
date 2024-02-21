@@ -65,7 +65,7 @@ cleanName=$(/bin/echo $cVappName | sed -e 's/\.//g')
 /usr/bin/pacman -Syyu --noconfirm --needed
 /usr/bin/pacman -S --noconfirm --needed nextcloud
 if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: ls'; exit 4; fi
-/usr/bin/pacman -Qdt --noconfirm
+/usr/bin/pacman -Rsc --noconfirm
 /usr/bin/pacman -Scc --noconfirm
 # /usr/bin/pacman -S --noconfirm --needed uwsgi-plugin-php # For uwsgi if it works
 

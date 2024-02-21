@@ -57,8 +57,8 @@ fi
 /usr/bin/pacman -Sy archlinux-keyring --noconfirm
 # Update Packages
 /usr/bin/pacman -Syyu --noconfirm --needed
-/usr/bin/su worker -c '/usr/bin/yay -Syyu --noconfirm --needed'
-#/usr/local/bin/yeo -Syyu --noconfirm --needed
+/usr/bin/su worker -c '/usr/bin/yay -Syyu --noconfirm'
+#/usr/local/bin/yeo -Syyu --noconfirm
 
 # Swap
 /opt/verb/serfs/setswapsize ${swapsizemake}; wait
@@ -376,9 +376,10 @@ e="$?"; [[ "$e" = "0" ]] || /usr/bin/echo 'Failed: !!'; exit "$e"
 e="$?"; [[ "$e" = "0" ]] || /usr/bin/echo 'Failed: !!'; exit "$e"
 
 # Remove unneeded packages
-/usr/bin/pacman -Qdt --noconfirm
+/usr/bin/pacman -Rsc --noconfirm
 /usr/bin/pacman -Scc --noconfirm
 /usr/bin/su worker -c '/usr/bin/yay -Scc --noconfirm'
+/usr/bin/su worker -c '/usr/bin/yay -Yc --noconfirm'
 #/usr/local/bin/yeo -Scc --noconfirm
 
 # Restart Server and reconnect at the new port

@@ -51,7 +51,7 @@ fi
 if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
 
 # Remove unneeded packages
-/usr/bin/pacman -Qdt --noconfirm
+/usr/bin/pacman -Rsc --noconfirm
 /usr/bin/pacman -Scc --noconfirm
 
 # SpamAssassin
@@ -252,7 +252,7 @@ if [ -n "$2" ] && [ "$2" = "clamav" ]; then
 fi
 
 # Remove unneeded packages
-/usr/bin/pacman -Qdt --noconfirm
+/usr/bin/pacman -Rsc --noconfirm
 /usr/bin/pacman -Scc --noconfirm
 /usr/bin/su worker -c '/usr/bin/yay -Scc --noconfirm'
 
