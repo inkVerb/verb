@@ -100,6 +100,8 @@ syntax on' >> /etc/vimrc
 /usr/bin/chown -R worker:worker /opt/verb/worker
 /usr/bin/usermod -d /opt/verb/worker worker
 /usr/bin/echo 'worker ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/worker
+/usr/bin/usermod -L worker
+/usr/bin/chsh -s /usr/sbin/bash worker 1> /dev/null 2>& 1 # It generates STDOUT and STDERR
 
 # Let's use sudo
 /usr/bin/groupadd sudo
