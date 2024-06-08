@@ -94,7 +94,7 @@ syntax on' >> /etc/vimrc
 /usr/bin/groupadd www
 /usr/bin/groupadd worker
 /usr/bin/useradd -g worker worker
-/usr/bin/usermod -a -G wheel worker
+#/usr/bin/usermod -a -G wheel worker # Should not be necessary with the sudoers.d/ entry
 /usr/bin/usermod -a -G www worker
 /usr/bin/mkdir -p /opt/verb/worker
 /usr/bin/chown -R worker:worker /opt/verb/worker
