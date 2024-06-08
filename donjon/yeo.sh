@@ -6,7 +6,7 @@
 
 # This requires normal users to run as "sudo"
 
-# Usage: run "yeo" instead of "yay", otherwise as you normally would
+# Usage: run "sudo yeo" instead of "yay", otherwise as you normally would
 
 # If root or sudo
 if [ "$(id -u)" != "0" ]; then
