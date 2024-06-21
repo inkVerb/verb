@@ -242,7 +242,7 @@ X. Other notes
 		3. The main purpose of "if" checks is for complex situations or to provide contingency alternatives for factors outside of the verber, such as failing to download a webapp for installation.
 		4. Generally, failed "plugins" won't break an entire script; failing to download the core webapp will `exit 4` and the webapp won't be installed at all.
 XI. Web host directory structure
-	A. The /srv/www folder:
+	A. The `/srv/www` folder:
 		- html: where all web folders link to and are found via apache or nginx config files
 		- domains: hosted domains default web folders (keeping things simple for FTP client managent of personal projects)
 		- email: roundcube & pfa apps
@@ -269,6 +269,22 @@ XI. Web host directory structure
 				- `/etc/httpd/sites-available -> /opt/verb/conf/webserver/sites-available/httpd`
 			- Properly enable sites with the `ensitenginx` and `ensiteapache` serfs, but normal links should also work
 		- php.ini is at verb/conf/php.ini and linked to /etc/php/php.ini (so you don't need to hunt for it)
+		- Nextcloud will use only Nginx on a LAEMP server
+		  - Nextcloud does not use reverse proxy, only Nginx
+		  - An Apache config is still available, but will not be enabled
+		  - `nextcloud-httpd.conf` and `nextcloud-nginx.conf` are both meant for stand-alone use
+            - Only Nginx is used by default, Apache's config is not enabled; this could be reversed by the SysAdmin if desired, but also update SSL cert statements manually
+	C. Web server config files (`/etc/nginx/` & `/etc/httpd/`)
+	    - The `sites-available` folders are symlinks actual folders in `verb/conf/webserver/`
+		  - This serves two purposes:
+		    - Navigating between config folders for both servers more convenient
+			- Residing in the `verb/` directory, copying that folder will automatically copy all web server configs, useful for server backup and migration
+		- Link structure
+		  - `/etc/nginx/sites-available/` -> `verb/conf/webserver/sites-available/nginx/`
+		  - `/etc/httpd/sites-available/` -> `verb/conf/webserver/sites-available/httpd/`
+		  - `/etc/nginx/sites-enabled/` -> `verb/conf/webserver/sites-enabled/nginx/`
+		  - `/etc/httpd/sites-enabled/` -> `verb/conf/webserver/sites-enabled/httpd/`
+		- The original folder structure still works so that other apps should not know the difference unless they check every directory tree location for an actual directory
 XII. Mounted volumes
 	- Volume mounting is an option, placing man of the web hosted folders at various places on SSD and HDD mounted volumes
 		- This is handled by the Rink, which creates and manages verb VPS instances in the first place. If you are managing a stand-alone verber installed manually, mounted volume systems will simply be non-existant by the system. But, don't delete any volume config files because the framework still depends on them, even if to remain at their default values.

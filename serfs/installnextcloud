@@ -119,7 +119,9 @@ EOF
 if [ ${ServerType} = "laemp" ]; then
   /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf.old
   /usr/bin/mv /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf.old
-  /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud-tar.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud-nginx.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud-httpd.conf /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf
+  /usr/bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/cloud.${blueURI}.conf
   #These are for a revers-proxy configuration, but the .conf files don't work correctly and still need tweaking; Nginx alone works for this
   # /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud-nginx.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf
   # /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud-httpd.conf /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf
