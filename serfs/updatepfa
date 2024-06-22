@@ -21,7 +21,7 @@ if [ -d /srv/www/email/postfixadmin.vbak ]; then
   /bin/rm -rf /srv/www/email/postfixadmin.vbak; fi
 /bin/mv /srv/www/email/postfixadmin /srv/www/email/postfixadmin.vbak
 /opt/verb/serfs/inkget postfixadmin; wait
-
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 # Set the templates_c dir
 /bin/mkdir -p /srv/www/email/postfixadmin/templates_c
