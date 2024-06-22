@@ -18,17 +18,17 @@ if [ $InkGet_Method != "ZJZ" ]; then
   cd /opt/verb/repo; fi
 
 # Announce
-/bin/echo "Updating the OrangeHRM package to v${distVer}..."
+/usr/bin/echo "Retrieving OrangeHRM v${distVer}..."
 
 # Get the package
-/usr/bin/wget https://sourceforge.net/projects/orangehrm/files/stable/${distVer}/orangehrm-${distVer}.zip
-if [ ! -f "orangehrm-${distVer}.zip" ]; then
+/usr/bin/wget -O ${cVappName}.zip https://sourceforge.net/projects/orangehrm/files/stable/${distVer}/orangehrm-${distVer}.zip
+if [ ! -f "${cVappName}.zip" ]; then
 /bin/echo "Failed download."; touch "${cVappName}.failed"
 exit 4; else
 /bin/rm -f ${cVappName}.failed; fi
 ## Check the hash
-checksha=$(sha1sum orangehrm-${distVer}.zip)
-if [ "${checksha}" = "${orangehrmsha}  orangehrm-${distVer}.zip" ]; then
+checksha=$(/usr/bin/sha1sum ${cVappName}.zip)
+if [ "${checksha}" = "${orangehrmsha} ${cVappName}.zip" ]; then
 /bin/echo "Download checks out."
 else
 /bin/echo "SHA check failed. The downloaded file is not what was expected."
@@ -42,8 +42,8 @@ if [ $InkGet_Method != "ZJZ" ]; then
   /bin/mv ${cVappName}.txz ${cVappName}.legacy.txz
 fi
 /usr/bin/echo "Extracting from vendor..."
-/usr/bin/unzip -q orangehrm-${distVer}.zip
-/bin/rm orangehrm-${distVer}.zip
+/usr/bin/unzip -q ${cVappName}.zip
+/bin/rm ${cVappName}.zip
 /bin/mv orangehrm-${distVer} ${cVappName}
 /bin/rm orangehrm-quick-start-guide.html
 if [ $InkGet_Method != "ZJZ" ]; then

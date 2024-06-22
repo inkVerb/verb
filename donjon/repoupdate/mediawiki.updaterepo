@@ -18,19 +18,19 @@ if [ $InkGet_Method != "ZJZ" ]; then
   cd /opt/verb/repo; fi
 
 # Announce
-/bin/echo "Updating the MediaWiki package to v${distVer}..."
+/usr/bin/echo "Retrieving MediaWiki v${distVer}..."
 
 # Get the package
 ## Thanks StackOverflow (https://stackoverflow.com/questions/52455153/how-to-remove-after-second-period-in-a-string-using-sed)
 SHRTVER="$(/bin/echo "$distVer" | sed 's/\.[^.]\+$//')"
-/usr/bin/wget https://releases.wikimedia.org/mediawiki/${SHRTVER}/mediawiki-${distVer}.tar.gz
+/usr/bin/wget -O ${cVappName}.tgz https://releases.wikimedia.org/mediawiki/${SHRTVER}/mediawiki-${distVer}.tar.gz
 if [ ! -f "mediawiki-${distVer}_all.tar.gz" ]; then
 /bin/echo "Failed download."; touch "${cVappName}.failed"
 exit 4; else
 /bin/rm -f ${cVappName}.failed; fi
 ## Check the hash
-checksha=$(sha1sum mediawiki-${distVer}.tar.gz)
-if [ "${checksha}" = "${mediawikisha}  mediawiki-${distVer}.tar.gz" ]; then
+checksha=$(/usr/bin/sha1sum ${cVappName}.tgz )
+if [ "${checksha}" = "${mediawikisha} ${cVappName}.tgz " ]; then
 /bin/echo "Download checks out."
 else
 /bin/echo "SHA check failed. The downloaded file is not what was expected."
@@ -44,8 +44,8 @@ if [ $InkGet_Method != "ZJZ" ]; then
   /bin/mv ${cVappName}.txz ${cVappName}.legacy.txz
 fi
 /usr/bin/echo "Extracting from vendor..."
-/usr/bin/tar xf mediawiki-${distVer}.tar.gz
-/bin/rm mediawiki-${distVer}.tar.gz
+/usr/bin/tar xf ${cVappName}.tgz 
+/bin/rm ${cVappName}.tgz 
 /bin/mv mediawiki-${distVer} ${cVappName}
 if [ $InkGet_Method != "ZJZ" ]; then
   /opt/verb/serfs/txzin ${cVappName}; wait

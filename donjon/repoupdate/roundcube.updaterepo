@@ -18,19 +18,19 @@ if [ $InkGet_Method != "ZJZ" ]; then
   cd /opt/verb/repo; fi
 
 # Announce
-/bin/echo "Updating the Roundcube package to v${distVer}..."
+/usr/bin/echo "Retrieving Roundcube v${distVer}..."
 
 # Get the package
-/usr/bin/wget https://github.com/roundcube/roundcubemail/releases/download/${distVer}/roundcubemail-${distVer}-complete.tar.gz
-if [ ! -f "roundcubemail-${distVer}-complete.tar.gz" ]; then
+/usr/bin/wget -O ${cVappName}.tgz https://github.com/roundcube/roundcubemail/releases/download/${distVer}/roundcubemail-${distVer}-complete.tar.gz
+if [ ! -f "${cVappName}.tgz" ]; then
 /bin/echo "Failed download."; touch "${cVappName}.failed"
 exit 4; else
 /bin/rm -f ${cVappName}.failed; fi
 
 ## Check the hash
-checksha=$(/usr/bin/sha256sum roundcubemail-${distVer}-complete.tar.gz)
+checksha=$(/usr/bin/sha256sum ${cVappName}.tgz)
 
-if [ "${checksha}" = "${roundcubesha}  roundcubemail-${distVer}-complete.tar.gz" ]; then
+if [ "${checksha}" = "${roundcubesha} ${cVappName}.tgz" ]; then
   /bin/echo "Download checks out."
 else
   /bin/echo "SHA check failed. The downloaded file is not what was expected."
@@ -44,8 +44,8 @@ if [ $InkGet_Method != "ZJZ" ]; then
   /bin/mv ${cVappName}.txz ${cVappName}.legacy.txz
 fi
   /usr/bin/echo "Extracting from vendor..."
-  /usr/bin/tar xf roundcubemail-${distVer}-complete.tar.gz
-  /bin/rm roundcubemail-${distVer}-complete.tar.gz
+  /usr/bin/tar xf ${cVappName}.tgz
+  /bin/rm ${cVappName}.tgz
   /bin/mv roundcubemail-${distVer} ${cVappName}
 if [ $InkGet_Method != "ZJZ" ]; then
   /opt/verb/serfs/txzin ${cVappName}; wait

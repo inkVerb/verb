@@ -18,17 +18,17 @@ if [ $InkGet_Method != "ZJZ" ]; then
   cd /opt/verb/repo; fi
 
 # Announce
-/bin/echo "Updating the phpMyAdmin package to v${distVer}..."
+/usr/bin/echo "Retrieving phpMyAdmin v${distVer}..."
 
 # Get the package
-/usr/bin/wget https://files.phpmyadmin.net/phpMyAdmin/${distVer}/phpMyAdmin-${distVer}-all-languages.zip
-if [ ! -f "phpMyAdmin-${distVer}-all-languages.zip" ]; then
+/usr/bin/wget -O ${cVappName}.zip https://files.phpmyadmin.net/phpMyAdmin/${distVer}/phpMyAdmin-${distVer}-all-languages.zip
+if [ ! -f "${cVappName}.zip" ]; then
 /bin/echo "Failed download."; touch "${cVappName}.failed"
 exit 4; else
 /bin/rm -f ${cVappName}.failed; fi
 ## Check the hash
-checksha=$(/usr/bin/sha256sum phpMyAdmin-${distVer}-all-languages.zip)
-if [ "${checksha}" = "${phpmyadminsha}  phpMyAdmin-${distVer}-all-languages.zip" ]; then
+checksha=$(/usr/bin/sha256sum ${cVappName}.zip)
+if [ "${checksha}" = "${phpmyadminsha} ${cVappName}.zip" ]; then
 /bin/echo "Download checks out."
 else
 /bin/echo "SHA check failed. The downloaded file is not what was expected."
@@ -42,8 +42,8 @@ if [ $InkGet_Method != "ZJZ" ]; then
   /bin/mv ${cVappName}.txz ${cVappName}.legacy.txz
 fi
 /usr/bin/echo "Extracting from vendor..."
-/usr/bin/unzip -q phpMyAdmin-${distVer}-all-languages.zip
-/bin/rm phpMyAdmin-${distVer}-all-languages.zip
+/usr/bin/unzip -q ${cVappName}.zip
+/bin/rm ${cVappName}.zip
 /bin/mv phpMyAdmin-${distVer}-all-languages ${cVappName}
 if [ $InkGet_Method != "ZJZ" ]; then
   /opt/verb/serfs/txzin ${cVappName}; wait

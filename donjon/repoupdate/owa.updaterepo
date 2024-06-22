@@ -18,7 +18,7 @@ if [ $InkGet_Method != "ZJZ" ]; then
   cd /opt/verb/repo; fi
 
 # Announce
-/bin/echo "Updating the OWA package to v${distVer}..."
+/usr/bin/echo "Retrieving the OWA v${distVer}..."
 
 # Get the package
 /usr/bin/wget https://github.com/padams/Open-Web-Analytics/archive/${distVer}.tar.gz

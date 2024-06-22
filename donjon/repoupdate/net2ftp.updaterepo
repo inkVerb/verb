@@ -18,7 +18,7 @@ if [ $InkGet_Method != "ZJZ" ]; then
   cd /opt/verb/repo; fi
 
 # Announce
-/bin/echo "Updating the net2ftp package to v${distVer}..."
+/usr/bin/echo "Retrieving net2ftp v${distVer}..."
 
 # Get the package
 /usr/bin/wget http://www.net2ftp.com/download/net2ftp_v${distVer}.zip

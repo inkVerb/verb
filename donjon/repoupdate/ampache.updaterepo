@@ -18,18 +18,18 @@ if [ $InkGet_Method != "ZJZ" ]; then
   cd /opt/verb/repo; fi
 
 # Announce
-/bin/echo "Updating the Ampache package to v${distVer}..."
+/usr/bin/echo "Retrieving Ampache v${distVer}..."
 
 # Get the package
 ## Ampache downloads slowly and won't work with curl, it needs wget
-/usr/bin/wget https://github.com/ampache/ampache/releases/download/${distVer}/ampache-${distVer}_all_php8.1.zip
-if [ ! -f "ampache-${distVer}_all_php8.1.zip" ]; then
+/usr/bin/wget -O ${cVappName}.zip https://github.com/ampache/ampache/releases/download/${distVer}/ampache-${distVer}_all_php8.3.zip
+if [ ! -f "${cVappName}.zip" ]; then
 /bin/echo "Failed download."; touch "${cVappName}.failed"
 exit 4; else
 /bin/rm -f ${cVappName}.failed; fi
 ## Check the hash
-checksha=$(md5sum ampache-${distVer}_all_php8.1.zip)
-if [ "${checksha}" = "${ampachesha}  ampache-${distVer}_all_php8.1.zip" ]; then
+checksha=$(/usr/bin/md5sum ${cVappName}.zip)
+if [ "${checksha}" = "${ampachesha} ${cVappName}.zip" ]; then
 /bin/echo "Download checks out."
 else
 /bin/echo "MD5 check failed. The downloaded file is not what was expected."
@@ -43,13 +43,13 @@ if [ $InkGet_Method != "ZJZ" ]; then
   /bin/mv ${cVappName}.txz ${cVappName}.legacy.txz
 fi
 /usr/bin/mkdir ${cVappName}
-/bin/mv ampache-${distVer}_all_php8.1.zip ${cVappName}
+/bin/mv ${cVappName}.zip ${cVappName}
 if [ $InkGet_Method != "ZJZ" ]; then
   cd ${cVappName}
 fi
 /usr/bin/echo "Extracting from vendor..."
-/usr/bin/unzip -q ampache-${distVer}_all_php8.1.zip
-/bin/rm ampache-${distVer}_all_php8.1.zip
+/usr/bin/unzip -q ${cVappName}.zip
+/bin/rm ${cVappName}.zip
 if [ $InkGet_Method != "ZJZ" ]; then
   cd ..
   /opt/verb/serfs/txzin ${cVappName}; wait

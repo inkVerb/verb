@@ -33,7 +33,7 @@ if [ "${distVer}" -le "$(cat ${VERFILE})" ]; then
 exit 0; fi; done
 
 # Announce
-/bin/echo "Updating the InfiniteWP-Admin package to v${distVer}..."
+/usr/bin/echo "Retrieving InfiniteWP-Admin v${distVer}..."
 
 # Get the package
 /usr/bin/wget https://infinitewp.com/iwp-admin-panel-download.php?installedEmail=${IWPEMAIL}

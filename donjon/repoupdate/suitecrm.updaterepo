@@ -18,17 +18,17 @@ if [ $InkGet_Method != "ZJZ" ]; then
   cd /opt/verb/repo; fi
 
 # Announce
-/bin/echo "Updating the SuiteCRM package to v${distVer}..."
+/usr/bin/echo "Retrieving SuiteCRM v${distVer}..."
 
 # Get the package
-/usr/bin/wget https://sourceforge.net/projects/suitecrm/files/SuiteCRM-${distVer}.zip
-if [ ! -f "SuiteCRM-${distVer}.zip" ]; then
+/usr/bin/wget -O ${cVappName}.zip https://sourceforge.net/projects/suitecrm/files/SuiteCRM-${distVer}.zip
+if [ ! -f "${cVappName}.zip " ]; then
 /bin/echo "Failed download."; touch "${cVappName}.failed"
 exit 4; else
 /bin/rm -f ${cVappName}.failed; fi
 ## Check the hash
-checksha=$(sha1sum SuiteCRM-${distVer}.zip)
-if [ "${checksha}" = "${suitecrmsha}  SuiteCRM-${distVer}.zip" ]; then
+checksha=$(/usr/bin/sha1sum ${cVappName}.zip )
+if [ "${checksha}" = "${suitecrmsha} ${cVappName}.zip " ]; then
 /bin/echo "Download checks out."
 else
 /bin/echo "SHA check failed. The downloaded file is not what was expected."
@@ -42,8 +42,8 @@ if [ $InkGet_Method != "ZJZ" ]; then
   /bin/mv ${cVappName}.txz ${cVappName}.legacy.txz
 fi
 /usr/bin/echo "Extracting from vendor..."
-/usr/bin/unzip -q SuiteCRM-${distVer}.zip
-/bin/rm SuiteCRM-${distVer}.zip
+/usr/bin/unzip -q ${cVappName}.zip 
+/bin/rm ${cVappName}.zip 
 /bin/mv SuiteCRM-${distVer} ${cVappName}
 if [ $InkGet_Method != "ZJZ" ]; then
   /opt/verb/serfs/txzin ${cVappName}; wait

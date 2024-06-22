@@ -18,18 +18,19 @@ if [ $InkGet_Method != "ZJZ" ]; then
   cd /opt/verb/repo; fi
 
 # Announce
-/bin/echo "Updating the PostfixAdmin package to v${distVer}..."
+/usr/bin/echo "Retrieving PostfixAdmin v${distVer}..."
 
 # Get the package
-# https://sourceforge.net/projects/postfixadmin/files/postfixadmin-${distVer}/PostfixAdmin%20${distVer}.tar.gz # The public link sends a 301 to this below:
-/usr/bin/wget -O postfixadmin-${distVer}.tar.gz https://nchc.dl.sourceforge.net/project/postfixadmin/postfixadmin-${distVer}/PostfixAdmin%20${distVer}.tar.gz
-if [ ! -f "postfixadmin-${distVer}.tar.gz" ]; then
+#DEV moved to GitHub; sourceforge may still be used by RPM and DEB package managers
+#/usr/bin/wget -O postfixadmin-${distVer}.tar.gz https://nchc.dl.sourceforge.net/project/postfixadmin/postfixadmin-${distVer}/PostfixAdmin%20${distVer}.tar.gz
+/usr/bin/wget -O ${cVappName}.tgz https://github.com/postfixadmin/postfixadmin/archive/postfixadmin-${distVer}.tar.gz
+if [ ! -f "${cVappName}.tgz" ]; then
 /bin/echo "Failed download."; touch "${cVappName}.failed"
 exit 4; else
 /bin/rm -f ${cVappName}.failed; fi
 ## Check the hash
-checksha=$(sha1sum postfixadmin-${distVer}.tar.gz)
-if [ "${checksha}" = "${postfixadminsha}  postfixadmin-${distVer}.tar.gz" ]; then
+checksha=$(/usr/bin/sha256sum ${cVappName}.tgz)
+if [ "${checksha}" = "${postfixadminsha} ${cVappName}.tgz" ]; then
 /bin/echo "Download checks out."
 else
 /bin/echo "SHA check failed. The downloaded file is not what was expected."
@@ -43,9 +44,9 @@ if [ $InkGet_Method != "ZJZ" ]; then
   /bin/mv ${cVappName}.txz ${cVappName}.legacy.txz
 fi
 /usr/bin/echo "Extracting from vendor..."
-/usr/bin/tar xf postfixadmin-${distVer}.tar.gz
-/bin/rm postfixadmin-${distVer}.tar.gz
-/bin/mv postfixadmin-postfixadmin-* ${cVappName}
+/usr/bin/tar xf ${cVappName}.tgz
+/bin/rm ${cVappName}.tgz
+/bin/mv postfixadmin-postfixadmin-${distVer} ${cVappName}
 if [ $InkGet_Method != "ZJZ" ]; then
   /opt/verb/serfs/txzin ${cVappName}; wait
   /bin/rm -rf ${cVappName}

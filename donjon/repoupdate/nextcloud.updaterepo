@@ -16,7 +16,7 @@ if [ $InkGet_Method != "ZJZ" ]; then
   cd /opt/verb/repo; fi
 
 # Announce
-/bin/echo "Updating the NextCloud package to the latest version..."
+/usr/bin/echo "Retrieving NextCloud latest version..."
 
 # Get the package
 /usr/bin/wget https://download.nextcloud.com/server/releases/latest.tar.bz2

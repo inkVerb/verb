@@ -18,7 +18,7 @@ if [ $InkGet_Method != "ZJZ" ]; then
   cd /opt/verb/repo; fi
 
 # Announce
-/bin/echo "Updating the Fossil package to v${distVer}..."
+/usr/bin/echo "Retrieving Fossil v${distVer}..."
 
 # Get the package
 /usr/bin/wget https://www.fossil-scm.org/fossil/uv/fossil-linux-x64-${distVer}.tar.gz

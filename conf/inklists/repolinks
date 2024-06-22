@@ -1,7 +1,7 @@
 #!/bin/sh
 # inkVerb repo donjon download info list
 
-ampache="https://github.com/ampache/ampache/releases NOTE: still using md5 & zip"
+ampache="https://github.com/ampache/ampache/releases NOTE: still using md5 & zip; hash before, not squashed"
 fossil="https://www.fossil-scm.org/fossil/uv/download.html NOTE: download it and get the SHA256 with \"sha256sum FILE.tar.gz\""
 iwpadmin="https://infinitewp.com/installing-download/ NOTE: No SHA. Must include email with the donjon knight."
 mediawiki="https://www.mediawiki.org/wiki/Download NOTE: download it and get your own SHA256 with \"sha256sum FILE.tar.gz\""
@@ -11,8 +11,9 @@ orangehrm="https://sourceforge.net/projects/orangehrm/files/stable/"
 owa="https://github.com/padams/Open-Web-Analytics/tags NOTE: download it and get the SHA256 with \"sha256sum FILE.tar.gz\""
 owncloud="https://owncloud.org/download/  NOTE: SHA retrieved automatically because ownCloud is cool"
 phpmyadmin="https://www.phpmyadmin.net/ NOTE: use SHA256 from the Download button popup"
-postfixadmin="https://sourceforge.net/projects/postfixadmin/files/postfixadmin/ NOTE: just the plain tar.gz"
-postfixadmingit="https://github.com/postfixadmin/postfixadmin" #for reference, perhaps to replace
+postfixadmin="https://github.com/postfixadmin/postfixadmin/releases NOTE: use tar.gz"
+postfixadmintags="https://github.com/postfixadmin/postfixadmin/tags NOTE: download it and get the SHA256 with \"sha256sum FILE.tar.gz\""
+postfixadminold="https://sourceforge.net/projects/postfixadmin/files/postfixadmin/ NOTE: legacy for reference"
 roundcube="https://roundcube.net/download/"
 suitecrm="https://sourceforge.net/projects/suitecrm/files/ NOTE: using zip and still sha1"
 
