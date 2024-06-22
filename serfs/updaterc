@@ -25,9 +25,12 @@ e="$?"; [[ "$e" = "0" ]] || exit "$e"
 ## Own and run by www
 /usr/bin/chown -R www:www roundcube
 /usr/bin/su www -c '/srv/www/roundcube/bin/installto.sh /srv/www/email/roundcube'
-wait
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+
 ## Disable the installer
-/bin/sed -i "s/\$config\['enable_installer'\].*/\$config\['enable_installer'\] = false;/g" /srv/www/email/roundcube/config/config.inc.php
+# Remove the installer so it is ready to go
+/opt/verb/serfs/postinstallrc
+
 ## Remove the updater
 cd /srv/www || exit 6
 /usr/bin/rm -rf /srv/www/roundcube
@@ -37,9 +40,6 @@ cd /srv/www || exit 6
 /usr/bin/cp /opt/verb/conf/lib/vmail/roundcube/roundcubepics/skins/elastic/images/logo.svg /srv/www/email/roundcube/skins/elastic/images/
 /usr/bin/cp /opt/verb/conf/lib/vmail/roundcube/roundcubepics/skins/elastic/images/favicon.ico /srv/www/email/roundcube/skins/elastic/images/
 /usr/bin/cp /opt/verb/conf/lib/vmail/roundcube/roundcubepics/favicon.ico /srv/www/email/roundcube/
-/usr/bin/cp /opt/verb/conf/lib/vmail/roundcube/roundcubepics/skins/larry/images/verbink_logo.png /srv/www/email/roundcube/skins/larry/images/
-/usr/bin/cp /opt/verb/conf/lib/vmail/roundcube/roundcubepics/skins/larry/images/watermark.jpg /srv/www/email/roundcube/skins/larry/images/
-/usr/bin/cp /opt/verb/conf/lib/vmail/roundcube/roundcubepics/skins/larry/images/favicon.ico /srv/www/email/roundcube/skins/larry/images/
 
 # Own
 /usr/bin/chown -R www:www /srv/www/email/roundcube

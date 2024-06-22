@@ -6,7 +6,7 @@ daemon_directory = /usr/lib/postfix/bin
 data_directory = /var/lib/postfix
 mail_owner = postfix
 unknown_local_recipient_reject_code = 550
-alias_maps = hash:/etc/postfix/aliases
+alias_maps = lmdb:/etc/postfix/aliases
 alias_database = $alias_maps
 debug_peer_level = 2
 debugger_command =
@@ -36,7 +36,7 @@ smtpd_tls_chain_files = /etc/ssl/server/server.key, /etc/ssl/server/server.crt
 
 
 # SNI
-tls_server_sni_maps = hash:/etc/postfix/virtual_ssl.map
+tls_server_sni_maps = lmdb:/etc/postfix/virtual_ssl.map
 
 # TLS
 smtp_use_tls = yes
@@ -111,7 +111,7 @@ virtual_uid_maps = static:5000
 virtual_gid_maps = static:5000
 local_transport = virtual
 local_recipient_maps = $virtual_mailbox_maps
-#transport_maps = hash:/etc/postfix/transport # This breaks everything and isn't necessary
+#transport_maps = lmdb:/etc/postfix/transport # This breaks everything and isn't necessary
 # Arch recommended: virtual, failed using legacy "dovecot"
 virtual_transport = virtual
 #virtual_transport = dovecot

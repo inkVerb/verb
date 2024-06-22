@@ -24,7 +24,7 @@ fi
 
 # Recompile Postfix for SNI
 if [ -f "/etc/postfix/virtual_ssl.map" ]; then
-  /usr/bin/postmap -F hash:/etc/postfix/virtual_ssl.map
+  /usr/bin/postmap -F lmdb:/etc/postfix/virtual_ssl.map
   /usr/bin/systemctl restart postfix
 fi
 

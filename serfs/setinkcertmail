@@ -56,6 +56,11 @@ fi
 if [ -e "$(/usr/bin/readlink /etc/ssl/server/mail/${domain}.crt)" ] && [ -e "$(/usr/bin/readlink /etc/ssl/server/mail/${domain}.key)" ]; then
   # Dovecot
   /usr/bin/cat <<EOF > /etc/dovecot/crt.d/${domain}.conf
+local_name mail.${domain} {
+  ssl_cert = </etc/ssl/server/mail/${domain}.crt
+  ssl_key = </etc/ssl/server/mail/${domain}.key
+}
+
 local_name imap.${domain} {
   ssl_cert = </etc/ssl/server/mail/${domain}.crt
   ssl_key = </etc/ssl/server/mail/${domain}.key
@@ -66,7 +71,12 @@ local_name pop3.${domain} {
   ssl_key = </etc/ssl/server/mail/${domain}.key
 }
 
-local_name mail.${domain} {
+local_name pop2.${domain} {
+  ssl_cert = </etc/ssl/server/mail/${domain}.crt
+  ssl_key = </etc/ssl/server/mail/${domain}.key
+}
+
+local_name pop.${domain} {
   ssl_cert = </etc/ssl/server/mail/${domain}.crt
   ssl_key = </etc/ssl/server/mail/${domain}.key
 }
@@ -82,7 +92,7 @@ mail.${domain} /etc/ssl/server/mail/${domain}.key /etc/ssl/server/mail/${domain}
 smtp.${domain} /etc/ssl/server/mail/${domain}.key /etc/ssl/server/mail/${domain}.crt
 EOF
   fi
-  /usr/bin/postmap -F hash:/etc/postfix/virtual_ssl.map # Because we made an entry in this file and this is the only way to refresh that
+  /usr/bin/postmap -F lmdb:/etc/postfix/virtual_ssl.map # Because we made an entry in this file and this is the only way to refresh that
 fi
 
 # Webserver files so inkCert-LE checks work

@@ -7,8 +7,8 @@
 ## ./postinstallrc
 
 
-# Set installer to false
-/bin/sed -i "s/\$config\['enable_installer'\].*/\$config\['enable_installer'\] = false;/g" /srv/www/email/roundcube/config/config.inc.php
+# Disable the installer
+/usr/bin/sed -i "s/\$config\['enable_installer'\].*/\$config\['enable_installer'\] = false;/g" /srv/www/email/roundcube/config/config.inc.php
 
 # Tar & remove the installer directory
 cd /srv/www/email/roundcube

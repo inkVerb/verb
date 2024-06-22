@@ -295,7 +295,7 @@ e="$?"; [[ "$e" = "0" ]] || ( /usr/bin/echo 'Failed: !!' && exit "$e" )
 e="$?"; [[ "$e" = "0" ]] || ( /usr/bin/echo 'Failed: !!' && exit "$e" )
 
 # Pre-install Postfix server packages
-/usr/bin/pacman -S --noconfirm --needed postfix postfix-mysql dovecot pigeonhole mailutils cyrus-sasl opendkim msmtp
+/usr/bin/pacman -S --noconfirm --needed postfix postfix-mysql postfix-lmdb dovecot pigeonhole mailutils cyrus-sasl opendkim msmtp
 e="$?"; [[ "$e" = "0" ]] || ( /usr/bin/echo 'Failed: !!' && exit "$e" )
 
 # Pre-install inkCert-LE
@@ -315,7 +315,6 @@ e="$?"; [[ "$e" = "0" ]] || ( /usr/bin/echo 'Failed: !!' && exit "$e" )
 /usr/bin/pacman -Scc --noconfirm
 /usr/bin/su worker -c '/usr/bin/yay -Scc --noconfirm'
 /usr/bin/su worker -c '/usr/bin/yay -Yc --noconfirm'
-#/usr/local/bin/yeo -Scc --noconfirm
 
 # Restart Server and reconnect at the new port
 /usr/bin/echo "

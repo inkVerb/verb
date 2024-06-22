@@ -436,7 +436,7 @@ elif [ ${ServerType} = "lamp" ]; then
   /usr/bin/systemctl restart httpd; wait
 fi
 /usr/bin/systemctl restart postfix
-/usr/bin/postmap -F hash:/etc/postfix/virtual_ssl.map # Because we made an entry in this file and this is the only way to refresh that
+/usr/bin/postmap -F lmdb:/etc/postfix/virtual_ssl.map # Because we made an entry in this file and this is the only way to refresh that
 /usr/bin/systemctl restart spamassassin
 #/usr/bin/systemctl restart clamav-daemon
 /usr/bin/systemctl restart dovecot

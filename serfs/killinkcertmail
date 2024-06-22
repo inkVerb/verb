@@ -67,7 +67,7 @@ fi
 # Postfix
 /bin/sed -i "/^mail.${domain}/d" /etc/postfix/virtual_ssl.map
 
-/usr/bin/postmap -F hash:/etc/postfix/virtual_ssl.map
+/usr/bin/postmap -F lmdb:/etc/postfix/virtual_ssl.map
 
 # Restart
 /usr/bin/systemctl restart postfix
