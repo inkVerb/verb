@@ -29,11 +29,11 @@ exit 4; else
 /bin/rm -f ${cVappName}.failed; fi
 ## Check the hash
 checksha=$(/usr/bin/md5sum ${cVappName}.zip)
-if [ "${checksha}" = "${ampachesha} ${cVappName}.zip" ]; then
-/bin/echo "Download checks out."
+if [ "${checksha}" = "${ampachesha}  ${cVappName}.zip" ]; then
+  /usr/bin/echo "Download checks out."
 else
-/bin/echo "MD5 check failed. The downloaded file is not what was expected."
-exit 4
+  /usr/bin/echo "SHA check failed. The downloaded file ${PWD}/${cVappName}.zip is not what was expected."
+  exit 4
 fi
 
 if [ $InkGet_Method != "ZJZ" ]; then

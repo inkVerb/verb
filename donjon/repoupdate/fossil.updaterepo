@@ -21,18 +21,18 @@ if [ $InkGet_Method != "ZJZ" ]; then
 /usr/bin/echo "Retrieving Fossil v${distVer}..."
 
 # Get the package
-/usr/bin/wget https://www.fossil-scm.org/fossil/uv/fossil-linux-x64-${distVer}.tar.gz
-if [ ! -f "fossil-linux-x64-${distVer}.tar.gz" ]; then
+/usr/bin/wget -O ${cVappName}.tgz https://www.fossil-scm.org/fossil/uv/fossil-linux-x64-${distVer}.tar.gz
+if [ ! -f "${cVappName}.tgz" ]; then
 /bin/echo "Failed download."; touch "${cVappName}.failed"
 exit 4; else
 /bin/rm -f ${cVappName}.failed; fi
 ## Check the hash
-checksha=$(/usr/bin/sha256sum fossil-linux-x64-${distVer}.tar.gz)
-if [ "${checksha}" = "${fossilsha}  fossil-linux-x64-${distVer}.tar.gz" ]; then
-/bin/echo "Download checks out."
+checksha=$(/usr/bin/sha256sum ${cVappName}.tgz)
+if [ "${checksha}" = "${fossilsha}  ${cVappName}.tgz" ]; then
+  /usr/bin/echo "Download checks out."
 else
-/bin/echo "SHA check failed. The downloaded file is not what was expected."
-exit 4
+  /usr/bin/echo "SHA check failed. The downloaded file ${PWD}/${cVappName}.tgz is not what was expected."
+  exit 4
 fi
 
 if [ $InkGet_Method != "ZJZ" ]; then
@@ -42,8 +42,8 @@ if [ $InkGet_Method != "ZJZ" ]; then
   /bin/mv ${cVappName}.txz ${cVappName}.legacy.txz
 fi
 /usr/bin/echo "Extracting from vendor..."
-/usr/bin/tar xf fossil-linux-x64-${distVer}.tar.gz
-/bin/rm fossil-linux-x64-${distVer}.tar.gz
+/usr/bin/tar xf ${cVappName}.tgz
+/bin/rm ${cVappName}.tgz
 if [ $InkGet_Method != "ZJZ" ]; then
   /opt/verb/serfs/txzin ${cVappName}; wait
   /bin/rm -rf ${cVappName}

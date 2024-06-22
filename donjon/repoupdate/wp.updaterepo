@@ -16,42 +16,42 @@ if [ $InkGet_Method != "ZJZ" ]; then
   cd /opt/verb/repo; fi
 
 # Announce
-/bin/echo "Updating the WordPress package to the latest version..."
+/usr/bin/echo "Updating the WordPress package to the latest version..."
 
 # Get the package
-/bin/rm -rf latest.tar.gz
+/usr/bin/rm -rf latest.tar.gz
 /usr/bin/wget https://wordpress.org/latest.tar.gz
 if [ ! -f "latest.tar.gz" ]; then
-/bin/echo "Failed download."; touch "${cVappName}.failed"
+/usr/bin/echo "Failed download."; touch "${cVappName}.failed"
 exit 4; else
-/bin/rm -f ${cVappName}.failed; fi
+/usr/bin/rm -f ${cVappName}.failed; fi
 ## Check the hash
-/bin/rm -rf latest.tar.gz.sha1
+/usr/bin/rm -rf latest.tar.gz.sha1
 /usr/bin/wget https://wordpress.org/latest.tar.gz.sha1
 checksha=$(sha1sum latest.tar.gz)
 READSHA=$(cat latest.tar.gz.sha1)
 if [ "${checksha}" = "${READSHA}  latest.tar.gz" ]; then
-/bin/echo "Download checks out."
-/bin/rm latest.tar.gz.sha1
+  /usr/bin/echo "Download checks out."
+  /usr/bin/rm latest.tar.gz.sha1
 else
-/bin/echo "SHA check failed. Dunno why."
-exit 4
+  /usr/bin/echo "SHA check failed for WordPress download ${PWD}/latest.tar.gz. Dunno why."
+  exit 4
 fi
 
 if [ $InkGet_Method != "ZJZ" ]; then
   # Set it as the new package
-  /bin/rm -f ${cVappName}.legacy.txz
+  /usr/bin/rm -f ${cVappName}.legacy.txz
   /usr/bin/touch ${cVappName}.txz
-  /bin/mv ${cVappName}.txz ${cVappName}.legacy.txz
+  /usr/bin/mv ${cVappName}.txz ${cVappName}.legacy.txz
 fi
 /usr/bin/echo "Extracting from vendor..."
 /usr/bin/tar xf latest.tar.gz
-/bin/rm latest.tar.gz
+/usr/bin/rm latest.tar.gz
 ## Note: "wordpress" goes by the nickname "wp" here
-/bin/mv wordpress ${cVappName}
+/usr/bin/mv wordpress ${cVappName}
 if [ $InkGet_Method != "ZJZ" ]; then
   /opt/verb/serfs/txzin ${cVappName}; wait
-  /bin/rm -rf ${cVappName}
+  /usr/bin/rm -rf ${cVappName}
 fi
 
 # Finish

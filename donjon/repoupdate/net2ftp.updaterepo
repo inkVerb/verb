@@ -21,18 +21,18 @@ if [ $InkGet_Method != "ZJZ" ]; then
 /usr/bin/echo "Retrieving net2ftp v${distVer}..."
 
 # Get the package
-/usr/bin/wget http://www.net2ftp.com/download/net2ftp_v${distVer}.zip
-if [ ! -f "net2ftp_v${distVer}.zip" ]; then
+/usr/bin/wget -O ${cVappName}.zip http://www.net2ftp.com/download/net2ftp_v${distVer}.zip
+if [ ! -f "${cVappName}.zip" ]; then
 /bin/echo "Failed download."; touch "${cVappName}.failed"
 exit 4; else
 /bin/rm -f ${cVappName}.failed; fi
 ## Check the hash
-checksha=$(/usr/bin/sha256sum net2ftp_v${distVer}.zip)
-if [ "${checksha}" = "${net2ftpsha}  net2ftp_v${distVer}.zip" ]; then
-/bin/echo "Download checks out."
+checksha=$(/usr/bin/sha256sum ${cVappName}.zip)
+if [ "${checksha}" = "${net2ftpsha}  ${cVappName}.zip" ]; then
+  /usr/bin/echo "Download checks out."
 else
-/bin/echo "SHA check failed. The downloaded file is not what was expected."
-exit 4
+  /usr/bin/echo "SHA check failed. The downloaded file ${PWD}/${cVappName}.zip is not what was expected."
+  exit 4
 fi
 
 if [ $InkGet_Method != "ZJZ" ]; then
@@ -42,8 +42,8 @@ if [ $InkGet_Method != "ZJZ" ]; then
   /bin/mv ${cVappName}.txz ${cVappName}.legacy.txz
 fi
 /usr/bin/echo "Extracting from vendor..."
-/usr/bin/unzip -q net2ftp_v${distVer}.zip
-/bin/rm net2ftp_v${distVer}.zip
+/usr/bin/unzip -q ${cVappName}.zip
+/bin/rm ${cVappName}.zip
 cd net2ftp_v${distVer}
 /bin/mv files_to_upload ../${cVappName}
 cd ..

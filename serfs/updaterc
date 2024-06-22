@@ -21,6 +21,7 @@ if [ -d /srv/www/email/roundcube.vbak ]; then
 /usr/bin/rm -rf /srv/www/email/roundcube.vbak; fi
 /usr/bin/cp -R /srv/www/email/roundcube /srv/www/email/roundcube.vbak
 /opt/verb/serfs/inkget roundcube; wait
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 ## Own and run by www
 /usr/bin/chown -R www:www roundcube
 /usr/bin/su www -c '/srv/www/roundcube/bin/installto.sh /srv/www/email/roundcube'

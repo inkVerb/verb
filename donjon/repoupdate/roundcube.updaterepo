@@ -30,10 +30,10 @@ exit 4; else
 ## Check the hash
 checksha=$(/usr/bin/sha256sum ${cVappName}.tgz)
 
-if [ "${checksha}" = "${roundcubesha} ${cVappName}.tgz" ]; then
-  /bin/echo "Download checks out."
+if [ "${checksha}" = "${roundcubesha}  ${cVappName}.tgz" ]; then
+  /usr/bin/echo "Download checks out."
 else
-  /bin/echo "SHA check failed. The downloaded file is not what was expected."
+  /usr/bin/echo "SHA check failed. The downloaded file ${PWD}/${cVappName}.tgz is not what was expected."
   exit 4
 fi
 

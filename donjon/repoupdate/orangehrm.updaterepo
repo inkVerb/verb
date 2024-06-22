@@ -28,11 +28,11 @@ exit 4; else
 /bin/rm -f ${cVappName}.failed; fi
 ## Check the hash
 checksha=$(/usr/bin/sha1sum ${cVappName}.zip)
-if [ "${checksha}" = "${orangehrmsha} ${cVappName}.zip" ]; then
-/bin/echo "Download checks out."
+if [ "${checksha}" = "${orangehrmsha}  ${cVappName}.zip" ]; then
+  /usr/bin/echo "Download checks out."
 else
-/bin/echo "SHA check failed. The downloaded file is not what was expected."
-exit 4
+  /usr/bin/echo "SHA check failed. The downloaded file ${PWD}/${cVappName}.zip is not what was expected."
+  exit 4
 fi
 
 if [ $InkGet_Method != "ZJZ" ]; then

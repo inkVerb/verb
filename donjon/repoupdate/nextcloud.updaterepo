@@ -31,7 +31,7 @@ if [ "${checksha}" = "latest.tar.bz2: OK" ]; then
 /bin/echo "Download checks out."
 /bin/rm latest.tar.bz2.sha256
 else
-/bin/echo "SHA check failed. Dunno why."
+/bin/echo "SHA check failed for ${PWD}/latest.tar.bz2. Dunno why."
 exit 4
 fi
 
