@@ -435,8 +435,32 @@ elif [ ${ServerType} = "lemp" ]; then
 elif [ ${ServerType} = "lamp" ]; then
   /usr/bin/systemctl restart httpd; wait
 fi
+
+# LMDB maps
+## We need a database building tool to make these files readable by Postfix
+## Per this Arch BBS discussion: https://bbs.archlinux.org/viewtopic.php?pid=2164822#p2164822
+## Some of these might not be necessary, but this is what was done to get things working
+## This was original
+/usr/bin/postmap -F lmdb:/etc/postfix/virtual_ssl.map # -F is to read how we have this file set up
+## These are used and had .db files, so we add this
+/usr/bin/postmap lmdb:/etc/postfix/transport # We use this for our unsubscribe sieve plugin
+/usr/bin/postmap lmdb:/etc/postfix/virtual # We don't ust this at all, no contents, only comments
+## This was done once and recommended, but may not be necessary for our configuration
+## This will result in .lmdb files being created, used instead of .db files
+##DEV since we aren't using these, but they were done once in a fix, they are here for reference
+# /usr/bin/postalias lmdb:/etc/postfix/aliases # We may not even be using this since we use virtual
+# /usr/bin/touch /etc/postfix/sni.map # We may not even be using this
+# /usr/bin/touch /etc/postfix/rbl_override # We may not even be using this
+# /usr/bin/touch /etc/postfix/dnsbl-reply-map # We may not even be using this
+# /usr/bin/postmap -F lmdb:/etc/postfix/sni.map # We may not even be using this, we use /etc/postfix/virtual_ssl.map for SNI settings
+# /usr/bin/postmap lmdb:/etc/postfix/dnsbl-reply-map # We may not even be using this
+# /usr/bin/postmap lmdb:/etc/postfix/rbl_override # We may not even be using this
+# /usr/bin/postmap lmdb:/etc/postfix/generic
+# /usr/bin/postmap lmdb:/etc/postfix/access
+# ## Remove any of these, just to be sure, but without using hash:/etc/postfix/... there shouldn't be any
+# /usr/bin/rm /etc/postfix/*.db # Just to be sure, no longer doing hash:/etc/postfix/transport
+
 /usr/bin/systemctl restart postfix
-/usr/bin/postmap -F lmdb:/etc/postfix/virtual_ssl.map # Because we made an entry in this file and this is the only way to refresh that
 /usr/bin/systemctl restart spamassassin
 #/usr/bin/systemctl restart clamav-daemon
 /usr/bin/systemctl restart dovecot

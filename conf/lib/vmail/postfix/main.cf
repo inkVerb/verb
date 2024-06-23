@@ -39,9 +39,9 @@ smtpd_tls_chain_files = /etc/ssl/server/server.key, /etc/ssl/server/server.crt
 tls_server_sni_maps = lmdb:/etc/postfix/virtual_ssl.map
 
 # TLS
-smtp_use_tls = yes
-smtpd_tls_security_level = may
+# smtp_use_tls = yes # Depreciated?
 smtp_tls_security_level = may
+smtpd_tls_security_level = may
 smtpd_tls_loglevel = 1
 smtp_tls_loglevel = 1
 smtpd_tls_auth_only = no
@@ -61,7 +61,7 @@ smtpd_sasl_path = /var/spool/postfix/private/auth
 smtpd_tls_exclude_ciphers = no
 
 # Outside Arch Wiki
-smtpd_use_tls = yes
+# smtpd_use_tls = yes # Depreciated?
 smtpd_tls_mandatory_protocols=!SSLv2,!SSLv3
 smtp_tls_note_starttls_offer = yes
 smtpd_tls_session_cache_timeout = 3600s
