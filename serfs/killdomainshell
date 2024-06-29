@@ -24,11 +24,16 @@ dependencyinstall=(  )
 prerequesite=( adddomain )
 usedby=( killdomainsoft killdomainhard )
 useserfs=( killinkcertdomain inkvmailkillscriptfilter killinkcertmail killinkdkim rinkkilldomain )
-useconfigs=( servermailpath inkdnsconf inkcertstatus siteurilist )
+useconfigs=( servertype servermailpath inkdnsconf inkcertstatus siteurilist )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/killdomainshell.replace" ]; then . /opt/verb/mods/killdomainshell.replace; return 0; fi # Replaces this script
 if [ -e "/opt/verb/mods/killdomainshell.before" ]; then . /opt/verb/mods/killdomainshell.before; fi # Precedes this script
 
+
+killdomshell=$1
+
+# Include the config files
+. /opt/verb/conf/servertype
 
 # Dependencies
 if [ ! -f "/opt/verb/conf/inkcertstatus" ]; then
@@ -40,8 +45,6 @@ fi
 if [ ! -f "/opt/verb/conf/servermailpath" ]; then
   /usr/bin/echo "No Postfix Vmail, there may be nothing more to do."; exit 8
 fi
-
-killdomshell=$1
 
 # Make sure we don't kill a verb domain
 if /bin/grep -q "${killdomshell}" /opt/verb/conf/siteurilist; then
