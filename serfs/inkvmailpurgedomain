@@ -10,7 +10,7 @@
 usagenotes="This purges (deletes) the inkvmail directory of an email domain from the inkvmail server"
 usageformat="inkvmailpurgedomain [ domain ]"
 usageexample="inkvmailpurgedomain inkisaverb.com"
-hierarchy=( primary )
+hierarchy=( secondary )
 vsetnames=( "Domain" )
 vsettypes=( isDomian )
 voptnames=(  )
@@ -19,7 +19,7 @@ voptflags=(  )
 voptflagpurpose=(  )
 dependencyinstall=( installinkvmail )
 prerequesite=( inkvmaildomain )
-usedby=(  )
+usedby=( killdomainhard )
 useserfs=(  )
 useconfigs=( servermailpath )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf

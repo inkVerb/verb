@@ -30,7 +30,7 @@ voptflagpurpose=(  )
 dependencyinstall=(  )
 prerequesite=( adddomain )
 usedby=(  )
-useserfs=(  )
+useserfs=( killdomainshell )
 useconfigs=( servermailpath inkdnsconf inkcertstatus )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/killdomainsoft.replace" ]; then . /opt/verb/mods/killdomainsoft.replace; return 0; fi # Replaces this script
@@ -38,47 +38,32 @@ if [ -e "/opt/verb/mods/killdomainsoft.before" ]; then . /opt/verb/mods/killdoma
 
 
 # Dependencies
-if ! /bin/grep -q 'InkCertInstalled="DONE"' /opt/verb/conf/inkcertstatus; then
-  /usr/bin/echo "Install inkCert first, I quit."; exit 8
+if [ ! -f "/opt/verb/conf/inkcertstatus" ]; then
+  /usr/bin/echo "No inkCert, there may be nothing to do."; exit 8
 fi
-if ! /bin/grep -q 'InkDNSStat="INSTALLED"' /opt/verb/conf/inkdnsconf; then
-  /usr/bin/echo "Install inkDNS first, I quit."; exit 8
+if [ ! -f "/opt/verb/conf/inkdnsconf" ]; then
+  /usr/bin/echo "No inkDNS, there may be nothing to do."; exit 8
 fi
-if ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpath; then
-  /usr/bin/echo "Install Postfix Vmail first, I quit."; exit 8
+if [ ! -f "/opt/verb/conf/servermailpath" ]; then
+  /usr/bin/echo "No Postfix Vmail, there may be nothing to do."; exit 8
 fi
 
 killdomain=$1
 
-# Remove webserver config files
-if [ ${ServerType} = "lemp" ]; then
-  /bin/rm -f /etc/nginx/sites-enabled/${killdomain}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${killdomain}.conf
-  /usr/bin/systemctl restart nginx
-elif [ ${ServerType} = "lamp" ]; then
-  /bin/rm -f /etc/httpd/sites-enabled/${killdomain}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${killdomain}.conf
-  /usr/bin/systemctl restart httpd
-elif [ ${ServerType} = "laemp" ]; then
-  /bin/rm -f /etc/httpd/sites-enabled/${killdomain}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${killdomain}.conf
-  /bin/rm -f /etc/nginx/sites-enabled/${killdomain}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${killdomain}.conf
-  /usr/bin/systemctl restart httpd
-  /usr/bin/systemctl restart nginx
-fi
-
 # Remove Root Site Defaults from inkDNS
 /bin/sed -i "/; Root Site Defaults/,/;; End Root Site Defaults/d" /opt/verb/conf/inkdns/zones/db.${killdomain}
-/bin/echo ";;; Root Site Defauls removed" >> /opt/verb/conf/inkdns/zones/db.${killdomain}
 
 # Remove http folder symlinks
 /bin/rm -f /srv/www/html/${killdomain}
 
-# Restart
-/usr/bin/systemctl restart postfix
-/usr/bin/systemctl restart dovecot
+# Finish
+/bin/echo "
+The web links and root DNS entries for ${killdomshell} have been deleted.
+Mailboxes, apps, and original web folders should remain available for the SysAdmin.
+"
 
+# Other services
+/opt/verb/serfs/killdomainshell ${killdomain}; wait
 
 
 

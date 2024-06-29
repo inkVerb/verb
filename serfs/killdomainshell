@@ -13,7 +13,7 @@
 usagenotes="This completely removes a domain's inkCert, Letsencrypt, inkDNS, and inkDKIM (OpenDKIM) profiles"
 usageformat="killdomainshell [ domain.tld ]"
 usageexample="killdomainshell inkisaverb.com"
-hierarchy=( tertiary killdomainhard )
+hierarchy=( tertiary killdomainhard/killdomainsoft )
 vsetnames=( "Domain" )
 vsettypes=( isDomain )
 voptnames=(  )
@@ -22,8 +22,8 @@ voptflags=(  )
 voptflagpurpose=(  )
 dependencyinstall=(  )
 prerequesite=( adddomain )
-usedby=(  )
-useserfs=( killinkcertdomain killinkdnsdomain killinkdkim killinkcertmail )
+usedby=( killdomainsoft killdomainhard )
+useserfs=( killinkcertdomain inkvmailkillscriptfilter killinkcertmail killinkdkim rinkkilldomain )
 useconfigs=( servermailpath inkdnsconf inkcertstatus siteurilist )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/killdomainshell.replace" ]; then . /opt/verb/mods/killdomainshell.replace; return 0; fi # Replaces this script
@@ -31,14 +31,14 @@ if [ -e "/opt/verb/mods/killdomainshell.before" ]; then . /opt/verb/mods/killdom
 
 
 # Dependencies
-if ! /bin/grep -q 'InkCertInstalled="DONE"' /opt/verb/conf/inkcertstatus; then
-  /usr/bin/echo "Install inkCert first, I quit."; exit 8
+if [ ! -f "/opt/verb/conf/inkcertstatus" ]; then
+  /usr/bin/echo "No inkCert, there may be nothing more to do."; exit 8
 fi
-if ! /bin/grep -q 'InkDNSStat="INSTALLED"' /opt/verb/conf/inkdnsconf; then
-  /usr/bin/echo "Install inkDNS first, I quit."; exit 8
+if [ ! -f "/opt/verb/conf/inkdnsconf" ]; then
+  /usr/bin/echo "No inkDNS, there may be nothing more to do."; exit 8
 fi
-if ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpath; then
-  /usr/bin/echo "Install Postfix Vmail first, I quit."; exit 8
+if [ ! -f "/opt/verb/conf/servermailpath" ]; then
+  /usr/bin/echo "No Postfix Vmail, there may be nothing more to do."; exit 8
 fi
 
 killdomshell=$1
@@ -48,35 +48,43 @@ if /bin/grep -q "${killdomshell}" /opt/verb/conf/siteurilist; then
   /usr/bin/echo "Can't kill a verber domain, I quit."; exit 9
 fi
 
+# Remove all config files, symlinks, and directories
+if [ ${ServerType} = "lemp" ]; then
+  /bin/rm -f /etc/nginx/sites-enabled/${killdomain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${killdomain}.conf
+  /usr/bin/systemctl restart nginx
+elif [ ${ServerType} = "lamp" ]; then
+  /bin/rm -f /etc/httpd/sites-enabled/${killdomain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${killdomain}.conf
+  /usr/bin/systemctl restart httpd
+elif [ ${ServerType} = "laemp" ]; then
+  /bin/rm -f /etc/httpd/sites-enabled/${killdomain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${killdomain}.conf
+  /bin/rm -f /etc/nginx/sites-enabled/${killdomain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${killdomain}.conf
+  /usr/bin/systemctl restart httpd
+  /usr/bin/systemctl restart nginx
+fi
+
 # Remove inkCert (including Letsencrypt) configs
 /opt/verb/serfs/killinkcertdomain ${killdomshell}; wait
 
+# Remove the unsubscribe mail recipient filter
+/opt/verb/serfs/inkvmailkillscriptfilter unsubscribe ${killdomshell}; wait
+
 # Remove inkCert mail entries
 /opt/verb/serfs/killinkcertmail ${killdomshell}; wait
-#DEV above may be redundant because the entire file is removed below
-
-# Remove inkDNS zone file
-/opt/verb/serfs/killinkdnsdomain ${killdomshell}; wait
 
 # Remove inkDKIM entries
 /opt/verb/serfs/killinkdkim ${killdomshell}; wait
-
-# Remove any mailboxes
-/opt/verb/serfs/inkvmaildeldomain ${killdomshell}; wait
-
-# Remove the unsubscribe maile recipient filter
-/opt/verb/serfs/inkvmailkillscriptfilter unsubscribe ${killdomshell}; wait
 
 # Notify the NS slave servers
 /opt/verb/serfs/rinkkilldomain ${killdomshell}; wait
 
 # Finish
-/bin/echo "No more papers...
-
-The inkCert, inkDNS, and inkDKIM profiles for ${killdomshell} have been deleted.
+/bin/echo "
+The DNS entries and SSL and DKIM profiles for ${killdomshell} have been deleted.
 "
-
-
 
 
 if [ -e "/opt/verb/mods/killdomainshell.after" ]; then . /opt/verb/mods/killdomainshell.after; fi # Follows this script

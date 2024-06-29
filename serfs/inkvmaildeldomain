@@ -9,7 +9,7 @@
 usagenotes="This delets an email domain in the inkvmail database and removes all mail with the folder in vmail/"
 usageformat="inkvmaildeldomain [ domain ]"
 usageexample="inkvmaildeldomain inkisaverb.com"
-hierarchy=( primary )
+hierarchy=( secondary )
 vsetnames=( "Domain" )
 vsettypes=( isDomain )
 voptnames=(  )
@@ -18,7 +18,7 @@ voptflags=(  )
 voptflagpurpose=(  )
 dependencyinstall=( installinkvmail )
 prerequesite=( inkvmaildomain )
-usedby=(  )
+usedby=( killdomainhard )
 useserfs=(  )
 useconfigs=( servermailpath )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
@@ -37,15 +37,9 @@ domain="$1"
 # Run the update
 /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqldb.vmail.cnf -e "DELETE FROM domain WHERE domain='$domain';"
 
-# Delete the vmail folder
-/usr/bin/rm -rf /srv/vmail/${domain}
-
 # Finish
 /bin/echo "Email domain $domain deleted...
-The original mail should still be on the server, which you can access if you create the same domain again,
 To remove any mail still on the server, use inkvmailpurgedomain"
-
-
 
 
 if [ -e "/opt/verb/mods/inkvmaildeldomain.after" ]; then . /opt/verb/mods/inkvmaildeldomain.after; fi # Follows this script
