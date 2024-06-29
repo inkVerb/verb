@@ -47,14 +47,14 @@ killdomain=$1
 /bin/rm -rf /srv/www/domains/*${killdomain}
 
 # Remove any mailboxes
-/opt/verb/serfs/inkvmaildeldomain ${killdomshell}; wait
+/opt/verb/serfs/inkvmaildeldomain ${killdomain}; wait
 
 # Remove inkDNS zone file
-/opt/verb/serfs/killinkdnsdomain ${killdomshell}; wait
+/opt/verb/serfs/killinkdnsdomain ${killdomain}; wait
 
 # Finish
 /bin/echo "
-All web contents and DNS records for ${killdomshell} have been deleted.
+All web contents and DNS records for ${killdomain} have been deleted.
 Mailboxes, apps, and original web folders should remain available for the SysAdmin.
 "
 
