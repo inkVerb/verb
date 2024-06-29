@@ -58,7 +58,7 @@ killdomain=$1
 
 # Finish
 /bin/echo "
-The web links and root DNS entries for ${killdomshell} have been deleted.
+The web links and root DNS entries for ${killdomain} have been deleted.
 Mailboxes, apps, and original web folders should remain available for the SysAdmin.
 "
 
