@@ -49,7 +49,7 @@ if [ "$1" = "on" ]; then
 			/bin/sed -i 's/##inkHTTPstop/##inkHTTPremoved/' /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
 			### Add the new lines
 			/bin/echo "##INKHTTPSFIX=fixed
-	# Fixes https
+	# Redirect all http to https
 	server {
 	  listen 80;
 	  listen [::]:80;

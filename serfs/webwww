@@ -47,7 +47,7 @@ if [ "$1" = "on" ]; then
 
 			## Then add the config lines if it doesn't.
 			/bin/echo "##INKWWWFIX=fixed
-	# Fixes www
+	# Redirect all www to domain
 	<VirtualHost *:80>
 	  ServerName www.${domain}
 	  Redirect permanent / http://${domain}/
