@@ -170,9 +170,14 @@ EOF
           #### # Served domains have priority
           if [ -f "${snsverber}/domains/served/${sdnsDomain}" ]; then continue; fi
           ##### No duplicates
-          if /usr/bin/grep -q "db.${sdnsDomain}" /var/named/named.conf.verb; then
+          if [ -f "/srv/sns/domains/${sdnsDomain}" ] && ! /usr/bin/grep -q "${snsverber}" "/srv/sns/domains/${sdnsDomain}"; then
+            continue
+
+          #DEV This should never happen, remove this if inkdnsrefreshbind takes too long
+          elif /usr/bin/grep -q "db.${sdnsDomain}" /var/named/named.conf.verb; then
             /usr/bin/echo "$(date +'%Y-%m-%d %H:%M:%S') - Duplicate ${sdnsDomain} found on ${snsverber}" >> /opt/verb/rinkcon/log/nsduplicates
             continue
+
           fi
           ##### DNS entry
           /usr/bin/echo "zone \"${sdnsDomain}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"db.${sdnsDomain}\"; };" >> /var/named/named.conf.verb
@@ -194,8 +199,11 @@ EOF
           ##### Validate file properly lists itself?
           if [ ! -f "${snsverber}/domains/served/${sdnsDomain}" ]; then continue; fi
           ##### No duplicates
-          if /usr/bin/grep -q "db.${sdnsDomain}" /var/named/named.conf.verb; then
-            /usr/bin/echo "Duplicate ${sdnsDomain} found on ${snsverber}" >> /opt/verb/rinkcon/log/nsduplicates
+          if [ -f "/srv/sns/domains/${sdnsDomain}" ] && ! /usr/bin/grep -q "${snsverber}" "/srv/sns/domains/${sdnsDomain}"; then
+            continue
+          ##### Log parked overriding served, first time only
+          elif [ -f "${snsverber}/domains/parked/${sdnsDomain}" ] && /usr/bin/grep -q "db.${sdnsDomain}" /var/named/named.conf.verb; then
+            /usr/bin/grep -q "Parked ${sdnsDomain} overriding on ${snsverber}" /opt/verb/rinkcon/log/parkingoverrides || /usr/bin/echo "$(date +'%Y-%m-%d %H:%M:%S') - Parked ${sdnsDomain} overriding on ${snsverber}" >> /opt/verb/rinkcon/log/parkingoverrides
             continue
           fi
           ##### DNS entry

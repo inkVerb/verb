@@ -21,4 +21,3 @@ domModBase=$2
 
 /bin/echo "DModHost=\"${domModHost}\"
 DModBase=\"${domModBase}\"" > /opt/verb/inst/domain.mod.conf
-
