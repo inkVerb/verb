@@ -97,10 +97,15 @@ fi
 # Message prep
 # Success message
 . /opt/verb/conf/siteurilist
-success_message="Inkvmail successfully installed!\n
-RoundCube address: https://box.${emailTLDURI}/${SOr}\n
-PostfixAdmin address: https://po.${emailTLDURI}/${SOp}\n
-PostfixAdmin setup password: ${SOs}"
+success_message=$(
+cat <<EOF
+Inkvmail successfully installed!
+RoundCube address: https://box.${emailTLDURI}/${SOr}
+PostfixAdmin address: https://po.${emailTLDURI}/${SOp}
+PostfixAdmin setup password: ${SOs}
+PostfixAdmin setup address: https://po.${emailTLDURI}/${SOp}/setup.php
+EOF
+)
 
 # Fail message
 fail_message="Inkvmail failed to be installed."

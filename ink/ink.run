@@ -72,7 +72,9 @@ fi
 if [ "$vsuccess" = "true" ]; then
   /usr/bin/echo "Success! $(date)" >> "${LogDir}/inklog"
   /usr/bin/logger -p local6.info -t verb.ink "$success_log"
-  if [ -n "$success_message" ]; then /usr/bin/echo $success_message; fi
+  if [ -n "$success_message" ]; then
+    /usr/bin/echo "$success_message" # Needs quotes to preserve a heredoc-as-variable's new lines
+  fi
 elif [ "$vsuccess" != "true" ]; then
   /usr/bin/echo "Fail, check errorlog! $(date)" >> "${LogDir}/inklog"
   /usr/bin/logger -p local6.err -t verb.ink "$fail_log"

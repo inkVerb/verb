@@ -5,7 +5,7 @@
 ## This also creates an inkDNS zone file, complete with mail records
 
 # How to use:
-## ./adddomain [ newdomain.tld ] [ multi/wild - optional for auto-inkCert when ready ]
+## ./adddomain [ newdomain.tld ] [ multi/single/wild/nocert - optional for auto-inkCert when ready ]
 
 ## Eg:
 ## ./adddomain inkisaverb.com
@@ -13,9 +13,11 @@
 ## ./adddomain inkisaverb.com wild # automatically run inkcertdocb with wildcard certs
 
 usagenotes="This adds a new domain, complete with inkDKIM OpenDKIM profiles and keys, inkDNS DNS zone record, inkCert Letsencrypt cli-ini entries, and Apache/Nginx configs and folders in www/domains/ that link to www/html/"
-usageformat="adddomain [ newdomain.tld ] [ auto/wild - optional for auto-inkCert when ready ]"
-usageexample="adddomain inkisaverb.com
+usageformat="adddomain [ newdomain.tld ] [ multi/single/wild/nocert - optional for auto-inkCert when ready ]"
+usageexample="adddomain inkisaverb.com # same as using nocert
+adddomain inkisaverb.com nocert # will NOT run inkcertdole
 adddomain inkisaverb.com multi # will automatically run inkcertdole for specified domain only; addsubdomain won't work for this domain after using this option
+adddomain inkisaverb.com single # will automatically run inkcertdocbsingle
 adddomain inkisaverb.com wild # will automatically run inkcertdocb with wildcard certs"
 hierarchy=( primary )
 vsetnames=( "Domain" )
@@ -123,13 +125,25 @@ fi
 if [ -n "$2" ] && [ "$2" = "multi" ]; then
   /usr/bin/echo '*/5 * * * * root /opt/verb/donjon/digdomain.sh' "${newdomain} multi" > /etc/cron.d/digdomain-${newdomain}
   /usr/bin/chmod 0644 /etc/cron.d/digdomain-${newdomain}
+  # Finish
+  /usr/bin/echo "Success, ${newdomain} added! inkCert should automatically obtain SSL certificates."
+elif [ -n "$2" ] && [ "$2" = "single" ]; then
+  /usr/bin/echo '*/5 * * * * root /opt/verb/donjon/digdomain.sh' "${newdomain} single" > /etc/cron.d/digdomain-${newdomain}
+  /usr/bin/chmod 0644 /etc/cron.d/digdomain-${newdomain}
+  # Finish
+  /usr/bin/echo "Success, ${newdomain} added!"
 elif [ -n "$2" ] && [ "$2" = "wild" ]; then
   /usr/bin/echo '*/5 * * * * root /opt/verb/donjon/digdomain.sh' "${newdomain} wild" > /etc/cron.d/digdomain-${newdomain}
   /usr/bin/chmod 0644 /etc/cron.d/digdomain-${newdomain}
+  # Finish
+  /usr/bin/echo "Success, ${newdomain} added!"
+elif [ -z "$2" ] || [ "$2" = "nocert" ]; then
+  # Finish
+  /usr/bin/echo "Success, ${newdomain} added! No SSL certs yet. Add any subdomains, then run inkCert to obtain certs."
 fi
 
 # Finish
-/bin/echo "Great! With no error messages, you are ready to run inkCert for ${newdomain}, unless you want to add subdomains."
+/usr/bin/echo "Great! With no error messages, you are ready to run inkCert for ${newdomain}, unless you want to add subdomains."
 
 
 

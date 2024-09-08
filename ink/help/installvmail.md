@@ -11,10 +11,11 @@
 
 - `ink install vmail -r someDir1 -p someOtherDir2 -s set4MeUP -b verb.vmail.rAnD8mn5l3.vbak`
   - Creates the email folders `www/email/roundcube` & `www/email/postfixadmin` makes them live in `www/verb/email.box` & `www/verb/email.po`
-  - Installs packages for:
+  - Sets up packages:
     - `postfix`
     - `dovecot`
-    - Some possible dependencies
+    - `opendkim`
+    - Other possible dependencies
   - Downloads web apps from roundcube.net and PostfixAdmin's SourForge page
   - Creates databases with apps at:
     - verb/conf/vapps/vapp.roundcube

@@ -17,7 +17,8 @@
   - Adds entries to:
     - DNS Zone file for the parent domain
     - SSL/Letsencrypt subdomain to parent domain config, needed *before* the SSL certs are obtained
+      - All subdomains will appear in the same SSL cert, regardless of the `-a` optional flag used in `ink add domain`
   - Does *not* add:
     - OpenDKIM records and keys
     - Email domain in PostfixAdmin
-    - Additional framework to add subdomains via `add subdomain` to what is created here
+    - Additional framework to add subdomains via `ink add subdomain` to what is created here

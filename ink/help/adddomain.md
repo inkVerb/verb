@@ -7,9 +7,10 @@
 
 
 ## Usage
-- `ink add domain -d [ somedomain.tld ] -a [ multi/wild - auto SSL cert option ]`
+- `ink add domain -d [ domain.tld ] -n|m|s|w ( auto SSL cert option )`
 
 - `ink add domain -d inkisaverb.com`
+  - Same as `ink add domain -d inkisaverb.com -n`
   - Creates the domain folder `www/domains/inkisaverb.com` & makes it live at `www/html/inkisaverb.com`
   - Creates a hosted domain config for the webserver (whether for Nginx, Apache, or Nginx-Apache reverse proxy)
   - Confirms the existence of:
@@ -17,12 +18,19 @@
     - SSL/Letsencrypt configs, needed *before* the SSL certs are obtained
     - OpenDKIM records and keys
     - Email domain in PostfixAdmin
-    - Framework to add subdomains via `add subdomain`
-- `ink add domain -d inkisaverb.com -a multi`
-  - Does everything same as above, but automatically installs a Letsencrypt multi certs for only this domain
-    - This is achieved by creating a self-destructing cron task called digdomain-DOMAIN, which runs "donjon/digdomain.sh inkisaverb.com multi" every 5 minutes
+    - Framework to add subdomains via `ink add subdomain`
+  - To obtain certs, such as after adding subdomains, run `ink cert do
+- `ink add domain -d inkisaverb.com -m`
+  - Does everything same as above, but automatically installs Letsencrypt certs, but allows for multiple subdomains to be added to the same cert in the future
+    - Meaning that that, if there are subdomains for this domain, they will not appear in this domain's SSL cert
+    - This is achieved by creating a self-destructing `cron` task called digdomain-DOMAIN, which runs `donjon/digdomain.sh inkisaverb.com multi` every 5 minutes
   - `ink cert` will not be able to nor need to run for this domain after using this option, unless running `ink cert undo` first
-- `ink add domain -d inkisaverb.com -a wild`
-  - Does everything same as above, but automatically installs a Certbot wildcard certs for this domain
-    - This is achieved by creating a self-destructing cron task called digdomain-DOMAIN, which runs "donjon/digdomain.sh inkisaverb.com wild" every 5 minutes
+- `ink add domain -d inkisaverb.com -s`
+  - Does everything same as above, but automatically installs Letsencrypt certs, but allows for multiple subdomains to be added to the same cert in the future
+    - Meaning that that, if there are subdomains for this domain, they will not appear in this domain's SSL cert
+    - This is achieved by creating a self-destructing `cron` task called digdomain-DOMAIN, which runs `donjon/digdomain.sh inkisaverb.com multi` every 5 minutes
+  - `ink cert` will not be able to nor need to run for this domain after using this option, unless running `ink cert undo` first
+- `ink add domain -d inkisaverb.com -w`
+  - Does everything same as above, but automatically installs Certbot wildcard certs for this domain
+    - This is achieved by creating a self-destructing `cron` task called digdomain-DOMAIN, which runs `donjon/digdomain.sh inkisaverb.com wild` every 5 minutes
   - `ink cert` will not be able to nor need to run for this domain after using this option, unless running `ink cert undo` first
