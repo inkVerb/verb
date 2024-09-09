@@ -43,6 +43,11 @@ dnsDomain="$2"
 # Include the configs
 . /opt/verb/conf/servernameip
 
+# Check if zone exists
+if [ ! -f "/opt/verb/conf/inkdns/zones/db.${dnsDomain}" ]; then
+/bin/echo "DNS zone file for domain ${dnsDomain} does not exist. Add the domain first."
+exit 8; fi
+
 # Check if already added
 if /bin/grep -Fq "${dnsSubDom}.${dnsDomain}" /opt/verb/conf/inkdns/zones/db.${dnsDomain}; then
 /bin/echo "The subdomain ${dnsSubDom} has already been added to ${dnsDomain}. Use killinkdnssub to remove it."
