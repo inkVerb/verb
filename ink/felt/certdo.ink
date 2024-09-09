@@ -111,7 +111,7 @@ Available flags:
 -h This help message
 
 Choose between -m -s -w flags, only one must be used
--c ${optName[m]}: ${optDesc[m]}
+-m ${optName[m]}: ${optDesc[m]}
 -s ${optName[s]}: ${optDesc[s]}
 -w ${optName[w]}: ${optDesc[w]}
 

@@ -39,15 +39,19 @@ while getopts "${optSerf}" Flag; do
   ;;
   n)
     SOcertarg="nocert"
+    SOmessage="No certs will be obtained until you say so. You may add any subdomains now."
   ;;
   m)
     SOcertarg="multi"
+    SOmessage="Cert will be obtained, which could include subdomains in the future, but then certs must be refreshed."
   ;;
   s)
     SOcertarg="single"
+    SOmessage="Single-domain cert will be obtained. Subdomains will not affect this cert."
   ;;
   w)
     SOcertarg="wild"
+    SOmessage="Wildcard cert for domain and any subdomains will be obtained."
   ;;
   # Standard flags
   c)
@@ -77,13 +81,19 @@ ${aboutMsg}"
 Available flags:
 -h This help message
 -d ${optName[d]}: ${optDesc[d]}
+
+Choose between -n -m -s -w flags, optional -n default
+-n ${optName[n]}: ${optDesc[n]}
+-m ${optName[m]}: ${optDesc[m]}
+-s ${optName[s]}: ${optDesc[s]}
+-w ${optName[w]}: ${optDesc[w]}
 "
   exit 0
 fi
 
 # Message prep
 # Success message
-success_message="$SOd domain added."
+success_message="$SOd domain added. $SOmessage"
 
 # Fail message
 fail_message="$SOd domain failed to be added."
