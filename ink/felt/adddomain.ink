@@ -109,7 +109,7 @@ if [ -z "${SOcertarg}" ]; then
 fi
 
 # Prepare command
-serfcommand="${Serfs}/${surfname} ${SOd} ${SOa}"
+serfcommand="${Serfs}/${surfname} ${SOd} ${SOcertarg}"
 
 # Run the ink
 . $InkRun
