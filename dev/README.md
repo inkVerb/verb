@@ -339,6 +339,9 @@ XII. Mounted volumes
 	  - Knowledge about these goes well beyond the capability of documentation; to sumarize would be to elaborate
 	  - Essentially, these check, manage, and rebuild the entire `/var/named` directory, and other related settings, from the bottom up each time
 - Parking
+  - Parked domains always have priority over served domains
+    - To customize your DNS zone file, do not modify the stock file in `inkdns/zones/`, but place your modified copy in `inkdns/parked/`
+	  - This parked file will not be updated with changes, so any DNS changes, such as adding a subdomain, will need you to modify your `inkdns/parked/` file
   - `db.*` and `nv.*` files can be placed in the `verb/conf/inkdns/parked/` directory
     - These must be properly formatted Zone and PTA (rDNS) files
 	- These will be hosted by the local DNS Bind server after running `inkdnsrefreshbind`
@@ -348,6 +351,10 @@ XII. Mounted volumes
     - Such tools would create individual zone file entries in a `parked/domain.tld/` folder as individual files
 	  - These entries would then be sorted and formed into proper `db.*` and `nv.*` files via `inkdnsrefreshbind`
 	- Another tool would allow dropping user prepared `db.*` and `nv.*` files into a `parked/domain.tld/` folder for validation
+- Conflicting DNS zone file sources
+  - If more than one verber enters a zone file for a domain, which verber should be authoritative can be assigned on the rink with `rink/run/setdomauthority`
+    - This can be done before the domains are added to additional verbers, to avoid conflict
+	- This is useful, such as for migrations or domains, subdomains, and domain-related services like mail being hosted across multiple verbers
 
 ## serfs integration `ink`
 IMPORTANT: As of v0.90.00, serfs are being integrated into the `ink` tool in verb/ink. This will manage the serfs by providing validation, help, and making them somewhat "mistake-proof". This is slowly rolling out to all serfs.
