@@ -49,21 +49,14 @@ killdomain=$1
 # Remove any mailboxes
 /opt/verb/serfs/inkvmaildeldomain ${killdomain}; wait
 
-# Remove inkDNS zone file
-/opt/verb/serfs/killinkdnsdomain ${killdomain}; wait
-
-# Finish
-/bin/echo "
-All web contents and DNS records for ${killdomain} have been deleted.
-Mailboxes, apps, and original web folders should remain available for the SysAdmin.
-"
-
 # Purge mailboxes
 /opt/verb/serfs/inkvmailpurgedomain ${killdomain}; wait
 
 # Remaining services
 /opt/verb/serfs/killdomainshell ${killdomain}; wait
 
+# Remove inkDNS zone file
+/opt/verb/serfs/killinkdnsdomain ${killdomain}; wait
 
 
 if [ -e "/opt/verb/mods/killdomainhard.after" ]; then . /opt/verb/mods/killdomainhard.after; fi # Follows this script

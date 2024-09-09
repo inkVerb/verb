@@ -27,13 +27,13 @@ if [ -e "/opt/verb/mods/inkdnsadddomain.before" ]; then . /opt/verb/mods/inkdnsa
 
 
 # Dependencies
-if ! /bin/grep -q 'InkCertInstalled="DONE"' /opt/verb/conf/inkcertstatus; then
+if ! /usr/bin/grep -q 'InkCertInstalled="DONE"' /opt/verb/conf/inkcertstatus; then
   /usr/bin/echo "Install inkCert first, I quit."; exit 8
 fi
-if ! /bin/grep -q 'InkDNSStat="INSTALLED"' /opt/verb/conf/inkdnsconf; then
+if ! /usr/bin/grep -q 'InkDNSStat="INSTALLED"' /opt/verb/conf/inkdnsconf; then
   /usr/bin/echo "Install inkDNS first, I quit."; exit 8
 fi
-if ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpath; then
+if ! /usr/bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpath; then
   /usr/bin/echo "Install Postfix Vmail first, I quit."; exit 8
 fi
 
@@ -44,22 +44,22 @@ dnsDomain="$1"
 
 # Check if already added
 if [ -e "/opt/verb/conf/inkdns/zones/db.${dnsDomain}" ]; then
-/bin/echo "The domain ${dnsDomain} zone file has already been created. Use killinkdnsdomain to remove it."
+/usr/bin/echo "The domain ${dnsDomain} zone file has already been created. Use killinkdnsdomain to remove it."
 exit 0; fi
 
 # DNS zone file
-/bin/cp /opt/verb/conf/inkdns/db.dnsdomain /opt/verb/conf/inkdns/zones/db.${dnsDomain}
-/bin/sed -i "s/hostdomain286/${dnsDomain}/g" /opt/verb/conf/inkdns/zones/db.${dnsDomain}
+/usr/bin/cp /opt/verb/conf/inkdns/db.dnsdomain /opt/verb/conf/inkdns/zones/db.${dnsDomain}
+/usr/bin/sed -i "s/hostdomain286/${dnsDomain}/g" /opt/verb/conf/inkdns/zones/db.${dnsDomain}
 
 # rDNS zone file
-/bin/echo "; PTR Domain" > /opt/verb/conf/inkdns/zones/nv.${dnsDomain}
+/usr/bin/echo "; PTR Domain" > /opt/verb/conf/inkdns/zones/nv.${dnsDomain}
 ## IP4?
 if [ "${ServerIPv4}" != "NOIP4" ]; then
-  /bin/echo "${ServerARPAIPv4}		IN  PTR  ${dnsDomain}." >> /opt/verb/conf/inkdns/zones/nv.${dnsDomain}
+  /usr/bin/echo "${ServerARPAIPv4}		IN  PTR  ${dnsDomain}." >> /opt/verb/conf/inkdns/zones/nv.${dnsDomain}
 fi
 ## IP6?
 if [ "${ServerIPv6}" != "NOIP6" ]; then
-  /bin/echo "${ServerARPAIPv6}		IN  PTR  ${dnsDomain}." >> /opt/verb/conf/inkdns/zones/nv.${dnsDomain}
+  /usr/bin/echo "${ServerARPAIPv6}		IN  PTR  ${dnsDomain}." >> /opt/verb/conf/inkdns/zones/nv.${dnsDomain}
 fi
 
 # Set the Serial No
@@ -70,7 +70,7 @@ fi
 /opt/verb/serfs/inkdnsrefreshbind
 
 # Finish
-/bin/echo "${dnsDomain} DNS zone file created."
+/usr/bin/echo "${dnsDomain} DNS zone file created."
 
 
 
