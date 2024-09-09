@@ -152,8 +152,11 @@ EOF
     ### Served slave records
     if [ -d "/opt/verb/conf/inkdns/sdns" ] && [ -d "/srv/sns" ]; then
       for snsverber in /srv/sns/*; do
-        #### Proper directory structure?
+        #### Proper directory structure? (not an asset like domains or killed)
         if [ ! -d "${snsverber}/domains" ]; then continue; fi
+        #### Get the name of the actual folder
+        verber_machine_name=$(echo /srv/sns/j-ink | sed "s?/srv/sns/??")
+        ####DEV this may not be necessary since it is handled through the VPS host
         #### rDNS slave listing (host only, which populates individual items through the named interchagne system)
         . "${snsverber}/conf"
         /usr/bin/echo "zone \"${VerbARPAIPv4}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"nv4.${VerbHostID}.${VerbName}.${VerbTLD}\"; };" >> /var/named/named.conf.rdns
@@ -169,8 +172,8 @@ EOF
           if [ ! -f "${snsverber}/domains/parked/${sdnsDomain}" ]; then continue; fi
           #### # Served domains have priority
           if [ -f "${snsverber}/domains/served/${sdnsDomain}" ]; then continue; fi
-          ##### No duplicates
-          if [ -f "/srv/sns/domains/${sdnsDomain}" ] && ! /usr/bin/grep -q "${snsverber}" "/srv/sns/domains/${sdnsDomain}"; then
+          ##### Check for an authoritative verber for anti-duplicates
+          if [ -f "/srv/sns/domains/${sdnsDomain}" ] && ! /usr/bin/grep -q "${verber_machine_name}" "/srv/sns/domains/${sdnsDomain}"; then
             continue
 
           #DEV This should never happen, remove this if inkdnsrefreshbind takes too long
@@ -198,8 +201,8 @@ EOF
           . ${slv}
           ##### Validate file properly lists itself?
           if [ ! -f "${snsverber}/domains/served/${sdnsDomain}" ]; then continue; fi
-          ##### No duplicates
-          if [ -f "/srv/sns/domains/${sdnsDomain}" ] && ! /usr/bin/grep -q "${snsverber}" "/srv/sns/domains/${sdnsDomain}"; then
+          ##### Check for an authoritative verber for anti-duplicates
+          if [ -f "/srv/sns/domains/${sdnsDomain}" ] && ! /usr/bin/grep -q "${verber_machine_name}" "/srv/sns/domains/${sdnsDomain}"; then
             continue
           ##### Log parked overriding served, first time only
           elif [ -f "${snsverber}/domains/parked/${sdnsDomain}" ] && /usr/bin/grep -q "db.${sdnsDomain}" /var/named/named.conf.verb; then
