@@ -518,11 +518,11 @@ fi
 /usr/bin/touch /var/log/phpmail.log
 /usr/bin/chown www:www /var/log/phpmail.log
 
-# Add base domains & addresses
-/opt/verb/serfs/inkvmailbaseaddrs
-
-# Setup PHP to send system mail
+# System domains & addresses
 ## Note: If the mail database needs to be reset, such as for a PostfixAdmin update, just run this after, then the results of this serf will be up to date
+## Add base domains & addresses
+/opt/verb/serfs/inkvmailbaseaddrs
+## Setup PHP to send system mail
 #/opt/verb/serfs/inkvmailsysmailbox
 /opt/verb/serfs/inkvmailsysmailboxmsmtp
 
