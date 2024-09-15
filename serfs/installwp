@@ -44,7 +44,7 @@ domain=$1
 dBase=$2
 dBaseUser=$3
 dBPassword=$4
-cleanName=$(/bin/echo ${domain} | sed -e 's/\.//g')
+cleanName=$(echo ${domain} | /usr/bin/sed -e 's/\.//g')
 
 # Basic credential check
 if [ -z ${1} ]; then
@@ -93,8 +93,7 @@ GRANT ALL PRIVILEGES ON ${dBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '
 FLUSH PRIVILEGES;"
 
 # Write the config for backup
-/bin/echo "#!/bin/bash
-appDBase=${dBase}
+/bin/echo "appDBase=${dBase}
 appDDBUsr=${dBaseUser}
 appDDBPass=${dBPassword}" > /opt/verb/conf/vapps/vapp.${cVappName}.${domain}
 

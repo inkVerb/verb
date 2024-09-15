@@ -18,19 +18,23 @@
     - SSL/Letsencrypt configs, needed *before* the SSL certs are obtained
     - OpenDKIM records and keys
     - Email domain in PostfixAdmin
+    - Email subdomains: `mail.domain.tld`, `imap.domain.tld`, `smtp.domain.tld`, `pop3.domain.tld`, etc
     - Framework to add subdomains via `ink add subdomain`
   - To obtain certs, such as after adding subdomains, run `ink cert do
 - `ink add domain -d inkisaverb.com -m`
   - Does everything same as above, but automatically installs Letsencrypt certs, but allows for multiple subdomains to be added to the same cert in the future
-    - Meaning that that, if there are subdomains for this domain, they will not appear in this domain's SSL cert
+    - Meaning that that, if there are subdomains for this domain added before or after this, they will appear in this domain's SSL cert
+    - Mail subdomain certs will automatically be included with this domain anyway
     - This is achieved by creating a self-destructing `cron` task called digdomain-DOMAIN, which runs `donjon/digdomain.sh inkisaverb.com multi` every 5 minutes
   - `ink cert` will not be able to nor need to run for this domain after using this option, unless running `ink cert undo` first
 - `ink add domain -d inkisaverb.com -s`
   - Does everything same as above, but automatically installs Letsencrypt certs, but allows for multiple subdomains to be added to the same cert in the future
     - Meaning that that, if there are subdomains for this domain, they will not appear in this domain's SSL cert
+    - Mail certs will not be included in this domain's cert
     - This is achieved by creating a self-destructing `cron` task called digdomain-DOMAIN, which runs `donjon/digdomain.sh inkisaverb.com multi` every 5 minutes
   - `ink cert` will not be able to nor need to run for this domain after using this option, unless running `ink cert undo` first
 - `ink add domain -d inkisaverb.com -w`
   - Does everything same as above, but automatically installs Certbot wildcard certs for this domain
     - This is achieved by creating a self-destructing `cron` task called digdomain-DOMAIN, which runs `donjon/digdomain.sh inkisaverb.com wild` every 5 minutes
+    - Only the domain and wildcard domain `*.inkisaverb.com` will be included in this cert, despite the fact that mail subdomains reside on the server
   - `ink cert` will not be able to nor need to run for this domain after using this option, unless running `ink cert undo` first

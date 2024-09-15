@@ -6,11 +6,12 @@
 ##DEV: Consider writing a choice so quota can be entered in MB, juast as in PFA
 
 # How to use:
-## ./inkvmailbox [ emailuser (no domain) ] [ domain ] [ name - optional ] [ quota - optional ]
+## ./inkvmailbox [ emailuser (no domain) ] [ domain ] [ name - optional ] [ quota - optional ] [ password - optional ]
 
 # Eg:
 ## ./inkvmailbox james inkisaverb.com "James Inksmith" 524288000 # 0.5GB
 ## ./inkvmailbox james inkisaverb.com "James Inksmith"
+## ./inkvmailbox james inkisaverb.com 'James Inksmith' - - My#1Password # Defaults, plus password
 ## ./inkvmailbox james inkisaverb.com - 524288000 # 0.5GB, keep old name or use emailUser as name
 ## ./inkvmailbox james inkisaverb.com # Show info for existing user, otherwise add new user using defaults and emailUser as name
 
@@ -18,6 +19,7 @@ usagenotes="This adds or updates a mailbox in the inkvmail database"
 usageformat="inkvmailbox [ emailuser (no domain) ] [ domain ] [ name - optional ] [ quota - optional ]"
 usageexample="inkvmailbox james inkisaverb.com \"James Inksmith\" 524288000 # 0.5GB
 inkvmailbox james inkisaverb.com 'James Inksmith'
+inkvmailbox james inkisaverb.com 'James Inksmith' - - My#1Password # Defaults, plus password
 inkvmailbox james inkisaverb.com - 524288000 # 0.5GB, keep old name or use emailUser as name
 inkvmailbox james inkisaverb.com # Show info for existing user, otherwise add new user using defaults and emailuser as name"
 hierarchy=( primary )
@@ -75,20 +77,20 @@ Inbox size: $oldquota"
   # Update
   else
 
-    # Determin the quota
-    if [ -n "$4" ] && [ "$4" -le "$domquota" ]; then
-      newquota="$4"
-    elif [ -z "$4" ]; then
-      newquota=$oldquota
-    else
-      newquota=$domquota
-    fi
-
     # Determin the name
     if [ "$3" = "-" ]; then
       newname=$oldname
     else
       newname="$3"
+    fi
+
+    # Determin the quota
+    if [ -n "$4" ] && [ "$4" -le "$domquota" ]; then
+      newquota="$4"
+    elif [ -z "$4" ] || [ "$4" = "-" ]; then
+      newquota=$oldquota
+    else
+      newquota=$domquota
     fi
 
     # Run the update
@@ -102,13 +104,6 @@ Inbox size: $newquota"
 # Create new user
 else
 
-  # Determin the quota
-  if [ -n "$4" ] && [ "$4" -le "$domquota" ]; then
-    newquota="$4"
-  else
-    newquota=$domquota
-  fi
-
   # Determin the name
   if [ -z "$3" ] || [ "$3" = "-" ]; then
     newname="$1"
@@ -116,8 +111,22 @@ else
     newname="$3"
   fi
 
+  # Determin the quota
+  if [ -n "$4" ] && [ "$4" -le "$domquota" ]; then
+    newquota="$4"
+  elif [ -z "$4" ] || [ "$4" = "-" ]; then
+    newquota=$oldquota
+  else
+    newquota=$domquota
+  fi
+
+
   # Hash the password
-  rawPassword=$(/usr/bin/pwgen -s 15)
+  if [ -n "$5" ]; then
+    rawPassword="$5"
+  else
+    rawPassword=$(/usr/bin/pwgen -s 15)
+  fi
   password="$(/bin/echo $rawPassword | /usr/bin/openssl passwd -1 -stdin)"
   inkvmaildirectory="$domain/$emailUser/"
 

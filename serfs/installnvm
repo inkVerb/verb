@@ -2,6 +2,7 @@
 #inkVerbSerf! verb.ink
 
 # This installs the NVM package manager for Node.js
+##DEV may be depreciated since pacman has a simple package for this
 
 # How to use:
 ## ./installnvm
