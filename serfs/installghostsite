@@ -2,29 +2,18 @@
 #inkVerbSerf! verb.ink
 
 # This installs ghost as an app to permanently replace a pre-created domain, such as domain.com or sub.domain.com
-## Each ghost installation needs a different port, blog...ink uses the 2368 default
-## Each additional /srv/www/ghost/ghostsite-DOMAIN requires a port number higher than 2368, usually by one, such as 2369, 2370, etc
-
-# You MUST HAVE EMAIL SETUP with an email address. Once you set this password you can't change it. Probably ghost@your-name.verb.ink
-
-# New Ghost Port: incrementally above 2368 per Ghost site (2369 and up)
-
-# NOTE: Put the email password in "double quotes" to avoid problems with special characters.
 
 # How to use:
-## ./installghostsite [domain] [emailusername] "[emailpassword]" [new ghost port]
+## ./installghostsite [domain]
 
 
 cVappName=ghost
 
 domain=$1
-EMAILuser=$2
-emailPass=$3
-ghostport=$4
 
 # Basic credential check
-if [ -z ${4} ]; then
-/usr/bin/echo "You need to set all four variables (domain, ghost port, email, and password) to install Ghost to a domain. See \"How to use\" in the serf."
+if [ -z ${1} ]; then
+/usr/bin/echo "You need to set a domain. See \"How to use\" in the serf."
 exit 5
 fi
 
@@ -45,16 +34,8 @@ elif [ ${ServerType} = "lamp" ]; then
 	exit 5
 fi
 
-# Install Node.js package
-/usr/bin/pacman -S --noconfirm --needed nodejs-lts-fermium
-if [ "$?" != "0" ]; then /usr/bin/echo 'Node package install failed: !!'; exit 4; fi
-
 # Install nvm & Node.js
 /usr/bin/pacman -Syy nodejs npm --needed --noconfirm
-
-# Install Ghost CLI tool package from nvm
-cd /srv/www/ghost || exit 6
-/usr/bin/npm install ghost-cli@latest -g
 
 # Make the installer happy
 /usr/bin/mkdir -p /home/www
@@ -62,9 +43,12 @@ cd /srv/www/ghost || exit 6
 export GHOST_NODE_VERSION_CHECK=false
 
 # Create app directory
-/usr/bin/mkdir ${cVappName}.${domain}
-/usr/bin/chown -R www:www ${cVappName}.${domain}
-cd /srv/www/ghost/${cVappName}.${domain} || exit 6
+/usr/bin/mkdir /srv/www/ghost/${domain}
+/usr/bin/chown -R www:www /srv/www/ghost/${domain}
+cd /srv/www/ghost/${domain} || exit 6
+
+# Install Ghost CLI tool package from nvm
+/usr/bin/npm install ghost-cli@latest -g
 
 # Auto database
 cleanName=$(echo ${domain} | /usr/bin/sed -e 's/\.//g')
@@ -98,9 +82,12 @@ ghostemail=\"${emailUser}\"
 ghostemailpas=\"${emailPass}\"
 " > /opt/verb/conf/vapps/vapp.${cVappName}.${domain}
 
+# Record the port in the Ghost port inklist
+/usr/bin/echo "${domain} ${ghostport}" >> /opt/verb/conf/inklists/ghostserverports
+
 #DEV with the ghost-cli tool, this may be obsolete
 # # Set up the Ghost config
-# cd /srv/www/ghost/${cVappName}.${domain} || exit 6
+# cd /srv/www/ghost/${domain} || exit 6
 # /usr/bin/cp config.example.js config.js
 # /usr/bin/sed -i "s/url: 'http:\/\/my-ghost-blog.com'/url: 'http:\/\/${domain}'/g" config.js
 # /usr/bin/sed -i "s/host: '127.0.0.1'/host: '${siteIP}'/g" config.js
@@ -112,8 +99,7 @@ ghostemailpas=\"${emailPass}\"
 
 # Reset all permissions
 /usr/bin/rm -f /srv/www/html/${domain}
-/usr/bin/echo "Ghost Site" > /srv/www/html/${domain}
-/usr/bin/chown -R www:www /srv/www/${cVappName}.${domain}
+/usr/bin/chown -R www:www /srv/www/ghost/${domain}
 
 #DEV with the ghost-cli tool, this may be obsolete
 # # Web server files
@@ -141,11 +127,16 @@ ghostemailpas=\"${emailPass}\"
 
 # Remove Apache site
 if [ ${ServerType} = "laemp" ]; then
-  /usr/bin/rm /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
-# Remove Apache site
-elif [ ${ServerType} = "lemp" ]; then
-  /usr/bin/rm /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
+  /usr/bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
+  /usr/bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
 fi
+/usr/bin/systemctl restart nginx httpd
+
+# inkCert
+/usr/bin/rm -rf /etc/inkcert/le/live/${domain}
+/usr/bin/rm -rf /etc/inkcert/le/archive/${domain}
+/usr/bin/rm -r /etc/inkcert/le/renewal/${domain}.conf
+/usr/bin/echo "InkCerted=Ghost" > /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}
 
 #DEV with the ghost-cli tool, this may be obsolete
 # # Make it a service at startup
@@ -156,26 +147,23 @@ fi
 # Install ghost
 ## Help https://ghost.org/docs/ghost-cli/
 ## Can't use ghost as root
-/usr/bin/su www -c "/usr/bin/ghost install --dir '/srv/www/ghost/${cVappName}.${domain}' --url '${domain}' --port '${ghostport}' --ip '127.0.0.1' --mail 'SMTP' --mailport '465' --mailhost 'smtp.${domain}' --mailuser 'web@${domain}' --mailpass '${emailPassword}' --db 'mysql' --dbhost 'localhost' --dbuser '${dBaseUser} '--dbpass '${dBPassword}' --dbname '${dBase}' --start"
+/usr/bin/su www -c "/usr/bin/ghost install --dir '/srv/www/ghost/${domain}' --url '${domain}' --port '${ghostport}' --ip '127.0.0.1' --mail 'SMTP' --mailport '465' --mailhost 'smtp.${domain}' --mailuser 'web@${domain}' --mailpass '${emailPassword}' --db 'mysql' --dbhost 'localhost' --dbuser '${dBaseUser} '--dbpass '${dBPassword}' --dbname '${dBase}' --start"
 if [ "$?" != "0" ]; then /usr/bin/echo 'Ghost install failed: !!'; exit 4; fi
-
-# Record the port in the Ghost port inklist
-/usr/bin/echo "${domain} ${ghostport}" >> /opt/verb/conf/inklists/ghostserverports
 
 #DEV with the ghost-cli tool, this may be obsolete
 # ### Below (Forever) is expirimental on inkVerb, but working, and should be replaced with a way to run Ghost as a proper service at startup
 # # Run Ghost with Forever
 # npm install -g forever
 # ## Production forever
-# cd /srv/www/ghost/${cVappName}.${domain} && NODE_ENV=production forever start index.js || exit 6
+# cd /srv/www/ghost/${domain} && NODE_ENV=production forever start index.js || exit 6
 # ## Non-production / developer forever
 # #forever start index.js
 # ## If you want, stop Forever with:
-### cd /srv/www/ghost/${cVappName}.${domain} && forever stop index.js
+### cd /srv/www/ghost/${domain} && forever stop index.js
 
 ##### Don't use this normally because it halts the current script and does not finish the rest of the jobs
 ## Start Ghost only for this server session
-#cd /srv/www/ghost/${cVappName}.${domain}
+#cd /srv/www/ghost/${domain}
 #npm start --production
 #####
 
