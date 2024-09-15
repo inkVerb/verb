@@ -47,46 +47,46 @@ if [ ! -f "/opt/verb/conf/servermailpath" ]; then
 fi
 
 # Make sure we don't kill a verb domain
-if /bin/grep -q "${killdomshell}" /opt/verb/conf/siteurilist; then
+if /bin/grep -q "${killdomain}" /opt/verb/conf/siteurilist; then
   /usr/bin/echo "Can't kill a verber domain, I quit."; exit 9
 fi
 
 # Remove all config files, symlinks, and directories
 if [ ${ServerType} = "lemp" ]; then
-  /bin/rm -f /etc/nginx/sites-enabled/${killdomain}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${killdomain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/nginx/*${killdomain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/*${killdomain}.conf
   /usr/bin/systemctl restart nginx
 elif [ ${ServerType} = "lamp" ]; then
-  /bin/rm -f /etc/httpd/sites-enabled/${killdomain}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${killdomain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/*${killdomain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/*${killdomain}.conf
   /usr/bin/systemctl restart httpd
 elif [ ${ServerType} = "laemp" ]; then
-  /bin/rm -f /etc/httpd/sites-enabled/${killdomain}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${killdomain}.conf
-  /bin/rm -f /etc/nginx/sites-enabled/${killdomain}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${killdomain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/*${killdomain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/*${killdomain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/nginx/*${killdomain}.conf
+  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/*${killdomain}.conf
   /usr/bin/systemctl restart httpd
   /usr/bin/systemctl restart nginx
 fi
 
 # Remove inkCert (including Letsencrypt) configs
-/opt/verb/serfs/killinkcertdomain ${killdomshell}; wait
+/opt/verb/serfs/killinkcertdomain ${killdomain}; wait
 
 # Remove the unsubscribe mail recipient filter
-/opt/verb/serfs/inkvmailkillscriptfilter unsubscribe ${killdomshell}; wait
+/opt/verb/serfs/inkvmailkillscriptfilter unsubscribe ${killdomain}; wait
 
 # Remove inkCert mail entries
-/opt/verb/serfs/killinkcertmail ${killdomshell}; wait
+/opt/verb/serfs/killinkcertmail ${killdomain}; wait
 
 # Remove inkDKIM entries
-/opt/verb/serfs/killinkdkim ${killdomshell}; wait
+/opt/verb/serfs/killinkdkim ${killdomain}; wait
 
 # Notify the NS slave servers
-/opt/verb/serfs/rinkkilldomain ${killdomshell}; wait
+/opt/verb/serfs/rinkkilldomain ${killdomain}; wait
 
 # Finish
 /bin/echo "
-The DNS entries and SSL and DKIM profiles for ${killdomshell} have been deleted.
+The DNS entries and SSL and DKIM profiles for ${killdomain} have been deleted.
 "
 
 

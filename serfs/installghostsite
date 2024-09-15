@@ -132,12 +132,6 @@ if [ ${ServerType} = "laemp" ]; then
 fi
 /usr/bin/systemctl restart nginx httpd
 
-# inkCert
-/usr/bin/rm -rf /etc/inkcert/le/live/${domain}
-/usr/bin/rm -rf /etc/inkcert/le/archive/${domain}
-/usr/bin/rm -r /etc/inkcert/le/renewal/${domain}.conf
-/usr/bin/echo "InkCerted=Ghost" > /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}
-
 #DEV with the ghost-cli tool, this may be obsolete
 # # Make it a service at startup
 # /usr/bin/cp /opt/verb/conf/site-files/conf/ghostsite.conf /etc/init/${cVappName}.${domain}.conf
@@ -146,9 +140,15 @@ fi
 
 # Install ghost
 ## Help https://ghost.org/docs/ghost-cli/
+## Dependencies
+/usr/bin/useradd --system --user-group ghost
 ## Can't use ghost as root
-/usr/bin/su www -c "/usr/bin/ghost install --dir '/srv/www/ghost/${domain}' --url '${domain}' --port '${ghostport}' --ip '127.0.0.1' --mail 'SMTP' --mailport '465' --mailhost 'smtp.${domain}' --mailuser 'web@${domain}' --mailpass '${emailPassword}' --db 'mysql' --dbhost 'localhost' --dbuser '${dBaseUser} '--dbpass '${dBPassword}' --dbname '${dBase}' --start"
+/usr/bin/su www -c "export GHOST_NODE_VERSION_CHECK=false; /usr/bin/ghost install --dir '/srv/www/ghost/${domain}' --url '${domain}' --port '${ghostport}' --ip '127.0.0.1' --mail 'SMTP' --mailport '465' --mailhost 'smtp.${domain}' --mailuser 'web@${domain}' --mailpass '${emailPassword}' --db 'mysql' --dbhost 'localhost' --dbuser '${dBaseUser} '--dbpass '${dBPassword}' --dbname '${dBase}' --production --start "
 if [ "$?" != "0" ]; then /usr/bin/echo 'Ghost install failed: !!'; exit 4; fi
+
+--setup-mysql --setup-nginx --setup-ssl --setup-systemd
+
+
 
 #DEV with the ghost-cli tool, this may be obsolete
 # ### Below (Forever) is expirimental on inkVerb, but working, and should be replaced with a way to run Ghost as a proper service at startup
