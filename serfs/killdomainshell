@@ -30,7 +30,7 @@ if [ -e "/opt/verb/mods/killdomainshell.replace" ]; then . /opt/verb/mods/killdo
 if [ -e "/opt/verb/mods/killdomainshell.before" ]; then . /opt/verb/mods/killdomainshell.before; fi # Precedes this script
 
 
-killdomshell=$1
+killdomain=$1
 
 # Include the config files
 . /opt/verb/conf/servertype
@@ -53,18 +53,18 @@ fi
 
 # Remove all config files, symlinks, and directories
 if [ ${ServerType} = "lemp" ]; then
-  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/nginx/*${killdomain}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/*${killdomain}.conf
+  /usr/bin/rm -f /opt/verb/conf/webserver/sites-enabled/nginx/*${killdomain}.conf
+  /usr/bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/*${killdomain}.conf
   /usr/bin/systemctl restart nginx
 elif [ ${ServerType} = "lamp" ]; then
-  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/*${killdomain}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/*${killdomain}.conf
+  /usr/bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/*${killdomain}.conf
+  /usr/bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/*${killdomain}.conf
   /usr/bin/systemctl restart httpd
 elif [ ${ServerType} = "laemp" ]; then
-  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/*${killdomain}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/*${killdomain}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-enabled/nginx/*${killdomain}.conf
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/*${killdomain}.conf
+  /usr/bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/*${killdomain}.conf
+  /usr/bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/*${killdomain}.conf
+  /usr/bin/rm -f /opt/verb/conf/webserver/sites-enabled/nginx/*${killdomain}.conf
+  /usr/bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/*${killdomain}.conf
   /usr/bin/systemctl restart httpd
   /usr/bin/systemctl restart nginx
 fi
