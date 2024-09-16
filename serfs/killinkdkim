@@ -26,7 +26,7 @@ if [ -e "/opt/verb/mods/killinkdkim.replace" ]; then . /opt/verb/mods/killinkdki
 if [ -e "/opt/verb/mods/killinkdkim.before" ]; then . /opt/verb/mods/killinkdkim.before; fi # Precedes this script
 
 
-KILLdkimdomain=$1
+killdkimdomain=$1
 
 # Delete domain key from the config files
 /bin/sed -i "/inkdkim\._domainkey\.${killdkimdomain} ${killdkimdomain}:inkdkim:\/etc\/opendkim\/keys\/${killdkimdomain}\/inkdkim\.private/d" /etc/opendkim/KeyTable

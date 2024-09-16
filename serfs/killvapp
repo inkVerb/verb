@@ -31,11 +31,11 @@ if [ -e "/opt/verb/mods/killvapp.replace" ]; then . /opt/verb/mods/killvapp.repl
 if [ -e "/opt/verb/mods/killvapp.before" ]; then . /opt/verb/mods/killvapp.before; fi # Precedes this script
 
 
+appName=$1
+
 # Include the configs
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/vapps/vapp.${appName}
-
-appName=$1
 
 # Kill the database and user
 /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
