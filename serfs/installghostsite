@@ -43,9 +43,9 @@ fi
 export GHOST_NODE_VERSION_CHECK=false
 
 # Create app directory
-/usr/bin/mkdir /srv/www/ghost/${domain}
-/usr/bin/chown -R www:www /srv/www/ghost/${domain}
-cd /srv/www/ghost/${domain} || exit 6
+/usr/bin/mkdir /srv/ghost/${domain}
+/usr/bin/chown -R www:www /srv/ghost/${domain}
+cd /srv/ghost/${domain} || exit 6
 
 # Install Ghost CLI tool package from nvm
 /usr/bin/npm install ghost-cli@latest -g
@@ -87,7 +87,7 @@ ghostemailpas=\"${emailPass}\"
 
 #DEV with the ghost-cli tool, this may be obsolete
 # # Set up the Ghost config
-# cd /srv/www/ghost/${domain} || exit 6
+# cd /srv/ghost/${domain} || exit 6
 # /usr/bin/cp config.example.js config.js
 # /usr/bin/sed -i "s/url: 'http:\/\/my-ghost-blog.com'/url: 'http:\/\/${domain}'/g" config.js
 # /usr/bin/sed -i "s/host: '127.0.0.1'/host: '${siteIP}'/g" config.js
@@ -97,9 +97,8 @@ ghostemailpas=\"${emailPass}\"
 # Set UFW to allow the Ghost port
 /usr/bin/ufw allow ${ghostport}
 
-# Reset all permissions
+# Remove domain web folder link
 /usr/bin/rm -f /srv/www/html/${domain}
-/usr/bin/chown -R www:www /srv/www/ghost/${domain}
 
 #DEV with the ghost-cli tool, this may be obsolete
 # # Web server files
@@ -127,7 +126,7 @@ ghostemailpas=\"${emailPass}\"
 
 # Remove Apache site
 if [ ${ServerType} = "laemp" ]; then
-  /usr/bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
+#   /usr/bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
   /usr/bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
 fi
 /usr/bin/systemctl restart nginx httpd
@@ -140,13 +139,13 @@ fi
 
 # Install ghost
 ## Help https://ghost.org/docs/ghost-cli/
-## Dependencies
-/usr/bin/useradd --system --user-group ghost
+## User dependency
+/usr/bin/id -u ghost &>/dev/null || /usr/bin/useradd --system --user-group ghost
 ## Can't use ghost as root
-/usr/bin/su www -c "export GHOST_NODE_VERSION_CHECK=false; /usr/bin/ghost install --dir '/srv/www/ghost/${domain}' --url '${domain}' --port '${ghostport}' --ip '127.0.0.1' --mail 'SMTP' --mailport '465' --mailhost 'smtp.${domain}' --mailuser 'web@${domain}' --mailpass '${emailPassword}' --db 'mysql' --dbhost 'localhost' --dbuser '${dBaseUser} '--dbpass '${dBPassword}' --dbname '${dBase}' --production --start "
+/usr/bin/su www -c "export GHOST_NODE_VERSION_CHECK=false; /usr/bin/ghost install --dir '/srv/ghost/${domain}' --url '${domain}' --port '${ghostport}' --ip '127.0.0.1' --mail 'SMTP' --mailport '465' --mailhost 'smtp.${domain}' --mailuser 'web@${domain}' --mailpass '${emailPassword}' --db 'mysql' --dbhost 'localhost' --dbuser '${dBaseUser} '--dbpass '${dBPassword}' --dbname '${dBase}' --production --start "
 if [ "$?" != "0" ]; then /usr/bin/echo 'Ghost install failed: !!'; exit 4; fi
 
---setup-mysql --setup-nginx --setup-ssl --setup-systemd
+# --setup-mysql --setup-nginx --setup-ssl --setup-systemd
 
 
 
@@ -155,15 +154,15 @@ if [ "$?" != "0" ]; then /usr/bin/echo 'Ghost install failed: !!'; exit 4; fi
 # # Run Ghost with Forever
 # npm install -g forever
 # ## Production forever
-# cd /srv/www/ghost/${domain} && NODE_ENV=production forever start index.js || exit 6
+# cd /srv/ghost/${domain} && NODE_ENV=production forever start index.js || exit 6
 # ## Non-production / developer forever
 # #forever start index.js
 # ## If you want, stop Forever with:
-### cd /srv/www/ghost/${domain} && forever stop index.js
+### cd /srv/ghost/${domain} && forever stop index.js
 
 ##### Don't use this normally because it halts the current script and does not finish the rest of the jobs
 ## Start Ghost only for this server session
-#cd /srv/www/ghost/${domain}
+#cd /srv/ghost/${domain}
 #npm start --production
 #####
 
