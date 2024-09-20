@@ -24,28 +24,27 @@ fi
 # Check if the domain exists
 ## Nginx
 if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
-	if [ ! -e "/opt/verb/conf/webserver/sites-available/nginx/${domain}.conf" ]; then
-		/usr/bin/echo "${domain} not found."
-		exit 8
-	fi
+  if [ ! -e "/opt/verb/conf/webserver/sites-available/nginx/${domain}.conf" ]; then
+    /usr/bin/echo "${domain} not found."
+    exit 8
+  fi
 ## No Apache
 elif [ ${ServerType} = "lamp" ]; then
-	/usr/bin/echo "Ghost requires Nginx. Can't be installed on LAMP server."
-	exit 5
+  /usr/bin/echo "Ghost requires Nginx. Can't be installed on LAMP server."
+  exit 5
 fi
 
 # Install nvm & Node.js
 /usr/bin/pacman -Syy nodejs npm --needed --noconfirm
 
 # Make the installer happy
-/usr/bin/mkdir -p /home/www
-/usr/bin/chown -R www:www /home/www
-export GHOST_NODE_VERSION_CHECK=false
+# /usr/bin/mkdir -p /home/www
+# /usr/bin/chown -R www:www /home/www
 
 # Create app directory
 /usr/bin/mkdir /srv/ghost/${domain}
-/usr/bin/chown -R www:www /srv/ghost/${domain}
-cd /srv/ghost/${domain} || exit 6
+/usr/bin/chown -R worker:worker /srv/ghost/${domain}
+# cd /srv/ghost/${domain} || exit 6 #DEV delete if everything works (directory should be an argument and cd not needed)
 
 # Install Ghost CLI tool package from nvm
 /usr/bin/npm install ghost-cli@latest -g
@@ -63,7 +62,7 @@ GRANT ALL PRIVILEGES ON ${dBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '
 FLUSH PRIVILEGES;"
 
 # Mail account (100M)
-emailPassword=$(/usr/bin/pwgen -s 15)
+emailPassword=$(/usr/bin/pwgen -s -1 15)
 /opt/verb/serfs/inkvmailbox web ${domain} 'Ghost' 104857600 ${emailPassword}
 
 # Determin port 
@@ -72,6 +71,9 @@ while /usr/bin/netstat -tulpn | /usr/bin/grep LISTEN | /usr/bin/grep -q ${ghostp
   ghostport=$(/usr/bin/expr ${ghostport} + 1)
 done
 
+# Email variable
+emailUser="web@${domain}"
+
 # Write the config for backup
 /usr/bin/echo "appDBase=\"${dBase}\"
 appDDBUsr=\"${dBaseUser}\"
@@ -79,92 +81,94 @@ appDDBPass=\"${dBPassword}\"
 ghostdomain=\"${domain}\"
 ghostport=\"${ghostport}\"
 ghostemail=\"${emailUser}\"
-ghostemailpas=\"${emailPass}\"
+ghostemailpas=\"${emailPassword}\"
 " > /opt/verb/conf/vapps/vapp.${cVappName}.${domain}
 
 # Record the port in the Ghost port inklist
 /usr/bin/echo "${domain} ${ghostport}" >> /opt/verb/conf/inklists/ghostserverports
 
-#DEV with the ghost-cli tool, this may be obsolete
-# # Set up the Ghost config
-# cd /srv/ghost/${domain} || exit 6
-# /usr/bin/cp config.example.js config.js
-# /usr/bin/sed -i "s/url: 'http:\/\/my-ghost-blog.com'/url: 'http:\/\/${domain}'/g" config.js
-# /usr/bin/sed -i "s/host: '127.0.0.1'/host: '${siteIP}'/g" config.js
-# /usr/bin/sed -i "s/2368/${ghostport}/g" config.js
-# /usr/bin/sed -i "s/mail: {}/mail: {transport: 'SMTP', options: {host: 'localhost', port: 25, service: 'dovecot', auth: {user: '${emailUser}', pass: '${emailPass}'}}}/g" config.js
-
 # Set UFW to allow the Ghost port
-/usr/bin/ufw allow ${ghostport}
+# /usr/bin/ufw allow ${ghostport} # Maybe not since the port is only used internally
 
 # Remove domain web folder link
 /usr/bin/rm -f /srv/www/html/${domain}
 
-#DEV with the ghost-cli tool, this may be obsolete
-# # Web server files
-# if [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
-#   /usr/bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
-#   /usr/bin/cp -f /opt/verb/conf/site-files/conf/newnginxghostsite.conf /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
-#   /usr/bin/sed -i "s/ghostsite286/${domain}/g" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
-#   /usr/bin/sed -i "s/2368/${ghostport}/g" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
-#   /usr/bin/systemctl restart nginx
-# elif [ ${ServerType} = "lamp" ]; then
-#   ## IP4?
-#   if [ "${ServerIPv4}" != "NOIP4" ]; then
-#     siteIP="${ServerIPv4}"
-#   ## IP6?
-#   elif [ "${ServerIPv6}" != "NOIP6" ]; then
-#     siteIP="[${ServerIPv6}]" # Brackets because we include a port number, and this is the proper format
-#   fi
-#   /usr/bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
-#   /usr/bin/cp -f /opt/verb/conf/site-files/conf/newghostsite.conf /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
-#   /usr/bin/sed -i "s/ghostsite286/${domain}/g" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
-#   /usr/bin/sed -i "s/2368/${ghostport}/g" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
-#   /usr/bin/sed -i "s/ipv4286/${siteIP}/g" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
-#   /usr/bin/systemctl restart httpd
-# fi
-
-# Remove Apache site
+# Nginx conf
+## Remove irrelevant site configs, back up to-be-replaced configs
 if [ ${ServerType} = "laemp" ]; then
-#   /usr/bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
-  /usr/bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
+  /usr/bin/cp -f /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf /opt/verb/conf/webserver/sites-available/nginx/${domain}-ghosted.conf
+  /usr/bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/${domain}.conf
+  /usr/bin/mv /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf /opt/verb/conf/webserver/sites-available/httpd/${domain}-ghosted.conf
+elif [ ${ServerType} = "lemp" ]; then
+  /usr/bin/cp -f /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf /opt/verb/conf/webserver/sites-available/nginx/${domain}-ghosted.conf
+elif [ ${ServerType} = "lamp" ]; then
+  /usr/bin/echo "Ghost requires Nginx. Can't be installed on LAMP server. But, the script shouldn't have gotten this far. Something is wrong."
+  exit 5
 fi
-/usr/bin/systemctl restart nginx httpd
 
-#DEV with the ghost-cli tool, this may be obsolete
-# # Make it a service at startup
-# /usr/bin/cp /opt/verb/conf/site-files/conf/ghostsite.conf /etc/init/${cVappName}.${domain}.conf
-# /usr/bin/sed -i "s/ghostsite/${cVappName}.${domain}/g" /etc/init/${cVappName}.${domain}.conf
-# /usr/bin/sed -i "s/ghostdomain286/${domain}/g" /etc/init/${cVappName}.${domain}.conf
+## Move the Ghost site conf into place
+/usr/bin/cp -f /opt/verb/conf/site-files/conf/newnginxghostsite.conf /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
+/usr/bin/sed -i "s/ghostsite286/${domain}/g" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
+/usr/bin/sed -i "s/ghostport286/${ghostport}/g" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
+
+
+
+## Re-add certs if they were already installed
+if grep -q 'INKVERB-INKCERT=DONE_LE' /opt/verb/conf/webserver/sites-available/nginx/${domain}-ghosted.conf; then
+  if [ -e "/etc/inkcert/le/live/${domain}"]; then
+    /opt/verb/serfs/inkcertaddle ${domain}
+  else
+    echo "inkCert certs were installed, but the actual certs don't seem to exist! This needs looking into, moving on..."
+  fi
+elif grep -q 'INKVERB-INKCERT=DONE_CB' /opt/verb/conf/webserver/sites-available/nginx/${domain}-ghosted.conf; then
+  if [ -e "/etc/inkcert/le/live/${domain}"]; then
+    /opt/verb/serfs/inkcertaddcb ${domain}
+  else
+    echo "inkCert certs were installed, but the actual certs don't seem to exist! This needs looking into, moving on..."
+  fi
+elif grep -q 'INKVERB-INKCERT=DONE_CBSINGLE' /opt/verb/conf/webserver/sites-available/nginx/${domain}-ghosted.conf; then
+  if [ -e "/etc/inkcert/le/live/${domain}"]; then
+    /opt/verb/serfs/inkcertaddcbsingle ${domain}
+  else
+    echo "inkCert certs were installed, but the actual certs don't seem to exist! This needs looking into, moving on..."
+  fi
+elif grep -q 'INKVERB-INKCERT=DONE_SC' /opt/verb/conf/webserver/sites-available/nginx/${domain}-ghosted.conf; then
+  if [ -e "/etc/inkcert/sc/live/${domain}"]; then
+    /opt/verb/serfs/inkcertaddsc ${domain}
+  else
+    echo "inkCert certs were installed, but the actual certs don't seem to exist! This needs looking into, moving on..."
+  fi
+fi
+
+## Restart web server
+if [ ${ServerType} = "laemp" ]; then
+  /usr/bin/systemctl restart nginx httpd
+elif [ ${ServerType} = "lemp" ]; then
+  /usr/bin/systemctl restart nginx
+elif [ ${ServerType} = "lamp" ]; then
+  /usr/bin/echo "Ghost requires Nginx. So, the script shouldn't have tried to restart Apache. Something is wrong."
+  exit 5
+fi
 
 # Install ghost
 ## Help https://ghost.org/docs/ghost-cli/
 ## User dependency
 /usr/bin/id -u ghost &>/dev/null || /usr/bin/useradd --system --user-group ghost
 ## Can't use ghost as root
-/usr/bin/su www -c "export GHOST_NODE_VERSION_CHECK=false; /usr/bin/ghost install --dir '/srv/ghost/${domain}' --url '${domain}' --port '${ghostport}' --ip '127.0.0.1' --mail 'SMTP' --mailport '465' --mailhost 'smtp.${domain}' --mailuser 'web@${domain}' --mailpass '${emailPassword}' --db 'mysql' --dbhost 'localhost' --dbuser '${dBaseUser} '--dbpass '${dBPassword}' --dbname '${dBase}' --production --start "
+/usr/bin/su worker -c "export GHOST_NODE_VERSION_CHECK=false; /usr/bin/ghost install local --dir=/srv/ghost/${domain} --url=${domain} --port=${ghostport} --ip=127.0.0.1 --mail=SMTP --mailport=465 --mailhost=smtp.${domain} --mailuser=${emailUser} --mailpass=${emailPassword} --db=mysql --dbhost=localhost --dbname=${dBase} --dbuser=${dBaseUser} --dbpass=${dBPassword} --production --start --setup-systemd --no-setup-nginx --no-setup-ssl --no-setup-linux-user --no-setup-migrate"
 if [ "$?" != "0" ]; then /usr/bin/echo 'Ghost install failed: !!'; exit 4; fi
 
-# --setup-mysql --setup-nginx --setup-ssl --setup-systemd
+#DEV arguments & flags reference
+# --no-setup-nginx --no-setup-systemd
+#    --setup-nginx    --setup-systemd --no-setup-ssl --no-setup-linux-user --no-setup-migrate
 
+# --setup-ssl --setup-mysql
+#  --no-setup-mysql --no-setup-ssl --no-setup-linux-user --no-setup-migrate
+#  --no-setup-nginx --no-setup-systemd
 
+#DEV stop script here
+exit 9 #DEV stop script here
 
-#DEV with the ghost-cli tool, this may be obsolete
-# ### Below (Forever) is expirimental on inkVerb, but working, and should be replaced with a way to run Ghost as a proper service at startup
-# # Run Ghost with Forever
-# npm install -g forever
-# ## Production forever
-# cd /srv/ghost/${domain} && NODE_ENV=production forever start index.js || exit 6
-# ## Non-production / developer forever
-# #forever start index.js
-# ## If you want, stop Forever with:
-### cd /srv/ghost/${domain} && forever stop index.js
-
-##### Don't use this normally because it halts the current script and does not finish the rest of the jobs
-## Start Ghost only for this server session
-#cd /srv/ghost/${domain}
-#npm start --production
-#####
 
 # Finish
 /usr/bin/echo "Ghost is setup.

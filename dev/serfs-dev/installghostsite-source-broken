@@ -1,0 +1,202 @@
+#!/usr/bin/bash
+#inkVerbSerf! verb.ink
+
+# This installs ghost as an app to permanently replace a pre-created domain, such as domain.com or sub.domain.com
+
+# How to use:
+## ./installghostsite [domain]
+
+
+cVappName=ghost
+
+domain=$1
+
+# Basic credential check
+if [ -z "${1}" ]; then
+/usr/bin/echo "You need to set a domain. See \"How to use\" in the serf."
+exit 5
+fi
+
+# Include settings
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/servertype
+
+# Check if the domain exists
+## Nginx
+if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
+	if [ ! -e "/opt/verb/conf/webserver/sites-available/nginx/${domain}.conf" ]; then
+		/usr/bin/echo "${domain} not found."
+		exit 8
+	fi
+## No Apache
+elif [ ${ServerType} = "lamp" ]; then
+	/usr/bin/echo "Ghost requires Nginx. Can't be installed on LAMP server."
+	exit 5
+fi
+
+# Install from source https://ghost.org/docs/install/source/
+## Node.js & nvm & yarn
+/usr/bin/pacman -Syy nodejs npm yarn --needed --noconfirm
+/usr/bin/npm set engine-strict false
+/usr/bin/yarn config set ignore-engines true
+## Dependencies
+/usr/bin/yarn global add knex-migrator ember-cli
+# /usr/bin/yarn global add knex-migrator ember-cli --ignore-engines # the option is already set
+
+# Clone forked repo
+cd /srv/ghost/
+#/usr/bin/git clone --recurse-submodules git@github.com:inkverb/Ghost # creates errors
+/usr/bin/git clone https://github.com/inkVerb/Ghost.git
+/usr/bin/mv Ghost ${domain}
+cd /srv/ghost/${domain}
+
+# Install
+/usr/bin/yarn setup
+
+#DEV stopped here because yarn is calling on Docker when we neither have nor need Docker
+
+#DEV everything below is for reference and may be altered or deleted
+exit 9 #DEV stop script here
+
+# Make the installer happy
+/usr/bin/mkdir -p /home/www
+/usr/bin/chown -R www:www /home/www
+export GHOST_NODE_VERSION_CHECK=false
+
+# Create app directory
+/usr/bin/mkdir /srv/ghost/${domain}
+/usr/bin/chown -R www:www /srv/ghost/${domain}
+cd /srv/ghost/${domain} || exit 6
+
+# Install Ghost CLI tool package from nvm
+/usr/bin/npm install ghost-cli@latest -g
+
+# Auto database
+cleanName=$(echo ${domain} | /usr/bin/sed -e 's/\.//g')
+dBPassword=$(/usr/bin/pwgen -s -1 10)
+dBase=gst$(/usr/bin/echo ${cleanName} | cut -c1-23)$(/usr/bin/pwgen -s -1 6)
+dBaseUser=${dBase}
+
+# Create the database and credentials
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
+CREATE DATABASE  ${dBase};
+GRANT ALL PRIVILEGES ON ${dBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '${dBPassword}';
+FLUSH PRIVILEGES;"
+
+# Mail account (100M)
+emailPassword=$(/usr/bin/pwgen -s 15)
+/opt/verb/serfs/inkvmailbox web ${domain} 'Ghost' 104857600 ${emailPassword}
+
+# Determin port 
+ghostport=2368
+while /usr/bin/netstat -tulpn | /usr/bin/grep LISTEN | /usr/bin/grep -q ${ghostport}; do
+  ghostport=$(/usr/bin/expr ${ghostport} + 1)
+done
+
+# Write the config for backup
+/usr/bin/echo "appDBase=\"${dBase}\"
+appDDBUsr=\"${dBaseUser}\"
+appDDBPass=\"${dBPassword}\"
+ghostdomain=\"${domain}\"
+ghostport=\"${ghostport}\"
+ghostemail=\"${emailUser}\"
+ghostemailpas=\"${emailPass}\"
+" > /opt/verb/conf/vapps/vapp.${cVappName}.${domain}
+
+# Record the port in the Ghost port inklist
+/usr/bin/echo "${domain} ${ghostport}" >> /opt/verb/conf/inklists/ghostserverports
+
+#DEV with the ghost-cli tool, this may be obsolete
+# # Set up the Ghost config
+# cd /srv/ghost/${domain} || exit 6
+# /usr/bin/cp config.example.js config.js
+# /usr/bin/sed -i "s/url: 'http:\/\/my-ghost-blog.com'/url: 'http:\/\/${domain}'/g" config.js
+# /usr/bin/sed -i "s/host: '127.0.0.1'/host: '${siteIP}'/g" config.js
+# /usr/bin/sed -i "s/2368/${ghostport}/g" config.js
+# /usr/bin/sed -i "s/mail: {}/mail: {transport: 'SMTP', options: {host: 'localhost', port: 25, service: 'dovecot', auth: {user: '${emailUser}', pass: '${emailPass}'}}}/g" config.js
+
+# Set UFW to allow the Ghost port
+/usr/bin/ufw allow ${ghostport}
+
+# Remove domain web folder link
+/usr/bin/rm -f /srv/www/html/${domain}
+
+#DEV with the ghost-cli tool, this may be obsolete
+# # Web server files
+# if [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
+#   /usr/bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
+#   /usr/bin/cp -f /opt/verb/conf/site-files/conf/newnginxghostsite.conf /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
+#   /usr/bin/sed -i "s/ghostsite286/${domain}/g" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
+#   /usr/bin/sed -i "s/2368/${ghostport}/g" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
+#   /usr/bin/systemctl restart nginx
+# elif [ ${ServerType} = "lamp" ]; then
+#   ## IP4?
+#   if [ "${ServerIPv4}" != "NOIP4" ]; then
+#     siteIP="${ServerIPv4}"
+#   ## IP6?
+#   elif [ "${ServerIPv6}" != "NOIP6" ]; then
+#     siteIP="[${ServerIPv6}]" # Brackets because we include a port number, and this is the proper format
+#   fi
+#   /usr/bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
+#   /usr/bin/cp -f /opt/verb/conf/site-files/conf/newghostsite.conf /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
+#   /usr/bin/sed -i "s/ghostsite286/${domain}/g" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
+#   /usr/bin/sed -i "s/2368/${ghostport}/g" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
+#   /usr/bin/sed -i "s/ipv4286/${siteIP}/g" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
+#   /usr/bin/systemctl restart httpd
+# fi
+
+# Remove Apache site
+if [ ${ServerType} = "laemp" ]; then
+#   /usr/bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
+  /usr/bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
+fi
+/usr/bin/systemctl restart nginx httpd
+
+#DEV with the ghost-cli tool, this may be obsolete
+# # Make it a service at startup
+# /usr/bin/cp /opt/verb/conf/site-files/conf/ghostsite.conf /etc/init/${cVappName}.${domain}.conf
+# /usr/bin/sed -i "s/ghostsite/${cVappName}.${domain}/g" /etc/init/${cVappName}.${domain}.conf
+# /usr/bin/sed -i "s/ghostdomain286/${domain}/g" /etc/init/${cVappName}.${domain}.conf
+
+# Install ghost
+## Help https://ghost.org/docs/ghost-cli/
+## User dependency
+/usr/bin/id -u ghost &>/dev/null || /usr/bin/useradd --system --user-group ghost
+## Can't use ghost as root
+/usr/bin/su www -c "export GHOST_NODE_VERSION_CHECK=false; /usr/bin/ghost install --dir '/srv/ghost/${domain}' --url '${domain}' --port '${ghostport}' --ip '127.0.0.1' --mail 'SMTP' --mailport '465' --mailhost 'smtp.${domain}' --mailuser 'web@${domain}' --mailpass '${emailPassword}' --db 'mysql' --dbhost 'localhost' --dbuser '${dBaseUser} '--dbpass '${dBPassword}' --dbname '${dBase}' --production --start "
+if [ "$?" != "0" ]; then /usr/bin/echo 'Ghost install failed: !!'; exit 4; fi
+
+# --setup-mysql --setup-nginx --setup-ssl --setup-systemd
+
+
+
+#DEV with the ghost-cli tool, this may be obsolete
+# ### Below (Forever) is expirimental on inkVerb, but working, and should be replaced with a way to run Ghost as a proper service at startup
+# # Run Ghost with Forever
+# npm install -g forever
+# ## Production forever
+# cd /srv/ghost/${domain} && NODE_ENV=production forever start index.js || exit 6
+# ## Non-production / developer forever
+# #forever start index.js
+# ## If you want, stop Forever with:
+### cd /srv/ghost/${domain} && forever stop index.js
+
+##### Don't use this normally because it halts the current script and does not finish the rest of the jobs
+## Start Ghost only for this server session
+#cd /srv/ghost/${domain}
+#npm start --production
+#####
+
+# Finish
+/usr/bin/echo "Ghost is setup.
+Go to https://${domain}/ghost to install."
+
+# Optional server restart
+#/usr/bin/echo "But first, wait two minutes for the server to restart."
+#sleep 3
+#reboot
+
+
+
+
+if [ -e "/opt/verb/mods/installghostsite.after" ]; then . /opt/verb/mods/installghostsite.after; fi # Follows this script
