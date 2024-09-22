@@ -9,13 +9,14 @@
 
 
 # How to use:
-## ./installghostsite [domain.tld] [dbase] [dbuser] [dbpassword]
-## ./installghostsite [domain.tld]  # This will use default usernames and passwords
+## ./installghostsite [ domain.tld ]  # This will use default usernames and passwords
+## ./installghostsite [ domain.tld ] [ dbase - optional ] [ dbuser - optional ] [ dbpassword - optional ]
 
 
 usagenotes="This installs ghost as an app to permanently replace a pre-created domain, such as domain.com or sub.domain.com"
-usageformat="installghostsite [ domain.tld ]"
-usageexample="installghostsite inkisaverb.com"
+usageformat="installghostsite [ domain.tld ] [ dbase - optional ] [ dbuser - optional ] [ dbpassword - optional ]"
+usageexample="installghostsite inkisaverb.com
+installghostsite inkisaverb.com database databaseuser databasepassword"
 hierarchy=( primary )
 vsetnames=( "Domain" )
 vsettypes=( isDomain )
@@ -76,7 +77,7 @@ if ! /usr/bin/id -u ghost &>/dev/null; then
   /usr/bin/mkdir -p /srv/ghost
   /usr/bin/usermod -d /srv/ghost ghost
   /usr/bin/usermod -L ghost
-  /usr/bin/chsh -s /usr/bin/nologin ghost 1> /dev/null 2>& 1
+  /usr/bin/chsh -s /usr/bin/nologin ghost 1> /dev/null 2>& 1 # We won't use su -c, but only Systemd to run this, so nologin
   /usr/bin/chown -R ghost:ghost /srv/ghost
 fi
 

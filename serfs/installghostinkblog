@@ -1,169 +1,230 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
 
-# This installs ghost as an app to be connected to blog.your-name.verb.ink
-
-# You MUST HAVE EMAIL SETUP with an email address. Once you set this password you can't change it. Probably ghost@your-name.verb.ink
-
-# Ghost Port: Only the blog.YOU.verb.ink URI uses 2368, domains use higher ports.
-
-# NOTE: Put the email password in "double quotes" to avoid problems with special characters.
+# This installs ghost as an app to be connected to i.your-name.verb.ink
+## This should be organized to be identical to installghostsite, but with i.name.verb.ink
 
 # How to use:
-## ./installghostinkblog [emailusername] "[emailpassword]" [new ghost port]
+## ./installghostinkblog  # This will use default usernames and passwords
+## ./installghostinkblog [ dbase - optional ] [ dbuser - optional ] [ dbpassword - optional ]
 
-#DEV this needs to be re-written according to installghostsite after it works
-exit 9
+
+usagenotes="This installs ghost as an app to permanently replace a pre-created domain, such as domain.com or sub.domain.com"
+usageformat="installghostinkblog [ dbase - optional ] [ dbuser - optional ] [ dbpassword - optional ]"
+usageexample="installghostinkblog
+installghostinkblog database databaseuser databasepassword"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=( "Database" "Database user" "Database password" )
+vopttypes=( isSQLDatabasename isSQLDatabasename isSQLDatabasename )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( inkvmailbox inkcertaddle inkcertaddcb inkcertaddcbsingle inkcertaddsc )
+useconfigs=( servernameip servertype siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/installghostinkblog.replace" ]; then . /opt/verb/mods/installghostinkblog.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installghostinkblog.before" ]; then . /opt/verb/mods/installghostinkblog.before; fi # Precedes this script
+
 
 cVappName=ghost.inkblog
 
+domain="i.${inkURI}"
+dBase=$1
+dBaseUser=$2
+dBPassword=$3
+cleanName=$(/usr/bin/echo ${domain} | /usr/bin/sed -e 's/\.//g')
+cleanDomain=$(/usr/bin/echo ${domain} | /usr/bin/sed "s/\./-/g")
+
 # Include the configs
 . /opt/verb/conf/servernameip
+. /opt/verb/conf/servertype
 . /opt/verb/conf/siteurilist
 
-EMAILuser=$1
-emailPass=$2
-newport=$3
-domain="i.${inkURI}"
-
-# Basic credential check
-if [ -z ${3} ]; then
-/bin/echo "You need to set all four variables (domain, ghost port, email, and password) to install Ghost to a domain. See \"How to use\" in the serf."
-exit 5
-fi
-
-# Include settings
-. /opt/verb/conf/servernameip
-
-# Install Node.js (LTS req by Ghost, this is v 14.x)
-/usr/bin/pacman -S --noconfirm --needed nodejs-lts-fermium
-if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
-
-# Install NVM
-## (We are not setting it for use on the command line in the bash startup script)
-## Use installnvm to install NVM for use on the command line
-/usr/bin/su worker -c '/usr/bin/yay -S --noconfirm --needed nvm'
-#/usr/local/bin/yeo -S --noconfirm --needed nvm
-if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
-## Source NVM
-source /usr/share/nvm/init-nvm.sh
-
-# Install Ghost
-cd /srv/www/ghost || exit 6
-/usr/bin/curl -L https://ghost.org/zip/ghost-latest.zip -o ghost.zip
-e="$?"; [[ "$e" = "0" ]] || exit "$e"
-/usr/bin/unzip -uo ghost.zip -d ghostblog
-/bin/rm -f ghost.zip
-
-## Now install it with npm
-cd /srv/www/ghost/ghostblog || exit 6
-npm install --production
-
-# Set up the Ghost config
-cd /srv/www/ghost/ghostblog || exit 6
-/bin/cp config.example.js config.js
-/bin/sed -i "s/url: 'http:\/\/my-ghost-blog.com'/url: 'http:\/\/${domain}\/ghost'/g" config.js
-/bin/sed -i "s/host: '127.0.0.1'/host: '${siteIP}'/g" config.js
-/bin/sed -i "s/2368/${newport}/g" config.js
-/bin/sed -i "s/mail: {}/mail: {transport: 'SMTP', options: {host: 'localhost', port: 25, service: 'dovecot', auth: {user: '${emailUser}', pass: '${emailPass}'}}}/g" config.js
-
-# Set UFW to allow the Ghost port
-/usr/bin/ufw allow ${newport}
-
-# Reset all permissions
-/bin/rm -f /verb/ink.i/ghost
-/bin/echo "Ghost Site" > /verb/ink.i/ghost
-/bin/chown -R www:www /srv/www/vapps/${cVappName}.${domain}
-
-# Web server
-. /opt/verb/conf/servertype
-if [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
-  /bin/cp -f /opt/verb/conf/site-files/conf/newnginxghostinkblog.conf /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
-  /bin/sed -i "s/ghostsite286/${domain}/g" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
-  /bin/sed -i "s/2368/${newport}/g" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
-elif [ ${ServerType} = "lamp" ]; then
-  ## IP4?
-  if [ "${ServerIPv4}" != "NOIP4" ]; then
-    siteIP="${ServerIPv4}"
-  ## IP6?
-  elif [ "${ServerIPv6}" != "NOIP6" ]; then
-    siteIP="[${ServerIPv6}]" # Brackets because we include a port number, and this is the proper format
+# Check if the domain exists
+## Nginx
+if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
+  if [ ! -e "/opt/verb/conf/webserver/sites-available/nginx/${domain}.conf" ]; then
+    /usr/bin/echo "${domain} not found."
+    exit 8
   fi
-  /bin/rm -f /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
-  /bin/cp -f /opt/verb/conf/site-files/conf/newghostinkblog.conf /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
-  /bin/sed -i "s/ghostsite286/${domain}/g" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
-  /bin/sed -i "s/2368/${newport}/g" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
-  /bin/sed -i "s/ipv4286/${siteIP}/g" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
-fi
-
-## inkCert SSL certs
-### Not setup
-if /bin/grep -Fq "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
-/bin/echo "FYI: inkCert is not yet setup for ${domain}."
-fi
-### inkCert-LE DONE
-if /bin/grep -Fq "InkCerted=DONE_LE" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
-/bin/echo "inkCert-LE is already setup for ${domain}. Updating the Apache configs..."
-/opt/verb/serfs/inkcertaddle ${domain}
-wait
-fi
-### inkCert-CBSINGLE DONE
-if /bin/grep -Fq "InkCerted=DONE_CBSINGLE" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
-/bin/echo "inkCert-CBSINGLE is already setup for ${domain}. Updating the Apache configs..."
-/opt/verb/serfs/inkcertaddcbsingle ${domain}
-wait
-fi
-### inkCert-CB DONE
-if /bin/grep -Fq "InkCerted=DONE_CB" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
-/bin/echo "inkCert-CB is already setup for ${domain}. Updating the Apache configs..."
-/opt/verb/serfs/inkcertaddcb ${domain}
-wait
-fi
-
-## Restert webserver
-if [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
-  /usr/bin/systemctl restart nginx
+## No Apache
 elif [ ${ServerType} = "lamp" ]; then
-  /usr/bin/systemctl restart httpd
+  /usr/bin/echo "Ghost requires Nginx. Can't be installed on LAMP server."
+  exit 5
 fi
 
-# Make it a service at startup
-/bin/cp /opt/verb/conf/site-files/conf/ghostsite.conf /etc/init/ghostsite-${domain}.conf
-/bin/sed -i "s/ghostsite/ghostsite-${domain}/g" /etc/init/ghostsite-${domain}.conf
-/bin/sed -i "s/ghostdomain286/${domain}/g" /etc/init/ghostsite-${domain}.conf
+# Install nvm & Node.js
+/usr/bin/pacman -Syy nodejs npm --needed --noconfirm
+
+# Check the presence of the ghost user
+if ! /usr/bin/id -u ghost &>/dev/null; then
+  # From make-preverber
+  /usr/bin/useradd -r -U ghost
+  #/usr/bin/usermod -a -G ghost worker # In case we ever need the worker to be able to perform tasks for ghost
+  /usr/bin/mkdir -p /srv/ghost
+  /usr/bin/usermod -d /srv/ghost ghost
+  /usr/bin/usermod -L ghost
+  /usr/bin/chsh -s /usr/bin/nologin ghost 1> /dev/null 2>& 1 # We won't use su -c, but only Systemd to run this, so nologin
+  /usr/bin/chown -R ghost:ghost /srv/ghost
+fi
+
+# Install Ghost CLI tool package from nvm
+/usr/bin/npm install ghost-cli@latest -g
+
+# Auto database
+if [ -z ${3} ]; then
+dBPassword=$(/usr/bin/pwgen -s -1 10); fi
+if [ -z ${1} ]; then
+dBase=gst$(/usr/bin/echo ${cleanName} | /usr/bin/cut -c1-23)$(/usr/bin/pwgen -s -1 6); fi
+if [ -z ${2} ]; then
+dBaseUser=${dBase}; fi
+
+# Create the database and credentials
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
+CREATE DATABASE  ${dBase};
+GRANT ALL PRIVILEGES ON ${dBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '${dBPassword}';
+FLUSH PRIVILEGES;"
+
+# Mail account (100M)
+emailPassword=$(/usr/bin/pwgen -s -1 15)
+/opt/verb/serfs/inkvmailbox web ${domain} 'Ghost' 104857600 ${emailPassword}
+
+# Determin port 
+ghostport=2368
+while /usr/bin/netstat -tulpn | /usr/bin/grep LISTEN | /usr/bin/grep -q ${ghostport}; do
+  ghostport=$(/usr/bin/expr ${ghostport} + 1)
+done
+
+# Email variable
+emailUser="web@${domain}"
 
 # Write the config for backup
-/bin/echo "#!/bin/bash
-ghostport=\"${newport}\"
+/usr/bin/echo "appDBase=\"${dBase}\"
+appDDBUsr=\"${dBaseUser}\"
+appDDBPass=\"${dBPassword}\"
+ghostdomain=\"${domain}\"
+ghostport=\"${ghostport}\"
 ghostemail=\"${emailUser}\"
-ghostemailpas=\"${emailPass}\"" > /opt/verb/conf/vapps/vapp.${cVappName}
+ghostemailpas=\"${emailPassword}\"
+" > /opt/verb/conf/vapps/vapp.${cVappName}
 
 # Record the port in the Ghost port inklist
-/bin/echo "${domain} ${newport}" >> /opt/verb/conf/inklists/ghostserverports
+/usr/bin/echo "${domain} ${ghostport}" >> /opt/verb/conf/inklists/ghostserverports
 
-# Set the site-wide inkblog config
-/bin/sed -i "s/INKblog=.*/INKblog=\"Ghost\"/g" /opt/verb/conf/inkinksiteinstallstatus
+# Set UFW to allow the Ghost port
+# /usr/bin/ufw allow ${ghostport} # Maybe not since the port is only used internally
 
-### Below (Forever) is expirimental on inkVerb, but working, and should be replaced with a way to run Ghost as a proper service at startup
-# Run Ghost with Forever
-npm install -g forever
-## Production forever
-cd /srv/www/ghost/ghostblog && NODE_ENV=production forever start index.js || exit 6
-## Non-production / developer forever
-#forever start index.js
-## If you want, stop Forever with:
-### cd /srv/www/ghost/ghostblog && forever stop index.js
+# Remove domain web folder link
+/usr/bin/rm -f /srv/www/html/${domain}
 
-##### Don't use this normally because it halts the current script and does not finish the rest of the jobs
-## Start Ghost only for this server session
-#cd /srv/www/ghost/ghostblog
-#npm start --production
-#####
+# Nginx conf
+## Remove irrelevant site configs, back up to-be-replaced configs
+if [ ${ServerType} = "laemp" ]; then
+  /usr/bin/cp -f /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf /opt/verb/conf/webserver/sites-available/nginx/${domain}-ghosted.conf
+  /usr/bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/${domain}.conf
+  /usr/bin/mv /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf /opt/verb/conf/webserver/sites-available/httpd/${domain}-ghosted.conf
+elif [ ${ServerType} = "lemp" ]; then
+  /usr/bin/cp -f /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf /opt/verb/conf/webserver/sites-available/nginx/${domain}-ghosted.conf
+elif [ ${ServerType} = "lamp" ]; then
+  /usr/bin/echo "Ghost requires Nginx. Can't be installed on LAMP server. But, the script shouldn't have gotten this far. Something is wrong."
+  exit 5
+fi
+
+## Move the Ghost site conf into place
+/usr/bin/cp -f /opt/verb/conf/site-files/conf/newnginxghostsite.conf /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
+/usr/bin/sed -i "s/ghostsite286/${domain}/g" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
+/usr/bin/sed -i "s/ghostport286/${ghostport}/g" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
+
+## Re-add certs if they were already installed
+if grep -q 'INKVERB-INKCERT=DONE_LE' /opt/verb/conf/webserver/sites-available/nginx/${domain}-ghosted.conf; then
+  if [ -e "/etc/inkcert/le/live/${domain}" ]; then
+    /opt/verb/serfs/inkcertaddle ${domain}
+  else
+    echo "inkCert certs were installed, but the actual certs don't seem to exist! This needs looking into, moving on..."
+  fi
+elif grep -q 'INKVERB-INKCERT=DONE_CB' /opt/verb/conf/webserver/sites-available/nginx/${domain}-ghosted.conf; then
+  if [ -e "/etc/inkcert/le/live/${domain}" ]; then
+    /opt/verb/serfs/inkcertaddcb ${domain}
+  else
+    echo "inkCert certs were installed, but the actual certs don't seem to exist! This needs looking into, moving on..."
+  fi
+elif grep -q 'INKVERB-INKCERT=DONE_CBSINGLE' /opt/verb/conf/webserver/sites-available/nginx/${domain}-ghosted.conf; then
+  if [ -e "/etc/inkcert/le/live/${domain}" ]; then
+    /opt/verb/serfs/inkcertaddcbsingle ${domain}
+  else
+    echo "inkCert certs were installed, but the actual certs don't seem to exist! This needs looking into, moving on..."
+  fi
+elif grep -q 'INKVERB-INKCERT=DONE_SC' /opt/verb/conf/webserver/sites-available/nginx/${domain}-ghosted.conf; then
+  if [ -e "/etc/inkcert/sc/live/${domain}" ]; then
+    /opt/verb/serfs/inkcertaddsc ${domain}
+  else
+    echo "inkCert certs were installed, but the actual certs don't seem to exist! This needs looking into, moving on..."
+  fi
+fi
+
+## Restart web server
+if [ ${ServerType} = "laemp" ]; then
+  /usr/bin/systemctl restart nginx httpd
+elif [ ${ServerType} = "lemp" ]; then
+  /usr/bin/systemctl restart nginx
+elif [ ${ServerType} = "lamp" ]; then
+  /usr/bin/echo "Ghost requires Nginx. So, the script shouldn't have tried to restart Apache. Something is wrong."
+  exit 5
+fi
+
+# Install ghost
+## Create app directory
+### Note make the directory owned by worker (ghost-cli must be run by worker as normal user with no-password sudo permissions)
+/usr/bin/mkdir -p /srv/ghost/${domain}
+/usr/bin/chown -R worker:worker /srv/ghost/${domain}
+## MySQL install command (can't be root)
+### No --start because we need to sort out user permissions and service first
+/usr/bin/su worker -c "export GHOST_NODE_VERSION_CHECK=false; /usr/bin/ghost install --dir=/srv/ghost/${domain} --url=${domain} --port=${ghostport} --ip=127.0.0.1 --mail=SMTP --mailport=465 --mailhost=smtp.${domain} --mailuser=${emailUser} --mailpass=${emailPassword} --db=mysql --dbhost=localhost --dbname=${dBase} --dbuser=${dBaseUser} --dbpass=${dBPassword} --production --no-start --no-setup-systemd --no-setup-nginx --no-setup-ssl --no-setup-linux-user --no-setup-migrate"
+## SQLite3 install command (can't be root)
+###DEV SQLite3 untested
+#/usr/bin/su worker -c "export GHOST_NODE_VERSION_CHECK=false; /usr/bin/ghost install --dir=/srv/ghost/${domain} --url=${domain} --port=${ghostport} --ip=127.0.0.1 --mail=SMTP --mailport=465 --mailhost=smtp.${domain} --mailuser=${emailUser} --mailpass=${emailPassword} --db=sqlite3 --dbpath=content/data/ghost_dev.db --production --no-start --no-setup-systemd --no-setup-nginx --no-setup-ssl --no-setup-linux-user --no-setup-migrate"
+if [ "$?" != "0" ]; then /usr/bin/echo 'Ghost install failed: !!'; exit 4; fi
+## Now ghost owns the installation so the .service can run it
+/usr/bin/chown -R ghost:ghost /srv/ghost/${domain}
+
+# Service
+/usr/bin/cat <<EOF > "/lib/systemd/system/ghost_${cleanDomain}.service"
+[Unit]
+Description=Ghost systemd service for blog: ${domain}
+Documentation=https://ghost.org/docs/
+
+[Service]
+Type=simple
+WorkingDirectory= /srv/ghost/${domain}
+User=ghost
+Group=ghost
+Environment="NODE_ENV=production"
+Environment="GHOST_NODE_VERSION_CHECK=false"
+ExecStart=/usr/bin/ghost run --no-prompt -D ${domain} -d /srv/ghost/${domain}
+Restart=always
+SyslogIdentifier=ghost_${domain}
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+/usr/bin/systemctl enable ghost_${cleanDomain}
+/usr/bin/systemctl start ghost_${cleanDomain}
 
 # Finish
-/bin/echo "Ghost is setup.
-Go to http://${domain}/ghost/ghost to install."
+/usr/bin/echo "Ghost is setup.
+Go to https://${domain}/ghost to install."
+
+# Optional server restart
+#/usr/bin/echo "But first, wait two minutes for the server to restart."
+#sleep 3
+#reboot
 
 
 
