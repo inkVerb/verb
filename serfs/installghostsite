@@ -76,7 +76,7 @@ if ! /usr/bin/id -u ghost &>/dev/null; then
   /usr/bin/mkdir -p /srv/ghost
   /usr/bin/usermod -d /srv/ghost ghost
   /usr/bin/usermod -L ghost
-  /usr/bin/chsh -s /usr/sbin/bash ghost 1> /dev/null 2>& 1
+  /usr/bin/chsh -s /usr/bin/nologin ghost 1> /dev/null 2>& 1
   /usr/bin/chown -R ghost:ghost /srv/ghost
 fi
 
