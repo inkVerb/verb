@@ -9,12 +9,38 @@
 
 
 # How to use:
-## ./installghostsite [domain]
+## ./installghostsite [domain.tld] [dbase] [dbuser] [dbpassword]
+## ./installghostsite [domain.tld]  # This will use default usernames and passwords
+
+
+usagenotes="This installs ghost as an app to permanently replace a pre-created domain, such as domain.com or sub.domain.com"
+usageformat="installghostsite [ domain.tld ]"
+usageexample="installghostsite inkisaverb.com"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=( "Database" "Database user" "Database password" )
+vopttypes=( isSQLDatabasename isSQLDatabasename isSQLDatabasename )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( inkvmailbox inkcertaddle inkcertaddcb inkcertaddcbsingle inkcertaddsc )
+useconfigs=( servernameip servertype )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/installghostsite.replace" ]; then . /opt/verb/mods/installghostsite.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installghostsite.before" ]; then . /opt/verb/mods/installghostsite.before; fi # Precedes this script
 
 
 cVappName=ghost
 
 domain=$1
+dBase=$2
+dBaseUser=$3
+dBPassword=$4
+cleanName=$(/usr/bin/echo ${domain} | /usr/bin/sed -e 's/\.//g')
+cleanDomain=$(/usr/bin/echo ${domain} | /usr/bin/sed "s/\./-/g")
 
 # Basic credential check
 if [ -z ${1} ]; then
@@ -58,10 +84,12 @@ fi
 /usr/bin/npm install ghost-cli@latest -g
 
 # Auto database
-cleanName=$(echo ${domain} | /usr/bin/sed -e 's/\.//g')
-dBPassword=$(/usr/bin/pwgen -s -1 10)
-dBase=gst$(/usr/bin/echo ${cleanName} | cut -c1-23)$(/usr/bin/pwgen -s -1 6)
-dBaseUser=${dBase}
+if [ -z ${4} ]; then
+dBPassword=$(/usr/bin/pwgen -s -1 10); fi
+if [ -z ${2} ]; then
+dBase=gst$(/usr/bin/echo ${cleanName} | /usr/bin/cut -c1-23)$(/usr/bin/pwgen -s -1 6); fi
+if [ -z ${3} ]; then
+dBaseUser=${dBase}; fi
 
 # Create the database and credentials
 /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
@@ -172,10 +200,7 @@ if [ "$?" != "0" ]; then /usr/bin/echo 'Ghost install failed: !!'; exit 4; fi
 /usr/bin/chown -R ghost:ghost /srv/ghost/${domain}
 
 # Service
-## Clean the domain
-cleandomain=$(/usr/bin/echo ${domain} | /usr/bin/sed "s/\./-/g")
-## Service file
-/usr/bin/cat <<EOF > "/lib/systemd/system/ghost_${cleandomain}.service"
+/usr/bin/cat <<EOF > "/lib/systemd/system/ghost_${cleanDomain}.service"
 [Unit]
 Description=Ghost systemd service for blog: ${domain}
 Documentation=https://ghost.org/docs/
@@ -197,8 +222,8 @@ StandardError=syslog
 WantedBy=multi-user.target
 EOF
 
-/usr/bin/systemctl enable ghost_${cleandomain}
-/usr/bin/systemctl start ghost_${cleandomain}
+/usr/bin/systemctl enable ghost_${cleanDomain}
+/usr/bin/systemctl start ghost_${cleanDomain}
 
 # Finish
 /usr/bin/echo "Ghost is setup.

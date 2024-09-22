@@ -44,7 +44,7 @@ domain=$1
 dBase=$2
 dBaseUser=$3
 dBPassword=$4
-cleanName=$(echo ${domain} | /usr/bin/sed -e 's/\.//g')
+cleanName=$(/usr/bin/echo ${domain} | /usr/bin/sed -e 's/\.//g')
 
 # Basic credential check
 if [ -z ${1} ]; then
@@ -75,7 +75,7 @@ e="$?"; [[ "$e" = "0" ]] || exit "$e"
 if [ -z ${4} ]; then
 dBPassword=$(/usr/bin/pwgen -s -1 10); fi
 if [ -z ${2} ]; then
-dBase=wp$(/bin/echo ${cleanName} | cut -c1-24)$(/usr/bin/pwgen -s -1 6); fi
+dBase=wp$(/usr/bin/echo ${cleanName} | /usr/bin/cut -c1-24)$(/usr/bin/pwgen -s -1 6); fi
 if [ -z ${3} ]; then
 dBaseUser=${dBase}; fi
 
