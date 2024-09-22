@@ -149,25 +149,25 @@ fi
 
 ## Re-add certs if they were already installed
 if grep -q 'INKVERB-INKCERT=DONE_LE' /opt/verb/conf/webserver/sites-available/nginx/${domain}-ghosted.conf; then
-  if [ -e "/etc/inkcert/le/live/${domain}"]; then
+  if [ -e "/etc/inkcert/le/live/${domain}" ]; then
     /opt/verb/serfs/inkcertaddle ${domain}
   else
     echo "inkCert certs were installed, but the actual certs don't seem to exist! This needs looking into, moving on..."
   fi
 elif grep -q 'INKVERB-INKCERT=DONE_CB' /opt/verb/conf/webserver/sites-available/nginx/${domain}-ghosted.conf; then
-  if [ -e "/etc/inkcert/le/live/${domain}"]; then
+  if [ -e "/etc/inkcert/le/live/${domain}" ]; then
     /opt/verb/serfs/inkcertaddcb ${domain}
   else
     echo "inkCert certs were installed, but the actual certs don't seem to exist! This needs looking into, moving on..."
   fi
 elif grep -q 'INKVERB-INKCERT=DONE_CBSINGLE' /opt/verb/conf/webserver/sites-available/nginx/${domain}-ghosted.conf; then
-  if [ -e "/etc/inkcert/le/live/${domain}"]; then
+  if [ -e "/etc/inkcert/le/live/${domain}" ]; then
     /opt/verb/serfs/inkcertaddcbsingle ${domain}
   else
     echo "inkCert certs were installed, but the actual certs don't seem to exist! This needs looking into, moving on..."
   fi
 elif grep -q 'INKVERB-INKCERT=DONE_SC' /opt/verb/conf/webserver/sites-available/nginx/${domain}-ghosted.conf; then
-  if [ -e "/etc/inkcert/sc/live/${domain}"]; then
+  if [ -e "/etc/inkcert/sc/live/${domain}" ]; then
     /opt/verb/serfs/inkcertaddsc ${domain}
   else
     echo "inkCert certs were installed, but the actual certs don't seem to exist! This needs looking into, moving on..."
