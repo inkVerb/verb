@@ -109,7 +109,7 @@ syntax on' >> /etc/vimrc
 /usr/bin/mkdir -p /srv/ghost
 /usr/bin/usermod -d /srv/ghost ghost
 /usr/bin/usermod -L ghost
-/usr/bin/chsh -s /usr/bin/nologin ghost 1> /dev/null 2>& 1
+/usr/bin/chsh -s /usr/bin/nologin ghost 1> /dev/null 2>& 1 # We won't use su -c, but only Systemd to run this, so nologin
 /usr/bin/chown -R ghost:ghost /srv/ghost
 
 # Let's use sudo
