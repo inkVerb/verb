@@ -250,8 +250,6 @@ LimitMEMLOCK=infinity" >> /etc/systemd/system/mariadb.service
 /usr/bin/mkdir -p /srv/www/email
 /usr/bin/mkdir -p /srv/www/one
 /usr/bin/mkdir -p /srv/www/vapps
-## Create directory for Ghost installs
-/usr/bin/mkdir -p /srv/www/ghost
 ## Own everything
 /usr/bin/chown -R www:www /srv/www
 /usr/bin/chown -R www:www /srv/vip
