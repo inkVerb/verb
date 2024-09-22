@@ -2,6 +2,11 @@
 #inkVerbSerf! verb.ink
 
 # This installs ghost as an app to permanently replace a pre-created domain, such as domain.com or sub.domain.com
+## Docs consulted
+### https://ghost.org/docs/hosting/
+### https://forum.ghost.org/t/skip-the-mysql-check/50452
+### Help https://ghost.org/docs/ghost-cli/
+
 
 # How to use:
 ## ./installghostsite [domain]
@@ -37,14 +42,17 @@ fi
 # Install nvm & Node.js
 /usr/bin/pacman -Syy nodejs npm --needed --noconfirm
 
-# Make the installer happy
-# /usr/bin/mkdir -p /home/www
-# /usr/bin/chown -R www:www /home/www
-
-# Create app directory
-/usr/bin/mkdir /srv/ghost/${domain}
-/usr/bin/chown -R worker:worker /srv/ghost/${domain}
-# cd /srv/ghost/${domain} || exit 6 #DEV delete if everything works (directory should be an argument and cd not needed)
+# Check the presence of the ghost user
+if ! /usr/bin/id -u ghost &>/dev/null; then
+  # From make-preverber
+  /usr/bin/useradd -r -U ghost
+  #/usr/bin/usermod -a -G ghost worker # In case we ever need the worker to be able to perform tasks for ghost
+  /usr/bin/mkdir -p /srv/ghost
+  /usr/bin/usermod -d /srv/ghost ghost
+  /usr/bin/usermod -L ghost
+  /usr/bin/chsh -s /usr/sbin/bash ghost 1> /dev/null 2>& 1
+  /usr/bin/chown -R ghost:ghost /srv/ghost
+fi
 
 # Install Ghost CLI tool package from nvm
 /usr/bin/npm install ghost-cli@latest -g
@@ -111,8 +119,6 @@ fi
 /usr/bin/sed -i "s/ghostsite286/${domain}/g" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
 /usr/bin/sed -i "s/ghostport286/${ghostport}/g" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
 
-
-
 ## Re-add certs if they were already installed
 if grep -q 'INKVERB-INKCERT=DONE_LE' /opt/verb/conf/webserver/sites-available/nginx/${domain}-ghosted.conf; then
   if [ -e "/etc/inkcert/le/live/${domain}"]; then
@@ -151,24 +157,48 @@ elif [ ${ServerType} = "lamp" ]; then
 fi
 
 # Install ghost
-## Help https://ghost.org/docs/ghost-cli/
-## User dependency
-/usr/bin/id -u ghost &>/dev/null || /usr/bin/useradd --system --user-group ghost
-## Can't use ghost as root
-/usr/bin/su worker -c "export GHOST_NODE_VERSION_CHECK=false; /usr/bin/ghost install local --dir=/srv/ghost/${domain} --url=${domain} --port=${ghostport} --ip=127.0.0.1 --mail=SMTP --mailport=465 --mailhost=smtp.${domain} --mailuser=${emailUser} --mailpass=${emailPassword} --db=mysql --dbhost=localhost --dbname=${dBase} --dbuser=${dBaseUser} --dbpass=${dBPassword} --production --start --setup-systemd --no-setup-nginx --no-setup-ssl --no-setup-linux-user --no-setup-migrate"
+## Create app directory
+### Note make the directory owned by worker (ghost-cli must be run by worker as normal user with no-password sudo permissions)
+/usr/bin/mkdir -p /srv/ghost/${domain}
+/usr/bin/chown -R worker:worker /srv/ghost/${domain}
+## MySQL install command (can't be root)
+### No --start because we need to sort out user permissions and service first
+/usr/bin/su worker -c "export GHOST_NODE_VERSION_CHECK=false; /usr/bin/ghost install --dir=/srv/ghost/${domain} --url=${domain} --port=${ghostport} --ip=127.0.0.1 --mail=SMTP --mailport=465 --mailhost=smtp.${domain} --mailuser=${emailUser} --mailpass=${emailPassword} --db=mysql --dbhost=localhost --dbname=${dBase} --dbuser=${dBaseUser} --dbpass=${dBPassword} --production --no-start --no-setup-systemd --no-setup-nginx --no-setup-ssl --no-setup-linux-user --no-setup-migrate"
+## SQLite3 install command (can't be root)
+###DEV SQLite3 untested
+#/usr/bin/su worker -c "export GHOST_NODE_VERSION_CHECK=false; /usr/bin/ghost install --dir=/srv/ghost/${domain} --url=${domain} --port=${ghostport} --ip=127.0.0.1 --mail=SMTP --mailport=465 --mailhost=smtp.${domain} --mailuser=${emailUser} --mailpass=${emailPassword} --db=sqlite3 --dbpath=content/data/ghost_dev.db --production --no-start --no-setup-systemd --no-setup-nginx --no-setup-ssl --no-setup-linux-user --no-setup-migrate"
 if [ "$?" != "0" ]; then /usr/bin/echo 'Ghost install failed: !!'; exit 4; fi
+## Now ghost owns the installation so the .service can run it
+/usr/bin/chown -R ghost:ghost /srv/ghost/${domain}
 
-#DEV arguments & flags reference
-# --no-setup-nginx --no-setup-systemd
-#    --setup-nginx    --setup-systemd --no-setup-ssl --no-setup-linux-user --no-setup-migrate
+# Service
+## Clean the domain
+cleandomain=$(/usr/bin/echo ${domain} | /usr/bin/sed "s/\./-/g")
+## Service file
+/usr/bin/cat <<EOF > "/lib/systemd/system/ghost_${cleandomain}.service"
+[Unit]
+Description=Ghost systemd service for blog: ${domain}
+Documentation=https://ghost.org/docs/
 
-# --setup-ssl --setup-mysql
-#  --no-setup-mysql --no-setup-ssl --no-setup-linux-user --no-setup-migrate
-#  --no-setup-nginx --no-setup-systemd
+[Service]
+Type=simple
+WorkingDirectory= /srv/ghost/${domain}
+User=ghost
+Group=ghost
+Environment="NODE_ENV=production"
+Environment="GHOST_NODE_VERSION_CHECK=false"
+ExecStart=/usr/bin/ghost run --no-prompt -D ${domain} -d /srv/ghost/${domain}
+Restart=always
+SyslogIdentifier=ghost_${domain}
+StandardOutput=syslog
+StandardError=syslog
 
-#DEV stop script here
-exit 9 #DEV stop script here
+[Install]
+WantedBy=multi-user.target
+EOF
 
+/usr/bin/systemctl enable ghost_${cleandomain}
+/usr/bin/systemctl start ghost_${cleandomain}
 
 # Finish
 /usr/bin/echo "Ghost is setup.

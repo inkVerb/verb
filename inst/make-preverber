@@ -90,18 +90,27 @@ syntax on' >> /etc/vimrc
 # Security check
 /opt/verb/serfs/setsecure; wait
 
-# Woker user (for yay, etc)
-/usr/bin/groupadd www
-/usr/bin/groupadd worker
-/usr/bin/useradd -g worker worker
-#/usr/bin/usermod -a -G wheel worker # Should not be necessary with the sudoers.d/ entry
+# System users
+/usr/bin/groupadd www # web user is created in make-verber-*, but we need the group now
+## Woker user (for yay, etc)
+/usr/bin/useradd -r -U worker
 /usr/bin/usermod -a -G www worker
 /usr/bin/mkdir -p /opt/verb/worker
-/usr/bin/chown -R worker:worker /opt/verb/worker
 /usr/bin/usermod -d /opt/verb/worker worker
+#/usr/bin/usermod -a -G wheel worker # Should not be necessary with the sudoers.d/ entry
 /usr/bin/echo 'worker ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/worker
 /usr/bin/usermod -L worker
 /usr/bin/chsh -s /usr/sbin/bash worker 1> /dev/null 2>& 1 # It generates STDOUT and STDERR
+/usr/bin/chown -R worker:worker /opt/verb/worker
+## Ghost
+#/usr/bin/id -u ghost &>/dev/null || /usr/bin/useradd -r -U ghost #DEV keep for reference
+/usr/bin/useradd -r -U ghost
+#/usr/bin/usermod -a -G ghost worker # In case we ever need the worker to be able to perform tasks for ghost
+/usr/bin/mkdir -p /srv/ghost
+/usr/bin/usermod -d /srv/ghost ghost
+/usr/bin/usermod -L ghost
+/usr/bin/chsh -s /usr/sbin/bash ghost 1> /dev/null 2>& 1
+/usr/bin/chown -R ghost:ghost /srv/ghost
 
 # Let's use sudo
 /usr/bin/groupadd sudo

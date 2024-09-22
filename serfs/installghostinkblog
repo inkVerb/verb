@@ -12,6 +12,9 @@
 # How to use:
 ## ./installghostinkblog [emailusername] "[emailpassword]" [new ghost port]
 
+#DEV this needs to be re-written according to installghostsite after it works
+exit 9
+
 cVappName=ghost.inkblog
 
 # Include the configs
