@@ -58,7 +58,9 @@ elif [ ${ServerType} = "lamp" ]; then
 fi
 
 # Install nvm & Node.js
-/usr/bin/pacman -Syy nodejs npm --needed --noconfirm
+if [ ! -e "/usr/bin/nodejs" ] || [ ! -e "/usr/bin/npm" ]; then
+  /usr/bin/pacman -Syy nodejs npm --needed --noconfirm
+fi
 
 # Check the presence of the ghost user
 if ! /usr/bin/id -u ghost &>/dev/null; then
