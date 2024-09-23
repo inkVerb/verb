@@ -66,8 +66,8 @@ elif [ ${ServerType} = "lamp" ]; then
   exit 5
 fi
 
-# Install nvm & Node.js
-if [ ! -e "/usr/bin/nodejs" ] || [ ! -e "/usr/bin/npm" ]; then
+# Install npm & Node.js
+if [ ! -e "/usr/bin/node" ] || [ ! -e "/usr/bin/npm" ]; then
   /usr/bin/pacman -Syy nodejs npm --needed --noconfirm
 fi
 
