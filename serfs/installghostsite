@@ -82,7 +82,9 @@ if ! /usr/bin/id -u ghost &>/dev/null; then
 fi
 
 # Install Ghost CLI tool package from nvm
-/usr/bin/npm install ghost-cli@latest -g
+if [ ! -e "/usr/bin/ghost" ]; then
+  /usr/bin/npm install ghost-cli@latest -g
+fi
 
 # Auto database
 if [ -z ${4} ]; then
