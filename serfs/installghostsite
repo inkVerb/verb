@@ -83,7 +83,7 @@ if ! /usr/bin/id -u ghost &>/dev/null; then
   /usr/bin/chown -R ghost:ghost /srv/ghost
 fi
 
-# Install Ghost CLI tool package from nvm
+# Install Ghost CLI tool package from npm
 if [ ! -e "/usr/bin/ghost" ]; then
   /usr/bin/npm install ghost-cli@latest -g
 fi

@@ -57,8 +57,8 @@ elif [ ${ServerType} = "lamp" ]; then
   exit 5
 fi
 
-# Install nvm & Node.js
-if [ ! -e "/usr/bin/nodejs" ] || [ ! -e "/usr/bin/npm" ]; then
+# Install npm & Node.js
+if [ ! -e "/usr/bin/node" ] || [ ! -e "/usr/bin/npm" ]; then
   /usr/bin/pacman -Syy nodejs npm --needed --noconfirm
 fi
 
@@ -74,7 +74,7 @@ if ! /usr/bin/id -u ghost &>/dev/null; then
   /usr/bin/chown -R ghost:ghost /srv/ghost
 fi
 
-# Install Ghost CLI tool package from nvm
+# Install Ghost CLI tool package from npm
 if [ ! -e "/usr/bin/ghost" ]; then
   /usr/bin/npm install ghost-cli@latest -g
 fi
