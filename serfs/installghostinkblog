@@ -199,12 +199,12 @@ Documentation=https://ghost.org/docs/
 
 [Service]
 Type=simple
-WorkingDirectory= /srv/ghost/${domain}
+WorkingDirectory=/srv/ghost/${domain}
 User=ghost
 Group=ghost
 Environment="NODE_ENV=production"
 Environment="GHOST_NODE_VERSION_CHECK=false"
-ExecStart=/usr/bin/ghost run --no-prompt -D ${domain} -d /srv/ghost/${domain}
+ExecStart=/usr/bin/ghost run ${domain}
 Restart=always
 SyslogIdentifier=ghost_${domain}
 StandardOutput=syslog
