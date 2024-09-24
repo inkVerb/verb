@@ -217,11 +217,9 @@ User=ghost
 Group=ghost
 Environment="NODE_ENV=production"
 Environment="GHOST_NODE_VERSION_CHECK=false"
-ExecStart=/usr/bin/ghost run ${domain}
+ExecStart=/usr/bin/ghost run
 Restart=always
 SyslogIdentifier=ghost_${domain}
-StandardOutput=syslog
-StandardError=syslog
 
 [Install]
 WantedBy=multi-user.target
