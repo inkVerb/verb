@@ -87,13 +87,13 @@ ${aboutMsg}"
 Available flags:
 -h This help message
 -d ${optName[d]}: ${optDesc[d]}
+-p ${optName[p]}: ${optDesc[p]}
 
 Choose between -n -m -s -w flags, optional -n default
 -n ${optName[n]}: ${optDesc[n]}
 -m ${optName[m]}: ${optDesc[m]}
 -s ${optName[s]}: ${optDesc[s]}
 -w ${optName[w]}: ${optDesc[w]}
--p ${optName[p]}: ${optDesc[p]}
 "
   exit 0
 fi

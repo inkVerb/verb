@@ -81,7 +81,7 @@ fail_message=$FailMessage
 if [ -z "${SOyn}" ]; then
   /bin/echo "${optName[yn]}  option must be set."; inkFail # Uncomment if required
 fi
-if [ -n $yes ] && [ -n $no ]; then
+if [ -n "$yes" ] && [ -n "$no" ]; then
   inkFail
 fi
 

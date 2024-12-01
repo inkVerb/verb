@@ -1,0 +1,91 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This moves domain listing from parked/ to served/ after being parked
+## It doesn't matter if it was parked with inkdnspark or done initially with 'adddomain ... park'
+
+# How to use:
+## ./rinkunparkdomain [ domain.tld ]
+
+usagenotes="This moves domain listing from parked/ to served/ after being parked"
+usageformat="rinkparkdomain [ domain.tld ]"
+usageexample="rinkparkdomain inkisaverb.com"
+hierarchy=( secondary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( "Controlled by Rink" )
+prerequesite=( rinkadddomain )
+usedby=( inkdnsunpark )
+useserfs=(  )
+useconfigs=( servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/rinkparkdomain.replace" ]; then . /opt/verb/mods/rinkparkdomain.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/rinkparkdomain.before" ]; then . /opt/verb/mods/rinkparkdomain.before; fi # Precedes this script
+
+
+slavedomain=$1
+
+# Configs
+. /opt/verb/conf/servernameip
+
+# Already configured or allowed rink?
+if [ "$RinkConfigured" = "rink" ] && [ -f "/opt/rink/run/addmasterdomain" ]; then
+	/opt/rink/run/addmasterdomain ${slavedomain}
+	exit 0
+elif [ "$RinkConfigured" != "true" ]; then
+	echo "Rink NS nameserver keys not configured, DNS nameserver zone files must be updated manually"
+	exit 5
+fi
+
+# Check if the zone file exists
+if [ ! -f "/opt/verb/conf/inkdns/zones/db.${dnsDomain}" ]; then
+/usr/bin/echo "The domain \"${dnsDomain}\" has no served DNS zone file. Unpark it first."
+exit 8; fi
+
+# Check if the parked zone file still exists
+if [ -e "/opt/verb/conf/inkdns/parked/db.${dnsDomain}" ]; then
+/usr/bin/echo "The domain \"${dnsDomain}\" is parked, but also has a standard DNS zone file. Something is wrong."
+exit 6; fi
+
+# Move the configs from served/ to parked/ on the NS nameservers
+## NS1
+/usr/bin/ssh -T ns1 <<EOS
+if [ -e "/srv/sns/${ServerName}-${ServerTLD}/domains/served/${slavedomain}" ]; then
+  echo "Domain ${slavedomain} already served on NS1! Nothing left to do."
+  exit 7
+elif [ ! -e "/srv/sns/${ServerName}-${ServerTLD}/domains/parked/${slavedomain}" ]; then
+  echo "Domain ${slavedomain} not parked on NS1, nothing to unpark!"
+  exit 8
+fi
+/usr/bin/mv /srv/sns/${ServerName}-${ServerTLD}/domains/parked/${slavedomain} /srv/sns/${ServerName}-${ServerTLD}/domains/served/
+EOS
+if [ "$?" = "0" ]; then
+  /usr/bin/echo "Unparked ${slavedomain} on NS1"
+else
+  /usr/bin/echo "Nothing changed on NS1, see error & log entries"
+fi
+## NS2
+/usr/bin/ssh -T ns2 <<EOS
+if [ -e "/srv/sns/${ServerName}-${ServerTLD}/domains/served/${slavedomain}" ]; then
+  echo "Domain ${slavedomain} already served on NS2! Nothing left to do."
+  exit 7
+elif [ ! -e "/srv/sns/${ServerName}-${ServerTLD}/domains/parked/${slavedomain}" ]; then
+  echo "Domain ${slavedomain} not parked on NS2, nothing to unpark!"
+  exit 8
+fi
+/usr/bin/mv /srv/sns/${ServerName}-${ServerTLD}/domains/parked/${slavedomain} /srv/sns/${ServerName}-${ServerTLD}/domains/served/
+EOS
+if [ "$?" = "0" ]; then
+  /usr/bin/echo "Unparked ${slavedomain} on NS2"
+else
+  /usr/bin/echo "Nothing changed on NS2, see error & log entries"
+fi
+
+
+
+
+if [ -e "/opt/verb/mods/rinkparkdomain.after" ]; then . /opt/verb/mods/rinkparkdomain.after; fi # Follows this script

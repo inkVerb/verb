@@ -1,7 +1,7 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
 
-# This moves a hosted zone to become parked
+# This moves a served zone to become parked
 
 # How to use:
 ## ./inkdnspark [ domain.tld ]
@@ -19,8 +19,8 @@ voptflags=(  )
 voptflagpurpose=(  )
 dependencyinstall=( inkdnsinstall )
 prerequesite=(  )
-usedby=( inkdnsinstall inkdnsadddomain inkdnsaddinkdkim inkdnsaddmail inkdnsaddonesub inkdnsaddsub inkdnsaddvipsub inkdnsrefreshbind killinkdnsinkdkim killinkdnsmail killinkdnsonesub killinkdnssub killinkdnsvipsub setserve )
-useserfs=( inkdnsrefreshbind )
+usedby=(  )
+useserfs=( rinkparkdomain inkdnsrefreshbind )
 useconfigs=( servernameip )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/inkdnspark.replace" ]; then . /opt/verb/mods/inkdnspark.replace; return 0; fi # Replaces this script

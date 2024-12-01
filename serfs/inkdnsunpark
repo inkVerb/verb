@@ -1,0 +1,58 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This moves a parked zone to become served
+
+# How to use:
+## ./inkdnsunpark [ domain.tld ]
+## ./inkdnsunpark [ domain.tld ]
+
+usagenotes="This moves a hosted zone to become parked"
+usageformat="inkdnsunpark [ domain.tld ]"
+usageexample="inkdnsunpark inkisaverb.com"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkdnsinstall )
+prerequesite=( 'inkdnspark | adddomain ... park | newdomainshell domain.tld park' )
+usedby=(  )
+useserfs=( rinkunparkdomain inkdnsrefreshbind )
+useconfigs=( servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdnsunpark.replace" ]; then . /opt/verb/mods/inkdnsunpark.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdnsunpark.before" ]; then . /opt/verb/mods/inkdnsunpark.before; fi # Precedes this script
+
+
+dnsDomain="$1"
+
+# Check if the zone file already exists
+if [ -f "/opt/verb/conf/inkdns/zones/db.${dnsDomain}" ]; then
+/usr/bin/echo "The domain \"${dnsDomain}\" already has a standard DNS zone file. Nothing to do."
+exit 7; fi
+
+# Check if the parked zone file already exists
+if [ ! -e "/opt/verb/conf/inkdns/parked/db.${dnsDomain}" ]; then
+/usr/bin/echo "The domain \"${dnsDomain}\" isn't parked. Nothing to unpark."
+exit 8; fi
+
+# Move the zone file to the parked folder
+/usr/bin/mv "/opt/verb/conf/inkdns/parked/db.${dnsDomain}" /opt/verb/conf/inkdns/zones/
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+
+# Park the domain on the servers
+/opt/verb/serfs/rinkunparkdomain
+
+# Refresh zones
+/opt/verb/serfs/inkdnsrefreshbind
+
+# Finish & warn
+echo "Domain ${dnsDomain} parked and given DNS preference"
+#DEV this should be removed once it is properly handled
+echo "Both mail and web for ${dnsDomain} are hosted on this server unless manually modified!"
+
+
+if [ -e "/opt/verb/mods/inkdnsunpark.after" ]; then . /opt/verb/mods/inkdnsunpark.after; fi # Follows this script

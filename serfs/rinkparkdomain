@@ -7,7 +7,7 @@
 # How to use:
 ## ./rinkparkdomain [ domain.tld ]
 
-usagenotes="This remote runs inkdnsaddslave on both NS rink slave servers"
+usagenotes="This moves domain listing from served/ to parked/ after being added with rinkadddomain"
 usageformat="rinkparkdomain [ domain.tld ]"
 usageexample="rinkparkdomain inkisaverb.com"
 hierarchy=( secondary )
