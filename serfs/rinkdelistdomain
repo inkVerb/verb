@@ -1,0 +1,91 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This delists a domain added with rinkadddomain
+## The purpose is usually that the domain is parked elsewhere
+## Whether the domain is parked or served won't matter
+
+# How to use:
+## ./rinkdelistdomain [ domain.tld ]
+
+usagenotes="This delists a domain added with rinkadddomain, usually to prevent conflicts with parked domains"
+usageformat="rinkdelistdomain [ domain.tld ]"
+usageexample="rinkdelistdomain inkisaverb.com"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( "Controlled by Rink" )
+prerequesite=( rinkadddomain )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/rinkdelistdomain.replace" ]; then . /opt/verb/mods/rinkdelistdomain.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/rinkdelistdomain.before" ]; then . /opt/verb/mods/rinkdelistdomain.before; fi # Precedes this script
+
+
+slavedomain=$1
+
+# Configs
+. /opt/verb/conf/servernameip
+
+# Already configured or allowed rink?
+if [ "$RinkConfigured" = "rink" ] && [ -f "/opt/rink/run/addmasterdomain" ]; then
+	/opt/rink/run/addmasterdomain ${slavedomain}
+	exit 0
+elif [ "$RinkConfigured" != "true" ]; then
+	echo "Rink NS nameserver keys not configured, DNS nameserver zone files must be updated manually"
+	exit 5
+fi
+
+# Check if the zone file still exists
+if [ ! -f "/opt/verb/conf/inkdns/zones/db.${dnsDomain}" ] && [ ! -e "/opt/verb/conf/inkdns/parked/db.${dnsDomain}" ]; then
+  /usr/bin/echo "The domain \"${dnsDomain}\" has no DNS zone file on this verber. Nothing to delist."
+exit 8; fi
+
+# Move the configs from served/ to delisted/ on the NS nameservers
+## NS1
+/usr/bin/ssh -T ns1 <<EOS
+if [ -e "/srv/sns/${ServerName}-${ServerTLD}/domains/served/${slavedomain}" ]; then
+  /usr/bin/mkdir -p /srv/sns/${ServerName}-${ServerTLD}/domains/delisted
+  /usr/bin/mv /srv/sns/${ServerName}-${ServerTLD}/domains/served/${slavedomain} /srv/sns/${ServerName}-${ServerTLD}/domains/delisted/
+elif [ -e "/srv/sns/${ServerName}-${ServerTLD}/domains/parked/${slavedomain}" ]; then
+  /usr/bin/mkdir -p /srv/sns/${ServerName}-${ServerTLD}/domains/delisted
+  /usr/bin/mv /srv/sns/${ServerName}-${ServerTLD}/domains/parked/${slavedomain} /srv/sns/${ServerName}-${ServerTLD}/domains/delisted/
+else
+  echo "Domain ${slavedomain} not on NS1, nothing to delist!"
+  exit 8
+fi
+EOS
+if [ "$?" = "0" ]; then
+  /usr/bin/echo "Delisted ${slavedomain} on NS1"
+else
+  /usr/bin/echo "Nothing changed on NS1, see error & log entries"
+fi
+## NS2
+/usr/bin/ssh -T ns2 <<EOS
+if [ -e "/srv/sns/${ServerName}-${ServerTLD}/domains/served/${slavedomain}" ]; then
+  /usr/bin/mkdir -p /srv/sns/${ServerName}-${ServerTLD}/domains/delisted
+  /usr/bin/mv /srv/sns/${ServerName}-${ServerTLD}/domains/served/${slavedomain} /srv/sns/${ServerName}-${ServerTLD}/domains/delisted/
+elif [ -e "/srv/sns/${ServerName}-${ServerTLD}/domains/parked/${slavedomain}" ]; then
+  /usr/bin/mkdir -p /srv/sns/${ServerName}-${ServerTLD}/domains/delisted
+  /usr/bin/mv /srv/sns/${ServerName}-${ServerTLD}/domains/parked/${slavedomain} /srv/sns/${ServerName}-${ServerTLD}/domains/delisted/
+else
+  echo "Domain ${slavedomain} not served on NS2, nothing to park!"
+  exit 8
+fi
+EOS
+if [ "$?" = "0" ]; then
+  /usr/bin/echo "Delisted ${slavedomain} on NS2"
+else
+  /usr/bin/echo "Nothing changed on NS2, see error & log entries"
+fi
+
+
+
+
+if [ -e "/opt/verb/mods/rinkdelistdomain.after" ]; then . /opt/verb/mods/rinkdelistdomain.after; fi # Follows this script
