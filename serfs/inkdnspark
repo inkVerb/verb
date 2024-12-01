@@ -1,0 +1,58 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This moves a hosted zone to become parked
+
+# How to use:
+## ./inkdnspark [ domain.tld ]
+## ./inkdnspark [ domain.tld ]
+
+usagenotes="This moves a hosted zone to become parked"
+usageformat="inkdnspark [ domain.tld ]"
+usageexample="inkdnspark inkisaverb.com"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkdnsinstall )
+prerequesite=(  )
+usedby=( inkdnsinstall inkdnsadddomain inkdnsaddinkdkim inkdnsaddmail inkdnsaddonesub inkdnsaddsub inkdnsaddvipsub inkdnsrefreshbind killinkdnsinkdkim killinkdnsmail killinkdnsonesub killinkdnssub killinkdnsvipsub setserve )
+useserfs=( inkdnsrefreshbind )
+useconfigs=( servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdnspark.replace" ]; then . /opt/verb/mods/inkdnspark.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdnspark.before" ]; then . /opt/verb/mods/inkdnspark.before; fi # Precedes this script
+
+
+dnsDomain="$1"
+
+# Check if the zone file exists
+if [ ! -f "/opt/verb/conf/inkdns/zones/db.${dnsDomain}" ]; then
+/usr/bin/echo "The domain \"${dnsDomain}\" has no DNS zone file. That comes first."
+exit 8; fi
+
+# Check if the parked zone file already exists
+if [ -e "/opt/verb/conf/inkdns/parked/db.${dnsDomain}" ]; then
+/usr/bin/echo "The domain \"${dnsDomain}\" has already been parked. Nothing to do."
+exit 7; fi
+
+# Move the zone file to the parked folder
+/usr/bin/mv "/opt/verb/conf/inkdns/zones/db.${dnsDomain}" /opt/verb/conf/inkdns/parked/
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+
+# Park the domain on the servers
+/opt/verb/serfs/rinkparkdomain
+
+# Refresh zones
+/opt/verb/serfs/inkdnsrefreshbind
+
+# Finish & warn
+echo "Domain ${dnsDomain} parked and given DNS preference"
+#DEV this should be removed once it is properly handled
+echo "Both mail and web for ${dnsDomain} are hosted on this server unless manually modified!"
+
+
+if [ -e "/opt/verb/mods/inkdnspark.after" ]; then . /opt/verb/mods/inkdnspark.after; fi # Follows this script

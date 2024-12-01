@@ -67,7 +67,7 @@ fi
 . /srv/sns/${verber}/conf
 
 # Already existing check
-if [ -f "/srv/sns/${verber}/domains/${domain}" ]; then
+if [ -f "/srv/sns/${verber}/domains/parked/${domain}" ] || [ -f "/srv/sns/${verber}/domains/served/${domain}" ]; then
   /bin/echo "SDNS configuration for ${domain} already exists; doing nothing."; exit 7
 fi
 

@@ -7,7 +7,7 @@
 
 
 ## Usage
-- `ink add domain -d [ domain.tld ] -n|m|s|w ( auto SSL cert option )`
+- `ink add domain -d [ domain.tld ] -n|m|s|w ( auto SSL cert option ) -p ( park option)`
 
 - `ink add domain -d inkisaverb.com`
   - Same as `ink add domain -d inkisaverb.com -n`
@@ -38,3 +38,12 @@
     - This is achieved by creating a self-destructing `cron` task called digdomain-DOMAIN, which runs `donjon/digdomain.sh inkisaverb.com wild` every 5 minutes
     - Only the domain and wildcard domain `*.inkisaverb.com` will be included in this cert, despite the fact that mail subdomains reside on the server
   - `ink cert` will not be able to nor need to run for this domain after using this option, unless running `ink cert undo` first
+- `ink add domain -d inkisaverb.com -n|m|s|w -p`
+  - Does whatever `-n`, `-m`, `-s` or `-w` flags would do
+  - Parks the domain on this server
+    - This creates all other settings normally done even without this flag
+    - The domain can be entirely hosted on this server, even with email and SSL certificates
+    - The `db.inkisaverb.com` zone file will move from `inkdns/zones/` to `inkdns/parked/`
+    - If hosted on a different server, that `db.inkisaverb.com` file will need to be manually updated
+    - Any changes for SSL certificates will need to be adjusted in `inkcert/cli-ini/cli.inkisaverb.com` on all affected servers so there is no conflict
+    - Any sites should be properly de-activated in `webserver/sites-available/...`

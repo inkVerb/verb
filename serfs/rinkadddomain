@@ -4,11 +4,12 @@
 # This remote runs inkdnsaddslave on both NS rink slave servers
 ## This is run automatically by newdomainshell and rinkimportme; it normally should not be run independently
 ## This cannot import verb domains; use rinkupdateallverbs instead
+## Parking is automatically detected
 
 # How to use:
 ## ./rinkadddomain [ domain.tld ]
 
-usagenotes="This remote runs inkdnsaddslave on both NS rink slave servers"
+usagenotes="This remote runs inkdnsaddslave on both NS rink slave servers; parked domain detection is automatic"
 usageformat="rinkadddomain [ domain.tld ]"
 usageexample="rinkadddomain inkisaverb.com"
 hierarchy=( secondary )

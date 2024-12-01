@@ -3,6 +3,7 @@
 
 # This runs rinkadddomain for each domain active on this verber, intended for just after being imported by the Rink, but also can be used to refresh all served domains
 ## This automatically loops through verb domains and normal domains, using servertldstatus and entries in inkdns/zones, inkdns/inkzones, and inkcert/, then verifying their configs in the webserver configs
+## Parking is automatically detected
 ## This does not loop through subdomains, but only through domains created using newdomainshell, just as newdomainshell would have run rinkadddomain just the same
 ## This does not check for webserver files because 1. that location vaires with lamp/lemp/laemp and 2. we only need to check for a viable reason that the verb system created this domain (inkcert) and that it can be served (inkdns)
 ## Prerequesite: run inkdnssetns1 inkdnssetns2
@@ -12,7 +13,7 @@
 # How to use:
 ## ./rinkimportme
 
-usagenotes="This runs rinkadddomain for each domain already active on this verber, intended for just after being imported by the Rink"
+usagenotes="This runs rinkadddomain for each domain already active on this verber, intended for just after being imported by the Rink; parked domain detection is automatic"
 usageformat="rinkimportme"
 usageexample="rinkimportme"
 hierarchy=( primary )
@@ -55,7 +56,7 @@ if [ "$DomHostAllowed" != "YES" ]; then
 	exit 5
 fi
 
-# Parked domains (first so they are easily over-written)
+# Parked domains
 cd /opt/verb/conf/inkdns/parked || exit 6
 for parkedZoneDB in db.*; do
 	parkedZone="$(/bin/echo ${parkedZoneDB} | /usr/bin/sed 's/db\.//' )"

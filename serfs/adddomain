@@ -5,12 +5,15 @@
 ## This also creates an inkDNS zone file, complete with mail records
 
 # How to use:
-## ./adddomain [ newdomain.tld ] [ multi/single/wild/nocert - optional for auto-inkCert when ready ]
+## ./adddomain [ newdomain.tld ] [ multi/single/wild/nocert - optional for auto-inkCert when ready ] [ park - optional to make a parked domain ]
 
 ## Eg:
 ## ./adddomain inkisaverb.com
 ## ./adddomain inkisaverb.com multi # automatically run inkcertdole for specified domain only; addsubdomain won't work for this domain after using this option
 ## ./adddomain inkisaverb.com wild # automatically run inkcertdocb with wildcard certs
+## ./adddomain inkisaverb.com park # park domain with nocert option
+## ./adddomain inkisaverb.com multi park # park & automatically run inkcertdole for specified domain only; addsubdomain won't work for this domain after using this option
+## ./adddomain inkisaverb.com wild park # park & automatically run inkcertdocb with wildcard certs
 
 usagenotes="This adds a new domain, complete with inkDKIM OpenDKIM profiles and keys, inkDNS DNS zone record, inkCert Letsencrypt cli-ini entries, and Apache/Nginx configs and folders in www/domains/ that link to www/html/"
 usageformat="adddomain [ newdomain.tld ] [ multi/single/wild/nocert - optional for auto-inkCert when ready ]"
@@ -18,12 +21,17 @@ usageexample="adddomain inkisaverb.com # same as using nocert
 adddomain inkisaverb.com nocert # will NOT run inkcertdole
 adddomain inkisaverb.com multi # will automatically run inkcertdole for specified domain only; addsubdomain won't work for this domain after using this option
 adddomain inkisaverb.com single # will automatically run inkcertdocbsingle
-adddomain inkisaverb.com wild # will automatically run inkcertdocb with wildcard certs"
+adddomain inkisaverb.com wild # will automatically run inkcertdocb with wildcard certs
+adddomain inkisaverb.com park # park domain with nocert option
+adddomain inkisaverb.com nocert park # will NOT run inkcertdole
+adddomain inkisaverb.com multi park # will automatically run inkcertdole for specified domain only; addsubdomain won't work for this domain after using this option
+adddomain inkisaverb.com single park # will automatically run inkcertdocbsingle
+adddomain inkisaverb.com wild park # will automatically run inkcertdocb with wildcard certs"
 hierarchy=( primary )
 vsetnames=( "Domain" )
 vsettypes=( isDomain )
-voptnames=( "Auto-cert" )
-vopttypes=( "string_match" )
+voptnames=( "Auto-cert" "Park" )
+vopttypes=( "string_match" "string_match" )
 voptflags=(  )
 voptflagpurpose=(  )
 dependencyinstall=(  )
@@ -88,7 +96,11 @@ fi
 # Check the domain shell
 if [ ! -f "/opt/verb/conf/inkcert/cli-ini/siteinkcert.${newdomain}" ] || [ ! -f "/opt/verb/conf/inkcert/cli-ini/cli.${newdomain}.ini" ]; then
   /bin/echo "The shell for ${newdomain} does not exist yet. Creating it..."
-  /opt/verb/serfs/newdomainshell ${newdomain}; wait
+  if [ "$2" = "park" ] || [ "$3" = "park" ]; then
+    /opt/verb/serfs/newdomainshell ${newdomain} park; wait
+  else
+    /opt/verb/serfs/newdomainshell ${newdomain}; wait
+  fi
 fi
 
 # Server config files
@@ -137,7 +149,7 @@ elif [ -n "$2" ] && [ "$2" = "wild" ]; then
   /usr/bin/chmod 0644 /etc/cron.d/digdomain-${newdomain}
   # Finish
   /usr/bin/echo "Success, ${newdomain} added!"
-elif [ -z "$2" ] || [ "$2" = "nocert" ]; then
+elif [ -z "$2" ] || [ "$2" = "nocert" ] || [ "$2" = "park" ]; then
   # Finish
   /usr/bin/echo "Success, ${newdomain} added! No SSL certs yet. Add any subdomains, then run inkCert to obtain certs."
 fi

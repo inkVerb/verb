@@ -16,7 +16,7 @@ EOU
 )"
 
 # Available flags
-optSerf="d:nmswhrcv"
+optSerf="d:nmswphrcv"
 declare -A optName
 declare -A optDesc
 optName[d]="Domain"
@@ -29,6 +29,8 @@ optName[s]="Single"
 optDesc[s]="Obtain a single cert, subdomains and parent domains use this flag each to obtain their own certs"
 optName[w]="Wildcard"
 optDesc[w]="Obtain a wildcard subdomain cert, useful for the parent domain and all subdomains; requires verber set as self-parking nameserver"
+optName[p]="Park"
+optDesc[p]="Park the domain here, it might not end up hosted on this server"
 
 # Check the variables
 while getopts "${optSerf}" Flag; do
@@ -52,6 +54,10 @@ while getopts "${optSerf}" Flag; do
   w)
     SOcertarg="wild"
     SOmessage="Wildcard cert for domain and any subdomains will be obtained."
+  ;;
+  p)
+    SOpark="park"
+    SOparkmessage=" Domain will be parked; make necessary changes when ready. Read more with -h."
   ;;
   # Standard flags
   c)
@@ -87,13 +93,14 @@ Choose between -n -m -s -w flags, optional -n default
 -m ${optName[m]}: ${optDesc[m]}
 -s ${optName[s]}: ${optDesc[s]}
 -w ${optName[w]}: ${optDesc[w]}
+-p ${optName[p]}: ${optDesc[p]}
 "
   exit 0
 fi
 
 # Message prep
 # Success message
-success_message="$SOd domain added. $SOmessage"
+success_message="$SOd domain added. ${SOmessage}${SOparkmessage}"
 
 # Fail message
 fail_message="$SOd domain failed to be added."
@@ -109,7 +116,7 @@ if [ -z "${SOcertarg}" ]; then
 fi
 
 # Prepare command
-serfcommand="${Serfs}/${surfname} ${SOd} ${SOcertarg}"
+serfcommand="${Serfs}/${surfname} ${SOd} ${SOcertarg} ${SOpark}"
 
 # Run the ink
 . $InkRun

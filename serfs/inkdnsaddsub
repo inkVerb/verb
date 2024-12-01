@@ -2,11 +2,12 @@
 #inkVerbSerf! verb.ink
 
 # This adds a subdomain A & AAAA records to an existing DNS record in the inkDNS zone file on the server
+## This automatically detects a parked domain and adds the subdomain there first
 
 # How to use:
 ## ./inkdnsaddsub [ subdomain ] [ domain.tld ]
 
-usagenotes="This adds a subdomain A & AAAA records to an existing ONE DNS record in the inkDNS zone file on the server"
+usagenotes="This adds a subdomain A & AAAA records to an existing ONE DNS record in the inkDNS zone file on the server; parked domain detection is automatic and given preference"
 usageformat="inkdnsaddsub [ subdomain ] [ domain.tld ]"
 usageexample="inkdnsaddsub subdomain"
 hierarchy=( tertiary addsubdomain )
@@ -43,10 +44,15 @@ dnsDomain="$2"
 # Include the configs
 . /opt/verb/conf/servernameip
 
-# Check if zone exists
-if [ ! -f "/opt/verb/conf/inkdns/zones/db.${dnsDomain}" ]; then
-/bin/echo "DNS zone file for domain ${dnsDomain} does not exist. Add the domain first."
-exit 8; fi
+# Check if zone exists & which directory
+if [ -e "/opt/verb/conf/inkdns/parked/db.${dnsDomain}" ]; then
+  zonedir="parked"
+elif [ -e "/opt/verb/conf/inkdns/zones/db.${dnsDomain}" ]; then
+  zonedir="zones"
+elif [ ! -f "/opt/verb/conf/inkdns/zones/db.${dnsDomain}" ]; then
+  /bin/echo "DNS zone file for domain ${dnsDomain} does not exist. Add the domain first."
+  exit 8
+fi
 
 # Check if already added
 if /bin/grep -Fq "${dnsSubDom}.${dnsDomain}" /opt/verb/conf/inkdns/zones/db.${dnsDomain}; then

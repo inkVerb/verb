@@ -3,12 +3,13 @@
 
 # This resets all DNS zone file serial numbers on the server
 ## It loops through inkdnsserial for each entry in inkdns/zones inkdns/inkzones and inkdns/parked
+## Parking is automatically detected
 
 # How to use:
 ## ./inkdnsserialall
 
 
-usagenotes="This resets all DNS zone file serial numbers on the server"
+usagenotes="This resets all DNS zone file serial numbers on the server; parked domain detection is automatic"
 usageformat="inkdnsserialall"
 usageexample="inkdnsserialall"
 hierarchy=(  )

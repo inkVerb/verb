@@ -11,11 +11,12 @@
 ## This can be run BEFORE AND AGAIN AFTER installinkvmail, it has soft tests to see what hasn't been done yet
 
 # How to use:
-## ./newdomainshell [ newdomain.tld ]
+## ./newdomainshell [ newdomain.tld ] [ park - optional ]
 
 usagenotes="This prepares core framework config files for a domain, with OpenDKIM profiles and keys, inkCert, and inkDNS, WITHOUT including the actual SSL certificates, www/domain folder itself or its Apache/Nginx configs or html www/folder"
-usageformat="newdomainshell [ newdomain.tld ]"
-usageexample="newdomainshell inkisaverb.com"
+usageformat="newdomainshell [ newdomain.tld ] [ park - optional ]"
+usageexample="newdomainshell inkisaverb.com
+newdomainshell inkisaverb.com park"
 hierarchy=( tertiary adddomain )
 vsetnames=( "Domain" )
 vsettypes=( isDomain )
@@ -82,6 +83,22 @@ if [ "${ServerMailStatus}" != "EMAIL_NOT_INSTALLED" ]; then
   /opt/verb/serfs/inkdnsaddinkdkim ${newdomain}; wait
   fi
 
+fi
+
+# Parked?
+if [ -n "$2" ] && [ "$2" = "park" ]; then
+  # Check if the zone file exists
+  if [ ! -f "/opt/verb/conf/inkdns/zones/db.${newdomain}" ]; then
+    /usr/bin/echo "The domain \"${newdomain}\" has no DNS zone file. That comes first."
+  
+  # Check if the parked zone file already exists
+  elif [ -e "/opt/verb/conf/inkdns/parked/db.${newdomain}" ]; then
+    /usr/bin/echo "The domain \"${newdomain}\" has already been parked. Nothing to do."
+    
+  # Move the zone file to the parked folder
+  else
+    /usr/bin/mv "/opt/verb/conf/inkdns/zones/db.${newdomain}" /opt/verb/conf/inkdns/parked/
+  fi
 fi
 
 # Notify the NS slave nameservers
