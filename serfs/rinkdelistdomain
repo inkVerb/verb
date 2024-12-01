@@ -43,8 +43,8 @@ elif [ "$RinkConfigured" != "true" ]; then
 fi
 
 # Check if the zone file still exists
-if [ ! -f "/opt/verb/conf/inkdns/zones/db.${dnsDomain}" ] && [ ! -e "/opt/verb/conf/inkdns/parked/db.${dnsDomain}" ]; then
-  /usr/bin/echo "The domain \"${dnsDomain}\" has no DNS zone file on this verber. Nothing to delist."
+if [ ! -f "/opt/verb/conf/inkdns/zones/db.${slavedomain}" ] && [ ! -e "/opt/verb/conf/inkdns/parked/db.${slavedomain}" ]; then
+  /usr/bin/echo "The domain \"${slavedomain}\" has no DNS zone file on this verber. Nothing to delist."
 exit 8; fi
 
 # Move the configs from served/ to delisted/ on the NS nameservers

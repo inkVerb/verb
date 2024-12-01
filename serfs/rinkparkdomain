@@ -42,13 +42,13 @@ elif [ "$RinkConfigured" != "true" ]; then
 fi
 
 # Check if the zone file still exists
-if [ -f "/opt/verb/conf/inkdns/zones/db.${dnsDomain}" ]; then
-/usr/bin/echo "The domain \"${dnsDomain}\" has a served DNS zone file. Park it first."
+if [ -f "/opt/verb/conf/inkdns/zones/db.${slavedomain}" ]; then
+/usr/bin/echo "The domain \"${slavedomain}\" has a served DNS zone file. Park it first."
 exit 8; fi
 
 # Check if the parked zone file exists
-if [ ! -e "/opt/verb/conf/inkdns/parked/db.${dnsDomain}" ]; then
-/usr/bin/echo "The domain \"${dnsDomain}\" is not parked, but doesn't seem to exist either. Nothing to park."
+if [ ! -e "/opt/verb/conf/inkdns/parked/db.${slavedomain}" ]; then
+/usr/bin/echo "The domain \"${slavedomain}\" is not parked, but doesn't seem to exist either. Nothing to park."
 exit 8; fi
 
 # Move the configs from served/ to parked/ on the NS nameservers
