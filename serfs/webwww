@@ -29,6 +29,7 @@ if [ "$1" = "on" ]; then
 			/bin/echo "##INKWWWFIX=fixed
 	# Fixes www
 	server {
+	  listen 80;
 	  server_name www.${domain};
 	  return 301 \$scheme://${domain}\$request_uri;
 	}

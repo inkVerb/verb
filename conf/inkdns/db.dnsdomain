@@ -15,13 +15,14 @@ $ORIGIN hostdomain286.
 ; Root Site Defaults
 @		IN  A		hostipv4286
 @		IN  AAAA	hostipv6286
+www.hostdomain286.  IN  A     hostipv4286
+www.hostdomain286.  IN  AAAA  hostipv6286
 ;; End Root Site Defaults
 
 ; Hostname Record Defaults
 
 ; Aliases
 ;*.hostdomain286.		IN  CNAME	hostdomain286. ;; Use wildcard with caution, this could disrupt many operations including mail and security
-www.hostdomain286.		IN  CNAME	hostdomain286. ;; Needed for www forwarding to work
 
 ; Text Record Defaults
 

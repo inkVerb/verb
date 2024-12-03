@@ -29,7 +29,7 @@ if [ -e "/opt/verb/mods/inkdnsaddmail.before" ]; then . /opt/verb/mods/inkdnsadd
 
 
 dnsDomain="$1"
-if [ -n $2 ] && [ "$2" = "verber" ]; then
+if [ -n "$2" ] && [ "$2" = "verber" ]; then
   zonedir="inkzones"
 else
   zonedir="zones"
@@ -46,7 +46,6 @@ exit 0; fi
 # Echo the records
 ## db.DOM
 /bin/echo "; Hostname Mail Record Defaults
-email.${dnsDomain}. IN  CNAME	mail.${dnsDomain}.
 ${dnsDomain}.       IN  MX 50	mail.${dnsDomain}.
 mail.${dnsDomain}.  IN  A    	${ServerIPv4}
 smtp.${dnsDomain}.  IN  A    	${ServerIPv4}
