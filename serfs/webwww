@@ -30,8 +30,9 @@ if [ "$1" = "on" ]; then
 	# Fixes www
 	server {
 	  listen 80;
+	  listen [::]:80;
 	  server_name www.${domain};
-	  return 301 \$scheme://${domain}\$request_uri;
+	  return 301 http://${domain}\$request_uri;
 	}
 	##verbFIXwww" >> /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
 			/bin/systemctl restart nginx; wait
@@ -53,12 +54,6 @@ if [ "$1" = "on" ]; then
 	  ServerName www.${domain}
 	  Redirect permanent / http://${domain}/
 	</VirtualHost>
-	<IfModule mod_ssl.c>
-	  <VirtualHost _default_:443>
-	    ServerName www.${domain}
-	    Redirect permanent / https://${domain}/
-	  </VirtualHost>
-	</IfModule>
 	##verbFIXwww" >> /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
 			/usr/bin/systemctl restart httpd
 

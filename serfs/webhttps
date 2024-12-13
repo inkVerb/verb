@@ -55,6 +55,13 @@ if [ "$1" = "on" ]; then
 	  listen [::]:80;
 	  server_name ${domain};
 
+	  # Used for acme.sh SSL verification (https://acme.sh)
+      root /srv/ghost/formosan.dog/system/nginx-root;
+      location ~ /.well-known {
+        allow all;
+      }
+
+      # Redirect
 	  return 301 https://\$host\$request_uri;
 	}
 	##verbFIXhttps" >> /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
