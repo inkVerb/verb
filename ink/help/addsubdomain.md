@@ -14,6 +14,8 @@
 - `ink add subdomain -s subdom -d inkisaverb.com`
   - Creates the domain folder `www/domains/subdom.inkisaverb.com` & makes it live at `www/html/subdom.inkisaverb.com`
   - Creates a hosted domain config for the webserver (whether for Nginx, Apache, or Nginx-Apache reverse proxy)
+    - Subdomains will not forward http to https by default
+    - This can always be changed with `web https` commands
   - Adds entries to:
     - DNS Zone file for the parent domain
     - SSL/Letsencrypt subdomain to parent domain config, needed *before* the SSL certs are obtained

@@ -84,7 +84,7 @@ elif [ ${ServerType} = "lamp" ]; then
   /opt/verb/serfs/ensiteapache -r ${subdomain}.${olddomain}
 elif [ ${ServerType} = "laemp" ]; then
   /usr/bin/cp /opt/verb/conf/site-files/conf/newdomain.tld.conf /opt/verb/conf/webserver/sites-available/httpd/${subdomain}.${olddomain}.conf
-  /usr/bin/cp /opt/verb/conf/site-files/conf/newrpnginxdomain.tld.conf /opt/verb/conf/webserver/sites-available/nginx/${subdomain}.${olddomain}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newrpnginxdomainhttp.tld.conf /opt/verb/conf/webserver/sites-available/nginx/${subdomain}.${olddomain}.conf
   /bin/sed -i "s/newdomain.tld/${subdomain}.${olddomain}/g" /opt/verb/conf/webserver/sites-available/httpd/${subdomain}.${olddomain}.conf
   /bin/sed -i "s/newdomain.tld/${subdomain}.${olddomain}/g" /opt/verb/conf/webserver/sites-available/nginx/${subdomain}.${olddomain}.conf
   ## Server

@@ -114,7 +114,7 @@ fi
 /bin/chmod -R 750 /srv/www/domains/${newdomain}
 ## Copy
 if [ ${ServerType} = "lemp" ]; then
-  /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxdomain.tld.conf /opt/verb/conf/webserver/sites-available/nginx/${newdomain}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxdomainhttps.tld.conf /opt/verb/conf/webserver/sites-available/nginx/${newdomain}.conf
   /bin/sed -i "s/newdomain.tld/${newdomain}/g" /opt/verb/conf/webserver/sites-available/nginx/${newdomain}.conf
   ## Server
   /opt/verb/serfs/ensitenginx -r ${newdomain}

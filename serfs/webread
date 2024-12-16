@@ -39,7 +39,7 @@ elif [ ${ServerType} = "lamp" ] || [ ${ServerType} = "laemp" ]; then
     fi
 
     # Do it
-    /usr/bin/sed -i '/deny from all/d'  /srv/www/html/${webpath}/.htaccess
+    /usr/bin/sed -i '/deny from all/d' /srv/www/html/${webpath}/.htaccess
     /bin/echo "allow from all
 Options +Indexes
 IndexOptions +FancyIndexing" > /srv/www/html/${webpath}/.htaccess

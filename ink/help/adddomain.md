@@ -13,6 +13,9 @@
   - Same as `ink add domain -d inkisaverb.com -n`
   - Creates the domain folder `www/domains/inkisaverb.com` & makes it live at `www/html/inkisaverb.com`
   - Creates a hosted domain config for the webserver (whether for Nginx, Apache, or Nginx-Apache reverse proxy)
+    - LAEMP & LEMP servers will redirect all http to https by default
+    - LAMP servers will not redirect http to https by default
+    - These can always be changed with `web https` commands
   - Confirms the existence of:
     - DNS Zone files
     - SSL/Letsencrypt configs, needed *before* the SSL certs are obtained
