@@ -27,7 +27,7 @@ if [ -e "/opt/verb/mods/inkdnsaddinkdkim.before" ]; then . /opt/verb/mods/inkdns
 
 
 dnsDomain="$1"
-if [ -n $2 ] && [ "$2" = "verber" ]; then
+if [ -n "$2" ] && [ "$2" = "verber" ]; then
   zonedir="inkzones"
   verberny=" verber"
 else

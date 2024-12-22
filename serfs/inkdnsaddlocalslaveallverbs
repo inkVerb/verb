@@ -41,31 +41,31 @@ fi
 . /opt/verb/conf/siteurilist
 
 # Add the active verb domains, wait so we don't congest the server
-if [ $VERBemail=true ]; then
+if [ $VERBemail = "true" ]; then
 /opt/verb/serfs/inkdnsaddlocalslave ${emailURI} ${ServerIPv4} ${ServerIPv6}
 fi
 wait
-if [ $VERBone=true ]; then
+if [ $VERBone = "true" ]; then
 /opt/verb/serfs/inkdnsaddlocalslave ${oneURI} ${ServerIPv4} ${ServerIPv6}
 fi
 wait
-if [ $VERBink=true ]; then
+if [ $VERBink = "true" ]; then
 /opt/verb/serfs/inkdnsaddlocalslave ${inkURI} ${ServerIPv4} ${ServerIPv6}
 fi
 wait
-if [ $VERBblue=true ]; then
+if [ $VERBblue = "true" ]; then
 /opt/verb/serfs/inkdnsaddlocalslave ${blueURI} ${ServerIPv4} ${ServerIPv6}
 fi
 wait
-if [ $VERBvip=true ]; then
+if [ $VERBvip = "true" ]; then
 /opt/verb/serfs/inkdnsaddlocalslave ${vipURI} ${ServerIPv4} ${ServerIPv6}
 fi
 wait
-if [ $VERBkiwi=true ]; then
+if [ $VERBkiwi = "true" ]; then
 /opt/verb/serfs/inkdnsaddlocalslave ${kiwiURI} ${ServerIPv4} ${ServerIPv6}
 fi
 wait
-if [ $VERBred=true ]; then
+if [ $VERBred = "true" ]; then
 /opt/verb/serfs/inkdnsaddlocalslave ${redURI} ${ServerIPv4} ${ServerIPv6}
 fi
 
