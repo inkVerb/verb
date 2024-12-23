@@ -141,7 +141,6 @@ http {
 
     # SSL
     ssl_prefer_server_ciphers on;
-    #ssl_ciphers ECDH+AESGCM:ECDH+AES256:ECDH+AES128:DH+3DES:!ADH:!AECDH:!MD5; # Dated, not strong enough, possibly slow on system
     ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384; # More up-to-date in 2025
     ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;
 
