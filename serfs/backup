@@ -61,7 +61,7 @@ fi
 /bin/chown -R www:www /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/verb.${appName}.${secName}.vbak
 /bin/echo "${appName} has been backed up to the 'vip' folder and can also be downloaded at:
 
-http://${ServerServePath}/verb.${appName}.${secName}.vbak
+http://${ServerServePath}/${ServerServeDir}/verb.${appName}.${secName}.vbak
 
 Note that the app remains live.
 "

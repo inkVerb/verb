@@ -185,7 +185,7 @@ EOF
 /usr/bin/cp /opt/verb/conf/lib/vmail/dovecot/conf.d/90-sieve.conf /etc/dovecot/conf.d/
 /usr/bin/cp /opt/verb/conf/lib/vmail/dovecot/dovecot-sql.conf.ext /etc/dovecot/
 /usr/bin/cp /opt/verb/conf/lib/vmail/dovecot/dovecot.conf /etc/dovecot/
-### Diffie-Helman Group file (unique & extra large for email server)
+### Diffie-Hellman Group file (unique & extra large for email server)
 /usr/bin/rm -f /etc/dovecot/dh.pem
 #/usr/bin/openssl dhparam -out /etc/dovecot/dh.pem 4096
 /usr/bin/openssl dhparam -out /etc/dovecot/dh.pem 2048

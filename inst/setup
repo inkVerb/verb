@@ -530,7 +530,7 @@ companyname="${nameURI}"
 /usr/bin/openssl x509 -req -days 3650 -in server.csr -signkey server.key -out server.crt
 /usr/bin/rm -f server.csr
 
-## Diffie-Helman Group file (larger file for production)
+## Diffie-Hellman Group file (larger file for production)
 /usr/bin/rm -f /etc/ssl/server/dhparams.pem
 #/usr/bin/openssl dhparam -out /etc/ssl/server/dhparams.pem 4096
 /usr/bin/openssl dhparam -out /etc/ssl/server/dhparams.pem 2048

@@ -101,7 +101,7 @@ cd /etc/ssl/server || exit 6
 /usr/bin/openssl x509 -req -days 1095 -in server.csr -signkey server.key -out server.crt
 /usr/bin/rm -f /etc/ssl/server/server.csr
 
-## Diffie-Helman Group file (small file just so the server works)
+## Diffie-Hellman Group file (small file just so the server works)
 /usr/bin/rm -f /etc/ssl/server/dhparams.pem
 /usr/bin/openssl dhparam -out /etc/ssl/server/dhparams.pem 512 # Nginx will reject this until setup builds a unique one at 2048; so ignore any error 'dh key too small'
 /bin/chmod 600 /etc/ssl/server/dhparams.pem
@@ -161,8 +161,9 @@ http {
 
     # SSL
     ssl_prefer_server_ciphers on;
-    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384; # More up-to-date in 2025
-    ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256; # More up-to-date in 2025
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_dhparam /etc/ssl/server/dhparams.pem;
 
     # MIME
     include mime.types;
