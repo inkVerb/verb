@@ -5,11 +5,6 @@
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/inkcertstatus
 
-# Stop Apache
-#/usr/sbin/apachectl -k graceful-stop
-## Hard stop in case it doesn't work
-#/bin/systemctl stop apache2
-
 # Renew LE
 /usr/bin/certbot renew
 

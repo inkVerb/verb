@@ -4,11 +4,6 @@
 # Include settings
 . /opt/verb/conf/servernameip
 
-# Stop Apache
-/usr/sbin/apachectl -k graceful-stop
-## Hard stop in case it doesn't work
-/bin/systemctl stop apache2
-
 # Renew
 ### Put the inkCert Proper renew script here!!!!!
 

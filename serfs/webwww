@@ -34,6 +34,15 @@ if [ "$1" = "on" ]; then
 	  server_name www.${domain};
 	  return 301 http://${domain}\$request_uri;
 	}
+
+	## Should catch https://www... and transition smoothly
+	server {
+      listen 443 ssl;
+      listen [::]:443 ssl;
+      server_name www.${domain};
+      return 301 http://${domain}\$request_uri;
+    }
+
 	##verbFIXwww" >> /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf
 			/bin/systemctl restart nginx; wait
 
@@ -54,6 +63,14 @@ if [ "$1" = "on" ]; then
 	  ServerName www.${domain}
 	  Redirect permanent / http://${domain}/
 	</VirtualHost>
+
+	## Should catch https://www... and transition smoothly
+    <IfModule mod_ssl.c>
+      <VirtualHost _default_:443>
+        ServerName www.${domain}
+	    Redirect permanent / http://${domain}/
+      </VirtualHost>
+    </IfModule>
 	##verbFIXwww" >> /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf
 			/usr/bin/systemctl restart httpd
 
