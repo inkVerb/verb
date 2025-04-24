@@ -32,7 +32,8 @@ exit 8; fi
 /usr/bin/pacman -Syyu --noconfirm --needed
 
 # Install tools (tmux for unstable ssh connections, reconnect with tmux attach)
-/usr/bin/pacman -S --noconfirm --needed tmux ntp pwgen zip unzip htop which vim curl rsync wget make cronie gcc autoconf imagemagick git parted perl net-tools inetutils man sudo
+/usr/bin/pacman -S --noconfirm --needed tmux ntp pwgen zip unzip htop which vim curl rsync wget make cronie gcc autoconf git parted perl net-tools inetutils man sudo
+# /usr/bin/pacman -S --noconfirm --needed  imagemagick # signature problem
 e="$?"; [[ "$e" = "0" ]] || ( /usr/bin/echo 'Failed: !!' && exit "$e" )
 
 # Enable NTP for accurate time (the standard service is commented below)
