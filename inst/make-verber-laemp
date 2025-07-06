@@ -442,8 +442,12 @@ e="$?"; [[ "$e" = "0" ]] || ( /usr/bin/echo 'Failed: !!' && exit "$e" )
 e="$?"; [[ "$e" = "0" ]] || ( /usr/bin/echo 'Failed: !!' && exit "$e" )
 
 # Pre-install inkDNS
-/usr/bin/pacman -S --noconfirm --needed bind dnsutils certbot-dns-rfc2136
+/usr/bin/pacman -S --noconfirm --needed bind
 e="$?"; [[ "$e" = "0" ]] || ( /usr/bin/echo 'Failed: !!' && exit "$e" )
+/usr/bin/systemctl enable named; wait
+/usr/bin/systemctl start named; wait
+/usr/bin/pacman -S --noconfirm --needed dnsutils # dnsutils may be redundant
+/usr/bin/pacman -S --noconfirm --needed certbot-dns-rfc2136 # Some problems after 4/22/2025 update v4.0.0-2, may not be needed since we don't have wildcard working yet
 
 # Pre-install vsftpd
 /usr/bin/pacman -S --noconfirm --needed vsftpd
