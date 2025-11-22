@@ -70,7 +70,7 @@ exit 8
 fi
 
 if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
-  ## Check Apache config status
+  ## Check config status
   if /bin/grep -Fq "#INKVERB-INKCERT=INK_NO" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf ; then
    /bin/echo "Setting inkCert configs for ${sitedomain}..."
   elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_CB" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf ; then
@@ -129,7 +129,7 @@ if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
   /bin/systemctl start nginx; wait
 
 elif [ ${ServerType} = "lamp" ]; then
-  ## Check Apache config status
+  ## Check config status
   if /bin/grep -Fq "#INKVERB-INKCERT=INK_NO" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf ; then
    /bin/echo "Setting inkCert configs for ${sitedomain}..."
   elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_CB" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf ; then

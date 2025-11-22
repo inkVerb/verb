@@ -101,7 +101,7 @@ if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
     /bin/echo "Site config does not exist."
     exit 0
   fi
-  ## Check Apache config status
+  ## Check config status
   if /bin/grep -Fq "#INKVERB-INKCERT=INK_NO" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf ; then
    /bin/echo "Setting inkCert configs for ${sitedomain}..."
   elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_CBSINGLE" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf ; then
@@ -165,7 +165,7 @@ elif [ ${ServerType} = "lamp" ]; then
     /bin/echo "Site config does not exist."
     exit 0
   fi
-  ## Check Apache config status
+  ## Check config status
   if /bin/grep -Fq "#INKVERB-INKCERT=INK_NO" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf ; then
    /bin/echo "Setting inkCert configs for ${sitedomain}..."
   elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_CBSINGLE" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf ; then

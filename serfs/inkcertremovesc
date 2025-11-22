@@ -83,7 +83,7 @@ The certs still seem to be live. Did you first run inkcertrevoke or simply run i
   fi
 
 elif [ ${ServerType} = "lamp" ]; then
-  ## Check Apache config status
+  ## Check config status
   if /bin/grep -Fq "#INKVERB-INKCERT=DONE_SC" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf ; then
   /bin/echo "Removing inkCert-IC configs from ${domain}..."
   else

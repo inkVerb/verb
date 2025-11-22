@@ -90,7 +90,7 @@ The certs still seem to be live. Did you first run inkcertrevokele or simply run
   fi
 
 elif [ ${ServerType} = "lamp" ]; then
-  ## Check Apache config status
+  ## Check config status
   if /bin/grep -Fq "#INKVERB-INKCERT=DONE_CBSINGLE" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf ; then
    /bin/echo "Server configs use inkCert Proper. Use: inkcertremovecbsingle"
    exit 8

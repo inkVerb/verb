@@ -1,19 +1,19 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
 
-# This prepares core framework config files for a domain, with OpenDKIM profiles and keys, inkCert, and inkDNS, WITHOUT including the actual SSL certificates, www/domain folder itself or its Apache/Nginx configs or html www/folder
+# This prepares core framework config files for a domain, with OpenDKIM profiles and keys, inkCert, and inkDNS, WITHOUT including the actual SSL certificates, www/domain folder itself or its webserver configs or html www/folder
 ## This is intended as a subscript to be used by adddomain
 ## This runs automatically from adddomain ONLY IF it has not run already for the domain
 ## This does NOT:
 ### Add the domain to inkCert for SSL requests
-### Create Apache folders or configs for the domain
-## For inkCert and Apache configs, use adddomain or adddomaincgi
+### Create webserver folders or configs for the domain
+## For inkCert and webserver configs, use adddomain or adddomaincgi
 ## This can be run BEFORE AND AGAIN AFTER installinkvmail, it has soft tests to see what hasn't been done yet
 
 # How to use:
 ## ./newdomainshell [ newdomain.tld ] [ park - optional ]
 
-usagenotes="This prepares core framework config files for a domain, with OpenDKIM profiles and keys, inkCert, and inkDNS, WITHOUT including the actual SSL certificates, www/domain folder itself or its Apache/Nginx configs or html www/folder"
+usagenotes="This prepares core framework config files for a domain, with OpenDKIM profiles and keys, inkCert, and inkDNS, WITHOUT including the actual SSL certificates, www/domain folder itself or its webserver configs or html www/folder"
 usageformat="newdomainshell [ newdomain.tld ] [ park - optional ]"
 usageexample="newdomainshell inkisaverb.com
 newdomainshell inkisaverb.com park"

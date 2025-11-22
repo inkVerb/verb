@@ -1,7 +1,7 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
 
-# This adds the wildcard * subdomain wildcard to a domain's Apache config.
+# This adds the wildcard * subdomain wildcard to a domain's webserver config.
 
 # How to use:
 ## ./webwild on [domain.tld or subdomain.domain.tld]

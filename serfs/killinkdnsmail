@@ -50,7 +50,7 @@ exit 0; fi
 /opt/verb/serfs/inkdnsserial ${dnsDomain}
 
 # Refresh zones
-/opt/verb/serfs/inkdnsrefreshbind; fi; fi
+/opt/verb/serfs/inkdnsrefreshbind
 
 # Finish
 /usr/bin/echo "The Mail Record Defaults have been removed from the ${dnsDomain} DNS zone file."
