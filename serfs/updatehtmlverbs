@@ -60,6 +60,7 @@ if [ ! -e "red.r" ]; then /bin/cp -r 0ne red.r; fi
 # Serve URI
 /bin/rm -rf /srv/www/verb/${ServerServeTLD}.serve
 /bin/mkdir -p /srv/www/verb/${ServerServeTLD}.serve/${ServerServeDir}
+/bin/echo "Options -Indexes" >> /srv/www/verb/${ServerServeTLD}.serve/${ServerServeDir}/.htaccess
 /bin/echo "<?php header(\"HTTP/1.1 301 Moved Permanently\"); header(\"Location: http://${nameURI}\"); die(); ?>" > /srv/www/verb/${ServerServeTLD}.serve/index.php
 
 # Email
@@ -67,24 +68,27 @@ if [ ! -e "red.r" ]; then /bin/cp -r 0ne red.r; fi
 if [ "${ServerRCPath}" != "RC_NOT_INSTALLED " ] && [ -d "/srv/www/email/roundcube" ]; then
   if [ ! -e "/srv/www/verb/${emailTLD}.box/${ServerRCPath}" ]; then
     /bin/mkdir -p /srv/www/verb/${emailTLD}.box
+    /bin/echo "Options -Indexes" >> /srv/www/verb/${emailTLD}.box/.htaccess
     /usr/bin/ln -sfn /srv/www/email/roundcube "/srv/www/verb/${emailTLD}.box/${ServerRCPath}"
-    /bin/chmod -R 750 ${emailTLD}.box
+    /bin/chmod -R 750 /srv/www/verb/${emailTLD}.box
   fi
 fi
 ## PFA
  if [ "${ServerPFAPath}" != "PFA_NOT_INSTALLED " ] && [ -d "/srv/www/email/postfixadmin" ]; then
   if [ ! -e "/srv/www/verb/${emailTLD}.po/${ServerPFAPath}" ]; then
     /bin/mkdir -p /srv/www/verb/${emailTLD}.po
+    /bin/echo "Options -Indexes" >> /srv/www/verb/${emailTLD}.po/.htaccess
     /usr/bin/ln -sfn /srv/www/email/postfixadmin "/srv/www/verb/${emailTLD}.po/${ServerPFAPath}"
-    /bin/chmod -R 750 ${emailTLD}.po
+    /bin/chmod -R 750 /srv/www/verb/${emailTLD}.po
   fi
 fi
 ## Box
  if [ "${ServerBoxPath}" != "BOX_NOT_INSTALLED " ] && [ -d "/srv/www/email/box" ]; then
   if [ ! -e "/srv/www/verb/${emailTLD}.box/${ServerBoxPath}" ]; then
     /bin/mkdir -p /srv/www/verb/${emailTLD}.box
+    /bin/echo "Options -Indexes" >> /srv/www/verb/${emailTLD}.box/.htaccess
     /usr/bin/ln -sfn /srv/www/email/box "/srv/www/verb/${emailTLD}.po/${ServerBoxPath}"
-    /bin/chmod -R 750 ${emailTLD}.box
+    /bin/chmod -R 750 /srv/www/verb/${emailTLD}.box
   fi
 fi
 
