@@ -320,6 +320,9 @@ LimitMEMLOCK=infinity" >> /etc/systemd/system/mariadb.service
 /usr/bin/chown -R www:www /srv/www
 /usr/bin/chown -R www:www /srv/vip
 
+# Create cloud servers directory (not web accessible)
+/usr/bin/mkdir -p /srv/cloud
+
 # inkGet repo
 /usr/bin/mkdir -p /opt/verb/repo
 

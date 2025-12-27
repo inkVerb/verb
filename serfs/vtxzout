@@ -14,24 +14,27 @@
 # Eg:
 ## ./vtxzout mystuff
 
+if [ -e "/opt/verb/mods/vtxzout.replace" ]; then . /opt/verb/mods/vtxzout.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/vtxzout.before" ]; then . /opt/verb/mods/vtxzout.before; fi # Precedes this script
 
-FIL="$1"
+
+fil="$1"
 
 # Test for a .tar of the same name
-if [ -e "${FIL}.tar.xz" ]; then
-  /bin/echo "The file ${FIL}.tar.xz exists, which conflicts with this operation. Deal with that out first."
+if [ -e "${fil}.tar.xz" ]; then
+  /bin/echo "The file ${fil}.tar.xz exists, which conflicts with this operation. Deal with that out first."
 exit 7; fi
 
 # Move to the proper name
-/bin/mv ${FIL}.txz ${FIL}.tar.xz
+/bin/mv ${fil}.txz ${fil}.tar.xz
 
 # Extract
-/usr/bin/echo "Quietly extracting ${FIL}.tar.xz..."
-/usr/bin/tar xf ${FIL}.tar.xz
+/usr/bin/echo "Quietly extracting ${fil}.tar.xz..."
+/usr/bin/tar xf ${fil}.tar.xz
 /usr/bin/echo "Done."
 
 # Remove
-/usr/bin/rm ${FIL}.tar.xz
+/usr/bin/rm ${fil}.tar.xz
 
 
 

@@ -15,7 +15,10 @@ cVappName=orangehrm
 distVer="${orangehrm}"
 
 if [ $InkGet_Method != "ZJZ" ]; then
-  cd /opt/verb/repo; fi
+  cd /opt/verb/repo
+elif [ $InkGet_Method = "ZJZ" ] ; then
+  cd /srv/www/vapps
+fi
 
 # Announce
 /usr/bin/echo "Retrieving OrangeHRM v${distVer}..."
@@ -47,7 +50,7 @@ fi
 /bin/mv orangehrm-${distVer} ${cVappName}
 /bin/rm orangehrm-quick-start-guide.html
 if [ $InkGet_Method != "ZJZ" ]; then
-  /opt/verb/serfs/txzin ${cVappName}; wait
+  /opt/verb/serfs/vtxzin ${cVappName}; wait
   /bin/rm -rf ${cVappName}
 
   # Make a record of current version

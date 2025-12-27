@@ -14,6 +14,9 @@
 # Eg:
 ## ./vtxzin mystuff
 
+if [ -e "/opt/verb/mods/vtxzin.replace" ]; then . /opt/verb/mods/vtxzin.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/vtxzin.before" ]; then . /opt/verb/mods/vtxzin.before; fi # Precedes this script
+
 
 dir=$1
 

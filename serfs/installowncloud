@@ -1,0 +1,253 @@
+#!/usr/bin/bash
+#inkVerbSerf! verb.ink
+
+# This downloads and installs ownCloud (OCIS) manually and runs it on ....verb.blue
+
+# All options are optional, but must are sequential, omit last options first.
+
+# How to use:
+## ./installowncloud [dbase - optional] [dbuser - optional] [dbpassword - optional]
+
+# Eg:
+## ./installowncloud
+## ./installowncloud bestdbase bestdbuser besteverpass
+
+
+usagenotes="This downloads and installs ownCloud (OCIS) manually and runs it on ....verb.blue"
+usageformat="installowncloud [dbase - optional] [dbuser - optional] [dbpassword - optional]"
+usageexample="installowncloud
+installowncloud bestdbase bestdbuser besteverpass"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=( "Database" "Database user" "Database password" )
+vopttypes=( isSQLDatabasename isSQLDatabasename isSQLDatabasename )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( inkget inkvmailsysowncloud inkcert_ inkdriveapp )
+useconfigs=( servernameip siteurilist servertype servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/installowncloud.replace" ]; then . /opt/verb/mods/installowncloud.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installowncloud.before" ]; then . /opt/verb/mods/installowncloud.before; fi # Precedes this script
+
+
+cVappName=owncloud
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/servertype
+. /opt/verb/conf/servermailpath
+
+# Check if already installed
+## Config
+if [ -f /opt/verb/conf/vapps/vapp.${cVappName} ]; then
+/usr/bin/echo "This is already installed."
+exit 0; fi
+## Directory
+if [ -d /srv/www/vapps/${cVappName} ]; then
+/usr/bin/echo "ownCloud already exists in the system. If it isn't working, look deeper on the server. For now, doing nothing."
+exit 8; fi
+## Web server
+if [ ${ServerType} = "lamp" ]; then
+/usr/bin/echo "Only allowed with Nginx servers, LEMP or LAEMP; LAMP servers with Apache not allowed."
+exit 0; fi
+
+# Auto database
+cleanName=$(/usr/bin/echo $cVappName | sed -e 's/\.//g')
+if [ -z ${3} ]; then
+dBPassword=$(/usr/bin/pwgen -s -1 10)
+else
+dBPassword=$3
+fi
+if [ -z ${1} ]; then
+dBase=${cleanName}$(/usr/bin/pwgen -s -1 6)
+else
+dBase=$1
+fi
+if [ -z ${2} ]; then
+dBaseUser=${dBase}
+else
+dBaseUser=$2
+fi
+
+# Download as vapp
+cd /srv/cloud || exit 6
+/opt/verb/serfs/inkget ${cVappName} check
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+
+# Install as local/bin
+/usr/bin/mkdir -p /usr/local/bin
+/usr/bin/mv -f /srv/cloud/owncloud/ocis /usr/local/bin/ocis
+/usr/bin/echo "Moved to /usr/local/bin/ocis" > /srv/cloud/owncloud/ocis.bin.installed
+/usr/bin/chmod 755 /usr/local/bin/ocis
+
+# User & data directories
+/usr/bin/useradd -r -U -s /usr/bin/nologin -d /srv/cloud/ocis ocis
+## FSH
+#DEV Not using the standard /var/lib/..., we want /srv/... for block storage-readiness
+# /usr/bin/mkdir -p /var/lib/ocis
+# /usr/bin/chown -R ocis:ocis /var/lib/ocis
+## Served data (block storage serve-ready)
+/usr/bin/mkdir -p /srv/cloud/ocis
+/usr/bin/chown -R ocis:ocis /srv/cloud/ocis
+
+# Create the database and credentials (needed now, before service starts)
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
+CREATE DATABASE ${dBase} DEFAULT CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_general_ci';
+GRANT ALL PRIVILEGES ON ${dBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '${dBPassword}';
+FLUSH PRIVILEGES;"
+
+# Write the config for backup
+/usr/bin/echo "appDBase=${dBase}
+appDDBUsr=${dBaseUser}
+appDDBPass=${dBPassword}" > /opt/verb/conf/vapps/vapp.${cVappName}
+
+# Configure in the service file
+/usr/bin/cat << EOF > /etc/systemd/system/ocis.service
+[Unit]
+Description=ownCloud Infinite Scale Stack
+After=network.target
+
+[Service]
+User=ocis
+Group=ocis
+
+# Basic Configuration
+WorkingDirectory=/srv/cloud/ocis
+
+# Primary data storage location
+Environment="OCIS_BASE_DATA_PATH=/srv/cloud/ocis"
+
+# Database Configuration
+Environment="OCIS_DB_ENGINE=mysql"
+Environment="OCIS_DB_HOST=127.0.0.1"
+Environment="OCIS_DB_PORT=3306"
+Environment="OCIS_DB_NAME=${dBase}"
+Environment="OCIS_DB_USER=${dBaseUser}"
+Environment="OCIS_DB_PASSWORD=${dBPassword}"
+
+# Network
+Environment="OCIS_URL=https://cloud.${blueURI}"
+Environment="PROXY_HTTP_ADDR=0.0.0.0:9200"
+Environment="PROXY_TLS=false" # Nginx handles SSL
+
+# Security (Only allow write for base data path)
+ReadWritePaths=/srv/cloud/ocis
+
+# Systemctl Commands
+ExecStart=/usr/local/bin/ocis server
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Initialize
+##REF /usr/bin/sudo -u ocis ocis init # This is the basic command
+## The ocis init command is interactive, so we need to echo-pipe the answer
+/usr/bin/echo "no" | /usr/bin/sudo -u ocis OCIS_BASE_DATA_PATH=/srv/cloud/ocis ocis init
+/usr/bin/systemctl daemon-reload
+/usr/bin/systemctl enable --now ocis
+
+
+
+#TODO
+## Nginx reverse proxy configs
+## Write inkvmailsysowncloud from inkvmailsysnextcloud
+
+
+
+# Webserver setup
+if [ ${ServerType} = "laemp" ]; then
+  /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf.old
+  /usr/bin/mv /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf.old
+  /usr/bin/cp /opt/verb/conf/site-files/conf/owncloud-nginx.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/owncloud-httpd.conf /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf
+  /usr/bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/cloud.${blueURI}.conf
+elif [ ${ServerType} = "lemp" ]; then
+  /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf.old
+  /usr/bin/cp /opt/verb/conf/site-files/conf/owncloud.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf
+fi
+
+# Setup for inkCert
+. /opt/verb/conf/inkcert/cli-ini/siteinkcert.${blueURI}
+case ${InkCerted} in
+  DONE_SC)
+  /opt/verb/serfs/inkcertaddsc cloud.${blueURI} ${blueURI}
+  ;;
+  DONE_LE)
+  /opt/verb/serfs/inkcertaddle cloud.${blueURI} ${blueURI}
+  ;;
+  DONE_CBSINGLE)
+  /opt/verb/serfs/inkcertaddcbsingle cloud.${blueURI} ${blueURI}
+  ;;
+  DONE_CB)
+  /opt/verb/serfs/inkcertaddcb cloud.${blueURI} ${blueURI}
+  ;;
+  NO|NOT_YET)
+    /usr/bin/echo "Nextcloud is currently using Snakeoil certs, ready for inkCert"
+  ;;
+  *)
+    if ! /usr/bin/grep -q "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
+      /usr/bin/echo "Something's wrong with the inkCert siteinkcert configs! Aborting"
+      exit 6
+    else
+      /usr/bin/echo "Nextcloud is currently using Snakeoil certs, ready for inkCert"
+    fi
+  ;;
+esac
+
+# Webserver restart
+if [ ${ServerType} = "laemp" ]; then
+  /usr/bin/systemctl restart nginx; wait
+  /usr/bin/systemctl restart httpd; wait
+elif [ ${ServerType} = "lemp" ]; then
+  /usr/bin/systemctl restart nginx; wait
+fi
+
+# Use msmtp for a real SMTP address
+/opt/verb/serfs/inkvmailsysowncloud
+
+# Verify ownership
+/usr/bin/chown -R www:www /srv/www/vapps/${cVappName}; wait
+/usr/bin/chmod -R 770 /srv/www/vapps/${cVappName}; wait
+
+# Set up bg jobs cron
+## Nextcloud background jobs (manage the crontab files directly)
+/usr/bin/echo '*/15 * * * *  www php -f /srv/www/vapps/owncloud/cron.php' > /etc/cron.d/owncloud
+/usr/bin/chmod 0644 /etc/cron.d/owncloud
+
+# Finish
+/usr/bin/echo "
+Go to https://cloud.${blueURI} to install.
+
+Tip: https://cloud.${blueURI}/index.php/settings/admin
+- Background jobs
+  - Cron
+
+"
+
+# inkDrive? (last so above message shows, even if we need to exit non-zero next)
+if [ -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
+  . /opt/verb/conf/inkdrive/inkdriveinfo
+  if [ "${InkDriveNC}" != "off" ]; then
+    /usr/bin/echo "Mounting 'data' to a drive..."
+    /opt/verb/serfs/inkdriveapp "${cVappName}" "${InkDriveNC}"
+    if [ "$?" = 0 ]; then
+      /usr/bin/echo "InkDrive=\"${InkDriveNC}\"" >> /opt/verb/conf/vapps/vapp.${cVappName}
+    else
+      /usr/bin/echo "inkDrive hosting is expected, but unable to host Nextcloud on the drive. Something is very wrong!"
+      exit 6
+    fi
+  fi
+fi
+
+/usr/bin/chown -R www:www /srv/www/vapps/owncloud
+
+
+
+if [ -e "/opt/verb/mods/installowncloud.after" ]; then . /opt/verb/mods/installowncloud.after; fi # Follows this script

@@ -68,6 +68,17 @@ if [ -n "$(/usr/bin/ls -A /mnt/${Mnt})" ] && [ -z "${Ignore}" ]; then
    exit 5
 fi
 
+# Move our cloud service directory off the drive if SSD and linked to /srv/
+if [ "${TypDescr}" = "SSD" ] && [ -L "/srv/cloud" ]; then
+  ## Do this safely via one line sequence
+  /usr/bin/rm /srv/cloud && /usr/bin/mv -f /mnt/${Mnt}/cloud /srv/ ; wait
+  ## Make sure it is off the drive, otherwise exit
+  if [ -e "/mnt/${Mnt}/cloud" ]; then
+    /usr/bin/echo "cloud/ folder still resides on drive, which shouldn't be possible. I quit."
+    exit 6
+  fi
+fi
+
 # Unmount the drive
 /usr/bin/sed -i "/^\/dev\/${Dev}1\s*\/mnt\/ssd/d" /etc/fstab
 /usr/bin/umount "/mnt/${Mnt}"

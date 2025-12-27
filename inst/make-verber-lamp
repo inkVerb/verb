@@ -229,7 +229,7 @@ LimitMEMLOCK=infinity" >> /etc/systemd/system/mariadb.service
 /usr/bin/mkdir -p /srv/www/tmp
 /usr/bin/chmod -R 777 /srv/www/tmp
 
-## Create vip & vsftp web mod directories
+# Create vip & vsftp web mod directories
 /usr/bin/mkdir -p /srv/vip
 /usr/bin/mkdir -p /srv/vip/_domains
 /usr/bin/mkdir -p /srv/vip/_filecabinet
@@ -253,6 +253,9 @@ LimitMEMLOCK=infinity" >> /etc/systemd/system/mariadb.service
 ## Own everything
 /usr/bin/chown -R www:www /srv/www
 /usr/bin/chown -R www:www /srv/vip
+
+# Create cloud servers directory (not web accessible)
+/usr/bin/mkdir -p /srv/cloud
 
 # inkGet repo
 /usr/bin/mkdir -p /opt/verb/repo

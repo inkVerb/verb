@@ -24,7 +24,10 @@ cVappName=iwpadmin
 distVer="${iwpadmin}"
 
 if [ $InkGet_Method != "ZJZ" ]; then
-  cd /opt/verb/repo; fi
+  cd /opt/verb/repo
+elif [ $InkGet_Method = "ZJZ" ] ; then
+  cd /srv/www/vapps
+fi
 
 # Check current version
 for VERFILE in ${cVappName}.ver.*; do
@@ -64,7 +67,7 @@ fi
 /bin/rm iwpadmin-${distVer}.zip
 /bin/mv IWPAdminPanel_v${distVer} ${cVappName}
 if [ $InkGet_Method != "ZJZ" ]; then
-  /opt/verb/serfs/txzin ${cVappName}; wait
+  /opt/verb/serfs/vtxzin ${cVappName}; wait
   /bin/rm -rf ${cVappName}
 
   # Make a record of current version

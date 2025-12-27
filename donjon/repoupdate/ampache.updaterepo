@@ -15,7 +15,10 @@ cVappName=ampache
 distVer="${ampache}"
 
 if [ $InkGet_Method != "ZJZ" ]; then
-  cd /opt/verb/repo; fi
+  cd /opt/verb/repo
+elif [ $InkGet_Method = "ZJZ" ] ; then
+  cd /srv/www/vapps
+fi
 
 # Announce
 /usr/bin/echo "Retrieving Ampache v${distVer}..."
@@ -52,7 +55,7 @@ fi
 /bin/rm ${cVappName}.zip
 if [ $InkGet_Method != "ZJZ" ]; then
   cd ..
-  /opt/verb/serfs/txzin ${cVappName}; wait
+  /opt/verb/serfs/vtxzin ${cVappName}; wait
   /bin/rm -rf ${cVappName}
 
   # Make a record of current version

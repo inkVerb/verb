@@ -2,6 +2,7 @@
 #inkVerbSerf! verb.ink
 # This relocates an vapp's media folder to an inkDrive mounted with inkdriveadd
 ## This does not relocate the entire vapp's folder
+## This is not for ghost, owncloud, or other /srv/cloud/ apps
 ## This is designed on a per-vapp basis
 
 # How to use:
@@ -12,7 +13,7 @@
 ## ./inkdriveapp nextcloud
 
 
-usagenotes="This relocates an vapp's media folder to an inkDrive mounted with inkdriveadd"
+usagenotes="This relocates an vapp's media folder to an inkDrive mounted with inkdriveadd; not for ghost, owncloud, or other /srv/cloud/ apps"
 usageformat="inkdriveapp [ vapp ] [ drive name - optional ]"
 usageexample="inkdriveapp wp.inkisaverb.com mydrive
 inkdriveapp nextcloud"

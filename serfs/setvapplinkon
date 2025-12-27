@@ -63,6 +63,13 @@ owa)
 /bin/echo "${vAppName} symlink is set."
 ;;
 
+# We don't need a web link for Go apps running on a port proxy from Nginx
+# owncloud)
+# /bin/rm -rf /srv/www/verb/blue.cloud
+# /bin/ln -sfn /srv/www/vapps/${vAppName} /srv/www/verb/blue.cloud
+# /bin/echo "${vAppName} symlink is set."
+# ;;
+
 suitecrm)
 /bin/rm -rf /srv/www/verb/red
 /bin/ln -sfn /srv/www/vapps/${vAppName} /srv/www/verb/red

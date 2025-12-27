@@ -15,7 +15,10 @@ cVappName=net2ftp
 distVer="${net2ftp}"
 
 if [ $InkGet_Method != "ZJZ" ]; then
-  cd /opt/verb/repo; fi
+  cd /opt/verb/repo
+elif [ $InkGet_Method = "ZJZ" ] ; then
+  cd /srv/www/vapps
+fi
 
 # Announce
 /usr/bin/echo "Retrieving net2ftp v${distVer}..."
@@ -49,7 +52,7 @@ cd net2ftp_v${distVer}
 cd ..
 /bin/rm -rf net2ftp_v${distVer}
 if [ $InkGet_Method != "ZJZ" ]; then
-  /opt/verb/serfs/txzin ${cVappName}; wait
+  /opt/verb/serfs/vtxzin ${cVappName}; wait
   /bin/rm -rf ${cVappName}
 
   # Make a record of current version

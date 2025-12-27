@@ -15,7 +15,10 @@ cVappName=fossil
 distVer="${fossil}"
 
 if [ $InkGet_Method != "ZJZ" ]; then
-  cd /opt/verb/repo; fi
+  cd /opt/verb/repo
+elif [ $InkGet_Method = "ZJZ" ] ; then
+  cd /srv/www/vapps
+fi
 
 # Announce
 /usr/bin/echo "Retrieving Fossil v${distVer}..."

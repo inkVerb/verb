@@ -5,6 +5,7 @@
 ## The first of a type (ssh/hdd) you add with this will become the default for that type in verb/conf/inkdrive/inkdriveinfo
 ### Drive type defaults are used by inkdriveapp and inkdrivesvc
 ## When managed by the rink, the drive names will reflect the disk type (hdd = hdd, ssd = ssh, hdd1 = second HDD disk likely for transfer purposes)
+## This automatically moves /srv/cloud/ for Ghost, oCis, etc, making inkdriveapp obsolete for such apps
 
 # How to use:
 ## ./inkdriveadd [ dev ] [ drive name ] [ disk type: hdd/ssd ]
@@ -14,7 +15,7 @@
 ## ./inkdriveadd vdc hdd1 hdd
 
 
-usagenotes="This mounts a block storage drive in /dev/ to the /mnt/ directory and makes an entry in /etc/fstab"
+usagenotes="This mounts a block storage drive in /dev/ to the /mnt/ directory and makes an entry in /etc/fstab; automatically moves /srv/cloud/ for Ghost, oCis, etc"
 usageformat="inkdriveadd [ dev ] [ drive name ] [ disk type: hdd/ssd ]"
 usageexample="inkdriveadd vdb mydrive ssd
 inkdriveadd vdc harddisk hdd
@@ -106,6 +107,13 @@ uuid="$(/usr/bin/lsblk -o UUID /dev/${Dev}1 | /usr/bin/awk 'FNR==2{print $0}')"
 /usr/bin/systemctl daemon-reload
 /usr/bin/mount /mnt/${Mnt}
 /usr/bin/mkdir -p /mnt/${Mnt}/.conf/
+
+# Move our cloud service directory to the drive if SSD
+## Automatically addresses Ghost, ownCloud oCis, and other /srv/cloud/ apps
+if [ "${TypDescr}" = "SSD" ]; then
+  /usr/bin/mv -f /srv/cloud /mnt/${Mnt}/; wait
+  /usr/bin/ln -sfn /mnt/${Mnt}/cloud /srv/
+fi
 
 # Tell PHP-FPM to wait for it to be mounted
 if [ ! -f "/etc/systemd/system/php-fpm.service.d/mount.conf" ]; then

@@ -241,7 +241,7 @@ X. Other notes
 		2. Many "if" checks and "usage" messages could be included in serfs, but are not because the user should more or less know what he is doing. Such errors will be in the yoeman tool for easier command line use and a GUI.
 		3. The main purpose of "if" checks is for complex situations or to provide contingency alternatives for factors outside of the verber, such as failing to download a webapp for installation.
 		4. Generally, failed "plugins" won't break an entire script; failing to download the core webapp will `exit 4` and the webapp won't be installed at all.
-XI. Web host directory structure
+XI. Server & web host directory structure
 	A. The `/srv/www` folder:
 		- html: where all web folders link to and are found via apache or nginx config files
 		- domains: hosted domains default web folders (keeping things simple for FTP client managent of personal projects)
@@ -285,11 +285,16 @@ XI. Web host directory structure
 		  - `/etc/nginx/sites-enabled/` -> `verb/conf/webserver/sites-enabled/nginx/`
 		  - `/etc/httpd/sites-enabled/` -> `verb/conf/webserver/sites-enabled/httpd/`
 		- The original folder structure still works so that other apps should not know the difference unless they check every directory tree location for an actual directory
+	D. The `/srv/cloud/` folder:
+	    - This is theoretically for apps that serve over the web, but their app-operational folders are not web-accessible
+		- Eg:
+		  - owncloud ocis (written in Go and runs as a reverse-proxy-served service)
+		  - Ghost apps (written in Node.js and runs as a reverse-proxy-served service)
 XII. Mounted volumes
 	- Volume mounting is an option, placing man of the web hosted folders at various places on SSD and HDD mounted volumes
 		- This is handled by the Rink, which creates and manages verb VPS instances in the first place. If you are managing a stand-alone verber installed manually, mounted volume systems will simply be non-existant by the system. But, don't delete any volume config files because the framework still depends on them, even if to remain at their default values.
 	- Volumes actually reside in /mnt/
-	- When SSD is mounted, entire web app folders are automatically installed to the SSD volume in /mnt/
+	- When SSD is mounted, entire web app and srv/cloud folders are automatically installed to the SSD volume in /mnt/
 	- When HDD is mounted, media and data folders (ie wp-content or nextcloud/data) are installed to the HDD volume in /mnt/
 	- The serfs and verb framework is very good at automatically detecting where things go
 	- Adding a volume after a web app is installed is generally no problem since the mounting scripts simply move the folders described in the section on web host directories

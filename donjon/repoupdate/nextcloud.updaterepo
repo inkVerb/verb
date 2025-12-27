@@ -13,7 +13,10 @@ cVappName=nextcloud
 . /opt/verb/conf/serverinkget
 
 if [ $InkGet_Method != "ZJZ" ]; then
-  cd /opt/verb/repo; fi
+  cd /opt/verb/repo
+elif [ $InkGet_Method = "ZJZ" ] ; then
+  cd /srv/www/vapps
+fi
 
 # Announce
 /usr/bin/echo "Retrieving NextCloud latest version..."
@@ -45,7 +48,7 @@ fi
 /usr/bin/tar xf latest.tar.bz2
 /bin/rm latest.tar.bz2
 if [ $InkGet_Method != "ZJZ" ]; then
-  /opt/verb/serfs/txzin ${cVappName}; wait
+  /opt/verb/serfs/vtxzin ${cVappName}; wait
   /bin/rm -rf ${cVappName}
 fi
 

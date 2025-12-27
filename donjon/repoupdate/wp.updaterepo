@@ -13,7 +13,10 @@ cVappName=wp
 . /opt/verb/conf/serverinkget
 
 if [ $InkGet_Method != "ZJZ" ]; then
-  cd /opt/verb/repo; fi
+  cd /opt/verb/repo
+elif [ $InkGet_Method = "ZJZ" ] ; then
+  cd /srv/www/vapps
+fi
 
 # Announce
 /usr/bin/echo "Updating the WordPress package to the latest version..."
@@ -50,7 +53,7 @@ fi
 ## Note: "wordpress" goes by the nickname "wp" here
 /usr/bin/mv wordpress ${cVappName}
 if [ $InkGet_Method != "ZJZ" ]; then
-  /opt/verb/serfs/txzin ${cVappName}; wait
+  /opt/verb/serfs/vtxzin ${cVappName}; wait
   /usr/bin/rm -rf ${cVappName}
 fi
 
