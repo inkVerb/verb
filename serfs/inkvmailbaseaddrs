@@ -32,8 +32,8 @@ if [ -e "/opt/verb/mods/inkvmailbaseaddrs.before" ]; then . /opt/verb/mods/inkvm
 
 # Set the variables
 verberdomain="$nameURI"
-PASSWORD=$(/usr/bin/pwgen -s -1 20)
-password="$(/bin/echo $PASSWORD | /usr/bin/openssl passwd -1 -stdin)"
+Password=$(/usr/bin/pwgen -s -1 20)
+password="$(/bin/echo $Password | /usr/bin/openssl passwd -1 -stdin)"
 username="verberadmin@$nameURI"
 name="Change Me Dont Delete Me"
 inkvmaildirectory="$nameURI/verberadmin/"

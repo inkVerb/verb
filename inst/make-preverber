@@ -26,8 +26,15 @@ exit 8; fi
 /usr/bin/localectl set-locale LANG=en_US.UTF-8
 /usr/bin/locale-gen
 
+# Update Keyring & Mirrors thoroughly
+/usr/bin/pacman-key --init
+/usr/bin/pacman-key --populate archlinux
+#DEV Redundant and problematic
+# /usr/bin/pacman-key --refresh-keys
+
 # Update Keyring
 /usr/bin/pacman -Sy archlinux-keyring --noconfirm
+
 # Update Packages
 /usr/bin/pacman -Syyu --noconfirm --needed
 

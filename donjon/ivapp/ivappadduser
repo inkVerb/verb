@@ -39,11 +39,11 @@ fi
 INPUTUSERNAME=$1
 INPUTUSERPASS=$2
 ADDIVAPPUSERNAME=$(echo $INPUTUSERNAME | cut -c1-18)
-ADDIVAPPPASSWORD=$(echo $INPUTUSERPASS | cut -c1-32)
+ADDIVAPPPassword=$(echo $INPUTUSERPASS | cut -c1-32)
 
 # Add the user
 adduser ${ADDIVAPPUSERNAME} --gecos ",,," --disabled-password --home ${IvappBase}/${IvappDir}/${IvappGroupDir}/${ADDIVAPPUSERNAME}
-echo "${ADDIVAPPUSERNAME}:${ADDIVAPPPASSWORD}" | chpasswd
+echo "${ADDIVAPPUSERNAME}:${ADDIVAPPPassword}" | chpasswd
 ## Add him to the IVapp group
 usermod -a -G ${IvappUserGroup} ${ADDIVAPPUSERNAME}
 ## Give him necessary permissions limits

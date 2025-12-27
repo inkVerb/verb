@@ -73,7 +73,7 @@ clientURI=\"${addMachine}\"
 clientName=\"${addClientName}\"
 CLIENTIP=\"${addIP}\"
 clientUsername=\"${addUsername}\"
-CLIENTPASSWORD=\"${addPassword}\"
+CLIENTPassword=\"${addPassword}\"
 CLIENTport=\"${addLoginPort}\"
 " > /opt/verb/conf/inknet/vrk/client.vrk.${addClientName}.cnf
 

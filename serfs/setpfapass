@@ -11,7 +11,7 @@
 pfaPass=$1
 
 # Replace whatever current hash settings with the hash
-instHash="$(php -r "echo password_hash('${pfaPass}', PASSWORD_DEFAULT);")"
+instHash="$(php -r "echo password_hash('${pfaPass}', Password_DEFAULT);")"
 /bin/sed -i "s/\$CONF\['configured'\] = .*/\$CONF\['configured'\] = true;/g" /srv/www/email/postfixadmin/config.local.php
 /bin/sed -i "/setup_password/d" /srv/www/email/postfixadmin/config.local.php
 /bin/sed -i "/setup_password/d" /srv/www/email/postfixadmin/config.inc.php

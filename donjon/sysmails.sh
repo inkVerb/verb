@@ -13,8 +13,8 @@ accountConfig="$1"
 /usr/bin/rm -rf /srv/vmail/${inkvmaildirectory}
 
 # Update the password
-PASSWORD=$(/usr/bin/pwgen -s1 24)
-password="$(/bin/echo $PASSWORD | /usr/bin/openssl passwd -1 -stdin)"
+Password=$(/usr/bin/pwgen -s1 24)
+password="$(/bin/echo $Password | /usr/bin/openssl passwd -1 -stdin)"
 
 # Make the database entry
 ## We need the alias entry for the mailbox to be active
@@ -47,7 +47,7 @@ ON DUPLICATE KEY UPDATE
 
 if [ "$?" = 0 ]; then
   # Update password in config
-  sed -i "s/PASSWORD=.*/PASSWORD=\"${PASSWORD}\"/" /opt/verb/conf/vsysmail.${accountConfig}
+  sed -i "s/Password=.*/Password=\"${Password}\"/" /opt/verb/conf/vsysmail.${accountConfig}
   # Refresh the msmtp config
   if [ "${accountConfig}" = "msmtp" ]; then
   /usr/bin/cat <<EOF >  /etc/msmtprc
@@ -59,7 +59,7 @@ account default
 host smtp.${nameURI}
 from noreply@${nameURI}
 user ${user}@${nameURI}
-password ${PASSWORD}
+password ${Password}
 EOF
 /bin/chmod 0600 /etc/msmtprc
 /bin/chown www:www /etc/msmtprc

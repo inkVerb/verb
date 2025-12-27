@@ -236,12 +236,12 @@ exit 0; fi
 }
 
 setupPassword() {
-local PASSWORD="$1"
+local Password="$1"
 local vvar="$2"
 
-local PASSWORDregex="^[[:alnum:]_-]{2,100}$"
-if [[ "${PASSWORD}" =~ ${PASSWORDregex} ]] ; then
-#if [[ ${#PASSWORD} -ge 6 && "${PASSWORD}" == *[A-Z]* && "${PASSWORD}" == *[a-z]* && "${PASSWORD}" == *[0-9]* ]] ; then
+local Passwordregex="^[[:alnum:]_-]{2,100}$"
+if [[ "${Password}" =~ ${Passwordregex} ]] ; then
+#if [[ ${#Password} -ge 6 && "${Password}" == *[A-Z]* && "${Password}" == *[a-z]* && "${Password}" == *[0-9]* ]] ; then
 setupPassword="true"; else
 setupPassword="false"; fi
 
@@ -838,7 +838,7 @@ mysqlbosspass=$(/usr/bin/pwgen -s -1 10)
 ## MySQL superuser to auto-create databases
 /usr/bin/mariadb -uroot -p${mysqlpass} -e "
 CREATE USER mysqlboss@localhost;
-SET PASSWORD FOR mysqlboss@localhost=PASSWORD('${mysqlbosspass}');
+SET PASSWORD FOR mysqlboss@localhost=Password('${mysqlbosspass}');
 GRANT ALL PRIVILEGES ON *.* TO 'mysqlboss'@'localhost' IDENTIFIED BY '${mysqlbosspass}' WITH GRANT OPTION;
 FLUSH PRIVILEGES;"
 ## Set the mysqlboss as the mysqlboss config file so the password is not in the line command
@@ -851,7 +851,7 @@ host = localhost" > /opt/verb/conf/sql/mysqlboss.cnf
 ## New MySQL root password
 newmysqlpass=$(/usr/bin/pwgen -0 -1 -A -B 11)
 /usr/bin/mariadb -uroot -p${mysqlpass} -e "
-SET PASSWORD FOR root@localhost = PASSWORD('${newmysqlpass}');FLUSH PRIVILEGES;"
+SET PASSWORD FOR root@localhost = Password('${newmysqlpass}');FLUSH PRIVILEGES;"
 if [ "$?" = 0 ]; then
   /usr/bin/echo "${newmysqlpass}" > /opt/verb/conf/sql/mysqlrootpassword
 else
@@ -891,7 +891,7 @@ vnoremap <C-p> "+p' > /home/${newBoss}/.vimrc
 # New Boss MySQL root password
 /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
 CREATE USER ${newBoss}@localhost;
-SET PASSWORD FOR ${newBoss}@localhost=PASSWORD('${newBossPASS}');
+SET PASSWORD FOR ${newBoss}@localhost=Password('${newBossPASS}');
 GRANT ALL PRIVILEGES ON *.* TO '${newBoss}'@'localhost' IDENTIFIED BY '${newBossPASS}' WITH GRANT OPTION;
 FLUSH PRIVILEGES;"
 

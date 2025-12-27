@@ -128,7 +128,7 @@ Environment="OCIS_DB_HOST=127.0.0.1"
 Environment="OCIS_DB_PORT=3306"
 Environment="OCIS_DB_NAME=${dBase}"
 Environment="OCIS_DB_USER=${dBaseUser}"
-Environment="OCIS_DB_PASSWORD=${dBPassword}"
+Environment="OCIS_DB_Password=${dBPassword}"
 
 # Network
 Environment="OCIS_URL=https://cloud.${blueURI}"
@@ -150,13 +150,14 @@ EOF
 ##REF /usr/bin/sudo -u ocis ocis init # This is the basic command
 ## The ocis init command is interactive, so we need to echo-pipe the answer
 /usr/bin/echo "no" | /usr/bin/sudo -u ocis OCIS_BASE_DATA_PATH=/srv/cloud/ocis ocis init
+## Make sure our config folder exists for our notifications.yaml file for email settings; it should exist after running ocis init
+/usr/bin/mkdir -p /srv/cloud/ocis/config
 /usr/bin/systemctl daemon-reload
 /usr/bin/systemctl enable --now ocis
 
 
 
 #TODO
-## Nginx reverse proxy configs
 ## Write inkvmailsysowncloud from inkvmailsysnextcloud
 
 
@@ -165,12 +166,11 @@ EOF
 if [ ${ServerType} = "laemp" ]; then
   /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf.old
   /usr/bin/mv /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf.old
-  /usr/bin/cp /opt/verb/conf/site-files/conf/owncloud-nginx.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf
-  /usr/bin/cp /opt/verb/conf/site-files/conf/owncloud-httpd.conf /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/ocis.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf
   /usr/bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/cloud.${blueURI}.conf
 elif [ ${ServerType} = "lemp" ]; then
   /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf.old
-  /usr/bin/cp /opt/verb/conf/site-files/conf/owncloud.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/ocis.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf
 fi
 
 # Setup for inkCert
@@ -211,10 +211,6 @@ fi
 
 # Use msmtp for a real SMTP address
 /opt/verb/serfs/inkvmailsysowncloud
-
-# Verify ownership
-/usr/bin/chown -R www:www /srv/www/vapps/${cVappName}; wait
-/usr/bin/chmod -R 770 /srv/www/vapps/${cVappName}; wait
 
 # Set up bg jobs cron
 ## Nextcloud background jobs (manage the crontab files directly)

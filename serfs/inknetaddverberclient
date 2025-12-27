@@ -76,7 +76,7 @@ clientURI=\"${addURI}\"
 clientName=\"${addName}\"
 CLIENTIP=\"${addIP}\"
 clientUsername=\"${addUsername}\"
-CLIENTPASSWORD=\"${addPassword}\"
+CLIENTPassword=\"${addPassword}\"
 CLIENTport=\"${addLoginPort}\"
 " > /opt/verb/conf/inknet/verber/client.verber.${addName}.cnf
 

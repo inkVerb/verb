@@ -49,10 +49,10 @@ if [ -f "/opt/verb/conf/vsysmail.msmtp" ]; then
 fi
 
 # Prep all vairables
-PASSWORD=$(/usr/bin/pwgen -s1 24)
+Password=$(/usr/bin/pwgen -s1 24)
 randomuser=$(/usr/bin/pwgen -s1A 5)
 /usr/bin/cat <<EOF > /opt/verb/conf/vsysmail.msmtp
-PASSWORD="${PASSWORD}"
+Password="${Password}"
 user="sys_${randomuser}"
 username="sys_${randomuser}@${nameURI}"
 maildomain="${nameURI}"
@@ -66,7 +66,7 @@ EOF
 
 # Disable the old entry in the database
 if [ -n "${oldusername}" ]; then
-  password="$(/bin/echo $PASSWORD | /usr/bin/openssl passwd -1 -stdin)"
+  password="$(/bin/echo $Password | /usr/bin/openssl passwd -1 -stdin)"
   /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqldb.vmail.cnf -e "UPDATE mailbox
   SET username = 'sys_${randomuser}@${nameURI}', password = '${password}', name = 'System', maildir = '${nameURI}/sys_${randomuser}', domain = '${nameURI}', modified = CURRENT_TIMESTAMP, active = 1
   WHERE username = '${oldusername}';
@@ -107,7 +107,7 @@ account default
 host smtp.${nameURI}
 from noreply@${nameURI}
 user sys_${randomuser}@${nameURI}
-password ${PASSWORD}
+password ${Password}
 EOF
 /bin/chmod 0600 /etc/msmtprc
 /bin/chown www:www /etc/msmtprc

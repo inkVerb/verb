@@ -4,12 +4,12 @@
 # This creates or resets the Nextcloud smtp user for inkvmail, such as is used by php to send emails
 
 # How to use:
-## ./inkvmailsysnextcloud
+## ./inkvmailsysowncloud
 
 usagenotes="This creates or resets the Nextcloud smtp user for inkvmail, such as is used by php to send emails"
-usageformat="inkvmailsysnextcloud"
-usageexample="inkvmailsysnextcloud"
-hierarchy=( tertiary installnextcloud )
+usageformat="inkvmailsysowncloud"
+usageexample="inkvmailsysowncloud"
+hierarchy=( tertiary installowncloud )
 vsetnames=(  )
 vsettypes=(  )
 voptnames=(  )
@@ -22,8 +22,8 @@ usedby=( installnextcloud )
 useserfs=( setsecure )
 useconfigs=( servermailpath servernameip siteurilist )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
-if [ -e "/opt/verb/mods/inkvmailsysnextcloud.replace" ]; then . /opt/verb/mods/inkvmailsysnextcloud.replace; return 0; fi # Replaces this script
-if [ -e "/opt/verb/mods/inkvmailsysnextcloud.before" ]; then . /opt/verb/mods/inkvmailsysnextcloud.before; fi # Precedes this script
+if [ -e "/opt/verb/mods/inkvmailsysowncloud.replace" ]; then . /opt/verb/mods/inkvmailsysowncloud.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkvmailsysowncloud.before" ]; then . /opt/verb/mods/inkvmailsysowncloud.before; fi # Precedes this script
 
 
 # Check to see if inkvmail is installed
@@ -37,8 +37,8 @@ if [ "$ServerMailStatus" != "VMAIL_SERVER" ]; then
 . /opt/verb/conf/siteurilist
 
 # Cleanup previous entries
-if [ -f "/opt/verb/conf/vsysmail.nextcloud" ]; then
-  . /opt/verb/conf/vsysmail.nextcloud
+if [ -f "/opt/verb/conf/vsysmail.owncloud" ]; then
+  . /opt/verb/conf/vsysmail.owncloud
   /usr/bin/rm -rf /srv/vmail/${inkvmaildirectory}
   oldusername="${username}"
 fi
@@ -46,13 +46,13 @@ fi
 # Prep all vairables
 Password=$(/usr/bin/pwgen -s1 24)
 randomuser=$(/usr/bin/pwgen -s1A 5)
-/usr/bin/cat <<EOF > /opt/verb/conf/vsysmail.nextcloud
+/usr/bin/cat <<EOF > /opt/verb/conf/vsysmail.owncloud
 Password="${Password}"
-user="nxc_${randomuser}"
-username="nxc_${randomuser}@${nameURI}"
+user="ons_${randomuser}"
+username="ons_${randomuser}@${nameURI}"
 maildomain="${nameURI}"
 name="Nextcloud ${blueURI}"
-inkvmaildirectory="${nameURI}/nxc_${randomuser}/"
+inkvmaildirectory="${nameURI}/ons_${randomuser}/"
 mailboxsize="1048576" # 1MB, 2GB=2097152000, 1GB=1048576000, 5GB=5242880000
 EOF
 
@@ -63,10 +63,10 @@ EOF
 if [ -n "${oldusername}" ]; then
   password="$(/bin/echo $Password | /usr/bin/openssl passwd -1 -stdin)"
   /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqldb.vmail.cnf -e "UPDATE mailbox
-  SET username = 'nxc_${randomuser}@${nameURI}', password = '${password}', name = 'System', maildir = '${nameURI}/nxc_${randomuser}', domain = '${nameURI}', modified = CURRENT_TIMESTAMP, active = 1
+  SET username = 'ons_${randomuser}@${nameURI}', password = '${password}', name = 'System', maildir = '${nameURI}/ons_${randomuser}', domain = '${nameURI}', modified = CURRENT_TIMESTAMP, active = 1
   WHERE username = '${oldusername}';
   UPDATE alias
-  SET address = 'nxc_${randomuser}@${nameURI}', goto = 'nxc_${randomuser}@${nameURI}', domain = '${nameURI}', modified = CURRENT_TIMESTAMP, active = 1
+  SET address = 'ons_${randomuser}@${nameURI}', goto = 'ons_${randomuser}@${nameURI}', domain = '${nameURI}', modified = CURRENT_TIMESTAMP, active = 1
   WHERE address = '${oldusername}';"
 fi
 
@@ -79,28 +79,29 @@ fi
 
 # Set up sysmails cron
 ## Nextcloud background jobs (manage the crontab files directly)
-/bin/echo '44 * * * * root /opt/verb/donjon/sysmails.sh nextcloud' > /etc/cron.d/sysmailnextcloud
+/usr/bin/echo '44 * * * * root /opt/verb/donjon/sysmails.sh owncloud' > /etc/cron.d/sysmailowncloud
 ## Permissions
-/bin/chmod 0644 /etc/cron.d/sysmailnextcloud
+/usr/bin/chmod 0644 /etc/cron.d/sysmailowncloud
 
 # Mail config
-/usr/bin/cat <<EOF > /srv/www/vapps/nextcloud/config/email.config.php
-<?php
-\$ConfIG = [
-'mail_domain' => '${nameURI}',
-'mail_from_address' => 'nxc_${randomuser}@${nameURI}',
-'mail_smtpmode' => 'smtp',
-'mail_smtphost' => 'mail.${nameURI}',
-'mail_smtpport' => 587,
-'mail_smtpsecure' => 'tls',
-'mail_smtpauth' => true,
-'mail_smtpauthtype' => 'LOGIN',
-'mail_smtpname' => 'nxc_${randomuser}@${nameURI}',
-'mail_smtppassword' => '${Password}',
-];
+## Be safe
+/usr/bin/touch /srv/cloud/ocis/config/notifications.yaml
+## notifications.yaml option for system email settings in a separate file
+/usr/bin/cat <<EOF > /srv/cloud/ocis/config/notifications.yaml
+smtp:
+  host: "mail.${nameURI}"
+  port: 587
+  sender: "ons_${randomuser}@${nameURI}"
+  username: "ons_${randomuser}@${nameURI}"
+  password: "${Password}"
+  authentication: "login"
+  encryption: "starttls"
 EOF
+## Permissions
+/usr/bin/chmod 600 /srv/cloud/ocis/config/notifications.yaml
+/usr/bin/chown ocis:ocis /srv/cloud/ocis/config/notifications.yaml
 
 
 
 
-if [ -e "/opt/verb/mods/inkvmailsysnextcloud.after" ]; then . /opt/verb/mods/inkvmailsysnextcloud.after; fi # Follows this script
+if [ -e "/opt/verb/mods/inkvmailsysowncloud.after" ]; then . /opt/verb/mods/inkvmailsysowncloud.after; fi # Follows this script
