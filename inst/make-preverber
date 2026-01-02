@@ -129,8 +129,9 @@ syntax on' >> /etc/vimrc
 e="$?"; [[ "$e" = "0" ]] || ( /usr/bin/echo 'Failed: !!' && exit "$e" )
 cd /opt/verb/worker || exit 6
 /usr/bin/su worker -c '/usr/bin/git clone https://aur.archlinux.org/yay.git'
+cd yay || exit 6
 #/usr/bin/su worker -c '/usr/bin/git clone https://aur.archlinux.org/yay-bin.git' # Some temp problems solved at https://github.com/Jguer/yay/issues/2508#issuecomment-2365429225
-cd yay-bin || exit 6
+#cd yay-bin || exit 6
 /usr/bin/su worker -c '/usr/bin/makepkg -si --noconfirm'
 cd .. || exit 6
 /usr/bin/rm -rf yay-bin
