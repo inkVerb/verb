@@ -1,0 +1,59 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This adds a user (new or existing) to an existing MySQL database with a password
+## If not specificd, user/password will be created"
+## Characters are limited to alnum
+
+# How to use:
+## ./mysqladdusr [ addto-dbase ] [ dbuser - optional ] [ dbpassword - optional]
+
+usagenotes="This adds a user (new or existing) to an existing MySQL database with a password; if not specificd, user/password will be created; characters must be alnum"
+usageformat="mysqladdusr [ addto-dbase ] [ dbuser - optional ] [ dbpassword - optional]"
+usageexample="mysqladdusr somedatabase
+mysqladdusr somedatabase someuser
+mysqladdusr somedatabase someuser somepassword"
+hierarchy=( primary )
+vsetnames=( "Database" )
+vsettypes=( isSQLDatabasename )
+voptnames=( "Database username" "Database password" )
+vopttypes=( isSQLUserCredential isSQLUserCredential )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( mysqlinstall )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/mysqladdusr.replace" ]; then . /opt/verb/mods/mysqladdusr.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/mysqladdusr.before" ]; then . /opt/verb/mods/mysqladdusr.before; fi # Precedes this script
+
+
+oldDBase="${1}"
+if [ -z "${2}" ]; then
+dBaseUser=$(/usr/bin/pwgen -s -1 10)
+dBPassword=$(/usr/bin/pwgen -s -1 10)
+serfOUT="New User: ${dBaseUser}
+New Password: ${dBPassword}"
+elif [ -z "${3}" ]; then
+dBaseUser="${2}"
+  if [ -f "/opt/verb/conf/sql/mysqldb.${dBaseUser}" ]; then
+  . /opt/verb/conf/sql/mysqldb.${dBaseUser}
+  else
+  dBPassword=$(/usr/bin/pwgen -s -1 10)
+  serfOUT="New Password: ${dBPassword}"
+  fi
+echo ${serfOUT}
+else
+dBPassword="${3}"
+fi
+
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
+GRANT ALL PRIVILEGES ON ${oldDBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '${dBPassword}';
+FLUSH PRIVILEGES;"
+
+
+
+
+if [ -e "/opt/verb/mods/mysqladdusr.after" ]; then . /opt/verb/mods/mysqladdusr.after; fi # Follows this script

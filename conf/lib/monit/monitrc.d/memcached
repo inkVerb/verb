@@ -1,3 +1,4 @@
+# This has its own monitoring process, this monit profile will conflict; don't use
  check process memcache with pidfile /var/run/memcached.pid
    group cache
    group memcached

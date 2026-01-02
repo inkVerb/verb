@@ -1,0 +1,36 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This drops (deletes) a PostgreSQL  user
+
+# How to use:
+## ./pgsqlkilluser [ database userename ]
+
+usagenotes="This drops (deletes) a PostgreSQL user"
+usageformat="pgsqlkilluser [ database userename ]"
+usageexample="pgsqlkilluser myGreat99DBuser"
+hierarchy=( primary )
+vsetnames=( "Database username" )
+vsettypes=( isSQLUserCredential )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( mysqlinstall )
+prerequesite=( mysqlnewdbuser 'or' mysqlnewboss )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/pgsqlkilluser.replace" ]; then . /opt/verb/mods/pgsqlkilluser.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/pgsqlkilluser.before" ]; then . /opt/verb/mods/pgsqlkilluser.before; fi # Precedes this script
+
+
+dBaseUser=$1
+
+/usr/bin/sudo -u postgres psql -c "DROP USER ${dBaseUser}@localhost;"
+
+
+
+
+if [ -e "/opt/verb/mods/pgsqlkilluser.after" ]; then . /opt/verb/mods/pgsqlkilluser.after; fi # Follows this script

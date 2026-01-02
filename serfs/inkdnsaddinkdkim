@@ -20,7 +20,7 @@ dependencyinstall=( inkdnsinstall )
 prerequesite=( newinkdkim )
 usedby=( newdomainshell installinkvmail )
 useserfs=(  )
-useconfigs=(  )
+useconfigs=( servernameip servermailpath )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/inkdnsaddinkdkim.replace" ]; then . /opt/verb/mods/inkdnsaddinkdkim.replace; return 0; fi # Replaces this script
 if [ -e "/opt/verb/mods/inkdnsaddinkdkim.before" ]; then . /opt/verb/mods/inkdnsaddinkdkim.before; fi # Precedes this script
@@ -36,6 +36,7 @@ fi
 
 # Include the configs
 . /opt/verb/conf/servernameip
+. /opt/verb/conf/servermailpath
 
 # Check if already added
 if /usr/bin/grep -Fq "; inkDKIM key" /opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}; then
@@ -45,6 +46,21 @@ if /bin/grep -Fq "dkim._domainkey" /opt/verb/conf/inkdns/${zonedir}/db.${dnsDoma
 /usr/bin/echo "The ${dnsDomain} zone file seems to have been tampered with. It should say nothing about DKIM keys at this point, but it does. Fix that first."
 exit 7; fi
 
+## Postfix vmail?
+if [ "${ServerMailStatus}" = "VMAIL_SERVER" ]; then
+  if [ ! -e "/etc/opendkim/keys/${dnsDomain}/inkdkim.txt" ]; then
+    /usr/bin/echo "DKIM key does not exist, something is wrong."
+    exit 6;
+  fi
+
+## Maddy email?
+  elif [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ]; then
+    if [ ! -e "/srv/email/maddy/dkim_keys/${dnsDomain}_default.dns" ]; then
+    /usr/bin/echo "DKIM key does not exist, something is wrong."
+    exit 6;
+  fi
+fi
+
 # Echo the key
 ## Remove any existing entries
 /usr/bin/sed -i "/inkdkim\._domainkey/d" /opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}
@@ -53,10 +69,20 @@ e="$?"; [[ "$e" = "0" ]] || exit "$e"
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 /usr/bin/sed -i "/;; End inkDKIM key ${dnsDomain}/d" /opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
+
 ## Add the entry
-/usr/bin/echo "; inkDKIM key ${dnsDomain}" >> /opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}
-/usr/bin/echo $(/usr/bin/cat /etc/opendkim/keys/${dnsDomain}/inkdkim.txt | /usr/bin/sed -z -E 's/"\s+"//') >> /opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}
-/usr/bin/echo ";; End inkDKIM key ${dnsDomain}" >> /opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}
+/usr/bin/echo "; DKIM key ${dnsDomain}" >> /opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}
+
+## Postfix vmail?
+if [ "${ServerMailStatus}" = "VMAIL_SERVER" ]; then
+  /usr/bin/echo $(/usr/bin/cat /etc/opendkim/keys/${dnsDomain}/inkdkim.txt | /usr/bin/sed -z -E 's/"\s+"//') >> /opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}
+
+## Maddy email?
+  elif [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ]; then
+  /usr/bin/echo "default._domainkey IN TXT \"v=DKIM1; k=rsa; p=$(/usr/bin/cat /srv/email/maddy/dkim_keys/${dnsDomain}_default.dns | /usr/bin/grep -oP 'p=\K[^"]+')\"" >> /opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}
+fi
+
+/usr/bin/echo ";; End DKIM key ${dnsDomain}" >> /opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}
 ## Append the domain to the record host name
 /usr/bin/sed -i "s/inkdkim\._domainkey/inkdkim\._domainkey\.${dnsDomain}\./" /opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
@@ -75,7 +101,7 @@ if [ -f "/opt/verb/conf/inkdnsconf" ]; then
 fi
 
 # Finish
-/usr/bin/echo "The inkDKIM key has been added to the ${dnsDomain} DNS zone file."
+/usr/bin/echo "The DKIM key has been added to the ${dnsDomain} DNS zone file."
 
 
 

@@ -1,0 +1,43 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This exports a PostgreSQL database to a .sql file with the same name
+## The .sql file appears in the vip/sql/ directory
+## Omit or include the .sql extension on the end of the file name
+
+# How to use:
+## ./pgsqlex [ database name ]
+
+usagenotes="This exports a PostgreSQL database to a .sql file with the same name"
+usageformat="pgsqlex [ database name ]"
+usageexample="pgsqlex myGreat99DB"
+hierarchy=( primary )
+vsetnames=( "Database name" )
+vsettypes=( isSQLDatabasename )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( mysqlinstall )
+prerequesite=( mysqlnewdb )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/pgsqlex.replace" ]; then . /opt/verb/mods/pgsqlex.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/pgsqlex.before" ]; then . /opt/verb/mods/pgsqlex.before; fi # Precedes this script
+
+
+input=$1
+dBase=${input%.sql}
+
+/usr/bin/mariadb-dump --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf ${dBase} > /srv/vip/sql/${dBase}.sql
+
+if [ $? = "0" ]; then
+  echo "Database available at vip/sql/${dBase}.sql"
+fi
+
+
+
+
+if [ -e "/opt/verb/mods/pgsqlex.after" ]; then . /opt/verb/mods/pgsqlex.after; fi # Follows this script

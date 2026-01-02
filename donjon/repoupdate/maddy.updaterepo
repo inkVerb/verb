@@ -1,0 +1,59 @@
+#!/bin/bash
+#inkVerb! repo donjon dragon, verb.ink
+#set -e
+
+# This updates the Maddy repo package with the latest binary from the GitHub tarball
+
+# How to use:
+## ./maddy.updaterepo
+
+
+cVappName=maddy
+# Include the config files
+. /opt/verb/conf/serverinkget
+. /opt/verb/conf/inklists/repoverlist
+distVer="${maddy}"
+
+if [ $InkGet_Method != "ZJZ" ]; then
+  cd /opt/verb/repo
+elif [ $InkGet_Method = "ZJZ" ] ; then
+  cd /srv/cloud
+fi
+
+# Announce
+/usr/bin/echo "Retrieving Maddy v${distVer}..."
+
+# Get the package
+## Keep its distrib name for the SHA256 check
+/usr/bin/wget -O ${cVappName}.tar.zst https://github.com/foxcpp/maddy/releases/download/v${distVer}/maddy-${distVer}-x86_64-linux-musl.tar.zst
+if [ ! -f "${cVappName}" ]; then
+/bin/echo "Failed download."; touch "${cVappName}.failed"
+exit 4; else
+/bin/rm -f ${cVappName}.failed; fi
+## Check the hash
+checksha=$(/usr/bin/sha256sum ${cVappName}.tar.zst)
+if [ "${checksha}" = "${maddysha}  ${cVappName}.tar.zst" ]; then
+/bin/echo "Download checks out."
+else
+/bin/echo "SHA check failed for ${PWD}/${cVappName}. Dunno why."
+exit 4
+fi
+
+if [ $InkGet_Method != "ZJZ" ]; then
+  # Set it as the new package
+  /bin/rm -f ${cVappName}.legacy.txz
+  /usr/bin/touch ${cVappName}.txz
+  /bin/mv ${cVappName}.txz ${cVappName}.legacy.txz
+fi
+## Move the Go binary file into a vapp directory with the name it is properly known by, "ocis"
+/usr/bin/echo "Extracting from vendor..."
+/usr/bin/tar xf ${cVappName}.tar.zst 
+/bin/rm ${cVappName}.tar.zst 
+/bin/mv maddy-${distVer}-x86_64-linux-musl ${cVappName}
+if [ $InkGet_Method != "ZJZ" ]; then
+  /opt/verb/serfs/vtxzin ${cVappName}; wait
+  /bin/rm -rf ${cVappName}
+fi
+
+# Finish
+/bin/echo "Downloaded the latest version of Maddy."

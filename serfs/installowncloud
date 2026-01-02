@@ -3,20 +3,30 @@
 
 # This downloads and installs ownCloud (OCIS) manually and runs it on ....verb.blue
 
-# All options are optional, but must are sequential, omit last options first.
+# An optional database block exists, but needs uncommenting and updates to usage meta and final message at end of script, see instructions all in the commented block
+## The database is probably never used, only for External IDP Integration
+## The purpose of this new database is to create a blank database that can be imported outside this script
+## If used, the usage syntax would be:
+### installowncloud [dbase - optional] [dbuser - optional] [dbpassword - optional]
+## Eg:
+### ./installowncloud bestdbase bestdbuser besteverpass
+## Then serf header options would change to:
+# usageformat="installowncloud [dbase - optional] [dbuser - optional] [dbpassword - optional]"
+# usageexample="installowncloud
+# installowncloud bestdbase bestdbuser besteverpass"
+# voptnames=( "Database" "Database user" "Database password" )
+# vopttypes=( isSQLDatabasename isSQLDatabasename isSQLDatabasename )
 
 # How to use:
-## ./installowncloud [dbase - optional] [dbuser - optional] [dbpassword - optional]
+## ./installowncloud
 
 # Eg:
 ## ./installowncloud
-## ./installowncloud bestdbase bestdbuser besteverpass
 
 
 usagenotes="This downloads and installs ownCloud (OCIS) manually and runs it on ....verb.blue"
-usageformat="installowncloud [dbase - optional] [dbuser - optional] [dbpassword - optional]"
-usageexample="installowncloud
-installowncloud bestdbase bestdbuser besteverpass"
+usageformat="installowncloud"
+usageexample="installowncloud"
 hierarchy=( primary )
 vsetnames=(  )
 vsettypes=(  )
@@ -27,7 +37,7 @@ voptflagpurpose=(  )
 dependencyinstall=(  )
 prerequesite=(  )
 usedby=(  )
-useserfs=( inkget inkvmailsysowncloud inkcert_ inkdriveapp )
+useserfs=( inkget inkemailsysowncloud inkvmailsysowncloud inkcert_ inkdriveapp )
 useconfigs=( servernameip siteurilist servertype servermailpath )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/installowncloud.replace" ]; then . /opt/verb/mods/installowncloud.replace; return 0; fi # Replaces this script
@@ -48,12 +58,18 @@ if [ -f /opt/verb/conf/vapps/vapp.${cVappName} ]; then
 /usr/bin/echo "This is already installed."
 exit 0; fi
 ## Directory
-if [ -d /srv/www/vapps/${cVappName} ]; then
+if [ -d /srv/cloud/${cVappName} ]; then
 /usr/bin/echo "ownCloud already exists in the system. If it isn't working, look deeper on the server. For now, doing nothing."
 exit 8; fi
 ## Web server
 if [ ${ServerType} = "lamp" ]; then
 /usr/bin/echo "Only allowed with Nginx servers, LEMP or LAEMP; LAMP servers with Apache not allowed."
+exit 0; fi
+# Check prerequesites
+if [ ${ServerMailStatus} = "EMAIL_NOT_INSTALLED" ]; then
+/usr/bin/echo "
+Email server not installed, can't install ownCloud.
+"
 exit 0; fi
 
 # Auto database
@@ -82,7 +98,7 @@ e="$?"; [[ "$e" = "0" ]] || exit "$e"
 # Install as local/bin
 /usr/bin/mkdir -p /usr/local/bin
 /usr/bin/mv -f /srv/cloud/owncloud/ocis /usr/local/bin/ocis
-/usr/bin/echo "Moved to /usr/local/bin/ocis" > /srv/cloud/owncloud/ocis.bin.installed
+/usr/bin/echo "Binary at /usr/local/bin/ocis" > /srv/cloud/owncloud/ocis.bin.installed
 /usr/bin/chmod 755 /usr/local/bin/ocis
 
 # User & data directories
@@ -94,17 +110,6 @@ e="$?"; [[ "$e" = "0" ]] || exit "$e"
 ## Served data (block storage serve-ready)
 /usr/bin/mkdir -p /srv/cloud/ocis
 /usr/bin/chown -R ocis:ocis /srv/cloud/ocis
-
-# Create the database and credentials (needed now, before service starts)
-/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
-CREATE DATABASE ${dBase} DEFAULT CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_general_ci';
-GRANT ALL PRIVILEGES ON ${dBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '${dBPassword}';
-FLUSH PRIVILEGES;"
-
-# Write the config for backup
-/usr/bin/echo "appDBase=${dBase}
-appDDBUsr=${dBaseUser}
-appDDBPass=${dBPassword}" > /opt/verb/conf/vapps/vapp.${cVappName}
 
 # Configure in the service file
 /usr/bin/cat << EOF > /etc/systemd/system/ocis.service
@@ -122,14 +127,6 @@ WorkingDirectory=/srv/cloud/ocis
 # Primary data storage location
 Environment="OCIS_BASE_DATA_PATH=/srv/cloud/ocis"
 
-# Database Configuration
-Environment="OCIS_DB_ENGINE=mysql"
-Environment="OCIS_DB_HOST=127.0.0.1"
-Environment="OCIS_DB_PORT=3306"
-Environment="OCIS_DB_NAME=${dBase}"
-Environment="OCIS_DB_USER=${dBaseUser}"
-Environment="OCIS_DB_Password=${dBPassword}"
-
 # Network
 Environment="OCIS_URL=https://cloud.${blueURI}"
 Environment="PROXY_HTTP_ADDR=0.0.0.0:9200"
@@ -146,6 +143,62 @@ Restart=always
 WantedBy=multi-user.target
 EOF
 
+# # Optional blank database, ready to import database for External IDP Integration
+# ## Uncomment this block to use it, but for most implementations this should never be necessary
+# 
+# ## New usage meta:
+# usageformat="installowncloud [dbase] [dbuser] [dbpassword]"
+# usageexample="installowncloud
+# installowncloud bestdbase bestdbuser besteverpass"
+# 
+# ## Auto database
+# cleanName=$(/usr/bin/echo $cVappName | sed -e 's/\.//g')
+# if [ -z ${3} ]; then
+# dBPassword=$(/usr/bin/pwgen -s -1 10)
+# else
+# dBPassword=$3
+# fi
+# if [ -z ${1} ]; then
+# dBase=${cleanName}$(/usr/bin/pwgen -s -1 6)
+# else
+# dBase=$1
+# fi
+# if [ -z ${2} ]; then
+# dBaseUser=${dBase}
+# else
+# dBaseUser=$2
+# fi
+# 
+# ## Create the database and credentials (needed now, before service starts)
+# /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
+# CREATE DATABASE ${dBase} DEFAULT CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_general_ci';
+# GRANT ALL PRIVILEGES ON ${dBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '${dBPassword}';
+# FLUSH PRIVILEGES;"
+# ## Write the config for backup
+# /usr/bin/echo "appDBase=${dBase}
+# appDDBUsr=${dBaseUser}
+# appDDBPass=${dBPassword}" > /opt/verb/conf/vapps/vapp.${cVappName}
+# ## Append database info in the service file
+# /usr/bin/cat << EOF >> /etc/systemd/system/ocis.service
+#
+# ## Database Configuration
+# Environment="OCIS_DB_ENGINE=mysql"
+# Environment="OCIS_DB_HOST=127.0.0.1"
+# Environment="OCIS_DB_PORT=3306"
+# Environment="OCIS_DB_NAME=${dBase}"
+# Environment="OCIS_DB_USER=${dBaseUser}"
+# Environment="OCIS_DB_Password=${dBPassword}"
+# EOF
+# 
+## Add at end
+# /usr/bin/echo "
+# These are setup:
+
+# Database: ${dBase}
+# Database user: ${dBaseUser}
+# Database password: ${dBPassword}
+# "
+
 # Initialize
 ##REF /usr/bin/sudo -u ocis ocis init # This is the basic command
 ## The ocis init command is interactive, so we need to echo-pipe the answer
@@ -153,14 +206,7 @@ EOF
 ## Make sure our config folder exists for our notifications.yaml file for email settings; it should exist after running ocis init
 /usr/bin/mkdir -p /srv/cloud/ocis/config
 /usr/bin/systemctl daemon-reload
-/usr/bin/systemctl enable --now ocis
-
-
-
-#TODO
-## Write inkvmailsysowncloud from inkvmailsysnextcloud
-
-
+/usr/bin/systemctl enable --now ocis # enable and start in one command
 
 # Webserver setup
 if [ ${ServerType} = "laemp" ]; then
@@ -210,31 +256,43 @@ elif [ ${ServerType} = "lemp" ]; then
 fi
 
 # Use msmtp for a real SMTP address
-/opt/verb/serfs/inkvmailsysowncloud
+## Postfix vmail?
+if [ "${ServerMailStatus}" = "VMAIL_SERVER" ]; then
+  /opt/verb/serfs/inkvmailsysowncloud
 
-# Set up bg jobs cron
-## Nextcloud background jobs (manage the crontab files directly)
-/usr/bin/echo '*/15 * * * *  www php -f /srv/www/vapps/owncloud/cron.php' > /etc/cron.d/owncloud
-/usr/bin/chmod 0644 /etc/cron.d/owncloud
+## Maddy email?
+  elif [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ]; then
+  /opt/verb/serfs/inkemailsysowncloud
+
+## Neither
+else
+  /usr/bin/echo "No email server detected, so not configuring email settings."
+fi
+
+# Monit
+/usr/bin/cp /opt/verb/conf/lib/cloud/monit/monitrc.d/ocis /etc/monit/monitrc.d/
+/usr/bin/chmod 700 /etc/monit/monitrc.d/*
+## Restart or enable, just be safe
+if systemctl is-active monit -q; then
+  /usr/bin/systemctl restart monit
+else 
+  /usr/bin/systemctl enable --now monit
+fi
 
 # Finish
 /usr/bin/echo "
-Go to https://cloud.${blueURI} to install.
-
-Tip: https://cloud.${blueURI}/index.php/settings/admin
-- Background jobs
-  - Cron
+Go to https://cloud.${blueURI} to finish installing.
 
 "
 
 # inkDrive? (last so above message shows, even if we need to exit non-zero next)
 if [ -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
   . /opt/verb/conf/inkdrive/inkdriveinfo
-  if [ "${InkDriveNC}" != "off" ]; then
-    /usr/bin/echo "Mounting 'data' to a drive..."
-    /opt/verb/serfs/inkdriveapp "${cVappName}" "${InkDriveNC}"
+  if [ "${InkDriveCloud}" != "off" ]; then
+    /usr/bin/echo "Mounting 'ocis' to a drive..."
+    /opt/verb/serfs/inkdriveapp "${cVappName}" "${InkDriveCloud}"
     if [ "$?" = 0 ]; then
-      /usr/bin/echo "InkDrive=\"${InkDriveNC}\"" >> /opt/verb/conf/vapps/vapp.${cVappName}
+      /usr/bin/echo "InkDrive=\"${InkDriveCloud}\"" >> /opt/verb/conf/vapps/vapp.${cVappName}
     else
       /usr/bin/echo "inkDrive hosting is expected, but unable to host Nextcloud on the drive. Something is very wrong!"
       exit 6
@@ -242,7 +300,6 @@ if [ -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
   fi
 fi
 
-/usr/bin/chown -R www:www /srv/www/vapps/owncloud
 
 
 

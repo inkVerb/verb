@@ -1,0 +1,8 @@
+check process maddy with pidfile /var/run/maddy.pid
+  start program = "/usr/bin/systemctl start maddy"
+  stop program = "/usr/bin/systemctl stop maddy"
+  if failed port 25 protocol smtp then restart
+  if failed port 587 protocol smtp then restart
+  if failed port 993 type tcpssl then restart
+  if cpu > 80% for 3 cycles then alert
+  if memory > 512 MB for 3 cycles then restart

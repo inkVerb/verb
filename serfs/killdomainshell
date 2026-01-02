@@ -1,10 +1,10 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
 
-# This completely removes a domain's inkCert, Letsencrypt, inkDNS, and inkDKIM (OpenDKIM) profiles
+# This completely removes a domain's inkCert, Letsencrypt, inkDNS, and Maddy or inkDKIM (OpenDKIM) profiles
 ## This does NOT:
 ### Remove any subdomains
-### Remove any web or Apache folders or configs
+### Remove any web or Apache/Nginx folders or configs
 ### Remove the mail entry in the database used by Postfix and the mail folder at /srv/vmail/
 
 # How to use:
@@ -72,14 +72,25 @@ fi
 # Remove inkCert (including Letsencrypt) configs
 /opt/verb/serfs/killinkcertdomain ${killdomain}; wait
 
-# Remove the unsubscribe mail recipient filter
-/opt/verb/serfs/inkvmailkillscriptfilter unsubscribe ${killdomain}; wait
+
 
 # Remove inkCert mail entries
 /opt/verb/serfs/killinkcertmail ${killdomain}; wait
 
-# Remove inkDKIM entries
-/opt/verb/serfs/killinkdkim ${killdomain}; wait
+## Postfix vmail?
+if [ "${ServerMailStatus}" = "VMAIL_SERVER" ]; then
+  ## Remove the unsubscribe mail recipient filter
+  /opt/verb/serfs/inkvmailkillscriptfilter unsubscribe ${killdomain}; wait
+  ## Remove inkDKIM entries
+  /opt/verb/serfs/killinkdkim ${killdomain}; wait
+
+## Maddy email?
+elif [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ]; then
+  ## Remove the local domain entry
+  /usr/bin/sed -i "s/ ${killdomain}//" /etc/maddy/maddy.conf
+  ## Restart Maddy
+  /usr/bin/systemctl restart maddy
+fi
 
 # Notify the NS slave servers
 /opt/verb/serfs/rinkkilldomain ${killdomain}; wait

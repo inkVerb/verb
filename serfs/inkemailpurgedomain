@@ -1,0 +1,62 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This purges (deletes) the inkemail directory of an email domain from the inkemail server
+##DEV this is not tested yet, waiting to confirm directory structure and whether this is necessary after maddyctl creds remove on all emails
+
+# How to use:
+## ./inkemailpurgedomain [ domain ]
+
+
+usagenotes="This purges (deletes) the inkemail directory of an email domain from the inkemail server"
+usageformat="inkemailpurgedomain [ domain ]"
+usageexample="inkemailpurgedomain inkisaverb.com"
+hierarchy=( secondary )
+vsetnames=( "Domain" )
+vsettypes=( isDomian )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installinkemail )
+prerequesite=( inkemaildomain )
+usedby=( killdomainhard )
+useserfs=(  )
+useconfigs=( siteurilist servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkemailpurgedomain.replace" ]; then . /opt/verb/mods/inkemailpurgedomain.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkemailpurgedomain.before" ]; then . /opt/verb/mods/inkemailpurgedomain.before; fi # Precedes this script
+
+
+# Include the config files
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/servermailpath
+
+# Check to see if inkemail is installed
+if [ "$ServerMailStatus" != "MADDY_EMAIL_SERVER" ]; then
+  /usr/bin/echo "Maddy email not installed, not adding $domain"
+  exit 0; fi
+
+domain="$1"
+if [[ -z "${domain}" ]]; then
+  /usr/bin/echo "Domain not specified, not adding"
+  exit 0; fi
+
+# Domain already added
+if /usr/bin/grep -q "${domain}" /etc/maddy/conf.d/domains.conf || [[ "${domain}" = "${nameURI}" ]]; then
+  /usr/bin/echo "The domain $domain already added, doing nothing"
+  exit 0; fi
+
+# Delete the domain
+/usr/bin/sed -i "s/ ${domain}//" /etc/maddy/conf.d/domains.conf
+
+# Delete
+/usr/bin/rm -rf /srv/email/maddy/messages/$domain
+
+# Finish
+/usr/bin/echo "Email domain $domain purged from server"
+
+
+
+
+if [ -e "/opt/verb/mods/inkemailpurgedomain.after" ]; then . /opt/verb/mods/inkemailpurgedomain.after; fi # Follows this script

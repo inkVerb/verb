@@ -24,7 +24,7 @@ voptflagpurpose=(  )
 dependencyinstall=(  )
 prerequesite=( "inkCert certs should be installled for at least the nameURI for this verber" )
 usedby=( installinkvmail )
-useserfs=( installspamassassin setinkcertmailcerts setinkcertmail inkvmailbaseaddrs inkdnsaddmail newinkdkim inkdnsaddinkdkim inkvmailsysmailbox )
+useserfs=( installspamassassin setinkcertmailcerts setinkcertmail inkvmailverbaddrs inkdnsaddmail newinkdkim inkdnsaddinkdkim inkvmailsysmailbox )
 useconfigs=( servernameip siteurilist servertype servermailpath )	# List config files of any kind used in this serf, please preserve order of appearance
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/installpostfixvmail.replace" ]; then . /opt/verb/mods/installpostfixvmail.replace; return 0; fi # Replaces this script
@@ -38,19 +38,24 @@ if [ -e "/opt/verb/mods/installpostfixvmail.before" ]; then . /opt/verb/mods/ins
 . /opt/verb/conf/servermailpath
 
 # Check to see if already installed
-if [ "${ServerMailStatus}" = "VMAIL_SERVER" ]; then
+if [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ]; then
 /usr/bin/echo "
-Email server already installed.
+Maddy email server is already installed.
 "
 exit 0; fi
-if [ "${ServerMailStatus}" = "EMAIL_BACKUP_MX" ]; then
+if [ "${ServerMailStatus}" = "VMAIL_SERVER" ]; then
+/usr/bin/echo "
+Postfix vmail server already installed.
+"
+exit 0; fi
+if [[ "${ServerMailStatus}" =~ "_BACKUP_MX" ]]; then # Backup mail server could use Maddy or Postfix vmail or others, each needing its own, but must contain _BACKUP_MX in its setting
 /usr/bin/echo "
 Email server is already a backup server.
 "
 exit 0; fi
-if [ "${ServerMailStatus}" = "PMAIL_SERVER" ]; then
+if [ "${ServerMailStatus}" != "EMAIL_NOT_INSTALLED" ]; then
 /usr/bin/echo "
-Email server is already installed.
+Email server is already configured and cannot be installed.
 "
 exit 0; fi
 if ! /usr/bin/grep -Fq 'Email Control Records' /opt/verb/conf/inkdns/inkzones/db.${emailTLDURI}; then
@@ -70,8 +75,13 @@ exit 0; fi
 # Update Packages
 /usr/bin/pacman -Syyu --noconfirm --needed
 
+# Install Postfix server packages
+/usr/bin/pacman -S --noconfirm --needed postfix postfix-mysql postfix-lmdb dovecot pigeonhole mailutils cyrus-sasl opendkim msmtp
+e="$?"; [[ "$e" = "0" ]] || ( /usr/bin/echo 'Failed: !!' && exit "$e" )
+
 # Generate the mailpassword appendage
 mailpassgen="$(/usr/bin/pwgen -s -1 5)"
+
 ## Create the MySQL login .cnf
 /usr/bin/echo "[client]
 user = mail
@@ -81,8 +91,6 @@ host = localhost
 " > /opt/verb/conf/sql/mysqldb.vmail.cnf
 ## Set the config for backup
 /usr/bin/sed -i "s/ServerMailPassApg.*/ServerMailPassApg=\"${mailpassgen}\"/g" /opt/verb/conf/servermailpass
-
-# Packages already installed from make-verber-* postfix postfix-mysql dovecot php-imap spamassassin pigeonhole perl-cpanplus-dist-arch clamav razor cyrus-sasl opendkim
 
 # Utility directories
 /usr/bin/mkdir -p /srv/vip/vmail/customscripts /srv/vip/vmail/nativescripts /srv/vip/vmail/unsubscribe
@@ -262,7 +270,7 @@ if /usr/bin/grep -Fq "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.$
 ## inkCert
 else
   /opt/verb/serfs/setinkcertmailcerts ${nameURI} inkvmail
-  /opt/verb/serfs/setinkcertmail ${nameURI} verber
+  /opt/verb/serfs/setinkcertmail ${nameURI} vmail
 fi
 
 # Create the mailbox table
@@ -521,9 +529,8 @@ fi
 # System domains & addresses
 ## Note: If the mail database needs to be reset, such as for a PostfixAdmin update, just run this after, then the results of this serf will be up to date
 ## Add base domains & addresses
-/opt/verb/serfs/inkvmailbaseaddrs
-## Setup PHP to send system mail
-#/opt/verb/serfs/inkvmailsysmailbox
+/opt/verb/serfs/inkvmailverbaddrs
+## Setup system mail
 /opt/verb/serfs/inkvmailsysmailboxmsmtp
 
 # Grand Restart
@@ -580,4 +587,4 @@ The email server is https://${emailTLDURI}
 
 
 
-if [ -e "/opt/verb/mods/installinkvmail.after" ]; then . /opt/verb/mods/installinkvmail.after; fi # Follows this script
+if [ -e "/opt/verb/mods/installpostfixvmail.after" ]; then . /opt/verb/mods/installpostfixvmail.after; fi # Follows this script

@@ -1,0 +1,55 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This delets an email domain on the Maddy email server and removes all mail with the folder in vmail/
+
+# How to use:
+## ./inkemaildeldomain [ domain ]
+
+usagenotes="This delets an email domain on the Maddy email server and removes all mail with the folder in vmail/"
+usageformat="inkemaildeldomain [ domain ]"
+usageexample="inkemaildeldomain inkisaverb.com"
+hierarchy=( secondary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installinkemail )
+prerequesite=( inkemaildomain )
+usedby=( killdomainhard )
+useserfs=(  )
+useconfigs=( siteurilist servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkemaildeldomain.replace" ]; then . /opt/verb/mods/inkemaildeldomain.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkemaildeldomain.before" ]; then . /opt/verb/mods/inkemaildeldomain.before; fi # Precedes this script
+
+
+# Include the config files
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/servermailpath
+
+# Check to see if inkemail is installed
+if [ "$ServerMailStatus" != "MADDY_EMAIL_SERVER" ]; then
+  /usr/bin/echo "Maddy email not installed, not adding $domain"
+  exit 0; fi
+
+domain="$1"
+if [[ -z "${domain}" ]]; then
+  /usr/bin/echo "Domain not specified, not adding"
+  exit 0; fi
+
+# Domain already added
+if /usr/bin/grep -q "${domain}" /etc/maddy/conf.d/domains.conf || [[ "${domain}" = "${nameURI}" ]]; then
+  /usr/bin/echo "The domain $domain already added, doing nothing"
+  exit 0; fi
+
+# Delete the domain
+/usr/bin/sed -i "s/ ${domain}//" /etc/maddy/conf.d/domains.conf
+
+# Restart Maddy
+/usr/bin/systemctl restart maddy.service
+
+
+if [ -e "/opt/verb/mods/inkemaildeldomain.after" ]; then . /opt/verb/mods/inkemaildeldomain.after; fi # Follows this script

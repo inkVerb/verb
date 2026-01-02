@@ -1,0 +1,85 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This adds or appends forwarding addresses to an alias for an existing domain  in inkemail
+
+# How to use:
+## ./inkemailalias [ emailuser (no domain) ] [ domain ] [ forward email ] ...
+
+# Eg:
+## ./inkemailalias james inkisaverb.com tommy@inkisaverb.com
+
+usagenotes="This adds or appends forwarding addresses to an alias for an existing domain in inkemail"
+usageformat="inkemailalias [ emailuser (no domain) ] [ domain ] [ forward email ] [ forward email ] [ forward email ] [ forward email ] ..."
+usageexample="inkemailalias james inkisaverb.com tommy@inkisaverb.com
+inkemailalias james inkisaverb.com tommy@inkisaverb.com alex@inkisaverb.com bill@poetryiscode.com mel@verb.ink"
+hierarchy=( primary )
+vsetnames=( "Email username" "Domain" "Email" )
+vsettypes=( isaz09lines isDomian isEmail )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installinkemail )
+prerequesite=( inkemaildomain )
+usedby=(  )
+useserfs=(  )
+useconfigs=( siteurilist servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkemailalias.replace" ]; then . /opt/verb/mods/inkemailalias.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkemailalias.before" ]; then . /opt/verb/mods/inkemailalias.before; fi # Precedes this script
+
+
+# Include the config files
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/servermailpath
+
+# Check to see if inkemail is installed
+if [ "$ServerMailStatus" != "MADDY_EMAIL_SERVER" ]; then
+  /usr/bin/echo "Maddy email not installed. Do that first."
+  exit 0; fi
+
+emailUser="${1}"
+domain="${2}"
+emailaddress="$emailUser@$domain"
+goto="${3}"
+forward_entry="${emailaddress}: ${goto}"
+
+if [[ -z "${emailUser}" ]]; then
+  /usr/bin/echo "Email username not specified, not adding."
+  exit 0; fi
+if [[ -z "${domain}" ]]; then
+  /usr/bin/echo "Domain not specified, not adding."
+  exit 0; fi
+if [[ -z "${goto}" ]]; then
+  /usr/bin/echo "Destination address not specified, not adding."
+  exit 0; fi
+if [[ "${goto}" == *[[:space:]]* ]]; then
+  /usr/bin/echo "Only one destination address at a time, not adding."
+  exit 0; fi
+
+# Domain does not exist
+if ! /usr/bin/grep -q "${domain}" /etc/maddy/conf.d/domains.conf && [[ "${domain}" != "${nameURI}" ]]; then
+  /usr/bin/echo "The domain $domain not served, not adding."
+  exit 0; fi
+
+# Existing entry?
+if /usr/bin/grep -q "^${forward_entry}" /etc/maddy/conf.d/aliases.conf; then
+  /usr/bin/echo "Alias already exists, not adding."
+  exit 0; fi
+
+# Make the entry
+/usr/bin/echo "${forward_entry}" >> /etc/maddy/conf.d/aliases.conf
+
+# Restart Maddy
+/usr/bin/systemctl restart maddy.service
+
+# Finish
+/usr/bin/echo "Updated:
+Alias: ${email}
+Forarding to: ${newgoto}"
+
+
+
+
+if [ -e "/opt/verb/mods/inkemailalias.after" ]; then . /opt/verb/mods/inkemailalias.after; fi # Follows this script

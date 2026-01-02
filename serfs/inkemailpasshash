@@ -1,0 +1,112 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This hashes a password for SHA-512 use with inkemail* serfs from either a file or interactive input or command line (insecure)
+## If choosing a file, the absolute path of the file must be known and it must only contain the password text
+## The "c" CLI option might be useful when: 1. automated use inside scripts, 2. assigning an insecure password so that the user should set their own password soon, or 3. for testing/demo purposes
+## In theory, this is the only script that hashes passwords for SHA-512 use in email; all other scripts depend on this
+## It could be used standalone to prepare a password hash to enter directly, such as for serfs/inkemailbox
+
+# See documentation at end of file for hashing passwords in a GUI layer and other languages, such as a web interface like a PostfixAdmin alternative
+
+# How to use:
+## ./inkemailpasshash [ f / c / i - choose one letter ] [ if $1 = 'f' : absolute path of file location with password as only content; if $1 = 'c' : password; if $1 = '' : IGNORED ]
+
+# Eg:
+## ./inkemailpasshash f /srv/vip/jamespassfile
+## ./inkemailpasshash c insecure_password_in_cli_and_ink_history
+## ./inkemailpasshash i # Will be interactive and ask for password silently
+
+usagenotes="This adds or updates a mailbox on the Maddy email server"
+usageformat="inkemailpasshash [ f / c / i - choose one letter ] [ if $1 = 'f' : absolute path of file location with password as only content; if $1 = 'c' : password; if $1 = '' : IGNORED ]"
+usageexample="inkemailpasshash f /srv/vip/jamespassfile
+inkemailpasshash c insecure_password_in_cli_and_ink_history
+inkemailpasshash i # Will be interactive and ask for password silently"
+hierarchy=( secondary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=( "Password-only file with full path" "Password in command line (for scripting or insecure)" "Silent input through interactive terminal" )
+vopttypes=( isFile isLinuxPassword NA )
+voptflags=( f c i )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( inkemailbox donjon/sysmails.sh )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkemailpasshash.replace" ]; then . /opt/verb/mods/inkemailpasshash.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkemailpasshash.before" ]; then . /opt/verb/mods/inkemailpasshash.before; fi # Precedes this script
+
+
+# Check to see if inkemail is installed
+. /opt/verb/conf/servermailpath
+if [ "$ServerMailStatus" != "MADDY_EMAIL_SERVER" ]; then
+  /usr/bin/echo "Maddy email not installed. Do that first."
+
+# Variables
+## Silent input
+if [ "$1" = i ]; then
+  /usr/bin/echo "Input password: "
+  read -s rawPassword
+  if [ -z "$rawPassword" ]; then
+  /usr/bin/echo "No password input."
+  exit 5; fi
+
+## CLI input (for scripting)
+  rawPassword="$2"
+  if [ -z "$rawPassword" ]; then
+    /usr/bin/echo "No password argued."
+    exit 5; fi
+
+## File input
+elif [ "$1" = f ]; then
+  ## Contingencies
+  if [ -z "$2" ]; then
+    /usr/bin/echo "No file specified."
+    exit 5; fi
+
+  if [ ! -f "$2" ]; then
+    /usr/bin/echo "File does not exist."
+    exit 4; fi
+
+  rawPassword="$(/usr/bin/cat "$2")"
+  if [ -z "$rawPassword" ]; then
+    /usr/bin/echo "File is empty."
+    exit 4; fi
+
+else
+  /usr/bin/echo "No option selected, read instructions."
+  exit 5; fi
+
+# Hash and echo
+hashedPassword="$(/usr/bin/openssl passwd -6 "$rawPassword")"
+/usr/bin/echo "${hashedPassword}"
+
+# Reference:
+## This script should not be used for web-layer apps, such as a web-controlled GUI. Instead, hash the password in the web app itself
+## Below is development reference to understand the password hashing, what is expected, and cross-language compatability
+
+# Hash command substitute: "$(/usr/bin/openssl passwd -6 "$rawPassword")"
+# Could be: "$(/usr/bin/mkpasswd -m bcrypt "$rawPassword")" with the `whois` package installed
+## `mkpasswd -m bcrypt some_password` is the same as `openssl passwd -6 some_password`
+#
+# Other equivalents: 
+## Golang: 
+## hash, err := bcrypt.GenerateFromPassword([]byte(rawPassword), bcrypt.DefaultCost)
+#
+## Python: 
+## import bcrypt
+## hashed = bcrypt.hashpw(rawPassword.encode('utf-8'), bcrypt.gensalt())
+#
+## Nodejs: 
+## const bcrypt = require('bcrypt');
+## const hash = await bcrypt.hash(rawPassword, 10);
+#
+## PHP:  
+## $hash = password_hash($rawPassword, PASSWORD_BCRYPT);
+
+
+
+
+if [ -e "/opt/verb/mods/inkemailpasshash.after" ]; then . /opt/verb/mods/inkemailpasshash.after; fi # Follows this script

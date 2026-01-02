@@ -1,0 +1,150 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This adds or updates a mailbox on the Maddy email server
+## quotas must be in bytes! 10GB=10485760000, 5GB=5242880000, 2GB=2097152000, 1GB=1048576000, 0.5GB=524288000
+
+# Password options:
+## Hash a password to argue, not the actual password
+### Use serfs/inkemailpasshash to get the password hash, read usage instructions
+### If not password hash is not argued, a password will be created and saved at /srv/email/pass/$emailUser-$domain
+## Put the password in a file at /srv/email/pass/$emailUser-$domain, make a hyphen for the password argument
+### For security:
+#### When creating the password file: 'chmod 600 /srv/email/pass/$emailUser-$domain'
+#### Shred after viewing with: 'shred -uf /srv/email/pass/${emailUser}-${domain}'
+
+# How to use:
+## ./inkemailbox [ emailuser (no domain) ] [ domain ] [ - hyphen or hashed password - optional or placeholder for last arg ] [ - hyphen to indicate update password on existing accounts]
+
+# Eg:
+## ./inkemailbox james inkisaverb.com    # Auto-generated password, saved in file at /srv/email/pass/$emailUser-$domain, file location included in output message
+## ./inkemailbox james inkisaverb.com My#1Pa55w0rdHA5H  # This hash will be used, you need to remember the password that created it
+## ./inkemailbox james inkisaverb.com -  # Script will check for a file at /srv/email/pass/$emailUser-$domain, then shred the file; if not found, fail
+## ./inkemailbox james inkisaverb.com My#1Pa55w0rdHA5H -  # This hash will be used, update password for existing account
+## ./inkemailbox james inkisaverb.com - -  # Password from file, update password for existing account
+
+usagenotes="This adds or updates a mailbox on the Maddy email server"
+usageformat="inkemailbox [ emailuser (no domain) ] [ domain ] [ - hyphen or hashed password - optional or placeholder for last arg ] [ - hyphen to indicate update password on existing accounts]"
+usageexample="inkemailbox james inkisaverb.com    # Auto-generated password, saved in file at /srv/email/pass/$emailUser-$domain, file location included in output message
+inkemailbox james inkisaverb.com My#1Pa55w0rdHA5H  # This hash will be used, you need to remember the password that created it
+inkemailbox james inkisaverb.com -  # Password from file at /srv/email/pass/$emailUser-$domain, then shred the file; if not found, fail
+inkemailbox james inkisaverb.com My#1Pa55w0rdHA5H -  # This hash will be used, update password for existing account
+inkemailbox james inkisaverb.com - -  # Password from file, update password for existing account"
+hierarchy=( primary )
+vsetnames=( "Email username" "Domain" "Password: hashed or just hyphen for file: -" )
+vsettypes=( isaz09lines isDomian string_match )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installinkemail )
+prerequesite=( inkemaildomain )
+usedby=(  )
+useserfs=(  )
+useconfigs=( siteurilist servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkemailbox.replace" ]; then . /opt/verb/mods/inkemailbox.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkemailbox.before" ]; then . /opt/verb/mods/inkemailbox.before; fi # Precedes this script
+
+
+# Include the config files
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/servermailpath
+
+# Check to see if inkemail is installed
+if [ "$ServerMailStatus" != "MADDY_EMAIL_SERVER" ]; then
+  /bin/echo "Maddy email not installed. Do that first."
+  exit 0; fi
+
+# Variables
+emailUser="$1"
+domain="$2"
+emailaddress="$emailUser@$domain"
+
+if [[ -z "${emailUser}" ]]; then
+  /usr/bin/echo "Email username not specified, not adding."
+  exit 0; fi
+if [[ -z "${domain}" ]]; then
+  /usr/bin/echo "Domain not specified, not adding."
+  exit 0; fi
+
+# Domain does not exist
+if ! /usr/bin/grep -q "${domain}" /etc/maddy/conf.d/domains.conf && [[ "${domain}" != "${nameURI}" ]]; then
+  /bin/echo "The domain $domain hasn't been added yet, doing nothing."
+  exit 0; fi
+
+# Email status
+check_name="$(/usr/bin/sudo -u maddy maddyctl creds list | /usr/bin/grep "${emailaddress}")"
+
+## User exists, password update
+if [ -n "${check_name}" ] && [ -n "$4" ] && [ "$4" = "-" ]; then
+  /usr/bin/echo "User $emailaddress already exists, updating password."
+  create_passwd="passwd"
+
+## User exists, no password update
+elif [ -n "${check_name}" ]
+  /usr/bin/echo "User $emailaddress already exists. See instructions to update password."
+  exit 7
+
+## New user
+else
+  create_passwd="create"
+fi
+
+# Entry based on password source
+## Hashed argued
+if [ -n "$3" ]; then
+  hashedPassword="$3"
+  passwordMessage="[ not shown ]"
+
+  ### Make the entry
+  /usr/bin/sudo -u maddy maddyctl creds ${create_passwd} --hash "$emailaddress" <<< "$hashedPassword"
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
+
+## From file
+elif [ "$3" = "-" ]; then
+  if [ -e "/srv/email/pass/${emailUser}-${domain}" ]; then
+    hashedPassword="$(/opt/verb/serfs/inkemailpasshash c "$(/usr/bin/cat "/srv/email/pass/${emailUser}-${domain}")")"
+    /usr/bin/shred -uf "/srv/email/pass/${emailUser}-${domain}"
+    passwordMessage="obtained from file, then shredded"
+
+    ### Make the entry
+    /usr/bin/sudo -u maddy maddyctl creds ${create_passwd} --hash "$emailaddress" <<< "$hashedPassword"
+    e="$?"; [[ "$e" = "0" ]] || exit "$e"
+
+  else
+    /usr/bin/echo "No password file found at /srv/email/pass/${emailUser}-${domain}"
+    exit 8
+  fi
+
+## Auto-generated
+else
+  rawPassword=$(/usr/bin/pwgen -s 15)
+  hashedPassword="$(/opt/verb/serfs/inkemailpasshash c "$rawPassword")"
+  /usr/bin/echo "$rawPassword" > "/srv/email/pass/${emailUser}-${domain}"
+  passwordMessage="recorded at email/pass/${emailUser}-${domain}; shred after viewing with: 'shred -uf /srv/email/pass/${emailUser}-${domain}'"
+
+  ### Make the entry
+  /usr/bin/sudo -u maddy maddyctl creds ${create_passwd} --hash "$emailaddress" <<< "$hashedPassword"
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
+fi
+
+# IMAP for new accounts
+if [ "$create_passwd" = "create" ]; then
+  /usr/bin/sudo -u maddy maddyctl imap-acct create "$emailaddress"
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
+fi
+
+# Restart Maddy
+/usr/bin/systemctl restart maddy.service
+
+# Finish
+/usr/bin/echo "Created new email inbox!
+Email address: $emailaddress
+Password: $passwordMessage"
+fi
+
+
+
+
+if [ -e "/opt/verb/mods/inkemailbox.after" ]; then . /opt/verb/mods/inkemailbox.after; fi # Follows this script

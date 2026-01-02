@@ -1,0 +1,41 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This makes a backup of the entire postgres directory, mainly for catastrophic recovery
+## This is essentially a link of donjon/pgsqlbak.sh
+
+# How to use:
+## ./pgsqlallbackup [ backup suffix ]
+
+usagenotes="This makes a backup of the entire pgsql directory, mainly for catastrophic recovery"
+usageformat="pgsqlallbackup [ backup suffix ]"
+usageexample="pgsqlallbackup January
+pgsqlallbackup after_wordpress_intalled"
+hierarchy=( primary )
+vsetnames=( "Backup suffix" )
+vsettypes=( isazAZ09underscore )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( pgsqlinstall )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/pgsqlallbackup.replace" ]; then . /opt/verb/mods/pgsqlallbackup.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/pgsqlallbackup.before" ]; then . /opt/verb/mods/pgsqlallbackup.before; fi # Precedes this script
+
+# Credential
+if [ -z "$1" ]; then
+  /usr/bin/echo "Must argue suffix!"
+  exit 5
+fi
+
+# Run the donjon script
+/opt/verb/donjon/pgsqlbak.sh "${1}"
+
+
+
+if [ -e "/opt/verb/mods/pgsqlallbackup.after" ]; then . /opt/verb/mods/pgsqlallbackupuser.after; fi # Follows this script

@@ -16,7 +16,7 @@
 ## ./make-verber-laemp [swap-size, choose GB: 1, 2, 4, 8, 16, 32, 64 - optional (2 default, must be set for root password)] [mysql root password - optional]
 
 # Eg:
-## ./make-verber-laemp 1 mysqlrootpass
+## ./make-verber-laemp 1 globalsqlrootpass
 ## ./make-verber-laemp 4
 ## ./make-verber-laemp 2 chewcud62
 
@@ -37,15 +37,12 @@ else
 swapsizemake="$1"
 fi
 
-# MySQL root password
+# SQL root passwords
 if [ -z "$2" ]; then
-mysqlpass=$(/usr/bin/pwgen -0 -1 -A -B 11)
+mysqlrootpass=$(/usr/bin/pwgen -0 -1 -A -B 11)
 else
-mysqlpass="$2"
+mysqlrootpass="$2"
 fi
-
-# MySQL boss password
-mysqlbosspass=$(/usr/bin/pwgen -s -1 10)
 
 # Verify SSH Directory
 cd ~ || exit 6
@@ -78,11 +75,11 @@ fi
 # Link verb to root home
 /usr/bin/ln -sfn /opt/verb /root/
 
-# Record the MySQL root password
+# Record the SQL root passwords
 /usr/bin/mkdir -p /opt/verb/conf/sql
-/usr/bin/echo "${mysqlpass}" > /opt/verb/conf/sql/mysqlrootpassword
+/usr/bin/echo "${mysqlrootpass}" > /opt/verb/conf/sql/mysqlrootpassword
 
-#  LAEMP Server
+# LAEMP Server
 ## Web directory
 /usr/bin/mkdir -p /srv/www/html
 /usr/bin/useradd -g www www
@@ -309,15 +306,15 @@ Include /etc/httpd/conf/rpaf.conf' >> /etc/httpd/conf/httpd.conf
 EOF
 
 ## Services
-###DEV commented because they are handled by setup
-/usr/bin/systemctl enable nginx; wait
-/usr/bin/systemctl start nginx; wait
-/usr/bin/systemctl enable php-fpm; wait
-/usr/bin/systemctl start php-fpm; wait
-/usr/bin/systemctl enable httpd; wait
-/usr/bin/systemctl start httpd; wait
-/usr/bin/systemctl enable cronie; wait
-/usr/bin/systemctl start cronie; wait
+/usr/bin/systemctl enable --now nginx; wait
+/usr/bin/systemctl enable --now php-fpm; wait
+/usr/bin/systemctl enable --now httpd; wait
+/usr/bin/systemctl enable --now cronie; wait
+
+# PostgreSQL
+/usr/bin/pacman -S --noconfirm --needed postgresql
+/usr/bin/su postgres -c 'initdb --locale en_US.UTF-8 -D /var/lib/postgres/data'
+/usr/bin/systemctl enable --now postgresql; wait
 
 # MySQL (viz MariaDB)
 /usr/bin/pacman -S --noconfirm --needed mariadb
@@ -325,13 +322,12 @@ e="$?"; [[ "$e" = "0" ]] || ( /usr/bin/echo 'Failed: !!' && exit "$e" )
 /usr/bin/mariadb-install-db --user=mysql --basedir=/usr --datadir=/var/lib/mysql
 /usr/bin/pacman -S --noconfirm --needed perl-dbd-mysql # For Spamassassin's database
 ## Start it now so it works when we run the secure installation
-/usr/bin/systemctl enable mariadb; wait
-/usr/bin/systemctl start mariadb; wait
+/usr/bin/systemctl enable --now mariadb; wait
 ## Set password before securing
-/usr/bin/mariadb -e "SET PASSWORD FOR root@localhost = Password('${mysqlpass}');FLUSH PRIVILEGES;"
+/usr/bin/mariadb -e "SET PASSWORD FOR root@localhost = Password('${mysqlrootpass}');FLUSH PRIVILEGES;"
 ## Secure
 /usr/bin/mariadb-secure-installation <<EOF
-${mysqlpass}
+${mysqlrootpass}
 y
 n
 y
@@ -340,7 +336,7 @@ y
 y
 EOF
 ## Alternate method of above Secure
-#/usr/bin/printf "${mysqlpass}\n y\n n\n y\n y\n y\n y\n" | /usr/bin/mariadb-secure-installation
+#/usr/bin/printf "${mysqlrootpass}\n y\n n\n y\n y\n y\n y\n" | /usr/bin/mariadb-secure-installation
 
 #DEV since we started using mariadb on Arch, this wasn't needed anymore
 ## MySQL conf for Postfix Admin
@@ -396,13 +392,13 @@ LimitMEMLOCK=infinity" >> /etc/systemd/system/mariadb.service
 # Create cloud servers directory (not web accessible)
 /usr/bin/mkdir -p /srv/cloud
 
-
 # inkGet repo
 /usr/bin/mkdir -p /opt/verb/repo
 
 #DEV moved to setup
-# # MySQL superuser to auto-create databases
-# /usr/bin/mariadb -uroot -p${mysqlpass} -e "
+# # MySQL boss superuser to auto-create databases
+# mysqlbosspass=$(/usr/bin/pwgen -s -1 10)
+# /usr/bin/mariadb -uroot -p${mysqlrootpass} -e "
 # CREATE USER mysqlboss@localhost;
 # SET PASSWORD FOR mysqlboss@localhost=Password('${mysqlbosspass}');
 # GRANT ALL PRIVILEGES ON *.* TO 'mysqlboss'@'localhost' IDENTIFIED BY '${mysqlbosspass}' WITH GRANT OPTION;
@@ -423,22 +419,19 @@ e="$?"; [[ "$e" = "0" ]] || ( /usr/bin/echo 'Failed: !!' && exit "$e" )
 /usr/bin/echo "include /etc/monit/monitrc.d/*" >> /etc/monitrc
 /usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/mysql /etc/monit/monitrc.d/
 /usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/nginx /etc/monit/monitrc.d/
+/usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/postgresql /etc/monit/monitrc.d/
 # These have their own monitoring resources and monit will conflict
 # /usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/acpid /etc/monit/monitrc.d/
 # /usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/memcached /etc/monit/monitrc.d/
 # /usr/bin/cp /opt/verb/conf/lib/monit/monitrc.d/sshd /etc/monit/monitrc.d/
-/usr/bin/systemctl enable monit; wait
-/usr/bin/systemctl start monit; wait
+/usr/bin/chmod 700 /etc/monit/monitrc.d/*
+/usr/bin/systemctl enable --now monit; wait
 
 # Server type
 /usr/bin/echo 'ServerType="laemp"' > /opt/verb/inst/servertype
 
 # Pre-install Go (may be redundand as Go is a dependency in make-preverber)
 /usr/bin/pacman -S --noconfirm --needed go
-e="$?"; [[ "$e" = "0" ]] || ( /usr/bin/echo 'Failed: !!' && exit "$e" )
-
-# Pre-install Postfix server packages
-/usr/bin/pacman -S --noconfirm --needed postfix postfix-mysql postfix-lmdb dovecot pigeonhole mailutils cyrus-sasl opendkim msmtp
 e="$?"; [[ "$e" = "0" ]] || ( /usr/bin/echo 'Failed: !!' && exit "$e" )
 
 # Pre-install inkCert-LE
@@ -448,8 +441,7 @@ e="$?"; [[ "$e" = "0" ]] || ( /usr/bin/echo 'Failed: !!' && exit "$e" )
 # Pre-install inkDNS
 /usr/bin/pacman -S --noconfirm --needed bind
 e="$?"; [[ "$e" = "0" ]] || ( /usr/bin/echo 'Failed: !!' && exit "$e" )
-/usr/bin/systemctl enable named; wait
-/usr/bin/systemctl start named; wait
+/usr/bin/systemctl enable --now named; wait
 /usr/bin/pacman -S --noconfirm --needed dnsutils # dnsutils may be redundant
 /usr/bin/pacman -S --noconfirm --needed certbot-dns-rfc2136 # Some problems after 4/22/2025 update v4.0.0-2, may not be needed since we don't have wildcard working yet
 

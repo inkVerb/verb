@@ -1,0 +1,54 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This lists unsubscription requests for a domain
+## These are in response to the List-Unsubscribe header email generated in Postfix by /etc/postfix/header_checks and /etc/postfix/smtp_header_checks
+## The unsubscription file is located at /srv/vip/email/unsubscribe/DOMAIN based on Dovecot-run scipts in /srv/vip/email/nativescripts
+
+
+# How to use:
+## ./inkemailunsubscribelist [ domain ]
+
+usagenotes="This lists unsubscription requests for a domain"
+usageformat="inkemailunsubscribelist [ domain ]"
+usageexample="inkemailunsubscribelist inkisaverb.com"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( newdomainshell )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkemailunsubscribelist.replace" ]; then . /opt/verb/mods/inkemailunsubscribelist.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkemailunsubscribelist.before" ]; then . /opt/verb/mods/inkemailunsubscribelist.before; fi # Precedes this script
+
+
+
+domain="$1"
+
+# Check the domain shell
+if [ ! -f "/opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}" ] || [ ! -f "/opt/verb/conf/inkcert/cli-ini/cli.${domain}.ini" ]; then
+  /usr/bin/echo "The shell for ${domain} does not exist. No unsubscriptions to check."
+  exit 8
+fi
+
+# Check
+if [ ! -f "/srv/vip/email/unsubscribe/${domain}" ]; then
+  /usr/bin/echo "Domain ${domain} has no unsubscriptions yet."
+  exit 0
+fi
+
+# show
+/usr/bin/echo "Unsubsctiption requests for ${domain}:"
+/usr/bin/cat /srv/vip/email/unsubscribe/${domain}
+
+
+
+
+if [ -e "/opt/verb/mods/inkemailunsubscribelist.after" ]; then . /opt/verb/mods/inkemailunsubscribelist.after; fi # Follows this script

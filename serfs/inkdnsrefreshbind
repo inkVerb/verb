@@ -20,7 +20,7 @@ dependencyinstall=( inkdnsinstall )
 prerequesite=(  )
 usedby=( inkdnsadddomain inkdnsaddinkdkim inkdnsaddmail inkdnsaddonesub inkdnsaddslave inkdnsaddsub inkdnsaddvipsub inkdnsinstall inkdnssetns1 inkdnssetns2 killinkdnsdomain killinkdnsinkdkim killinkdnsmail killinkdnsonesub killinkdnsslavedns killinkdnssub killinkdnsvipsub setipv4update setipv6update )
 useserfs=(  )
-useconfigs=( servernameip siteurilist inkdnsconf )
+useconfigs=( servernameip siteurilist inkdnsconf servermailpath )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/inkdnsrefreshbind.replace" ]; then . /opt/verb/mods/inkdnsrefreshbind.replace; return 0; fi # Replaces this script
 if [ -e "/opt/verb/mods/inkdnsrefreshbind.before" ]; then . /opt/verb/mods/inkdnsrefreshbind.before; fi # Precedes this script
@@ -30,6 +30,7 @@ if [ -e "/opt/verb/mods/inkdnsrefreshbind.before" ]; then . /opt/verb/mods/inkdn
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/siteurilist
 . /opt/verb/conf/inkdnsconf
+. /opt/verb/conf/servermailpath
 
 if [ "${InkDNSStat}" = "INSTALLED" ]; then
 
@@ -95,14 +96,12 @@ zone \"${ServerARPAIPv4}\" { type master; allow-transfer { ${ServerNS1IPv6}; ${S
 EOF
   /usr/bin/chown root:named /var/named/nv.verber
   /usr/bin/chmod 644 /var/named/nv.verber
-  ## rDNS zone file entries
+  ## DNS zone files
   cd /var/named/zones/ || exit 6
   for inkZoneDB in db.*; do
     inkZone="$(/usr/bin/echo ${inkZoneDB} | /usr/bin/sed 's/db\.//' )"
     if [ "${inkZone}" = '*' ]; then continue; fi
-      # We don't use 'allow-update { none; };' because 'update-policy' will ignore 'allow-update'
-      # Only one domain can fit the rDNS PTR record anyway, which should probably be the FQDN, but it just needs to resolve
-      /usr/bin/echo "zone \"${inkZone}\" { type master; allow-transfer { ${ServerNS1IPv6}; ${ServerNS1IPv4}; ${ServerNS2IPv6}; ${ServerNS2IPv4}; }; file \"zones/db.${inkZone}\"; update-policy { grant inkcert. name _acme-challenge.${inkZone}. TXT; grant inkcert. name _acme-challenge.*.${inkZone}. TXT; }; };" >> /var/named/named.conf.verb
+      /usr/bin/echo "zone \"${inkZone}\" { type master; allow-transfer { ${ServerNS1IPv6}; ${ServerNS1IPv4}; ${ServerNS2IPv6}; ${ServerNS2IPv4}; }; file \"zones/db.${inkZone}\"; dnssec-policy default; inline-signing yes; update-policy { grant inkcert. name _acme-challenge.${inkZone}. TXT; grant inkcert. name _acme-challenge.*.${inkZone}. TXT; }; };" >> /var/named/named.conf.verb
       #/usr/bin/echo "\$INCLUDE \"/var/named/zones/nv.${inkZone}\";" >> /var/named/nv.verber #DEV at this point of interwebs dev, only one PRT record; we may uncomment this in the future if multiple records are allowed
   done
 
@@ -148,7 +147,13 @@ EOF
       /usr/bin/echo "zone \"${DNSSlave}\" { type master; allow-transfer { ${ServerNS2IPv6}; ${ServerNS2IPv4}; }; file \"db.slavedns\"; };" >> /var/named/named.conf.verb
     ### If this is not set as the secondary or tertiary DNS server
     else
-      /usr/bin/echo "zone \"${DNSSlave}\" { type master; allow-transfer { ${ServerNS1IPv6}; ${ServerNS1IPv4}; ${ServerNS2IPv6}; ${ServerNS2IPv4}; }; update-policy { grant inkcert. name _acme-challenge.${inkZone}. TXT; grant inkcert. name _acme-challenge.*.${inkZone}. TXT; }; file \"db.slavedns\"; };" >> /var/named/named.conf.verb
+      #### Maddy email?
+      if [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ]; then
+        /usr/bin/echo "zone \"${DNSSlave}\" { type master; allow-transfer { ${ServerNS1IPv6}; ${ServerNS1IPv4}; ${ServerNS2IPv6}; ${ServerNS2IPv4}; }; dnssec-policy default; inline-signing yes; update-policy { grant inkcert. name _acme-challenge.${inkZone}. TXT; grant inkcert. name _acme-challenge.*.${inkZone}. TXT; }; file \"db.slavedns\"; };" >> /var/named/named.conf.verb
+      #### Postfix vmail?
+      elif [ "${ServerMailStatus}" = "VMAIL_SERVER" ]; then
+        /usr/bin/echo "zone \"${DNSSlave}\" { type master; allow-transfer { ${ServerNS1IPv6}; ${ServerNS1IPv4}; ${ServerNS2IPv6}; ${ServerNS2IPv4}; }; update-policy { grant inkcert. name _acme-challenge.${inkZone}. TXT; grant inkcert. name _acme-challenge.*.${inkZone}. TXT; }; file \"db.slavedns\"; };" >> /var/named/named.conf.verb
+      fi
     fi
     /usr/bin/echo "\$INCLUDE \"/var/named/nv.slavedns\";" >> /var/named/nv.verber
     ### Served slave records
@@ -248,6 +253,15 @@ EOF
         /usr/bin/rm -rf "${snsverber}/domains/fresh"
       done
     fi
+
+    ## Options for DNSSEC, must be global and outsiside zone entries, but in the same named.conf.* settings
+    ### If this is set as the tertiary DNS server
+    if [ "${DNSSlave}" = "${ServerNS2DNS}" ]; then
+      /usr/bin/echo "options { dnssec-validation auto; };" >> /var/named/named.conf.verb
+    ### If this is set as the secondary DNS server
+    elif [ "${DNSSlave}" = "${ServerNS1DNS}" ]; then
+      /usr/bin/echo "options { dnssec-validation auto; };" >> /var/named/named.conf.verb
+    fi # End DNSSEC global option
   fi # End Slave DNS
 
   ## Set the new serial (code imported from inkdnsserial)

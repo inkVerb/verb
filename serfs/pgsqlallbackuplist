@@ -1,0 +1,56 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This lists all available postgresql backups useful for pgsqlallrestore
+## This is essentially lists backup suffixes made from pgsqlallbackup or donjon/pgsqlbak.sh
+
+# How to use:
+## ./pgsqlallbackuplist
+
+usagenotes="This lists all available postgresql backups"
+usageformat="pgsqlallbackuplist [ backup suffix ]"
+usageexample="pgsqlallbackuplist January
+pgsqlallbackuplist after_wordpress_intalled"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( pgsqlinstall pgsqlallbackup )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/pgsqlallbackuplist.replace" ]; then . /opt/verb/mods/pgsqlallbackuplist.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/pgsqlallbackuplist.before" ]; then . /opt/verb/mods/pgsqlallbackuplist.before; fi # Precedes this script
+
+# Establish the backup directory
+if [ -e "/mnt/hdd" ]; then
+  backdir="/mnt/hdd/pgsql.bak.d"
+elif [ -e "/mnt/ssd" ]; then
+  backdir="/mnt/ssd/pgsql.bak.d"
+else
+  backdir="/var/lib/pgsql.bak.d"
+fi
+
+# Get in the directory
+if [ ! -d "${backdir}" ]; then
+  /usr/bin/echo "No MySQL backups"
+  exit 0
+fi
+cd ${backdir} || exit 9
+
+# List
+for backdir in pgsql.*; do
+  suffix="$(/usr/bin/echo "${backdir}" | sed 's/pgsql.//')"
+  echo ${suffix}
+done
+
+
+
+
+
+if [ -e "/opt/verb/mods/pgsqlallbackuplist.after" ]; then . /opt/verb/mods/pgsqlallbackuplistuser.after; fi # Follows this script

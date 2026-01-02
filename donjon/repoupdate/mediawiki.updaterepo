@@ -33,7 +33,7 @@ exit 4; else
 /bin/rm -f ${cVappName}.failed; fi
 ## Check the hash
 checksha=$(/usr/bin/sha1sum ${cVappName}.tgz )
-if [ "${checksha}" = "${mediawikisha}  ${cVappName}.tgz " ]; then
+if [ "${checksha}" = "${mediawikisha}  ${cVappName}.tgz" ]; then
   /usr/bin/echo "Download checks out."
 else
   /usr/bin/echo "SHA check failed. The downloaded file ${PWD}/${cVappName}.tgz is not what was expected."

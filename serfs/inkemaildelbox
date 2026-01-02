@@ -1,0 +1,53 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This delets an email box on the Maddy email server
+
+# How to use:
+## ./inkemaildelbox [ emal address ]
+
+usagenotes="This delets an email  on the Maddy email server"
+usageformat="inkemaildelbox [ emal address ]"
+usageexample="inkemaildelbox james@inkisaverb.com"
+hierarchy=( primary )
+vsetnames=( "Email" )
+vsettypes=( isEmail )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installinkemail )
+prerequesite=( inkemailbox )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkemaildelbox.replace" ]; then . /opt/verb/mods/inkemaildelbox.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkemaildelbox.before" ]; then . /opt/verb/mods/inkemaildelbox.before; fi # Precedes this script
+
+
+# Check to see if inkemail is installed
+. /opt/verb/conf/servermailpath
+if [ "$ServerMailStatus" != "MADDY_EMAIL_SERVER" ]; then
+  /usr/bin/echo "Maddy email not installed, not adding $domain"
+  exit 0; fi
+
+emailaddress="$1"
+if [[ -z "${emailaddress}" ]]; then
+  /usr/bin/echo "Email address not specified, nothing to delete."
+  exit 0; fi
+
+# Delete from Maddy
+ /usr/bin/sudo -u maddy maddyctl creds remove "$emailaddress"
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+
+# Restart Maddy
+/usr/bin/systemctl restart maddy.service
+
+# Finish
+/usr/bin/echo "Email address $address deleted."
+
+
+
+
+if [ -e "/opt/verb/mods/inkemaildelbox.after" ]; then . /opt/verb/mods/inkemaildelbox.after; fi # Follows this script

@@ -32,7 +32,7 @@ dBaseUser="${2}"
 # Auto password
 if [ -z ${3} ]; then
   dBPassword="$(/usr/bin/pwgen -s -1 32)"
-  serfOUT="New Password: ${dBPassword}"
+  export serfOUT="New Password: ${dBPassword}"
 else
   dBPassword="${3}"
 fi

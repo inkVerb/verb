@@ -1,0 +1,103 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This creates or resets the ownCloud smtp user for inkemail
+## This also creates a cron task to run itself regularly; this is the proper workflor for creating that cron task, creating it the first time run and resetting it
+
+# How to use:
+## ./inkemailsysowncloud
+
+usagenotes="This creates or resets the ownCloud smtp user for inkemail"
+usageformat="inkemailsysowncloud"
+usageexample="inkemailsysowncloud"
+hierarchy=( tertiary installowncloud )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installinkemail )
+prerequesite=(  )
+usedby=( installowncloud )
+useserfs=( setsecure )
+useconfigs=( servermailpath servernameip siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkemailsysowncloud.replace" ]; then . /opt/verb/mods/inkemailsysowncloud.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkemailsysowncloud.before" ]; then . /opt/verb/mods/inkemailsysowncloud.before; fi # Precedes this script
+
+
+# Check to see if inkemail is installed
+. /opt/verb/conf/servermailpath
+if [ "$ServerMailStatus" != "MADDY_EMAIL_SERVER" ]; then
+  /bin/echo "Maddy email not installed. Do that first."
+  exit 0; fi
+
+# Include the config
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+
+# Cleanup previous entries
+if [ -f "/opt/verb/conf/vsysmail.owncloud" ]; then
+  . /opt/verb/conf/vsysmail.owncloud
+  oldusername="${username}"
+  # Update Maddy
+  /usr/bin/sudo maddy -c "... delete '$oldusername'"
+  /usr/bin/rm -rf /srv/email/maddy/${inkemaildirectory}  ?? Does Maddy have this?
+fi
+
+# Prep all vairables
+Password=$(/usr/bin/pwgen -s1 24)
+randomuser=$(/usr/bin/pwgen -s1A 5)
+/usr/bin/cat <<EOF > /opt/verb/conf/vsysmail.owncloud
+Password="${Password}"
+user="ons_${randomuser}"
+username="ons_${randomuser}@${nameURI}"
+maildomain="${nameURI}"
+name="ownCloud ${blueURI}"
+inkemaildirectory="${nameURI}/ons_${randomuser}/"  ?? Does Maddy have this?
+mailboxsize="1048576" # 1MB, 2GB=2097152000, 1GB=1048576000, 5GB=5242880000
+EOF
+
+# Security check
+/opt/verb/serfs/setsecure; wait
+
+# Delete the old entry in the database
+# Is this redundant?
+# /usr/bin/sudo maddy -c "... 'sys_$randomuser@$nameURI' '$Password'"
+
+# Run it quick to create the account
+/opt/verb/donjon/sysmails.sh owncloud; wait
+if [ "$?" != 0 ]; then
+  echo "Error updating new ownCloud mail user in databse"
+  exit 6;
+fi
+
+# Set up sysmails cron
+## ownCloud background jobs (manage the crontab files directly)
+/usr/bin/echo '47 * * * * root /opt/verb/serfs/inkemailsysowncloud' > /etc/cron.d/sysmailowncloud
+## Permissions
+/usr/bin/chmod 0644 /etc/cron.d/sysmailowncloud
+
+# Mail config
+## Be safe
+/usr/bin/touch /srv/cloud/ocis/config/notifications.yaml
+## notifications.yaml option for system email settings in a separate file
+/usr/bin/cat <<EOF > /srv/cloud/ocis/config/notifications.yaml
+smtp:
+  host: "mail.${nameURI}"
+  port: 587
+  sender: "ons_${randomuser}@${nameURI}"
+  username: "ons_${randomuser}@${nameURI}"
+  password: "${Password}"
+  authentication: "login"
+  encryption: "starttls"
+EOF
+## Permissions
+/usr/bin/chmod 600 /srv/cloud/ocis/config/notifications.yaml
+/usr/bin/chown ocis:ocis /srv/cloud/ocis/config/notifications.yaml
+
+
+
+
+if [ -e "/opt/verb/mods/inkemailsysowncloud.after" ]; then . /opt/verb/mods/inkemailsysowncloud.after; fi # Follows this script

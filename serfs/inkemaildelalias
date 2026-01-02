@@ -1,0 +1,80 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This delets an email alias on the Maddy email server
+
+# How to use:
+## ./inkemaildelalias [ emal alias ]
+
+usagenotes="This delets an email alias on the Maddy email server"
+usageformat="inkemaildelalias [ emal alias ]"
+usageexample="inkemaildelalias james@inkisaverb.com"
+hierarchy=( primary )
+vsetnames=( "Email" )
+vsettypes=( isEmail )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installinkemail )
+prerequesite=( inkemailalias )
+usedby=(  )
+useserfs=(  )
+useconfigs=( siteurilist servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkemaildelalias.replace" ]; then . /opt/verb/mods/inkemaildelalias.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkemaildelalias.before" ]; then . /opt/verb/mods/inkemaildelalias.before; fi # Precedes this script
+
+
+# Include the config files
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/servermailpath
+
+# Check to see if inkemail is installed
+if [ "$ServerMailStatus" != "MADDY_EMAIL_SERVER" ]; then
+  /usr/bin/echo "Maddy email not installed. Do that first."
+  exit 0; fi
+
+emailUser="${1}"
+domain="${2}"
+emailaddress="$emailUser@$domain"
+goto="${3}"
+forward_entry="${emailaddress}: ${goto}"
+
+if [[ -z "${emailUser}" ]]; then
+  /usr/bin/echo "Email username not specified, not adding."
+  exit 0; fi
+if [[ -z "${domain}" ]]; then
+  /usr/bin/echo "Domain not specified, not adding."
+  exit 0; fi
+if [[ -z "${goto}" ]]; then
+  /usr/bin/echo "Destination address not specified, not adding."
+  exit 0; fi
+if [[ "${goto}" == *[[:space:]]* ]]; then
+  /usr/bin/echo "Only one destination address at a time, not adding."
+  exit 0; fi
+
+# Domain does not exist
+if ! /usr/bin/grep -q "${domain}" /etc/maddy/conf.d/domains.conf && [[ "${domain}" != "${nameURI}" ]]; then
+  /usr/bin/echo "The domain $domain not served, not adding."
+  exit 0; fi
+
+# Existing entry?
+if ! /usr/bin/grep -q "^${forward_entry}" /etc/maddy/conf.d/aliases.conf; then
+  /usr/bin/echo "Alias does not exist, nothing to remove."
+  exit 0; fi
+
+# Delete the entry
+/usr/bin/sed -i "/^${forward_entry}/d" /etc/maddy/conf.d/aliases.conf
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+
+# Restart Maddy
+/usr/bin/systemctl restart maddy.service
+
+# Finish
+/bin/echo "Email alias $address gone"
+
+
+
+
+if [ -e "/opt/verb/mods/inkemaildelalias.after" ]; then . /opt/verb/mods/inkemaildelalias.after; fi # Follows this script

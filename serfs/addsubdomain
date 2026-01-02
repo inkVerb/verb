@@ -28,14 +28,14 @@ if [ -e "/opt/verb/mods/addsubdomain.before" ]; then . /opt/verb/mods/addsubdoma
 
 
 # Dependencies
-if ! /bin/grep -q 'InkCertInstalled="DONE"' /opt/verb/conf/inkcertstatus; then
+if ! /usr/bin/grep -q 'InkCertInstalled="DONE"' /opt/verb/conf/inkcertstatus; then
   /usr/bin/echo "Install inkCert first, I quit."; exit 8
 fi
-if ! /bin/grep -q 'InkDNSStat="INSTALLED"' /opt/verb/conf/inkdnsconf; then
+if ! /usr/bin/grep -q 'InkDNSStat="INSTALLED"' /opt/verb/conf/inkdnsconf; then
   /usr/bin/echo "Install inkDNS first, I quit."; exit 8
 fi
-if ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpath; then
-  /usr/bin/echo "Install Postfix Vmail first, I quit."; exit 8
+if /usr/bin/grep -q 'EmailAllowed="YES"' /opt/verb/conf/servernameip && ! /usr/bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpath && ! /usr/bin/grep -q 'ServerMailStatus="MADDY_EMAIL_SERVER"' /opt/verb/conf/servermailpath; then
+  /usr/bin/echo "Install either Maddy Email or Postfix Vmail first, I quit."; exit 8
 fi
 
 # Include the config
@@ -47,17 +47,17 @@ olddomain=$2
 # Check if it already exists
 if [ -f /opt/verb/conf/webserver/sites-available/httpd/${subdomain}.${olddomain}.conf ]; then
  if [ -f /etc/httpd/sites-enabled/${subdomain}.${olddomain}.conf ]; then
-   /bin/echo "That subdomain already exists."
+   /usr/bin/echo "That subdomain already exists."
    exit 7
  else
-   /bin/echo "That site's config exists, but it doesn't seem to be active on Apache. Something's not right."
+   /usr/bin/echo "That site's config exists, but it doesn't seem to be active on Apache. Something's not right."
    exit 8
  fi
 fi
 
 # Check the domain shell
 if [ ! -f /opt/verb/conf/inkcert/cli-ini/siteinkcert.${olddomain} ]; then
-  /bin/echo "The shell for ${olddomain} does not exist yet. Creating it..."
+  /usr/bin/echo "The shell for ${olddomain} does not exist yet. Creating it..."
   /opt/verb/serfs/newdomainshell ${olddomain}
   wait
 fi
@@ -65,16 +65,16 @@ fi
 # Server config files
 ## Web directory
 if [ ! -d /srv/www/domains/${subdomain}.${olddomain} ]; then
-  /bin/cp -rf /opt/verb/conf/site-files/newdomain.tld /srv/www/domains/${subdomain}.${olddomain}
+  /usr/bin/cp -rf /opt/verb/conf/site-files/newdomain.tld /srv/www/domains/${subdomain}.${olddomain}
 fi
-  /bin/ln -sfn /srv/www/domains/${subdomain}.${olddomain} /srv/www/html/
-  /bin/chown -R www:www /srv/www/html/${subdomain}.${olddomain}
-  /bin/chown -R www:www /srv/www/domains/${subdomain}.${olddomain}
-  /bin/chmod -R 750 /srv/www/domains/${subdomain}.${olddomain}
+  /usr/bin/ln -sfn /srv/www/domains/${subdomain}.${olddomain} /srv/www/html/
+  /usr/bin/chown -R www:www /srv/www/html/${subdomain}.${olddomain}
+  /usr/bin/chown -R www:www /srv/www/domains/${subdomain}.${olddomain}
+  /usr/bin/chmod -R 750 /srv/www/domains/${subdomain}.${olddomain}
 ## Copy
 if [ ${ServerType} = "lemp" ]; then
   /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxdomain.tld.conf /opt/verb/conf/webserver/sites-available/nginx/${subdomain}.${olddomain}.conf
-  /bin/sed -i "s/newdomain.tld/${subdomain}.${olddomain}/g" /opt/verb/conf/webserver/sites-available/nginx/${subdomain}.${olddomain}.conf
+  /usr/bin/sed -i "s/newdomain.tld/${subdomain}.${olddomain}/g" /opt/verb/conf/webserver/sites-available/nginx/${subdomain}.${olddomain}.conf
   ## Server
   /opt/verb/serfs/ensitenginx -r ${subdomain}.${olddomain}
 elif [ ${ServerType} = "lamp" ]; then
@@ -85,8 +85,8 @@ elif [ ${ServerType} = "lamp" ]; then
 elif [ ${ServerType} = "laemp" ]; then
   /usr/bin/cp /opt/verb/conf/site-files/conf/newdomain.tld.conf /opt/verb/conf/webserver/sites-available/httpd/${subdomain}.${olddomain}.conf
   /usr/bin/cp /opt/verb/conf/site-files/conf/newrpnginxdomainhttp.tld.conf /opt/verb/conf/webserver/sites-available/nginx/${subdomain}.${olddomain}.conf
-  /bin/sed -i "s/newdomain.tld/${subdomain}.${olddomain}/g" /opt/verb/conf/webserver/sites-available/httpd/${subdomain}.${olddomain}.conf
-  /bin/sed -i "s/newdomain.tld/${subdomain}.${olddomain}/g" /opt/verb/conf/webserver/sites-available/nginx/${subdomain}.${olddomain}.conf
+  /usr/bin/sed -i "s/newdomain.tld/${subdomain}.${olddomain}/g" /opt/verb/conf/webserver/sites-available/httpd/${subdomain}.${olddomain}.conf
+  /usr/bin/sed -i "s/newdomain.tld/${subdomain}.${olddomain}/g" /opt/verb/conf/webserver/sites-available/nginx/${subdomain}.${olddomain}.conf
   ## Server
   /opt/verb/serfs/ensiteapache -r ${subdomain}.${olddomain}
   /opt/verb/serfs/ensitenginx -r ${subdomain}.${olddomain}
@@ -98,13 +98,13 @@ wait
 
 # inkCert-LE
 ## This adds the declared domain to the end of the "domains =" line
-/bin/sed -i "s/, ${subdomain}.${olddomain}//g" /opt/verb/conf/inkcert/cli-ini/cli.${olddomain}.ini
-/bin/sed -i "/^domains =/ s/$/, ${subdomain}.${olddomain}/" /opt/verb/conf/inkcert/cli-ini/cli.${olddomain}.ini
+/usr/bin/sed -i "s/, ${subdomain}.${olddomain}//g" /opt/verb/conf/inkcert/cli-ini/cli.${olddomain}.ini
+/usr/bin/sed -i "/^domains =/ s/$/, ${subdomain}.${olddomain}/" /opt/verb/conf/inkcert/cli-ini/cli.${olddomain}.ini
 
 # inkCert status
 ## inkCert-CBSINGLE DONE for parent domain
-if /bin/grep -Fq "InkCerted=DONE_CBSINGLE" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${olddomain}; then
-/bin/echo "FYI: inkCert has already been setup for this subdomain's parent domain with Certbot single-cert. But, that certificate cannot be used with this subdomain.
+if /usr/bin/grep -Fq "InkCerted=DONE_CBSINGLE" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${olddomain}; then
+/usr/bin/echo "FYI: inkCert has already been setup for this subdomain's parent domain with Certbot single-cert. But, that certificate cannot be used with this subdomain.
 
 In summary: ${subdomain}.${olddomain} will not have SSL certs until you run:
   inkcertdocbsingle ${subdomain}.${olddomain}

@@ -22,7 +22,7 @@ SERVER=$1
 /bin/sed -i "s/BOX_NOT_INSTALLED/BOX_NOT_ALLOWED/g" /opt/verb/conf/servermailpath
 /bin/sed -i "s/BOX_NOT_INSTALLED/BOX_NOT_ALLOWED/g" /opt/verb/conf/servermailpass
 /bin/sed -i "s/PFA_NOT_INSTALLED/PFA_NOT_ALLOWED/g" /opt/verb/conf/servermailpath
-/bin/sed -i "s/VMAIL_SERVER/EMAIL_BACKUP_MX/g" /opt/verb/conf/servermailpath
+/bin/sed -i "s/VMAIL_SERVER/VMAIL_BACKUP_MX/g" /opt/verb/conf/servermailpath
 
 # Finished
 /bin/echo "

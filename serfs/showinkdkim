@@ -10,9 +10,15 @@
 
 domain=$1
 
-/bin/echo $(/bin/cat /etc/opendkim/keys/${domain}/inkdkim.txt)
 
+## Postfix vmail?
+if [ "${ServerMailStatus}" = "VMAIL_SERVER" ]; then
+  /usr/bin/echo $(/bin/cat /etc/opendkim/keys/${domain}/inkdkim.txt)
 
+## Maddy email?
+  elif [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ]; then
+  /usr/bin/echo "default._domainkey IN TXT \"v=DKIM1; k=rsa; p=$(/usr/bin/cat /srv/email/maddy/dkim_keys/${domain}_default.dns | /usr/bin/grep -oP 'p=\K[^"]+')\""
+fi
 
 
 

@@ -1,0 +1,35 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This runs installmaddymail and some extra scripts to setup a backup email server on the server
+## Prerequisite: setup of course, and verbemail if you wish an email tld other than .email
+## Prerequisite: this Verber should be linked to the backup server already.
+## Roundcube will be disallowed by running this.
+
+# DEV NOTE: This is by no means finished. It is only a start to set config files.
+
+# How to use:
+## ./inkemailbackmxinstall
+
+# Eg:
+## ./inkemailbackmxinstall
+
+server=$1
+
+/opt/verb/serfs/installmaddymail
+
+# Config settings
+/usr/bin/sed -i "s/RC_NOT_INSTALLED/RC_NOT_ALLOWED/g" /opt/verb/conf/servermailpath
+/usr/bin/sed -i "s/BOX_NOT_INSTALLED/BOX_NOT_ALLOWED/g" /opt/verb/conf/servermailpass
+/usr/bin/sed -i "s/PFA_NOT_INSTALLED/PFA_NOT_ALLOWED/g" /opt/verb/conf/servermailpath
+/usr/bin/sed -i "s/MADDY_EMAIL_SERVER/EMAIL_BACKUP_MX/g" /opt/verb/conf/servermailpath
+
+# Finished
+/usr/bin/echo "
+All set. This is now a backup email server for $server.
+"
+
+
+
+
+if [ -e "/opt/verb/mods/installinkemailbackmx.after" ]; then . /opt/verb/mods/installinkemailbackmx.after; fi # Follows this script

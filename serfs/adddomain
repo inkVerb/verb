@@ -51,8 +51,8 @@ fi
 if ! /bin/grep -q 'InkDNSStat="INSTALLED"' /opt/verb/conf/inkdnsconf; then
   /usr/bin/echo "Install inkDNS first, I quit."; exit 8
 fi
-if /bin/grep -q 'EmailAllowed="YES"' /opt/verb/conf/servernameip && ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpath; then
-  /usr/bin/echo "Install Postfix Vmail first, I quit."; exit 8
+if /bin/grep -q 'EmailAllowed="YES"' /opt/verb/conf/servernameip && ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpath && ! /bin/grep -q 'ServerMailStatus="MADDY_EMAIL_SERVER"' /opt/verb/conf/servermailpath; then
+  /usr/bin/echo "Install either Maddy Email or Postfix Vmail first, I quit."; exit 8
 fi
 if ! /bin/grep -q 'DomHostAllowed="YES"' /opt/verb/conf/servernameip; then
   /usr/bin/echo "Domain hosting not allowed, I quit."; exit 8

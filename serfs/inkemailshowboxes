@@ -1,0 +1,61 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This shows all inkemail boxes, optionally for a specified domain
+
+# How to use:
+## ./inkemailshowboxes [ domain - optional ]
+
+# Eg:
+## ./inkemailshowboxes 
+## ./inkemailshowboxes inkisaverb.com
+
+usagenotes="This shows all inkemail boxes"
+usageformat="inkemailshowboxes [ domain - optional ]"
+usageexample="inkemailshowboxes
+inkemailshowboxes inkisaverb.com"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installinkemail )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkemailshowboxes.replace" ]; then . /opt/verb/mods/inkemailshowboxes.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkemailshowboxes.before" ]; then . /opt/verb/mods/inkemailshowboxes.before; fi # Precedes this script
+
+
+# Check to see if inkemail is installed
+. /opt/verb/conf/servermailpath
+if [ "$ServerMailStatus" != "MADDY_EMAIL_SERVER" ]; then
+  /usr/bin/echo "Maddy email not installed, not adding $domain"
+  exit 0; fi
+
+domain="$1"
+
+# All domains
+if [ -z "$1" ]; then
+  # Run the check
+  /usr/bin/sudo sudo -u maddy maddyctl creds list
+
+# Specified domain
+else
+  # Domain does not exist
+  if ! /usr/bin/grep -q "${domain}" /etc/maddy/conf.d/domains.conf && [[ "${domain}" != "${nameURI}" ]]; then
+    /bin/echo "The domain $domain hasn't been added yet, doing nothing."
+    exit 0; fi
+
+  # Run the check
+  /usr/bin/sudo -u maddy maddyctl creds list | /usr/bin/grep "${domain}"
+fi
+
+
+
+
+if [ -e "/opt/verb/mods/inkemailshowboxes.after" ]; then . /opt/verb/mods/inkemailshowboxes.after; fi # Follows this script

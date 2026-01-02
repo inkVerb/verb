@@ -10,8 +10,7 @@
 
 usagenotes="This refreshes all virtual vmail users in the mail database based on the user folders in the vmail folder"
 usageformat="inkvmailrefresh"
-usageexample="inkvmailrefresh
-inkvmailrefresh someP433w0r6"
+usageexample="inkvmailrefresh"
 hierarchy=( primary )
 vsetnames=(  )
 vsettypes=(  )

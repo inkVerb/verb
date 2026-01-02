@@ -1,7 +1,7 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
 
-# This adds an emaail recipient filter to domain
+# This adds an emaail recipient script filter to domain
 ## The script must exist at: vip/vmail/customscripts/emailuserdomaintld  (only letters & numbers)
 ## Heavily inspired by:
 ### https://unix.stackexchange.com/a/179256/315069
@@ -16,7 +16,7 @@
 # Eg:
 ## ./inkvmailaddscriptfilter john inkisaverb.com
 
-usagenotes="This adds an email recipient filter to domain; the script must exist at: vip/vmail/customscripts/emailuserdomaintld (only letters & numbers); if using unsubscribe@domain.tld and no custom script exists, then a default unsubscribe script will be created"
+usagenotes="This adds an email recipient script filter to domain; the script must exist at: vip/vmail/customscripts/emailuserdomaintld (only letters & numbers); if using unsubscribe@domain.tld and no custom script exists, then a default unsubscribe script will be created"
 usageformat="inkvmailaddscriptfilter [ emailuser ] [ domain ]"
 usageexample="inkvmailaddscriptfilter john inkisaverb.com"
 hierarchy=( secondary )
@@ -51,7 +51,7 @@ fi
 emailuser="$1"
 domain="$2"
 emailaddress="${emailuser}@${domain}"
-scriptname="${emailuser}$(/usr/bin/echo ${domain} | /usr/bin/sed "s/[^[:alnum:]]//g")"
+scriptname="${emailuser}-$(/usr/bin/echo ${domain} | /usr/bin/sed "s/[^[:alnum:]]/-/g")"
 
 # Check script
 if [ ! -f "/srv/vip/vmail/customscripts/${scriptname}" ] && [ "${emailuser}" != "unsubscribe" ]; then

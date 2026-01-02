@@ -831,12 +831,15 @@ if [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lamp" ]; then
   /usr/bin/systemctl restart httpd; wait
 fi
 
-# MySQL root user updates
+# PostgreSQL root user
+## NA, PostgreSQL needs a user per database, which can be managed directly via `su postgres -c 'SQL QUERY HERE;'`
+
+# MySQL root user
 ## Password
-mysqlpass="$(/usr/bin/cat /opt/verb/conf/sql/mysqlrootpassword)"
+mysqlrootpass="$(/usr/bin/cat /opt/verb/conf/sql/mysqlrootpassword)"
 mysqlbosspass=$(/usr/bin/pwgen -s -1 10)
 ## MySQL superuser to auto-create databases
-/usr/bin/mariadb -uroot -p${mysqlpass} -e "
+/usr/bin/mariadb -uroot -p${mysqlrootpass} -e "
 CREATE USER mysqlboss@localhost;
 SET PASSWORD FOR mysqlboss@localhost=Password('${mysqlbosspass}');
 GRANT ALL PRIVILEGES ON *.* TO 'mysqlboss'@'localhost' IDENTIFIED BY '${mysqlbosspass}' WITH GRANT OPTION;
@@ -849,11 +852,11 @@ host = localhost" > /opt/verb/conf/sql/mysqlboss.cnf
 ## raw and silent are from --raw and --silent that restrict output only to most basic contents after queries https://dev.mysql.com/doc/refman/8.1/en/mysql-command-options.html#option_mysql_defaults-extra-file
 
 ## New MySQL root password
-newmysqlpass=$(/usr/bin/pwgen -0 -1 -A -B 11)
-/usr/bin/mariadb -uroot -p${mysqlpass} -e "
-SET PASSWORD FOR root@localhost = Password('${newmysqlpass}');FLUSH PRIVILEGES;"
+newmysqlrootpass=$(/usr/bin/pwgen -0 -1 -A -B 11)
+/usr/bin/mariadb -uroot -p${mysqlrootpass} -e "
+SET PASSWORD FOR root@localhost = Password('${newmysqlrootpass}');FLUSH PRIVILEGES;"
 if [ "$?" = 0 ]; then
-  /usr/bin/echo "${newmysqlpass}" > /opt/verb/conf/sql/mysqlrootpassword
+  /usr/bin/echo "${newmysqlrootpass}" > /opt/verb/conf/sql/mysqlrootpassword
 else
   /usr/bin/echo "Can't update MySQL root password, something is very wrong"
   exit 6
@@ -861,6 +864,10 @@ fi
 
 # Increase the memory size for some MySQL resources
 /opt/verb/serfs/mysqlmemset 2
+
+# PostgreSQL backup
+/usr/bin/echo '* 3 * * * root /opt/verb/donjon/pgsqlbak.sh cronbak' > /etc/cron.d/pgsqlbak
+/usr/bin/chmod 0644 /etc/cron.d/pgsqlbak
 
 # MySQL backup
 /usr/bin/echo '* 4 * * * root /opt/verb/donjon/mysqlbak.sh cronbak' > /etc/cron.d/mysqlbak

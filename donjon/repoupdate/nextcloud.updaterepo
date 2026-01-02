@@ -15,7 +15,7 @@ cVappName=nextcloud
 if [ $InkGet_Method != "ZJZ" ]; then
   cd /opt/verb/repo
 elif [ $InkGet_Method = "ZJZ" ] ; then
-  cd /srv/www/vapps
+  cd /srv/cloud
 fi
 
 # Announce

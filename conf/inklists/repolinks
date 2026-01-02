@@ -4,6 +4,7 @@
 ampache="https://github.com/ampache/ampache/releases NOTE: still using md5 & zip; hash before, not squashed"
 fossil="https://www.fossil-scm.org/fossil/uv/download.html NOTE: download it and get the SHA256 with \"sha256sum FILE.tar.gz\""
 iwpadmin="https://infinitewp.com/installing-download/ NOTE: No SHA. Must include email with the donjon knight."
+maddy="https://github.com/foxcpp/maddy/releases NOTE: download it and get your own SHA256 with \"sha256sum maddy.tar.zst\""
 mediawiki="https://www.mediawiki.org/wiki/Download NOTE: download it and get your own SHA256 with \"sha256sum FILE.tar.gz\""
 net2ftp="http://www.net2ftp.com/homepage/download.html NOTE: download it and get your own SHA256 with \"sha256sum FILE.zip\""
 nextcloud="https://nextcloud.com/install/#instructions-server NOTE: using latest.tar.bz2, SHA retrieved automatically because NextCloud is cool"

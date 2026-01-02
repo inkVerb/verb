@@ -1,7 +1,7 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
 
-# This runs installpostfix, installrc, and installpfa as one job
+# This runs installpostfixvmail, installrc, and installpfa as one job
 ## Prerequisite: setup of course, and verbemail if you wish an email tld other than .email
 ## Check prerequisites for those
 
@@ -30,7 +30,7 @@
 ## ./installinkvmail inkvmailpath # Same path for BOX and PFA, no setup password, no backup
 ## ./installinkvmail -n -n -n myemailfile.vbak  # Backup, no other settings
 
-usagenotes="This runs installpostfix, installrc, and installpfa as one job"
+usagenotes="This runs installpostfixvmail, installrc, and installpfa as one job"
 usageformat="installinkvmail [ RoundCube webmail path ] [ PostfixAdmin email pfa path - optional: if no other arguments and same as RoundCube ] [ PostfixAdmin setup password - optional: 'no' to skip ] [ backup filename IF restoring from backupinkvmail backup, optional ]"
 usageexample="installinkvmail roundcubesecretpath postfixadminsecretpath setup-password  # Setup password given, but no backup
 installinkvmail rcbase pfabase setup-password myemailfile.vbak # Backup and setup password
@@ -44,7 +44,7 @@ vsettypes=(  )
 voptnames=( "RoundCube web path" "PostfixAdmin web path" "PostfixAdmin setup password, optional -n flag" "Vmail backup file" )
 vopttypes=( 'isazAZ09lines || string_match' 'isazAZ09lines || string_match' 'isazAZ09 || string_match' "www/vip/verb.vmail.*.vbak backup file name and location" )
 voptflags=( n )
-voptflagpurpose=( "No PostfixAdmin setup password, but using backup email file" )
+voptflagpurpose=( "No Roundcube Box or PostfixAdmin or PFA setup password, but using backup email file" )
 dependencyinstall=(  )
 prerequesite=( "inkCert certs should be installled for at least the emailTLDURI and nameURI for this verber" )
 usedby=(  )

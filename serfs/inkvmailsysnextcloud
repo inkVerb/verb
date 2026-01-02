@@ -2,6 +2,7 @@
 #inkVerbSerf! verb.ink
 
 # This creates or resets the Nextcloud smtp user for inkvmail, such as is used by php to send emails
+## This also creates a cron task to run itself regularly; this is the proper workflor for creating that cron task, creating it the first time run and resetting it
 
 # How to use:
 ## ./inkvmailsysnextcloud
@@ -79,7 +80,7 @@ fi
 
 # Set up sysmails cron
 ## Nextcloud background jobs (manage the crontab files directly)
-/bin/echo '44 * * * * root /opt/verb/donjon/sysmails.sh nextcloud' > /etc/cron.d/sysmailnextcloud
+/bin/echo '43 * * * * root /opt/verb/serfs/inkvmailsysnextcloud' > /etc/cron.d/sysmailnextcloud
 ## Permissions
 /bin/chmod 0644 /etc/cron.d/sysmailnextcloud
 

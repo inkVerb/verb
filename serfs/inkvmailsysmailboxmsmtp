@@ -3,7 +3,7 @@
 
 # This creates or resets the system smtp user for inkvmail, such as is used by PHP for php to send emails
 ## This uses msmtp specifically, which requires the msmtp package, not installed by default
-## This is an alternative to inkvmailsysmailbox should there be any reason postfix/sendmail can't be used for PHP mails
+## This also creates a cron task to run itself regularly; this is the proper workflor for creating that cron task, creating it the first time run and resetting it
 
 # How to use:
 ## ./inkvmailsysmailboxmsmtp
@@ -41,11 +41,11 @@ if [ "$ServerMailStatus" != "VMAIL_SERVER" ]; then
 # Cleanup previous entries
 if [ -f "/opt/verb/conf/vsysmail.msmtp" ]; then
   . /opt/verb/conf/vsysmail.msmtp
+  oldusername="${username}"
   # Don't remove the entire vmail directory if the folder doesn't exist
   if [ -e "/srv/vmail/${inkvmaildirectory}" ]; then
     /usr/bin/rm -rf /srv/vmail/${inkvmaildirectory}
   fi
-  oldusername="${username}"
 fi
 
 # Prep all vairables
@@ -64,7 +64,7 @@ EOF
 # Security check
 /opt/verb/serfs/setsecure; wait
 
-# Disable the old entry in the database
+# Disable the old entry and make the new entry in the database
 if [ -n "${oldusername}" ]; then
   password="$(/bin/echo $Password | /usr/bin/openssl passwd -1 -stdin)"
   /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqldb.vmail.cnf -e "UPDATE mailbox
@@ -89,9 +89,9 @@ fi
 
 # Set up cron
 ## MSMTP background jobs (manage the crontab files directly)
-/bin/echo '22 * * * * root /opt/verb/donjon/sysmails.sh msmtp' > /etc/cron.d/sysmailphp
+/bin/echo '22 * * * * root /opt/verb/donjon/sysmails.sh msmtp' > /etc/cron.d/sysmailmsmtp
 ## Permissions
-/bin/chmod 0644 /etc/cron.d/sysmailphp
+/bin/chmod 0644 /etc/cron.d/sysmailmsmtp
 
 # DEV Legacy, remove after new servers test right
 # Create & set the msmpt config

@@ -1,0 +1,43 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This imports a PostgreSQL database from a .sql file with the same name
+## The .sql file to import must be in the vip/sql/ directory
+## Omit or include the .sql extension on the end of the file name
+
+# How to use:
+## ./pgsqlin [ database name ]
+
+usagenotes="This imports a PostgreSQL database from a .sql file with the same name"
+usageformat="pgsqlin [ database name ]"
+usageexample="pgsqlin myGreat99DB"
+hierarchy=( primary )
+vsetnames=( "Database name" )
+vsettypes=( isSQLDatabasename )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( pgsqlinstall )
+prerequesite=( mysqlnewdb )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/pgsqlin.replace" ]; then . /opt/verb/mods/pgsqlin.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/pgsqlin.before" ]; then . /opt/verb/mods/pgsqlin.before; fi # Precedes this script
+
+
+input=$1
+dBase=${input%.sql}
+
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf ${dBase} < /srv/vip/sql/${dBase}.sql
+
+if [ $? = "0" ]; then
+  echo "${dBase} database restored."
+fi
+
+
+
+
+if [ -e "/opt/verb/mods/pgsqlin.after" ]; then . /opt/verb/mods/pgsqlin.after; fi # Follows this script

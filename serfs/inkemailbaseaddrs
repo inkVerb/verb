@@ -1,0 +1,51 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This sets and resets the base email addresses used by all other domains on the Maddy email server
+
+# How to use:
+## ./inkemailverbaddrs
+
+usagenotes="This sets and resets the base email addresses used by all other domains on the Postfix vmail server"
+usageformat="inkemailverbaddrs"
+usageexample="inkemailverbaddrs"
+hierarchy=( secondary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installmaddymail )
+prerequesite=(  )
+usedby=( installmaddymail ) # backupinkemailrestore?
+useserfs=(  )
+useconfigs=( siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkemailverbaddrs.replace" ]; then . /opt/verb/mods/inkemailverbaddrs.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkemailverbaddrs.before" ]; then . /opt/verb/mods/inkemailverbaddrs.before; fi # Precedes this script
+
+
+
+# Include the config
+. /opt/verb/conf/siteurilist
+
+# Set the variables
+verberdomain="$nameURI"
+Password=$(/usr/bin/pwgen -s -1 20)
+password="$(/bin/echo $Password | /usr/bin/openssl passwd -1 -stdin)"
+username="admin@$nameURI"
+name="Change Me Dont Delete Me"
+inkemaildirectory="$nameURI/verberadmin/"
+mailboxsize="524288000" # 0.5GB, 2GB=2097152000, 1GB=1048576000, 5GB=5242880000
+
+# Run the Maddy entry
+/usr/bin/sudo maddy -c "...'$username', '$password', '$name', '$inkemaildirectory', '$mailboxsize', '$nameURI'"
+/usr/bin/sudo maddy -c "...'$username', '$username', '$nameURI'"
+/usr/bin/sudo maddy -c "...'abuse@$nameURI', '$username', '$nameURI'"
+/usr/bin/sudo maddy -c "...'hostmaster@$nameURI', '$username', '$nameURI'"
+/usr/bin/sudo maddy -c "...'postmaster@$nameURI', '$username', '$nameURI'"
+/usr/bin/sudo maddy -c "...'webmaster@$nameURI', '$username', '$nameURI'"
+/usr/bin/sudo maddy -c "...'dmark@$nameURI', '$username', '$nameURI'"
+
+if [ -e "/opt/verb/mods/inkemailverbaddrs.after" ]; then . /opt/verb/mods/inkemailverbaddrs.after; fi # Follows this script

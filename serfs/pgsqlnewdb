@@ -1,0 +1,57 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This creates a new PostgreSQL database and user with password
+
+# How to use:
+## ./pgsqlnewdb [ database name ] [ database userename ] [ database user password - optional ]
+
+usagenotes="This creates a new PostgreSQL database and user with password"
+usageformat="pgsqlnewdb [ database ename ] [ database userename ] [ database user password - optional ]"
+usageexample="pgsqlnewdb myGreat99DB myGreat99DBuser"
+hierarchy=( primary )
+vsetnames=( "Database name" "Database username" )
+vsettypes=( isSQLDatabasename isSQLUserCredential )
+voptnames=( "Database user password" )
+vopttypes=( isSQLUserCredential )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( mysqlinstall )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/pgsqlnewdb.replace" ]; then . /opt/verb/mods/pgsqlnewdb.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/pgsqlnewdb.before" ]; then . /opt/verb/mods/pgsqlnewdb.before; fi # Precedes this script
+
+
+dBase="${1}"
+dBaseUser="${2}"
+
+# Auto password
+if [ -z ${3} ]; then
+  dBPassword="$(/usr/bin/pwgen -s -1 32)"
+  export serfOUT="New Password: ${dBPassword}"
+else
+  dBPassword="${3}"
+fi
+
+# Create the SQL items
+/usr/bin/sudo -u postgres psql -c "CREATE USER ${dBaseUser} WITH PASSWORD '${dBPassword}';"
+/usr/bin/sudo -u postgres psql -c "CREATE DATABASE ${dBase} OWNER ${dBaseUser};"
+
+# Create a Verber record
+echo "dBase=\"${dBase}\"
+dBaseUser=\"${dBaseUser}\"
+dBPassword=\"${dBPassword}\"
+UTYPE=\"CLIENT\"" > /opt/verb/conf/sql/pgsqldb.${dBase}
+
+# Create the PostgreSQL login .pgpass
+echo "localhost:5432:${dBase}:${dBaseUser}:${dBPassword}" > /opt/verb/conf/sql/pgsqldb.${dBase}.pgpass
+/usr/bin/chmod 0600 /opt/verb/conf/sql/pgsqldb.${dBase}.pgpass
+
+
+
+
+if [ -e "/opt/verb/mods/pgsqlnewdb.after" ]; then . /opt/verb/mods/pgsqlnewdb.after; fi # Follows this script

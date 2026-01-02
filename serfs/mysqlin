@@ -28,8 +28,8 @@ if [ -e "/opt/verb/mods/mysqlin.replace" ]; then . /opt/verb/mods/mysqlin.replac
 if [ -e "/opt/verb/mods/mysqlin.before" ]; then . /opt/verb/mods/mysqlin.before; fi # Precedes this script
 
 
-INPUT=$1
-dBase=${INPUT%.sql}
+input=$1
+dBase=${input%.sql}
 
 /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf ${dBase} < /srv/vip/sql/${dBase}.sql
 

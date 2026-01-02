@@ -1,3 +1,4 @@
+# This has its own monitoring process, this monit profile will conflict; don't use
  check process acpid with pidfile "/var/run/acpid.pid"
    group system
    group acpid

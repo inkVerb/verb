@@ -11,12 +11,12 @@
 . /opt/verb/conf/servermailpass
 
 # Check prerequesites
-if [ ${ServerMailStatus} = "VMAIL_SERVER" ] || [ ${ServerMailStatus} = "EMAIL_BACKUP_MX" ] || [ ${ServerMailStatus} = "PMAIL_SERVER" ]; then
-/bin/echo "
+if [ ${ServerMailStatus} = "VMAIL_SERVER" ] || [ ${ServerMailStatus} = "MADDY_EMAIL_SERVER" ] || [ ${ServerMailStatus} = "VMAIL_BACKUP_MX" ] || [ ${ServerMailStatus} = "EMAIL_BACKUP_MX" ]; then
+/usr/bin/echo "
 Email server is installed, proceeding...
 "
 else
-/bin/echo "
+/usr/bin/echo "
 Email server not installed, nothing to change.
 "
 exit 0; fi
@@ -25,27 +25,34 @@ exit 0; fi
 tbrSMPAPG="${ServerMailPassApg}"
 newMailPassApg="$(/usr/bin/pwgen -s -1 5)"
 
-# MySQL password
-/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
-GRANT ALL PRIVILEGES ON mail.* TO 'mail'@'localhost' IDENTIFIED BY 'mailpass${newMailPassApg}';
-FLUSH PRIVILEGES;"
+## Maddy email?
+if [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ]; then
+    /usr/bin/echo "Using Maddy, path must be set to match in Nginx config."
 
-# Postfix & Dovecot password
-/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${newMailPassApg}/" /etc/dovecot/dovecot-sql.conf.ext
-/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${newMailPassApg}/" /etc/postfix/virtual_alias_domains.cf
-/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${newMailPassApg}/" /etc/postfix/virtual_alias_domains_maps.cf
-/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${newMailPassApg}/" /etc/postfix/virtual_alias_maps.cf
-/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${newMailPassApg}/" /etc/postfix/virtual_mailbox_domains.cf
-/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${newMailPassApg}/" /etc/postfix/virtual_mailbox_domainaliases_maps.cf
-/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${newMailPassApg}/" /etc/postfix/virtual_mailbox_maps.cf
-/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${newMailPassApg}/" /etc/postfix/virtual_sender_login_maps.cf
+## Postfix vmail?
+elif [ "${ServerMailStatus}" = "VMAIL_SERVER" ]; then
+    # MySQL password
+    /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
+    GRANT ALL PRIVILEGES ON mail.* TO 'mail'@'localhost' IDENTIFIED BY 'mailpass${newMailPassApg}';
+    FLUSH PRIVILEGES;"
 
-# PFA
-if [ ${ServerPFAPath} != "PFA_NOT_ALLOWED" ] && [ ${ServerPFAPath} != "PFA_NOT_INSTALLED" ]; then
-/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${newMailPassApg}/" /srv/www/email/postfixadmin/config.local.php; fi
+    # Postfix & Dovecot password
+    /usr/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${newMailPassApg}/" /etc/dovecot/dovecot-sql.conf.ext
+    /usr/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${newMailPassApg}/" /etc/postfix/virtual_alias_domains.cf
+    /usr/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${newMailPassApg}/" /etc/postfix/virtual_alias_domains_maps.cf
+    /usr/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${newMailPassApg}/" /etc/postfix/virtual_alias_maps.cf
+    /usr/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${newMailPassApg}/" /etc/postfix/virtual_mailbox_domains.cf
+    /usr/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${newMailPassApg}/" /etc/postfix/virtual_mailbox_domainaliases_maps.cf
+    /usr/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${newMailPassApg}/" /etc/postfix/virtual_mailbox_maps.cf
+    /usr/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${newMailPassApg}/" /etc/postfix/virtual_sender_login_maps.cf
+
+    # PFA
+    if [ ${ServerPFAPath} != "PFA_NOT_ALLOWED" ] && [ ${ServerPFAPath} != "PFA_NOT_INSTALLED" ]; then
+    /usr/bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${newMailPassApg}/" /srv/www/email/postfixadmin/config.local.php; fifi
+fi
 
 # The site-wide config
-/bin/sed -i "s/ServerMailPassApg.*/ServerMailPassApg=\"${newMailPassApg}\"/g" /opt/verb/conf/servermailpass
+/usr/bin/sed -i "s/ServerMailPassApg.*/ServerMailPassApg=\"${newMailPassApg}\"/g" /opt/verb/conf/servermailpass
 
 # Finish
 /bin/echo "Postfix and friends are now using a new database password."

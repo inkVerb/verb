@@ -46,11 +46,14 @@ killdomain=$1
 /bin/rm -rf /srv/www/domains/${killdomain}
 /bin/rm -rf /srv/www/domains/*${killdomain}
 
-# Remove any mailboxes
-/opt/verb/serfs/inkvmaildeldomain ${killdomain}; wait
+## Postfix vmail?
+if [ "${ServerMailStatus}" = "VMAIL_SERVER" ]; then
+    # Remove any mailboxes
+    /opt/verb/serfs/inkvmaildeldomain ${killdomain}; wait
 
-# Purge mailboxes
-/opt/verb/serfs/inkvmailpurgedomain ${killdomain}; wait
+    # Purge mailboxes
+    /opt/verb/serfs/inkvmailpurgedomain ${killdomain}; wait
+fi
 
 # Remaining services
 /opt/verb/serfs/killdomainshell ${killdomain}; wait

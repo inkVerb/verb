@@ -1,0 +1,77 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This resores a backup of the entire postgres directory, mainly for catastrophic recovery
+## This is essentially restores a backup made from pgsqlallbackup or donjon/pgsqlbak.sh
+## DEV This could be expanded on to restore a specific database from the backup folder to the pgsql folder
+
+# How to use:
+## ./pgsqlallrestore [ backup suffix ]
+
+usagenotes="This resores a backup of the entire pgsql directory, mainly for catastrophic recovery"
+usageformat="pgsqlallrestore [ backup suffix ]"
+usageexample="pgsqlallrestore January
+pgsqlallrestore after_wordpress_intalled"
+hierarchy=( primary )
+vsetnames=( "Backup suffix" )
+vsettypes=( isazAZ09underscore )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( pgsqlinstall pgsqlallbackup )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/pgsqlallrestore.replace" ]; then . /opt/verb/mods/pgsqlallrestore.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/pgsqlallrestore.before" ]; then . /opt/verb/mods/pgsqlallrestore.before; fi # Precedes this script
+
+# Credential
+if [ -z "$1" ]; then
+  /usr/bin/echo "Must argue backup suffix! List them with: pgsqlallbackuplist"
+  exit 5
+fi
+suffix="${1}"
+
+# Establish the backup directory
+if [ -e "/mnt/hdd" ]; then
+  backdir="/mnt/hdd/pgsql.bak.d"
+elif [ -e "/mnt/ssd" ]; then
+  backdir="/mnt/ssd/pgsql.bak.d"
+else
+  backdir="/var/lib/pgsql.bak.d"
+fi
+
+# Backup in stages
+if [ -d "${backdir}/pgsql_restoring" ]; then
+  /usr/bin/echo "An incomplete restore was in progress; restarting..."
+  /usr/bin/rm -rf "${backdir}/pgsql_restoring"
+fi
+/usr/bin/mv /var/lib/postgres "${backdir}/pgsql_restoring"
+/usr/bin/cp -r "${backdir}/pgsql.${suffix}" /var/lib/postgres
+if [ "$?" != 0 ]; then
+  /usr/bin/echo "${suffix} could not be restored. Putting things back where they were."
+  /usr/bin/rm -rf /var/lib/postgres
+  /usr/bin/mv "${backdir}/pgsql_restoring" /var/lib/postgres
+fi
+
+# Own & last restore check
+/usr/bin/chown -R pgsql:pgsql /var/lib/postgres
+if [ "$?" != 0 ]; then
+  /usr/bin/echo "Could not own the pgsql directory, something is very wrong!"
+  exit 9
+fi
+
+# Backup the restored
+if [ -d "${backdir}/pgsql_restored" ]; then
+  /usr/bin/rm -rf "${backdir}/pgsql_restored"
+fi
+/usr/bin/mv "${backdir}/pgsql_restoring" "${backdir}/pgsql_restored"
+
+# Finish
+/usr/bin/echo "MySQL backup ${suffix} restored."
+
+
+if [ -e "/opt/verb/mods/pgsqlallrestore.after" ]; then . /opt/verb/mods/pgsqlallrestoreuser.after; fi # Follows this script

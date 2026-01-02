@@ -3,24 +3,30 @@
 
 # This sets up basic mail certificates and subdomain dummy sites for inkCert-LE
 ## This is run automatically by setup, installpostfixvmail, and newdomainshell, and normally should not be run independently
+## vmail is for Postfix vmail
+## email is for Maddy email
 
 # How to use:
-## ./setinkcertmail [ domain.tld ] [ switch 'verber', optional skip inkCert cli.ini, used by installpostfixvmail ]
+## ./setinkcertmail [ domain.tld ] [ switch 'email' or 'vmail', optional skip inkCert cli.ini, used by installpostfixvmail and installmaddymail ]
 
 # Eg:
 ## ./setinkcertmail somedomain.tld
-## ./setinkcertmail name.verb.ink verber
+## ./setinkcertmail name.verb.ink vmail
+## ./setinkcertmail name.verb.ink email
 
 
 # Dependencies
-if ! /bin/grep -q 'InkCertInstalled="DONE"' /opt/verb/conf/inkcertstatus; then
+if ! /usr/bin/grep -q 'InkCertInstalled="DONE"' /opt/verb/conf/inkcertstatus; then
   /usr/bin/echo "Install inkCert first, I quit."; exit 8
 fi
-if ! /bin/grep -q 'InkDNSStat="INSTALLED"' /opt/verb/conf/inkdnsconf; then
+if ! /usr/bin/grep -q 'InkDNSStat="INSTALLED"' /opt/verb/conf/inkdnsconf; then
   /usr/bin/echo "Install inkDNS first, I quit."; exit 8
 fi
-if ! /bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpath; then
-  /usr/bin/echo "Install Postfix Vmail first, I quit."; exit 8
+if ! /usr/bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpath && ! /usr/bin/grep -q 'ServerMailStatus="MADDY_EMAIL_SERVER"' /opt/verb/conf/servermailpath; then
+  /usr/bin/echo "Install either Maddy Email or Postfix Vmail first, I quit."; exit 8
+fi
+if ! /usr/bin/grep -q 'EmailAllowed="YES"' /opt/verb/conf/servernameip; then
+  /usr/bin/echo "Email not allowed. Do you know what you are doing?"; exit 8
 fi
 
 domain="$1"
@@ -28,9 +34,10 @@ domain="$1"
 # Include the config
 . /opt/verb/conf/siteurilist
 . /opt/verb/conf/servertype
+. /opt/verb/conf/servermailpath
 
 # inkCert
-if [ "$2" != "verber" ]; then
+if [ "$2" != "vmail" ] && [ "$2" != "email" ]; then
   /opt/verb/serfs/setinkcertmailsubdomains ${domain}
 fi
 
@@ -46,14 +53,17 @@ EOF
 /usr/bin/chown -R www:www /srv/www/mailcatch
 
 # Mail cert links
-if [ "$2" = "verber" ]; then
+if [ "$2" = "vmail" ]; then
   /opt/verb/serfs/setinkcertmailcerts ${domain} inkvmail
+elif [ "$2" = "email" ]; then
+  /opt/verb/serfs/setinkcertmailcerts ${domain} inkemail
 else
   /opt/verb/serfs/setinkcertmailcerts ${domain}
 fi
 
-# Only make the Dovecot & Postfix entries if the keys exist
-if [ -e "$(/usr/bin/readlink /etc/ssl/server/mail/${domain}.crt)" ] && [ -e "$(/usr/bin/readlink /etc/ssl/server/mail/${domain}.key)" ]; then
+# Postfix vmail implementation?
+## Only make the entries if the keys exist
+if [ "${ServerMailStatus}" = "VMAIL_SERVER" ] && [ -e "$(/usr/bin/readlink /etc/ssl/server/mail/${domain}.crt)" ] && [ -e "$(/usr/bin/readlink /etc/ssl/server/mail/${domain}.key)" ]; then
   # Dovecot
   /usr/bin/cat <<EOF > /etc/dovecot/crt.d/${domain}.conf
 local_name mail.${domain} {

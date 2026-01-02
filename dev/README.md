@@ -225,7 +225,7 @@ IX. Server names
 X. Other notes
 	A. Exit codes from bash scripts
 		1. Scripts are ordered to minimize damage if exited from an error. WordPress, for example, will finish the basic install requirements before attempting a plugin download.
-		2. Note: All bash scropts have a `set -e` declaration, so included scripts that `exit` other than `0` will abort the entire process. Here are some codes:
+		2. Note: All bash scripts may employ a `set -e` declaration for debugging, so included scripts that `exit` other than `0` will abort the entire process. Here are some codes:
 		- `0` - non-fatal `exit` (often used for benign failed argument validation or harmless unmet prerequisites)
 		- `1` - used by Linux
 		- `2` - used by Linux
@@ -234,7 +234,7 @@ X. Other notes
 		- `5` - unmet/invalid credentials (ie arguments for a bash script are incomplete or incorrect or incompatible or inappropriate, it could cause a problem if continuing)
 		- `6` - impossible error (something is wrong that shouldn't be possible, such as a script is messed up or something was changed manually-incorrectly, this error status is only for circumstances that creat a problem that didn't exist before, errors that notice a pre-existing problem should `exit 0`)
 		- `7` - already done dilemma ('already installed' reports `7` only if it would cause a problem to continue, this is a mass abort `exit` status to avoid conflict. A benign 'already installed' will `exit 0`)
-		- `8` - unmet dependency (the basic 'do your homework' message: something else should have been done first, but can't be complete automatically)
+		- `8` - unmet dependency (the basic 'do your homework' message: something else should have been done first, but can't be completed automatically)
 		- `9` - illegal/catostrophic attempt ('you are not allowed to destroy the system' or 'you are not authorized in this area' message)
 	B. If statements, checks, and inclusions
 		1. Scripts are organized to keep file size small and to standardize system-wide jobs, not to be fool-proof for lazy programming or new users.
