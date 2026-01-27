@@ -69,7 +69,7 @@ fi
 
 # Check that the domain hasn't been added
 query="$(/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqldb.vmail.cnf -e "SELECT maxquota FROM domain WHERE domain='$domain';")"
-oldmaxquota="$(/bin/echo ${query} | sed "s/maxquota //")"
+oldmaxquota="$(/bin/echo ${query} | /usr/bin/sed "s/maxquota //")"
 # New entry
 if [ -z "${query}" ]; then
 
@@ -97,7 +97,7 @@ elif [ -n "$2" ]; then
     newboxquota=$boxquota
   else
     query="$(/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqldb.vmail.cnf -e "SELECT quota FROM domain WHERE domain='$domain';")"
-    newboxquota="$(/bin/echo ${query} | sed "s/quota //")"
+    newboxquota="$(/bin/echo ${query} | /usr/bin/sed "s/quota //")"
   fi
   /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqldb.vmail.cnf -e "UPDATE domain SET description='$description', maxquota='$newmaxquota', quota='$newboxquota', modified=CURRENT_TIMESTAMP WHERE domain='$domain';"
 

@@ -20,7 +20,7 @@ directory=$3
 dBase=$4
 dBaseUser=$5
 dBPassword=$6
-cleanName=$(/bin/echo ${domain} | sed -e 's/\.//g')
+cleanName=$(/bin/echo ${domain} | /usr/bin/sed -e 's/\.//g')
 
 # Check that the directory doesn't already exist
 if [ -d /srv/www/html/${domain}/${directory} ]; then

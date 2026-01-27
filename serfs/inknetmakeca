@@ -12,7 +12,7 @@
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/siteurilist
 newCAURI="${nameURI}"
-newCAname="$(/bin/echo ${newCAHost} | sed 's/\./_/g')"
+newCAname="$(/bin/echo ${newCAHost} | /usr/bin/sed 's/\./_/g')"
 if [ "${newCAHost}" = "$(hostname -f)" ]; then
 newCAHost="${hostURI}"
 else

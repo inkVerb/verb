@@ -24,7 +24,7 @@ NEWIP4="$1"
 
 # ARPA & inverse IP
 ## THANKS https://unix.stackexchange.com/a/132806/315069
-NEWARPAIP4=$(/bin/echo ${NEWIP4} | sed -r 's/^([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3})$/\4.\3.\2.\1.in-addr.arpa/')
+NEWARPAIP4=$(/bin/echo ${NEWIP4} | /usr/bin/sed -r 's/^([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3})$/\4.\3.\2.\1.in-addr.arpa/')
 /bin/sed -i "s:ServerARPAIPv4.*:ServerARPAIPv4=\"${NEWARPAIP4}\":" /opt/verb/conf/servernameip
 
 # Finish

@@ -26,7 +26,7 @@
 
 # Set variables
 newClientURI="${nameURI}"
-newClientName="$(/bin/echo ${hostURI} | sed 's/\./_/g')"
+newClientName="$(/bin/echo ${hostURI} | /usr/bin/sed 's/\./_/g')"
 ## Check that URI matches host
 if [ "${hostURI}" = "$(hostname -f)" ];
 then
@@ -69,7 +69,7 @@ else
 ### Variables
 newCAverberHost=$1
 NEWcaVerberURI="$(/bin/echo ${newCAverberHost} | rev | cut -d'.' -f-3 | rev)"
-NEWcaVerberName="$(/bin/echo ${newCAverberHost} | sed 's/\./_/g')"
+NEWcaVerberName="$(/bin/echo ${newCAverberHost} | /usr/bin/sed 's/\./_/g')"
 NEWcaVerberIP=$2
 ### Settings
 /opt/verb/serfs/setinkcertsslca ${newCAverberHost}

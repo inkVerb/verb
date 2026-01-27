@@ -24,7 +24,7 @@ fi
 
 if [ "$1" = "on" ]
 then
-    sed -i "s/;podcast = \"false\"/podcast = \"true\"/g" /srv/www/vapps/ampache/config/ampache.cfg.php
+    /usr/bin/sed -i "s/;podcast = \"false\"/podcast = \"true\"/g" /srv/www/vapps/ampache/config/ampache.cfg.php
     /bin/echo "Ampcache podcast on.
 
 1. Configure Podcast settings in: Admin > Server Config > System.
@@ -36,7 +36,7 @@ fi
 
 if [ "$1" = "off" ]
 then
-    sed -i "s/podcast = \"true\"/;podcast = \"false\"/g" /srv/www/vapps/ampache/config/ampache.cfg.php
+    /usr/bin/sed -i "s/podcast = \"true\"/;podcast = \"false\"/g" /srv/www/vapps/ampache/config/ampache.cfg.php
     /bin/echo "Ampcache podcast off."
 exit 0
 fi

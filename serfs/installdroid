@@ -15,7 +15,7 @@ DROIDRepo=$1
 
 # Sanitize repo
 CLNDROIDRepo1=$(/bin/echo $DROIDRepo | cut -d'/' -f5-)
-CLNDROIDRepo=$(/bin/echo $CLNDROIDRepo1 | sed 's/\.git//')
+CLNDROIDRepo=$(/bin/echo $CLNDROIDRepo1 | /usr/bin/sed 's/\.git//')
 
 # Clone it
 cd /opt/verb/droids || exit 6

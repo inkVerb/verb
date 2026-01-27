@@ -35,10 +35,10 @@ expand_ipv6() {
 
     # expand ::
     if /bin/echo $ip | /bin/grep -qs "::"; then
-        colons=$(/bin/echo $ip | sed 's/[^:]//g')
-        missing=$(/bin/echo ":::::::::" | sed "s/$colons//")
-        expanded=$(/bin/echo $missing | sed 's/:/:0/g')
-        ip=$(/bin/echo $ip | sed "s/::/$expanded/")
+        colons=$(/bin/echo $ip | /usr/bin/sed 's/[^:]//g')
+        missing=$(/bin/echo ":::::::::" | /usr/bin/sed "s/$colons//")
+        expanded=$(/bin/echo $missing | /usr/bin/sed 's/:/:0/g')
+        ip=$(/bin/echo $ip | /usr/bin/sed "s/::/$expanded/")
     fi
 
     blocks=$(/bin/echo $ip | /bin/grep -o "[0-9a-f]\+")
@@ -85,15 +85,15 @@ compress_ipv6() {
             :0:0:0:0 \
             :0:0; do
         if /bin/echo $ip | /bin/grep -qs $pattern; then
-            ip=$(/bin/echo $ip | sed "s/$pattern/::/")
+            ip=$(/bin/echo $ip | /usr/bin/sed "s/$pattern/::/")
             # if the substitution occured before the end, we have :::
-            ip=$(/bin/echo $ip | sed 's/:::/::/')
+            ip=$(/bin/echo $ip | /usr/bin/sed 's/:::/::/')
             break # only one substitution
         fi
     done
 
     # remove prepending : if necessary
-    /bin/echo $ip | /bin/grep -qs "^:[^:]" && ip=$(echo $ip | sed 's/://')
+    /bin/echo $ip | /bin/grep -qs "^:[^:]" && ip=$(echo $ip | /usr/bin/sed 's/://')
 
     /bin/echo $ip
 }

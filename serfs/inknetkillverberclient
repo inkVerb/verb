@@ -8,7 +8,7 @@
 
 
 killHost=$1
-KILLVERBCLIENT="$(/bin/echo ${killHost} | sed 's/\./_/g')"
+KILLVERBCLIENT="$(/bin/echo ${killHost} | /usr/bin/sed 's/\./_/g')"
 
 # Chek if it exists
 if [ ! -e "/opt/verb/conf/inknet/verber/client.verber.${KILLVERBCLIENT}.cnf" ]; then

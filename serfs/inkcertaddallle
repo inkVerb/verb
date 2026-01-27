@@ -60,7 +60,7 @@ certdomain=$1
 fi
 
 # Get each subdomain from the cli-ini file that the certificate was based on and that the domain-subdomain structure was based on from adddomain and newdomainshell
-domainlist=$(/usr/bin/grep 'domains = ' /opt/verb/conf/inkcert/cli-ini/cli.${certdomain}.ini | sed 's/domains = //')
+domainlist=$(/usr/bin/grep 'domains = ' /opt/verb/conf/inkcert/cli-ini/cli.${certdomain}.ini | /usr/bin/sed 's/domains = //')
 for eachsite in ${domainlist//,/ }; do
 ## Run inkCertAddLE per site config
   /opt/verb/serfs/inkcertaddle ${eachsite} ${certdomain}

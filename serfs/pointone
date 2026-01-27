@@ -37,7 +37,7 @@ fi
 newONEsub=$1
 
     cp /srv/www/verb/one/index-newonesub.php /srv/www/html/one/index.php
-    sed -i "s/newonesub/${newONEsub}/g" /srv/www/verb/one/index.php
+    /usr/bin/sed -i "s/newonesub/${newONEsub}/g" /srv/www/verb/one/index.php
     /bin/echo "Pointing to http://${newONEsub}.${oneURI}, done."
 exit 0
 

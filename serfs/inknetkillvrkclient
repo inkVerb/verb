@@ -9,7 +9,7 @@
 
 KILLuser=$1
 killHost=$2
-killMachine="$(/bin/echo ${killHost} | sed 's/\./_/g')"
+killMachine="$(/bin/echo ${killHost} | /usr/bin/sed 's/\./_/g')"
 killVrkClient="${killUser}_${killMachine}"
 
 if [ -z ${2} ]; then

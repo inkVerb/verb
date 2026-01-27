@@ -40,13 +40,13 @@ emailUser="${1}"
 domain="${2}"
 address="$emailUser@$domain"
 shift 2
-goto="$(echo "$@" | sed "s/ /,/g")"
+goto="$(echo "$@" | /usr/bin/sed "s/ /,/g")"
 
 # Check for an existing entry
 email="${1}"
 query="$(/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqldb.vmail.cnf -e "SELECT goto FROM alias WHERE address='$email' AND domain='$domain';")"
 if [ -n "${query}" ]; then
-  oldgoto="$(echo ${query} | sed "s/goto //")"
+  oldgoto="$(echo ${query} | /usr/bin/sed "s/goto //")"
   newgoto="${oldgoto},${goto}"
   /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqldb.vmail.cnf -e "UPDATE alias SET goto='$newgoto', modified=CURRENT_TIMESTAMP WHERE address='$email' AND domain='$domain';"
 else

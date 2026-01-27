@@ -32,7 +32,7 @@ if [ -d /srv/www/vapps/${cVappName} ]; then
 exit 8; fi
 
 # Auto database
-cleanName=$(/usr/bin/echo $cVappName | sed -e 's/\.//g')
+cleanName=$(/usr/bin/echo $cVappName | /usr/bin/sed -e 's/\.//g')
 if [ -z ${3} ]; then
 dBPassword=$(/usr/bin/pwgen -s -1 10)
 else

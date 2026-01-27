@@ -45,7 +45,7 @@ cd ${backdir} || exit 9
 
 # List
 for backdir in pgsql.*; do
-  suffix="$(/usr/bin/echo "${backdir}" | sed 's/pgsql.//')"
+  suffix="$(/usr/bin/echo "${backdir}" | /usr/bin/sed 's/pgsql.//')"
   echo ${suffix}
 done
 

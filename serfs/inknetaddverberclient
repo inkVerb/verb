@@ -30,10 +30,10 @@ fi
 
 ICHOST=$1
 addIP=$2
-addHost="$(/bin/echo ${ICHOST} | sed 's/_/\./g')"
-addName="$(/bin/echo ${ICHOST} | sed 's/\./_/g')"
+addHost="$(/bin/echo ${ICHOST} | /usr/bin/sed 's/_/\./g')"
+addName="$(/bin/echo ${ICHOST} | /usr/bin/sed 's/\./_/g')"
 addURI="$(/bin/echo ${addHost} | rev | cut -d'.' -f-3 | rev)"
-uriName="$(/bin/echo ${addURI} | sed 's/\./_/g')"
+uriName="$(/bin/echo ${addURI} | /usr/bin/sed 's/\./_/g')"
 
 if [ -z ${2} ]; then
 /bin/echo "Dude. You need both options. Read the instructions."

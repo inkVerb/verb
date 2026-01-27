@@ -19,7 +19,7 @@ cVappName=wp.inkblog
 dBase=$1
 dBaseUser=$2
 dBPassword=$3
-cleanName=$(/bin/echo $cVappName | sed -e 's/\.//g')
+cleanName=$(/bin/echo $cVappName | /usr/bin/sed -e 's/\.//g')
 
 # Check for existing inkblog
 . /opt/verb/conf/inkinksiteinstallstatus

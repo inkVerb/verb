@@ -26,11 +26,11 @@ VINAME=$2
 vcKey=$3
 # Determine vrk or verber
 if [ "${Vtype}" = "vrk" ]; then
-vcname="$(/bin/echo ${VINAME} | sed 's/\./_/g' | sed 's/@/_/g' )"
+vcname="$(/bin/echo ${VINAME} | /usr/bin/sed 's/\./_/g' | /usr/bin/sed 's/@/_/g' )"
 fi
 if [ "${Vtype}" = "verber" ]; then
-vcname="$(/bin/echo ${VINAME} | sed 's/\./_/g')"
-VCHOST="$(/bin/echo ${VINAME} | sed 's/_/\./g')"
+vcname="$(/bin/echo ${VINAME} | /usr/bin/sed 's/\./_/g')"
+VCHOST="$(/bin/echo ${VINAME} | /usr/bin/sed 's/_/\./g')"
 VCURI="$(/bin/echo ${VCHOST} | rev | cut -d'.' -f-3 | rev)"
 fi
 

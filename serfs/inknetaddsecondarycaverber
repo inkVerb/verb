@@ -23,8 +23,8 @@ exit 0; fi
 
 INPcaVerberHost=$1
 NEWcaVerberURI="$(/bin/echo ${newCAverberHost} | rev | cut -d'.' -f-3 | rev)"
-NEWcaVerberName="$(/bin/echo ${inpCAverberHost} | sed 's/\./_/g')"
-newCAverberHost="$(/bin/echo ${newCAverberName} | sed 's/_/\./g')"
+NEWcaVerberName="$(/bin/echo ${inpCAverberHost} | /usr/bin/sed 's/\./_/g')"
+newCAverberHost="$(/bin/echo ${newCAverberName} | /usr/bin/sed 's/_/\./g')"
 NEWcaVerberIP=$2
 
 # Set configs

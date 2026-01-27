@@ -26,7 +26,7 @@
 
 Vtype=$1
 ICNAME=$2
-vcname="$(/bin/echo ${ICNAME} | sed 's/\./_/g' | sed 's/@/_/g' )"
+vcname="$(/bin/echo ${ICNAME} | /usr/bin/sed 's/\./_/g' | /usr/bin/sed 's/@/_/g' )"
 
 # Check variables
 if [ -z ${2} ]; then

@@ -22,7 +22,7 @@
 
 
 CA2URI=$1
-secondaryCAvName="$(/bin/echo ${CA2URI} | sed 's/\./_/g')"
+secondaryCAvName="$(/bin/echo ${CA2URI} | /usr/bin/sed 's/\./_/g')"
 
 # Include the config
 if [ -z ${1} ]; then

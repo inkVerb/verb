@@ -73,7 +73,7 @@ Email server not installed, can't install ownCloud.
 exit 0; fi
 
 # Auto database
-cleanName=$(/usr/bin/echo $cVappName | sed -e 's/\.//g')
+cleanName=$(/usr/bin/echo $cVappName | /usr/bin/sed -e 's/\.//g')
 if [ -z ${3} ]; then
 dBPassword=$(/usr/bin/pwgen -s -1 10)
 else
@@ -152,7 +152,7 @@ EOF
 # installowncloud bestdbase bestdbuser besteverpass"
 # 
 # ## Auto database
-# cleanName=$(/usr/bin/echo $cVappName | sed -e 's/\.//g')
+# cleanName=$(/usr/bin/echo $cVappName | /usr/bin/sed -e 's/\.//g')
 # if [ -z ${3} ]; then
 # dBPassword=$(/usr/bin/pwgen -s -1 10)
 # else

@@ -52,7 +52,7 @@ username="$emailUser@$domain"
 
 # Check that the domain exists and get the default quota
 query="$(/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqldb.vmail.cnf -e "SELECT quota FROM domain WHERE domain='$domain';")"
-domquota="$(/bin/echo ${query} | sed "s/quota //")000000"
+domquota="$(/bin/echo ${query} | /usr/bin/sed "s/quota //")000000"
 # Oops, domain does not exist
 if [ -z "${query}" ]; then
   /bin/echo "The domain $domain hasn't been added yet, doing nothing"
@@ -61,12 +61,12 @@ fi
 
 #Check if the email exists
 query="$(/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqldb.vmail.cnf -e "SELECT quota FROM mailbox WHERE username='$username';")"
-oldquota="$(/bin/echo ${query} | sed "s/quota //")"
+oldquota="$(/bin/echo ${query} | /usr/bin/sed "s/quota //")"
 # User exists
 if [ -n "${query}" ]; then
   # Get the name
   query="$(/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqldb.vmail.cnf -e "SELECT name FROM mailbox WHERE username='$username';")"
-  oldname="$(/bin/echo ${query} | sed "s/name //")"
+  oldname="$(/bin/echo ${query} | /usr/bin/sed "s/name //")"
   # Show user info if no changes
   if [ -z "$3" ]; then
     # Finish

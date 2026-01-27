@@ -72,7 +72,7 @@ fi
 newONEsub=$1
 
     cp /srv/www/verb/vip/index-newvipsub.php /srv/www/html/vip/index.php
-    sed -i "s/newvipsub/${newONEsub}/g" /srv/www/verb/vip/index.php
+    /usr/bin/sed -i "s/newvipsub/${newONEsub}/g" /srv/www/verb/vip/index.php
     /bin/echo "Pointing to http://${newONEsub}.${vipURI}, done."
 exit 0
 

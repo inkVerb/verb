@@ -31,8 +31,8 @@ fi
 
 ADDuser="$1"
 icMachine="$2"
-addMachine="$(/bin/echo ${icMachine} | sed 's/_/\./g')"
-scrMachine="$(/bin/echo ${icMachine} | sed 's/\./_/g')"
+addMachine="$(/bin/echo ${icMachine} | /usr/bin/sed 's/_/\./g')"
+scrMachine="$(/bin/echo ${icMachine} | /usr/bin/sed 's/\./_/g')"
 addClientName="${addUser}_${scrMachine}"
 if [ -z ${3} ]; then
 addIP="NOT_SET"

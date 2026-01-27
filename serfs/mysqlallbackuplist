@@ -45,7 +45,7 @@ cd ${backdir} || exit 9
 
 # List
 for backdir in mysql.*; do
-  suffix="$(/usr/bin/echo "${backdir}" | sed 's/mysql.//')"
+  suffix="$(/usr/bin/echo "${backdir}" | /usr/bin/sed 's/mysql.//')"
   echo ${suffix}
 done
 

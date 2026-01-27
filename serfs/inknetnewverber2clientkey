@@ -15,7 +15,7 @@
 
 
 ICASEC=$1
-CA2NAME="$(/bin/echo ${ICASEC} | sed 's/\./_/g')"
+CA2NAME="$(/bin/echo ${ICASEC} | /usr/bin/sed 's/\./_/g')"
 
 # Check the config
 if [ ! -f /opt/verb/conf/inknet/2cav.${CA2NAME}.cnf ]; then

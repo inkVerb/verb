@@ -8,8 +8,8 @@
 ## ./inknetaddca2vpkg [CA2 Host/Name] [sec path code from CA Verber - optional, will prompt if not entered here]
 
 iCA2v=$1
-ca2vName="$(/bin/echo ${iCA2v} | sed 's/\./_/g')"
-ca2vHost="$(/bin/echo ${iCA2v} | sed 's/\_/./g')"
+ca2vName="$(/bin/echo ${iCA2v} | /usr/bin/sed 's/\./_/g')"
+ca2vHost="$(/bin/echo ${iCA2v} | /usr/bin/sed 's/\_/./g')"
 secpath=$2
 
 # Include the config

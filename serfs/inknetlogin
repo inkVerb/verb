@@ -24,7 +24,7 @@ if [ "$1" = "CA1" ]; then
 . /opt/verb/conf/inknet/client.${caVerberName}.rink.login.cnf
 else
 CAV2HOST=$1
-CAV2NAME="$(/bin/echo ${CAV2HOST} | sed 's/\./_/g')"
+CAV2NAME="$(/bin/echo ${CAV2HOST} | /usr/bin/sed 's/\./_/g')"
 . /opt/verb/conf/inknet/2cav.${CAV2NAME}.cnf
 fi
 

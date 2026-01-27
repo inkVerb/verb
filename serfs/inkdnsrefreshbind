@@ -162,7 +162,7 @@ EOF
         #### Proper directory structure? (not an asset like domains or killed)
         if [ ! -d "${snsverber}/domains" ]; then continue; fi
         #### Get the name of the actual folder
-        verber_machine_name=$(echo ${snsverber} | sed "s?/srv/sns/??")
+        verber_machine_name=$(echo ${snsverber} | /usr/bin/sed "s?/srv/sns/??")
         ####DEV this may not be necessary since it is handled through the VPS host
         #### rDNS slave listing (host only, which populates individual items through the named interchagne system)
         . "${snsverber}/conf"

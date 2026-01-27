@@ -34,7 +34,7 @@ if [ "$ServerMailStatus" != "VMAIL_SERVER" ]; then
 
 # Run the query
 query=$(/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqldb.vmail.cnf -e "SELECT domain FROM domain;")
-domainlist="$(/bin/echo ${query} | sed "s/domain ALL //")"
+domainlist="$(/bin/echo ${query} | /usr/bin/sed "s/domain ALL //")"
 
 # Show the results
 for dom in $domainlist; do

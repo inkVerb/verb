@@ -12,7 +12,7 @@
 
 
 CA2URICFG=$1
-secondaryCAcfg="$(/bin/echo ${CA2URICFG} | sed 's/\./_/g')"
+secondaryCAcfg="$(/bin/echo ${CA2URICFG} | /usr/bin/sed 's/\./_/g')"
 
 # Set the Client config
 if [ -z ${1} ]; then

@@ -44,7 +44,7 @@ else
 fi
 
 # Show the results
-boxlist="$(/bin/echo ${query} | sed "s/username //")"
+boxlist="$(/bin/echo ${query} | /usr/bin/sed "s/username //")"
 for box in $boxlist; do
   echo $box
 done
