@@ -24,7 +24,7 @@ voptflagpurpose=(  )
 dependencyinstall=(  )
 prerequesite=( "inkCert certs should be installled for at least the nameURI for this verber" )
 usedby=( installinkvmail )
-useserfs=( installspamassassin setinkcertmailcerts setinkcertmail inkvmailverbaddrs inkdnsaddmail newinkdkim inkdnsaddinkdkim inkvmailsysmailbox )
+useserfs=( installspamassassin setinkcertmailcerts setinkcertmail inkvmailbaseaddrs inkdnsaddmail newinkdkim inkdnsaddinkdkim inkvmailsysmailbox )
 useconfigs=( servernameip siteurilist servertype servermailpath )	# List config files of any kind used in this serf, please preserve order of appearance
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/installpostfixvmail.replace" ]; then . /opt/verb/mods/installpostfixvmail.replace; return 0; fi # Replaces this script
@@ -529,7 +529,7 @@ fi
 # System domains & addresses
 ## Note: If the mail database needs to be reset, such as for a PostfixAdmin update, just run this after, then the results of this serf will be up to date
 ## Add base domains & addresses
-/opt/verb/serfs/inkvmailverbaddrs
+/opt/verb/serfs/inkvmailbaseaddrs
 ## Setup system mail
 /opt/verb/serfs/inkvmailsysmailboxmsmtp
 

@@ -24,7 +24,7 @@ voptflagpurpose=(  )
 dependencyinstall=(  )
 prerequesite=( "inkCert certs should be installled for at least the nameURI for this verber" )
 usedby=( installinkemail )
-useserfs=( inkemailaddscriptfilter setinkcertmailcerts setinkcertmail inkemailverbaddrs inkdnsaddmail inkdnsaddinkdkim inkemailsysmailboxmsmtp )
+useserfs=( inkget inkemailaddscriptfilter setinkcertmailcerts setinkcertmail inkdnsaddmail inkdnsaddinkdkim inkemailbaseaddrs inkemailsysmailboxmsmtp inkdriveapp)
 useconfigs=( servernameip siteurilist servertype servermailpath )	# List config files of any kind used in this serf, please preserve order of appearance
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/installmaddymail.replace" ]; then . /opt/verb/mods/installmaddymail.replace; return 0; fi # Replaces this script

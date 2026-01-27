@@ -4,11 +4,11 @@
 # This sets and resets the base email addresses used by all other domains on the Postfix vmail server
 
 # How to use:
-## ./inkvmailverbaddrs
+## ./inkvmailbaseaddrs
 
 usagenotes="This sets and resets the base email addresses used by all other domains on the Postfix vmail server"
-usageformat="inkvmailverbaddrs"
-usageexample="inkvmailverbaddrs"
+usageformat="inkvmailbaseaddrs"
+usageexample="inkvmailbaseaddrs"
 hierarchy=( secondary )
 vsetnames=(  )
 vsettypes=(  )
@@ -22,8 +22,8 @@ usedby=( installpostfixvmail backupinkvmailrestore )
 useserfs=(  )
 useconfigs=( siteurilist )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
-if [ -e "/opt/verb/mods/inkvmailverbaddrs.replace" ]; then . /opt/verb/mods/inkvmailverbaddrs.replace; return 0; fi # Replaces this script
-if [ -e "/opt/verb/mods/inkvmailverbaddrs.before" ]; then . /opt/verb/mods/inkvmailverbaddrs.before; fi # Precedes this script
+if [ -e "/opt/verb/mods/inkvmailbaseaddrs.replace" ]; then . /opt/verb/mods/inkvmailbaseaddrs.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkvmailbaseaddrs.before" ]; then . /opt/verb/mods/inkvmailbaseaddrs.before; fi # Precedes this script
 
 
 
@@ -49,4 +49,4 @@ INSERT IGNORE INTO alias (address, goto, domain, created, modified, active) VALU
 INSERT IGNORE INTO alias (address, goto, domain, created, modified, active) VALUES ('webmaster@$nameURI', '$username', '$nameURI', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);
 INSERT IGNORE INTO alias (address, goto, domain, created, modified, active) VALUES ('dmark@$nameURI', '$username', '$nameURI', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);"
 
-if [ -e "/opt/verb/mods/inkvmailverbaddrs.after" ]; then . /opt/verb/mods/inkvmailverbaddrs.after; fi # Follows this script
+if [ -e "/opt/verb/mods/inkvmailbaseaddrs.after" ]; then . /opt/verb/mods/inkvmailbaseaddrs.after; fi # Follows this script

@@ -33,7 +33,7 @@ voptflagpurpose=( "No Roudcube Box setup password, but using backup email file" 
 dependencyinstall=(  )
 prerequesite=( "inkCert certs should be installled for at least the emailTLDURI and nameURI for this verber" )
 usedby=(  )
-useserfs=( installpostfixemail installrc )
+useserfs=( installmaddymail installrc )
 useconfigs=( siteurilist )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/installinkemail.replace" ]; then . /opt/verb/mods/installinkemail.replace; return 0; fi # Replaces this script

@@ -73,7 +73,7 @@ if [ -e "/etc/httpd/sites-enabled/po.${emailTLDURI}.conf" ] && [ -f "/srv/www/em
 /bin/sed -i "s/mailpass${tbrSMPAPG}/mailpass${ServerMailPassApg}/" /srv/www/email/postfixadmin/config.local.php; fi
 
 # Add/refresh base domains & addresses
-/opt/verb/serfs/inkvmailverbaddrs
+/opt/verb/serfs/inkvmailbaseaddrs
 
 # Setup/refresh PHP to send system mail
 /opt/verb/serfs/inkvmailsysmailbox
