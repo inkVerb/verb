@@ -9,7 +9,7 @@
 
 
 # Include the config
-if [ -d "/opt/verb//opt/verb/conf/servernameip" ]; then
+if [ -d "/opt/verb/inst" ]; then
   ## This allows updates on a -premade or -made verber
   ServerUpdateOrg="inkverb"
   ServerUpdateRepo="verb-update"
