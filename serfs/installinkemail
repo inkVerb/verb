@@ -50,7 +50,7 @@ else
   boxfolder="$(/usr/bin/pwgen -0 5 1)"
 fi
 
-# Postfix vmail
+# Maddy email
 /opt/verb/serfs/installmaddymail
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 

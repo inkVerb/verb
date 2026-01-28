@@ -1,0 +1,42 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This runs DNS & SSL identity serfs for inkmail (inkemail and/or inkvmail)
+
+# How to use:
+## ./inkmaildomains
+
+usagenotes="This runs DNS & SSL identity serfs for inkmail (inkemail and/or inkvmail)"
+usageformat="inkmaildomains"
+usageexample="inkmaildomains "
+hierarchy=( secondary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( setup )
+useserfs=( setinkcertmailsubdomains inkdnsaddmail )
+useconfigs=( siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkmaildomains.replace" ]; then . /opt/verb/mods/inkmaildomains.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkmaildomains.before" ]; then . /opt/verb/mods/inkmaildomains.before; fi # Precedes this script
+
+
+
+# Include the config
+. /opt/verb/conf/siteurilist
+
+# Mail cert subdomains
+/opt/verb/serfs/setinkcertmailsubdomains ${nameURI}
+
+# DNS MX and TXT mail records for this server
+/opt/verb/serfs/inkdnsaddmail ${nameURI} verber; wait
+
+
+
+
+if [ -e "/opt/verb/mods/inkmaildomains.after" ]; then . /opt/verb/mods/inkmaildomains.after; fi # Follows this script

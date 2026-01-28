@@ -40,7 +40,7 @@ fi
 
 # Check if already added
 if /bin/grep -Fq "; Hostname Mail Record Defaults" /opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}; then
-/bin/echo "Mail Record Defaults already added to ${dnsDomain}. Use killinkdnsmail to remove them."
+/bin/echo "Mail Record Defaults already added to ${dnsDomain}. Use killinkdnsmail if you want to remove them. Nothing to do."
 exit 0; fi
 
 # Echo the records

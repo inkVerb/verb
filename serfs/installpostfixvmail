@@ -53,7 +53,7 @@ if [[ "${ServerMailStatus}" =~ "_BACKUP_MX" ]]; then # Backup mail server could 
 Email server is already a backup server.
 "
 exit 0; fi
-if [ "${ServerMailStatus}" != "EMAIL_NOT_INSTALLED" ]; then
+if [ "${ServerMailStatus}" != "VMAIL_READY" ] && [ "${ServerMailStatus}" != "EMAIL_NOT_INSTALLED" ]; then
 /usr/bin/echo "
 Email server is already configured and cannot be installed.
 "
@@ -68,6 +68,10 @@ if [ "${EmailAllowed}" != "YES" ]; then
 Email not allowed on this server.
 "
 exit 0; fi
+
+# Prepare config for Postfix vmail now
+## inkmaildomains and setinkcert* need this
+/usr/bin/sed -i "s/ServerMailStatus=.*/ServerMailStatus=\"VMAIL_READY\"/g" /opt/verb/conf/servermailpath
 
 # Update Keyring
 /usr/bin/pacman -Sy archlinux-keyring --noconfirm
@@ -253,10 +257,10 @@ CREATE DATABASE mail DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 GRANT ALL PRIVILEGES ON mail.* TO 'mail'@'localhost' IDENTIFIED BY 'mailpass${mailpassgen}';
 FLUSH PRIVILEGES;"
 
-# SSL certs
+# Mail Domain DNS & SSL
 ## Directory
 /usr/bin/mkdir -p /etc/ssl/server/mail
-## Snakeoil
+## Snakeoil?
 if /usr/bin/grep -Fq "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${nameURI}; then
   /usr/bin/rm -f /etc/ssl/server/mail/vmail.crt
   /usr/bin/sed -i "s?^#ssl_cert = </etc/ssl/server/server.crt?ssl_cert = </etc/ssl/server/server.crt?" /etc/dovecot/conf.d/10-ssl.conf
@@ -448,38 +452,38 @@ CREATE TABLE 'vacation_notification' (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci COMMENT='Postfix Admin - Virtual Vacation Notifications';"
 
 # OpenDKIM
+#NOTE This is postfix-specific, Maddy doesn't need it
 ## Create/reset OpenDKIM files
-/bin/mkdir -p /etc/opendkim/keys
-/bin/cp /opt/verb/conf/lib/vmail/default/opendkim /etc/default/
-/bin/cp /opt/verb/conf/lib/vmail/opendkim.conf /etc/opendkim/
-/bin/echo "127.0.0.1
+/usr/bin/mkdir -p /etc/opendkim/keys
+/usr/bin/cp /opt/verb/conf/lib/vmail/default/opendkim /etc/default/
+/usr/bin/cp /opt/verb/conf/lib/vmail/opendkim.conf /etc/opendkim/
+/usr/bin/echo "127.0.0.1
 localhost
 ${hostURI}" > /etc/opendkim/TrustedHosts
 ## IP4?
 if [ "${ServerIPv4}" != "NOIP4" ]; then
-  /bin/echo "${ServerIPv4}" >> /etc/opendkim/TrustedHosts
+  /usr/bin/echo "${ServerIPv4}" >> /etc/opendkim/TrustedHosts
 fi
 ## IP6?
 if [ "${ServerIPv6}" != "NOIP6" ]; then
-  /bin/echo "${ServerIPv6}" >> /etc/opendkim/TrustedHosts
+  /usr/bin/echo "${ServerIPv6}" >> /etc/opendkim/TrustedHosts
 fi
-/bin/echo "inkdkim._domainkey.${nameURI} ${nameURI}:inkdkim:/etc/opendkim/keys/${nameURI}/inkdkim.private" > /etc/opendkim/KeyTable
-/bin/echo "${nameURI} inkdkim._domainkey.${nameURI}" > /etc/opendkim/SigningTable
+/usr/bin/echo "inkdkim._domainkey.${nameURI} ${nameURI}:inkdkim:/etc/opendkim/keys/${nameURI}/inkdkim.private" > /etc/opendkim/KeyTable
+/usr/bin/echo "${nameURI} inkdkim._domainkey.${nameURI}" > /etc/opendkim/SigningTable
 ## OpenDKIM Key for initial site
 /bin/mkdir -p /etc/opendkim/keys/${nameURI}
 cd /etc/opendkim/keys/${nameURI} || exit 6
 /usr/bin/opendkim-genkey -r -S -s inkdkim -d ${nameURI}; wait
 cd ${oldPwd} || exit 6
-/bin/chmod 660 /etc/opendkim/keys/${nameURI}/inkdkim.private
-/bin/chown -R opendkim:opendkim /etc/opendkim
+/usr/bin/chmod 660 /etc/opendkim/keys/${nameURI}/inkdkim.private
+/usr/bin/chown -R opendkim:opendkim /etc/opendkim
 ## Start
 /usr/bin/systemctl enable opendkim
 /usr/bin/systemctl start opendkim
 
-# DNS MX and TXT mail records for this server
-/opt/verb/serfs/inkdnsaddmail ${nameURI} verber; wait
-## DKIM keys & TXT records
+# DKIM keys & TXT records
 /opt/verb/serfs/newinkdkim ${nameURI}; wait
+#NOTE Maddy or Postfix must be installed for this to work:
 /opt/verb/serfs/inkdnsaddinkdkim ${nameURI} verber; wait
 
 # UFW (services and ports below them if known)
@@ -503,23 +507,23 @@ cd ${oldPwd} || exit 6
 
 # Monit
 #/bin/cp /opt/verb/conf/lib/vmail/monit/monitrc.d/amavis /etc/monit/monitrc.d/
-/bin/cp /opt/verb/conf/lib/vmail/monit/monitrc.d/dovecot /etc/monit/monitrc.d/
-/bin/cp /opt/verb/conf/lib/vmail/monit/monitrc.d/opendkim /etc/monit/monitrc.d/
-/bin/cp /opt/verb/conf/lib/vmail/monit/monitrc.d/postfix /etc/monit/monitrc.d/
+/usr/bin/cp /opt/verb/conf/lib/vmail/monit/monitrc.d/dovecot /etc/monit/monitrc.d/
+/usr/bin/cp /opt/verb/conf/lib/vmail/monit/monitrc.d/opendkim /etc/monit/monitrc.d/
+/usr/bin/cp /opt/verb/conf/lib/vmail/monit/monitrc.d/postfix /etc/monit/monitrc.d/
 # /bin/cp /opt/verb/conf/lib/vmail/monit/monitrc.d/spamassassin /etc/monit/monitrc.d/ moved to installspamassassin
-/bin/systemctl enable monit
-/bin/systemctl start monit
+/usr/bin/systemctl enable monit
+/usr/bin/systemctl start monit
 
 # Config settings to "EMAIL_INSTALLED"
-/bin/sed -i "s/ServerMailStatus=.*/ServerMailStatus=\"VMAIL_SERVER\"/g" /opt/verb/conf/servermailpath
+/usr/bin/sed -i "s/ServerMailStatus=.*/ServerMailStatus=\"VMAIL_SERVER\"/g" /opt/verb/conf/servermailpath
 
 # PHP mail log
 if ! /usr/bin/grep -q '^mail.log = /var/log/phpmail.log' /opt/verb/conf/php.ini; then
-  /bin/sed -i "s/^mail.log = /;mail.log = /" /opt/verb/conf/php.ini
+  /usr/bin/sed -i "s/^mail.log = /;mail.log = /" /opt/verb/conf/php.ini
   if /usr/bin/grep -q ';mail.log = /var/log/phpmail.log' /opt/verb/conf/php.ini; then
-    /bin/sed -i "s?^;mail.log = /var/log/phpmail.log?mail.log = /var/log/phpmail.log?" /opt/verb/conf/php.ini
+    /usr/bin/sed -i "s?^;mail.log = /var/log/phpmail.log?mail.log = /var/log/phpmail.log?" /opt/verb/conf/php.ini
   else
-    /bin/echo "mail.log = /var/log/phpmail.log" >> /opt/verb/conf/php.ini
+    /usr/bin/echo "mail.log = /var/log/phpmail.log" >> /opt/verb/conf/php.ini
   fi
   /usr/bin/systemctl restart httpd
 fi

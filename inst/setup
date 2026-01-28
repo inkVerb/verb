@@ -754,8 +754,8 @@ fi
 # www default indexes
 /opt/verb/serfs/updatehtmlverbs; wait
 
-# inkCert mail subdomains
-/opt/verb/serfs/setinkcertmailsubdomains ${nameURI}
+# inkCert mail subdomains & cert structure
+/opt/verb/serfs/inkmaildomains
 
 # inkCert email web server subdomains for Box (RoundCube, et al) and PO (PostfixAdmin)
 ## These are added here in setup, so the DNS record for emailTLDURI are also added

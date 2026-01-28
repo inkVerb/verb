@@ -69,7 +69,7 @@ if [[ "${ServerMailStatus}" =~ "_BACKUP_MX" ]]; then # Backup mail server could 
 Email server is already a backup server.
 "
 exit 0; fi
-if [ "${ServerMailStatus}" != "EMAIL_NOT_INSTALLED" ]; then
+if [ "${ServerMailStatus}" != "MADDY_EMAIL_READY" ] && [ "${ServerMailStatus}" != "EMAIL_NOT_INSTALLED" ]; then
 /usr/bin/echo "
 Email server is already configured and cannot be installed.
 "
@@ -84,6 +84,10 @@ if [ "${EmailAllowed}" != "YES" ]; then
 Email not allowed on this server.
 "
 exit 0; fi
+
+# Prepare config for Maddy now
+## inkmaildomains and setinkcert* need this
+/usr/bin/sed -i "s/ServerMailStatus=.*/ServerMailStatus=\"MADDY_EMAIL_READY\"/g" /opt/verb/conf/servermailpath
 
 # Install Maddy server package
 ## Considered a cloud service, repo uses /srv/cloud for its vapp folder
@@ -169,22 +173,21 @@ echo "localhost:5432:email:email:emailpass${mailpassgen}" > /opt/verb/conf/sql/p
 /usr/bin/chown maddy:maddy /etc/maddy/conf.d/customscripts.conf
 /usr/bin/chmod 0640 /etc/maddy/conf.d/customscripts.conf
 
-# SSL certs
+# Mail Domain DNS & SSL
 ## Directory
 /usr/bin/mkdir -p /etc/ssl/server/mail
-## Snakeoil
+## Snakeoil?
 if /usr/bin/grep -Fq "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${nameURI}; then
   /usr/bin/rm -f /etc/ssl/server/mail/email.crt
 ## inkCert
 else
+  ### Certificates & structure
   /opt/verb/serfs/setinkcertmailcerts ${nameURI} inkemail
   /opt/verb/serfs/setinkcertmail ${nameURI} email
 fi
-
-# DNS MX and TXT mail records for this server
-/opt/verb/serfs/inkdnsaddmail ${nameURI} verber; wait
 ## DKIM keys & TXT records
 # /opt/verb/serfs/newinkdkim ${nameURI}; wait # Handled by Maddy
+#NOTE Maddy or Postfix must be installed for this to work:
 /opt/verb/serfs/inkdnsaddinkdkim ${nameURI} verber; wait
 
 # UFW (services and ports below them if known)
@@ -287,12 +290,12 @@ elif [ ${ServerType} = "lamp" ]; then
 fi
 
 # Config settings to Maddy's version of "EMAIL_INSTALLED"
-/bin/sed -i "s/ServerMailStatus=.*/ServerMailStatus=\"MADDY_EMAIL_SERVER\"/g" /opt/verb/conf/servermailpath
+/usr/bin/sed -i "s/ServerMailStatus=.*/ServerMailStatus=\"MADDY_EMAIL_SERVER\"/g" /opt/verb/conf/servermailpath
 ## PFA not allowed for Maddy
 /usr/bin/sed -i "s/PFA_NOT_INSTALLED/PFA_NOT_ALLOWED/g" /opt/verb/conf/servermailpath
 
 # Finish
-/bin/echo "The Maddy email server for inkVerb has been installed.
+/usr/bin/echo "The Maddy email server for inkVerb has been installed.
 The email server is https://${emailTLDURI}
 "
 

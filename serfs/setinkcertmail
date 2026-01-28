@@ -2,7 +2,7 @@
 #inkVerbSerf! verb.ink
 
 # This sets up basic mail certificates and subdomain dummy sites for inkCert-LE
-## This is run automatically by setup, installpostfixvmail, and newdomainshell, and normally should not be run independently
+## This is run automatically by setup, installpostfixvmail, installmaddymail, and newdomainshell, and normally should not be run independently
 ## vmail is for Postfix vmail
 ## email is for Maddy email
 
@@ -63,7 +63,7 @@ fi
 
 # Postfix vmail implementation?
 ## Only make the entries if the keys exist
-if [ "${ServerMailStatus}" = "VMAIL_SERVER" ] && [ -e "$(/usr/bin/readlink /etc/ssl/server/mail/${domain}.crt)" ] && [ -e "$(/usr/bin/readlink /etc/ssl/server/mail/${domain}.key)" ]; then
+if [[ "${ServerMailStatus}" == "VMAIL_"* ]] && [ -e "$(/usr/bin/readlink /etc/ssl/server/mail/${domain}.crt)" ] && [ -e "$(/usr/bin/readlink /etc/ssl/server/mail/${domain}.key)" ]; then
   # Dovecot
   /usr/bin/cat <<EOF > /etc/dovecot/crt.d/${domain}.conf
 local_name mail.${domain} {
