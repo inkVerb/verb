@@ -755,9 +755,6 @@ fi
 # www default indexes
 /opt/verb/serfs/updatehtmlverbs; wait
 
-# inkCert mail subdomains & cert structure
-/opt/verb/serfs/inkmaildomains
-
 # inkCert email web server subdomains for Box (RoundCube, et al) and PO (PostfixAdmin)
 ## These are added here in setup, so the DNS record for emailTLDURI are also added
 /usr/bin/sed -i "s/, po.${emailTLDURI}//g" /opt/verb/conf/inkcert/cli-ini/cli.${emailTLDURI}.ini
@@ -1162,6 +1159,9 @@ inkZone="$(/usr/bin/echo ${inkZoneDB} | /usr/bin/sed 's/db\.//' )"
 /opt/verb/serfs/inkdnsserial ${inkZone} verber
 done
 cd $OLDPWD || exit 6
+
+# inkCert mail subdomains & cert structure
+/opt/verb/serfs/inkmaildomains
 
 # Port (set to something to avoid attacks)
 /usr/bin/sed -i "/Port.*/ c\Port ${newport}" /etc/ssh/sshd_config
