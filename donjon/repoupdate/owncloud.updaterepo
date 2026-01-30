@@ -26,7 +26,7 @@ fi
 # Get the package
 ## Keep its distrib name for the SHA256 check
 /usr/bin/wget https://download.owncloud.com/ocis/ocis/stable/${distVer}/ocis-${distVer}-linux-amd64
-if [ ! -f "${cVappName}" ]; then
+if [ ! -f "ocis-${distVer}-linux-amd64" ]; then
 /bin/echo "Failed download."; touch "${cVappName}.failed"
 exit 4; else
 /bin/rm -f ${cVappName}.failed; fi

@@ -26,7 +26,7 @@ fi
 # Get the package
 ## Keep its distrib name for the SHA256 check
 /usr/bin/wget -O ${cVappName}.tar.zst https://github.com/foxcpp/maddy/releases/download/v${distVer}/maddy-${distVer}-x86_64-linux-musl.tar.zst
-if [ ! -f "${cVappName}" ]; then
+if [ ! -f "${cVappName}.tar.zst" ]; then
 /bin/echo "Failed download."; touch "${cVappName}.failed"
 exit 4; else
 /bin/rm -f ${cVappName}.failed; fi
