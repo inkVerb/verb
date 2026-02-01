@@ -254,14 +254,15 @@ EOF
       done
     fi
 
-    ## Options for DNSSEC, must be global and outsiside zone entries, but in the same named.conf.* settings
-    ### If this is set as the tertiary DNS server
-    if [ "${DNSSlave}" = "${ServerNS2DNS}" ]; then
-      /usr/bin/echo "options { dnssec-validation auto; };" >> /var/named/named.conf.verb
-    ### If this is set as the secondary DNS server
-    elif [ "${DNSSlave}" = "${ServerNS1DNS}" ]; then
-      /usr/bin/echo "options { dnssec-validation auto; };" >> /var/named/named.conf.verb
-    fi # End DNSSEC global option
+    #DEV This is redundant and results in a systemctl error: 'options' redefined near 'options'
+    # ## Options for DNSSEC, must be global and outsiside zone entries, but in the same named.conf.* settings
+    # ### If this is set as the tertiary DNS server
+    # if [ "${DNSSlave}" = "${ServerNS2DNS}" ]; then
+    #   /usr/bin/echo "options { dnssec-validation auto; };" >> /var/named/named.conf.verb
+    # ### If this is set as the secondary DNS server
+    # elif [ "${DNSSlave}" = "${ServerNS1DNS}" ]; then
+    #   /usr/bin/echo "options { dnssec-validation auto; };" >> /var/named/named.conf.verb
+    # fi # End DNSSEC global option
   fi # End Slave DNS
 
   ## Set the new serial (code imported from inkdnsserial)
