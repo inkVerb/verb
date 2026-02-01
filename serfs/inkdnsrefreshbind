@@ -2,7 +2,6 @@
 #inkVerbSerf! verb.ink
 
 # This resets a complete list of local inkDNS domains in the Bind config file: /var/named/named.conf.verb after copying inkDNS db. files to /var/named/zones/db.*
-#DEV All rDNS and .nv entries have been commented because it is not handled the same as DNS entries, but at the VPS host level and vultr-cli
 
 # How to use:
 ## ./inkdnsrefreshbind
@@ -53,11 +52,11 @@ if [ "${InkDNSStat}" = "INSTALLED" ]; then
   /usr/bin/mkdir -p /var/named/zones
   ## Parked domains have priority #NOTE: On "proper" Linux distros, an -n option that is needed will exit 1, though on Manjaro it will exit 0; we use `|| true` to ensure we don't get an error code when we don't need one
   [[ -n "$(/usr/bin/ls -A /opt/verb/conf/inkdns/parked/db.* 2> /dev/null)" ]] && /usr/bin/cp -n /opt/verb/conf/inkdns/parked/db.* /var/named/zones/ || true
-  # [[ -n "$(/usr/bin/ls -A /opt/verb/conf/inkdns/parked/nv.* 2> /dev/null)" ]] && /usr/bin/cp -n /opt/verb/conf/inkdns/parked/nv.* /var/named/zones/ || true
+  [[ -n "$(/usr/bin/ls -A /opt/verb/conf/inkdns/parked/nv.* 2> /dev/null)" ]] && /usr/bin/cp -n /opt/verb/conf/inkdns/parked/nv.* /var/named/zones/ || true
   [[ -n "$(/usr/bin/ls -A /opt/verb/conf/inkdns/inkzones/db.* 2> /dev/null)" ]] && /usr/bin/cp -n /opt/verb/conf/inkdns/inkzones/db.* /var/named/zones/ || true
-  # [[ -n "$(/usr/bin/ls -A /opt/verb/conf/inkdns/inkzones/nv.* 2> /dev/null)" ]] && /usr/bin/cp -n /opt/verb/conf/inkdns/inkzones/nv.* /var/named/zones/ || true
+  [[ -n "$(/usr/bin/ls -A /opt/verb/conf/inkdns/inkzones/nv.* 2> /dev/null)" ]] && /usr/bin/cp -n /opt/verb/conf/inkdns/inkzones/nv.* /var/named/zones/ || true
   [[ -n "$(/usr/bin/ls -A /opt/verb/conf/inkdns/zones/db.* 2> /dev/null)" ]] && /usr/bin/cp -n /opt/verb/conf/inkdns/zones/db.* /var/named/zones/ || true
-  # [[ -n "$(/usr/bin/ls -A /opt/verb/conf/inkdns/zones/nv.* 2> /dev/null)" ]] && /usr/bin/cp -n /opt/verb/conf/inkdns/zones/nv.* /var/named/zones/ || true
+  [[ -n "$(/usr/bin/ls -A /opt/verb/conf/inkdns/zones/nv.* 2> /dev/null)" ]] && /usr/bin/cp -n /opt/verb/conf/inkdns/zones/nv.* /var/named/zones/ || true
   /usr/bin/chown -R root:named /var/named/zones
   /usr/bin/chmod -R 755 /var/named/zones
 
@@ -68,35 +67,35 @@ if [ "${InkDNSStat}" = "INSTALLED" ]; then
   /usr/bin/chmod 644 /var/named/named.conf.verb
   ## TSGI key (for Letsencrypt's' certbot --preferred-challenges=dns)
   /usr/bin/tsig-keygen inkcert >> /var/named/named.conf.verb
-#   # Refresh global inkDNS rDNS config & zone files
-#   ## rDNS config
-#   /usr/bin/rm -f /var/named/named.conf.rdns
-#   /usr/bin/echo "// Created by inkDNS, managed automatically, edits will likely be deleted
-# zone \"${ServerARPAIPv6}\" { type master; allow-transfer { ${ServerNS1IPv6}; ${ServerNS1IPv4}; ${ServerNS2IPv6}; ${ServerNS2IPv4}; }; file \"nv.verber\"; allow-query { any; }; };
-# zone \"${ServerARPAIPv4}\" { type master; allow-transfer { ${ServerNS1IPv6}; ${ServerNS1IPv4}; ${ServerNS2IPv6}; ${ServerNS2IPv4}; }; file \"nv.verber\"; allow-query { any; }; };
-# " > /var/named/named.conf.rdns
-#   ### Permissions
-#   /usr/bin/chown root:named /var/named/named.conf.rdns
-#   /usr/bin/chmod 644 /var/named/named.conf.rdns
-#   ## rDNS zone file
-#   /usr/bin/rm -f /var/named/nv.verber
-#   /usr/bin/cat <<EOF > /var/named/nv.verber
-# \$TTL    86400
-# @		IN  SOA		${ServerNS1DNS}. dns.inkisaverb.com. (
-# 0000000001		; Serial No
-# 10800			; Refresh
-# 3600			; Retry
-# 604800			; Expire
-# 1800 )			; Minimum TTL
+  # Refresh global inkDNS rDNS config & zone files
+  ## rDNS config
+  /usr/bin/rm -f /var/named/named.conf.rdns
+  /usr/bin/echo "// Created by inkDNS, managed automatically, edits will likely be deleted
+zone \"${ServerARPAIPv6}\" { type master; allow-transfer { ${ServerNS1IPv6}; ${ServerNS1IPv4}; ${ServerNS2IPv6}; ${ServerNS2IPv4}; }; file \"nv.verber\"; allow-query { any; }; };
+zone \"${ServerARPAIPv4}\" { type master; allow-transfer { ${ServerNS1IPv6}; ${ServerNS1IPv4}; ${ServerNS2IPv6}; ${ServerNS2IPv4}; }; file \"nv.verber\"; allow-query { any; }; };
+" > /var/named/named.conf.rdns
+  ### Permissions
+  /usr/bin/chown root:named /var/named/named.conf.rdns
+  /usr/bin/chmod 644 /var/named/named.conf.rdns
+  ## rDNS zone file
+  /usr/bin/rm -f /var/named/nv.verber
+  /usr/bin/cat <<EOF > /var/named/nv.verber
+\$TTL    86400
+@		IN  SOA		${ServerNS1DNS}. dns.inkisaverb.com. (
+0000000001		; Serial No
+10800			; Refresh
+3600			; Retry
+604800			; Expire
+1800 )			; Minimum TTL
 
-# ; Nameserver Defaults
-# @		IN  NS		${ServerNS1DNS}.
-# @		IN  NS		${ServerNS2DNS}.
+; Nameserver Defaults
+@		IN  NS		${ServerNS1DNS}.
+@		IN  NS		${ServerNS2DNS}.
 
-# ; Hosted Domains
-# EOF
-#   /usr/bin/chown root:named /var/named/nv.verber
-#   /usr/bin/chmod 644 /var/named/nv.verber
+; Hosted Domains
+EOF
+  /usr/bin/chown root:named /var/named/nv.verber
+  /usr/bin/chmod 644 /var/named/nv.verber
   ## DNS zone files
   cd /var/named/zones/ || exit 6
   for inkZoneDB in db.*; do
@@ -131,15 +130,15 @@ ${sDNSSerialNum}		; Serial No
 EOF
     /usr/bin/chown root:named /var/named/db.slavedns
     /usr/bin/chmod 644 /var/named/db.slavedns
-#     #### rDNS
-#     /usr/bin/rm -f /var/named/nv.slavedns
-#     /usr/bin/cat <<EOF > /var/named/nv.slavedns
-# ; PTR Domain
-# ${ServerARPAIPv4}		IN  PTR  ${DNSSlave}.
-# ${ServerARPAIPv6}		IN  PTR  ${DNSSlave}.
-# EOF
-#     /usr/bin/chown root:named /var/named/nv.slavedns
-#     /usr/bin/chmod 644 /var/named/nv.slavedns
+    #### rDNS
+    /usr/bin/rm -f /var/named/nv.slavedns
+    /usr/bin/cat <<EOF > /var/named/nv.slavedns
+; PTR Domain
+${ServerARPAIPv4}		IN  PTR  ${DNSSlave}.
+${ServerARPAIPv6}		IN  PTR  ${DNSSlave}.
+EOF
+    /usr/bin/chown root:named /var/named/nv.slavedns
+    /usr/bin/chmod 644 /var/named/nv.slavedns
     ### If this is set as the tertiary DNS server
     if [ "${DNSSlave}" = "${ServerNS2DNS}" ]; then
       /usr/bin/echo "zone \"${DNSSlave}\" { type master; allow-transfer { ${ServerNS1IPv6}; ${ServerNS1IPv4}; }; file \"db.slavedns\"; };" >> /var/named/named.conf.verb
@@ -156,7 +155,7 @@ EOF
         /usr/bin/echo "zone \"${DNSSlave}\" { type master; allow-transfer { ${ServerNS1IPv6}; ${ServerNS1IPv4}; ${ServerNS2IPv6}; ${ServerNS2IPv4}; }; update-policy { grant inkcert. name _acme-challenge.${inkZone}. TXT; grant inkcert. name _acme-challenge.*.${inkZone}. TXT; }; file \"db.slavedns\"; };" >> /var/named/named.conf.verb
       fi
     fi
-    # /usr/bin/echo "\$INCLUDE \"/var/named/nv.slavedns\";" >> /var/named/nv.verber
+    /usr/bin/echo "\$INCLUDE \"/var/named/nv.slavedns\";" >> /var/named/nv.verber
     ### Served slave records
     if [ -d "/opt/verb/conf/inkdns/sdns" ] && [ -d "/srv/sns" ]; then
       for snsverber in /srv/sns/*; do
@@ -166,9 +165,9 @@ EOF
         verber_machine_name=$(echo ${snsverber} | /usr/bin/sed "s?/srv/sns/??")
         ####DEV this may not be necessary since it is handled through the VPS host
         #### rDNS slave listing (host only, which populates individual items through the named interchagne system)
-        # . "${snsverber}/conf"
-        # /usr/bin/echo "zone \"${VerbARPAIPv4}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"nv4.${VerbHostID}.${VerbName}.${VerbTLD}\"; };" >> /var/named/named.conf.rdns
-        # /usr/bin/echo "zone \"${VerbARPAIPv6}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"nv6.${VerbHostID}.${VerbName}.${VerbTLD}\"; };" >> /var/named/named.conf.rdns
+        . "${snsverber}/conf"
+        /usr/bin/echo "zone \"${VerbARPAIPv4}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"nv4.${VerbHostID}.${VerbName}.${VerbTLD}\"; };" >> /var/named/named.conf.rdns
+        /usr/bin/echo "zone \"${VerbARPAIPv6}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"nv6.${VerbHostID}.${VerbName}.${VerbTLD}\"; };" >> /var/named/named.conf.rdns
         #### DNS slave listings in domains/ folder of the served verber in /srv/sns/VERBER
         ##### Parked (before served)
         for slv in "${snsverber}/domains/parked/"*; do
@@ -195,9 +194,9 @@ EOF
           fi
           ##### DNS entry
           /usr/bin/echo "zone \"${sDomain}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"db.${sDomain}\"; };" >> /var/named/named.conf.verb
-          # ##### rDNS, pointing to PRT records listed in named/nv.verber on the master, but only if grep doesn't find the ARPA IP doesn't already exist
-          # /usr/bin/grep -q "${sdnsIPv4ARPA}" /var/named/named.conf.rdns || /usr/bin/echo "zone \"${sdnsIPv4ARPA}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"nv4.${sDomain}\"; };" >> /var/named/named.conf.rdns
-          # /usr/bin/grep -q "${sdnsIPv6ARPA}" /var/named/named.conf.rdns || /usr/bin/echo "zone \"${sdnsIPv6ARPA}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"nv6.${sDomain}\"; };" >> /var/named/named.conf.rdns
+          ##### rDNS, pointing to PRT records listed in named/nv.verber on the master, but only if grep doesn't find the ARPA IP doesn't already exist
+          /usr/bin/grep -q "${sdnsIPv4ARPA}" /var/named/named.conf.rdns || /usr/bin/echo "zone \"${sdnsIPv4ARPA}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"nv4.${sDomain}\"; };" >> /var/named/named.conf.rdns
+          /usr/bin/grep -q "${sdnsIPv6ARPA}" /var/named/named.conf.rdns || /usr/bin/echo "zone \"${sdnsIPv6ARPA}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"nv6.${sDomain}\"; };" >> /var/named/named.conf.rdns
           ##### Fresh?
           if [ -f "${snsverber}/domains/fresh/.${sDomain}" ]; then
             /usr/bin/rm -f "/var/named/db.${sDomain}"
@@ -230,9 +229,9 @@ EOF
           fi
           ##### DNS entry
           /usr/bin/echo "zone \"${sDomain}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"db.${sDomain}\"; };" >> /var/named/named.conf.verb
-          # ##### rDNS, pointing to PRT records listed in named/nv.verber on the master, but only if grep doesn't find the ARPA IP doesn't already exist
-          # /usr/bin/grep -q "${sdnsIPv4ARPA}" /var/named/named.conf.rdns || /usr/bin/echo "zone \"${sdnsIPv4ARPA}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"nv4.${sDomain}\"; };" >> /var/named/named.conf.rdns
-          # /usr/bin/grep -q "${sdnsIPv6ARPA}" /var/named/named.conf.rdns || /usr/bin/echo "zone \"${sdnsIPv6ARPA}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"nv6.${sDomain}\"; };" >> /var/named/named.conf.rdns
+          ##### rDNS, pointing to PRT records listed in named/nv.verber on the master, but only if grep doesn't find the ARPA IP doesn't already exist
+          /usr/bin/grep -q "${sdnsIPv4ARPA}" /var/named/named.conf.rdns || /usr/bin/echo "zone \"${sdnsIPv4ARPA}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"nv4.${sDomain}\"; };" >> /var/named/named.conf.rdns
+          /usr/bin/grep -q "${sdnsIPv6ARPA}" /var/named/named.conf.rdns || /usr/bin/echo "zone \"${sdnsIPv6ARPA}\" { type slave; masters { ${VerbIPv6}; ${VerbIPv4}; }; allow-transfer { none; }; file \"nv6.${sDomain}\"; };" >> /var/named/named.conf.rdns
           ##### Fresh?
           if [ -f "${snsverber}/domains/fresh/.${sDomain}" ]; then
             /usr/bin/rm -f "/var/named/db.${sDomain}"
@@ -255,7 +254,6 @@ EOF
       done
     fi
 
-    #DEV This is redundant and results in a systemctl error: 'options' redefined near 'options'
     # ## Options for DNSSEC, must be global and outsiside zone entries, but in the same named.conf.* settings
     # ### If this is set as the tertiary DNS server
     # if [ "${DNSSlave}" = "${ServerNS2DNS}" ]; then
