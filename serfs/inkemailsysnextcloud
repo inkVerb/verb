@@ -38,33 +38,25 @@ if [ "$ServerMailStatus" != "MADDY_EMAIL_SERVER" ]; then
 . /opt/verb/conf/siteurilist
 
 # Cleanup previous entries
-if [ -f "/opt/verb/conf/vsysmail.nextcloud" ]; then
-  . /opt/verb/conf/vsysmail.nextcloud
+if [ -f "/opt/verb/conf/sysmail.nextcloud" ]; then
+  . /opt/verb/conf/sysmail.nextcloud
   oldusername="${username}"
-  # Update Maddy
-  /usr/bin/sudo maddy -c "... delete '$oldusername'"
-  /usr/bin/rm -rf /srv/email/maddy/${inkemaildirectory} ?? Does Maddy have this?
 fi
 
 # Prep all vairables
 Password=$(/usr/bin/pwgen -s1 24)
 randomuser=$(/usr/bin/pwgen -s1A 5)
-/usr/bin/cat <<EOF > /opt/verb/conf/vsysmail.nextcloud
+/usr/bin/cat <<EOF > /opt/verb/conf/sysmail.nextcloud
 Password="${Password}"
 user="nxc_${randomuser}"
 username="nxc_${randomuser}@${nameURI}"
 maildomain="${nameURI}"
 name="Nextcloud ${blueURI}"
-inkemaildirectory="${nameURI}/nxc_${randomuser}/"  ?? Does Maddy have this?
-mailboxsize="1048576" # 1MB, 2GB=2097152000, 1GB=1048576000, 5GB=5242880000
 EOF
+. /opt/verb/conf/sysmail.nextcloud
 
 # Security check
 /opt/verb/serfs/setsecure; wait
-
-# Delete the old entry in the database
-# Is this redundant?
-# /usr/bin/sudo maddy -c "... 'sys_$randomuser@$nameURI' '$Password'"
 
 # Run it quick to create the account
 /opt/verb/donjon/sysmails.sh nextcloud; wait
@@ -72,6 +64,9 @@ if [ "$?" != 0 ]; then
   echo "Error updating new Nextcloud mail user in databse"
   exit 6;
 fi
+
+# Update Maddy
+if [ -n "$oldusername" ] && [ "$oldusername" != "$username" ]; then /usr/bin/sudo -u maddy maddyctl creds remove "$oldusername"; fi
 
 # Set up sysmails cron
 ## Nextcloud background jobs (manage the crontab files directly)
@@ -84,7 +79,7 @@ fi
 <?php
 \$ConfIG = [
 'mail_domain' => '${nameURI}',
-'mail_from_address' => 'nxc_${randomuser}@${nameURI}',
+'mail_from_address' => 'noreply@${nameURI}',
 'mail_smtpmode' => 'smtp',
 'mail_smtphost' => 'mail.${nameURI}',
 'mail_smtpport' => 587,

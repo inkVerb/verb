@@ -1,4 +1,5 @@
 check process ocis with pidfile /var/run/ocis.pid
+  group cloud
   start program = "/usr/bin/systemctl start ocis"
   stop program = "/usr/bin/systemctl stop ocis"
   if failed port 9200 protocol http then restart

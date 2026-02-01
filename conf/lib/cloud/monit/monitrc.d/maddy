@@ -1,4 +1,5 @@
 check process maddy with pidfile /var/run/maddy.pid
+  group email
   start program = "/usr/bin/systemctl start maddy"
   stop program = "/usr/bin/systemctl stop maddy"
   if failed port 25 protocol smtp then restart

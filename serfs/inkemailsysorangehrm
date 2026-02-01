@@ -1,0 +1,93 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This creates or resets the OrangeHRM smtp user for inkemail, such as is used by php to send emails
+## This also creates a cron task to run itself regularly; this is the proper workflor for creating that cron task, creating it the first time run and resetting it
+
+# How to use:
+## ./inkemailsysorangehrm
+
+usagenotes="This creates or resets the OrangeHRM smtp user for inkemail, such as is used by php to send emails"
+usageformat="inkemailsysorangehrm"
+usageexample="inkemailsysorangehrm"
+hierarchy=( tertiary installorangehrm )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installinkemail )
+prerequesite=(  )
+usedby=( installorangehrm )
+useserfs=( setsecure )
+useconfigs=( servermailpath servernameip siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkemailsysorangehrm.replace" ]; then . /opt/verb/mods/inkemailsysorangehrm.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkemailsysorangehrm.before" ]; then . /opt/verb/mods/inkemailsysorangehrm.before; fi # Precedes this script
+
+
+# Check to see if inkemail is installed
+. /opt/verb/conf/servermailpath
+if [ "$ServerMailStatus" != "MADDY_EMAIL_SERVER" ]; then
+  /bin/echo "Maddy email not installed. Do that first."
+  exit 0; fi
+
+# Include the config
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+
+# Cleanup previous entries
+if [ -f "/opt/verb/conf/sysmail.orangehrm" ]; then
+  . /opt/verb/conf/sysmail.orangehrm
+  oldusername="${username}"
+fi
+
+# Prep all vairables
+Password=$(/usr/bin/pwgen -s1 24)
+randomuser=$(/usr/bin/pwgen -s1A 5)
+/usr/bin/cat <<EOF > /opt/verb/conf/sysmail.orangehrm
+Password="${Password}"
+user="pdy_${randomuser}"
+username="pdy_${randomuser}@${nameURI}"
+maildomain="${nameURI}"
+name="OrangeHRM ${redURI}"
+EOF
+. /opt/verb/conf/sysmail.orangehrm
+
+# Security check
+/opt/verb/serfs/setsecure; wait
+
+# Run it quick to create the account
+/opt/verb/donjon/sysmails.sh orangehrm; wait
+if [ "$?" != 0 ]; then
+  echo "Error updating new OrangeHRM mail user in databse"
+  exit 6;
+fi
+
+# Update Maddy
+if [ -n "$oldusername" ] && [ "$oldusername" != "$username" ]; then /usr/bin/sudo -u maddy maddyctl creds remove "$oldusername"; fi
+
+# Set up sysmails cron
+## OrangeHRM background jobs (manage the crontab files directly)
+/bin/echo '44 * * * * root /opt/verb/serfs/inkemailsysorangehrm' > /etc/cron.d/sysmailorangehrm
+## Permissions
+/bin/chmod 0644 /etc/cron.d/sysmailorangehrm
+
+# Mail config
+. /opt/verb/conf/vapps/vapp.orangehrm
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
+USE ${appDBase};
+UPDATE ohrm_email_configuration 
+SET mail_protocol = 'smtp',
+    smtp_host = 'mail.${nameURI}',
+    smtp_port = '587',
+    smtp_user = 'ohr_${randomuser}@${nameURI}',
+    smtp_pass = '${Password}',
+    smtp_auth = 'yes',
+    smtp_security = 'tls';"
+
+
+
+
+if [ -e "/opt/verb/mods/inkemailsysorangehrm.after" ]; then . /opt/verb/mods/inkemailsysorangehrm.after; fi # Follows this script

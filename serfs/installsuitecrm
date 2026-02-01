@@ -1,18 +1,45 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
 
-# This downloads and installs the current verified version of suiteCRM from inkisaverb.com/repo to crm.your-name.verb.red
+# This downloads and installs SuiteCRM and links it to ....verb.red
 
 # All options are optional, but must are sequential, omit last options first.
 
 # How to use:
-## ./installsuitecrm [dbase] [dbuser] [dbpassword]
+## ./installsuitecrm [ dbase - optional ] [ dbuser - optional ] [ dbpassword - optional ]
+
+# Eg:
+## ./installsuitecrm
+## ./installsuitecrm bestdbase bestdbuser besteverpass
+
+usagenotes="This downloads and installs SuiteCRM and links it to ....verb.red"
+usageformat="installsuitecrm [ dbase - optional ] [ dbuser - optional ] [ dbpassword - optional ]"
+usageexample="installsuitecrm
+installsuitecrm bestdbase bestdbuser besteverpass"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=( "Database" "Database user" "Database password" )
+vopttypes=( isSQLDatabasename isSQLDatabasename isSQLDatabasename )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( inkget inkcert_ )
+useconfigs=( servernameip siteurilist servertype servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/installsuitecrm.replace" ]; then . /opt/verb/mods/installsuitecrm.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installsuitecrm.before" ]; then . /opt/verb/mods/installsuitecrm.before; fi # Precedes this script
 
 
 cVappName=suitecrm
 
-# Include the config
+# Include the configs
+. /opt/verb/conf/servernameip
 . /opt/verb/conf/siteurilist
+. /opt/verb/conf/servertype
+. /opt/verb/conf/servermailpath
 
 dBase=$1
 dBaseUser=$2
@@ -28,9 +55,10 @@ exit 0; fi
 if [ -d /srv/www/vapps/${cVappName} ]; then
 /bin/echo "SuiteCRM already exists in the system. If it isn't working, look deeper on the server. For now, doing nothing."
 exit 8; fi
-
-# Include the config file
-. /opt/verb/conf/servernameip
+## Web server
+if [ ${ServerType} = "lamp" ]; then
+/usr/bin/echo "Only allowed with Nginx servers, LEMP or LAEMP; LAMP servers with Apache not allowed."
+exit 0; fi
 
 # This does not create a database, only an administrator since suiteCRM will create that automatically
 
@@ -64,6 +92,68 @@ appDBase=${dBase}
 appDDBUsr=${dBaseUser}
 appDDBPass=${dBPassword}" > /opt/verb/conf/vapps/vapp.${cVappName}
 
+# Webserver setup
+if [ ${ServerType} = "laemp" ]; then
+  /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/crm.${redURI286}.conf /opt/verb/conf/webserver/sites-available/nginx/crm.${redURI286}.conf.old
+  /usr/bin/mv /opt/verb/conf/webserver/sites-available/httpd/crm.${redURI286}.conf /opt/verb/conf/webserver/sites-available/httpd/crm.${redURI286}.conf.old
+  /usr/bin/cp /opt/verb/conf/site-files/conf/suitcrm.conf /opt/verb/conf/webserver/sites-available/nginx/crm.${redURI286}.conf
+  /usr/bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/crm.${redURI286}.conf
+elif [ ${ServerType} = "lemp" ]; then
+  /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/crm.${redURI286}.conf /opt/verb/conf/webserver/sites-available/nginx/crm.${redURI286}.conf.old
+  /usr/bin/cp /opt/verb/conf/site-files/conf/suitcrm.conf /opt/verb/conf/webserver/sites-available/nginx/crm.${redURI286}.conf
+fi
+
+# Setup for inkCert
+. /opt/verb/conf/inkcert/cli-ini/siteinkcert.${redURI286}
+case ${InkCerted} in
+  DONE_SC)
+  /opt/verb/serfs/inkcertaddsc crm.${redURI286} ${redURI286}
+  ;;
+  DONE_LE)
+  /opt/verb/serfs/inkcertaddle crm.${redURI286} ${redURI286}
+  ;;
+  DONE_CBSINGLE)
+  /opt/verb/serfs/inkcertaddcbsingle crm.${redURI286} ${redURI286}
+  ;;
+  DONE_CB)
+  /opt/verb/serfs/inkcertaddcb crm.${redURI286} ${redURI286}
+  ;;
+  NO|NOT_YET)
+    /usr/bin/echo "SuireCRM is currently using Snakeoil certs, ready for inkCert"
+  ;;
+  *)
+    if ! /usr/bin/grep -q "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
+      /usr/bin/echo "Something's wrong with the inkCert siteinkcert configs! Aborting"
+      exit 6
+    else
+      /usr/bin/echo "SuireCRM is currently using Snakeoil certs, ready for inkCert"
+    fi
+  ;;
+esac
+
+# Webserver restart
+if [ ${ServerType} = "laemp" ]; then
+  /usr/bin/systemctl restart nginx; wait
+  /usr/bin/systemctl restart httpd; wait
+elif [ ${ServerType} = "lemp" ]; then
+  /usr/bin/systemctl restart nginx; wait
+fi
+
+# Use msmtp for a real SMTP address
+## Postfix vmail?
+if [ "${ServerMailStatus}" = "VMAIL_SERVER" ]; then
+  /opt/verb/serfs/inkvmailsyssuitecrm
+
+## Maddy email?
+  elif [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ]; then
+  /opt/verb/serfs/inkemailsyssuitecrm
+
+## Neither
+else
+  /usr/bin/echo "No email server detected, so not configuring email settings."
+fi
+
+
 /bin/echo "These are setup:
 
 Database: ${dBase}
@@ -75,7 +165,7 @@ Database password: ${dBPassword}
 
 *Choose \"Provide Existing User\" BEFORE entering above information.
 
-Go to the http://crm.${redURI} site to install.
+Go to the https://crm.${redURI} site to install.
 "
 
 

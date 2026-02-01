@@ -1,0 +1,101 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This creates or resets the SuiteCRM smtp user for inkvmail, such as is used by php to send emails
+## This also creates a cron task to run itself regularly; this is the proper workflor for creating that cron task, creating it the first time run and resetting it
+
+# How to use:
+## ./inkvmailsyssuitecrm
+
+usagenotes="This creates or resets the SuiteCRM smtp user for inkvmail, such as is used by php to send emails"
+usageformat="inkvmailsyssuitecrm"
+usageexample="inkvmailsyssuitecrm"
+hierarchy=( tertiary installsuitecrm )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installinkvmail )
+prerequesite=(  )
+usedby=( installsuitecrm )
+useserfs=( setsecure )
+useconfigs=( servermailpath servernameip siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkvmailsyssuitecrm.replace" ]; then . /opt/verb/mods/inkvmailsyssuitecrm.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkvmailsyssuitecrm.before" ]; then . /opt/verb/mods/inkvmailsyssuitecrm.before; fi # Precedes this script
+
+
+# Check to see if inkvmail is installed
+. /opt/verb/conf/servermailpath
+if [ "$ServerMailStatus" != "VMAIL_SERVER" ]; then
+  /bin/echo "Vmail not installed. Do that first."
+  exit 0; fi
+
+# Include the config
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+
+# Cleanup previous entries
+if [ -f "/opt/verb/conf/sysmail.suitecrm" ]; then
+  . /opt/verb/conf/sysmail.suitecrm
+  /usr/bin/rm -rf /srv/vmail/${inkvmaildirectory}
+  oldusername="${username}"
+fi
+
+# Prep all vairables
+Password=$(/usr/bin/pwgen -s1 24)
+randomuser=$(/usr/bin/pwgen -s1A 5)
+/usr/bin/cat <<EOF > /opt/verb/conf/sysmail.suitecrm
+Password="${Password}"
+user="scr_${randomuser}"
+username="scr_${randomuser}@${nameURI}"
+maildomain="${nameURI}"
+name="SuiteCRM ${redURI}"
+inkvmaildirectory="${nameURI}/scr_${randomuser}/"
+mailboxsize="1048576" # 1MB, 2GB=2097152000, 1GB=1048576000, 5GB=5242880000
+EOF
+
+# Security check
+/opt/verb/serfs/setsecure; wait
+
+# Disable the old entry in the database
+if [ -n "${oldusername}" ]; then
+  password="$(/bin/echo $Password | /usr/bin/openssl passwd -1 -stdin)"
+  /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqldb.vmail.cnf -e "UPDATE mailbox
+  SET username = 'scr_${randomuser}@${nameURI}', password = '${password}', name = 'System', maildir = '${nameURI}/scr_${randomuser}', domain = '${nameURI}', modified = CURRENT_TIMESTAMP, active = 1
+  WHERE username = '${oldusername}';
+  UPDATE alias
+  SET address = 'scr_${randomuser}@${nameURI}', goto = 'scr_${randomuser}@${nameURI}', domain = '${nameURI}', modified = CURRENT_TIMESTAMP, active = 1
+  WHERE address = '${oldusername}';"
+fi
+
+# Run it quick to create the account
+/opt/verb/donjon/sysmails.sh suitecrm; wait
+if [ "$?" != 0 ]; then
+  echo "Error updating new SuiteCRM mail user in databse"
+  exit 6;
+fi
+
+# Set up sysmails cron
+## suitecrm background jobs (manage the crontab files directly)
+/bin/echo '8 4 * * * root /opt/verb/serfs/inkvmailsyssuitecrm' > /etc/cron.d/sysmailsuitecrm
+## Permissions
+/bin/chmod 0644 /etc/cron.d/sysmailsuitecrm
+
+# Mail config
+/usr/bin/cat <<EOF > /srv/www/vapps/suitecrm/config_override.php
+// SuiteCRM SMTP: This file is maintained automatically; changes will be deleted
+\$sugar_config['mail_smtpserver'] = 'mail.${nameURI}';
+\$sugar_config['mail_smtpport'] = '587';
+\$sugar_config['mail_smtpuser'] = 'scr_${randomuser}@${nameURI}';
+\$sugar_config['mail_smtppass'] = '${Password}';
+\$sugar_config['mail_smtpauth_req'] = true;
+\$sugar_config['mail_smtpssl'] = 'tls';
+EOF
+/usr/bin/sudo -u http php bin/console cache:clear
+
+
+
+if [ -e "/opt/verb/mods/inkvmailsyssuitecrm.after" ]; then . /opt/verb/mods/inkvmailsyssuitecrm.after; fi # Follows this script

@@ -27,15 +27,15 @@ fi
 ## Keep its distrib name for the SHA256 check
 /usr/bin/wget https://download.owncloud.com/ocis/ocis/stable/${distVer}/ocis-${distVer}-linux-amd64
 if [ ! -f "ocis-${distVer}-linux-amd64" ]; then
-/bin/echo "Failed download."; touch "${cVappName}.failed"
+/usr/bin/echo "Failed download."; touch "${cVappName}.failed"
 exit 4; else
-/bin/rm -f ${cVappName}.failed; fi
+/usr/bin/rm -f ${cVappName}.failed; fi
 ## Check the hash
 /usr/bin/wget https://download.owncloud.com/ocis/ocis/stable/${distVer}/ocis-${distVer}-linux-amd64.sha256
 checksha=$(/usr/bin/sha256sum -c ocis-${distVer}-linux-amd64.sha256 < ocis-${distVer}-linux-amd64)
 if [ "${checksha}" = "ocis-${distVer}-linux-amd64: OK" ]; then
-/bin/echo "Download checks out."
-/bin/rm ocis-${distVer}-linux-amd64.sha256
+/usr/bin/echo "Download checks out."
+/usr/bin/rm ocis-${distVer}-linux-amd64.sha256
 else
 /bin/echo "SHA check failed for ${PWD}/${cVappName}. Dunno why."
 exit 4
@@ -43,9 +43,9 @@ fi
 
 if [ $InkGet_Method != "ZJZ" ]; then
   # Set it as the new package
-  /bin/rm -f ${cVappName}.legacy.txz
+  /usr/bin/rm -f ${cVappName}.legacy.txz
   /usr/bin/touch ${cVappName}.txz
-  /bin/mv ${cVappName}.txz ${cVappName}.legacy.txz
+  /usr/bin/mv ${cVappName}.txz ${cVappName}.legacy.txz
 fi
 ## Move the Go binary file into a vapp directory with the name it is properly known by, "ocis"
 /usr/bin/echo "Preparing from vendor..."
@@ -53,8 +53,8 @@ fi
 /usr/bin/mv -f /srv/cloud/ocis-${distVer}-linux-amd64 /srv/cloud/${cVappName}/ocis
 if [ $InkGet_Method != "ZJZ" ]; then
   /opt/verb/serfs/vtxzin ${cVappName}; wait
-  /bin/rm -rf ${cVappName}
+  /usr/bin/rm -rf ${cVappName}
 fi
 
 # Finish
-/bin/echo "Downloaded the latest version of ownCloud."
+/usr/bin/echo "Downloaded the latest version of ownCloud."

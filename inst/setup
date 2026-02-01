@@ -783,23 +783,23 @@ if [ ${VERBink} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "
   /opt/verb/serfs/ensitenginx ${inkURI} i.${inkURI}
 fi
 if [ ${VERBblue} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
-  /opt/verb/serfs/ensitenginx ${blueURI} b.${blueURI} cloud.${blueURI} ldap.${blueURI}
+  /opt/verb/serfs/ensitenginx ${blueURI} b.${blueURI} cloud.${blueURI} base.${blueURI} cab.${blueURI} kit.${blueURI} ldap.${blueURI}
 fi
 if [ ${VERBvip} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
   /opt/verb/serfs/ensitenginx ${vipURI} v.${vipURI} files.${vipURI}
 fi
 if [ ${VERBkiwi} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
-  /opt/verb/serfs/ensitenginx ${kiwiURI} k.${kiwiURI}
+  /opt/verb/serfs/ensitenginx ${kiwiURI} k.${kiwiURI} sound.${kiwiURI}
 fi
 if [ ${VERBred} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
-  /opt/verb/serfs/ensitenginx ${redURI} r.${redURI}
+  /opt/verb/serfs/ensitenginx ${redURI} r.${redURI} crm.${redURI} hrm.${redURI}
 fi
 if [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
   # /usr/bin/systemctl enable nginx; wait
   # /usr/bin/systemctl start nginx; wait
   /bin/systemctl restart nginx; wait
 fi
-if [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
+if [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lamp" ]; then
   /opt/verb/serfs/ensiteapache sql.${itsqlTLDURI}
 fi
 if [ ${VERBemail} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lamp" ]; then
@@ -812,16 +812,16 @@ if [ ${VERBink} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "
   /opt/verb/serfs/ensiteapache ${inkURI} i.${inkURI}
 fi
 if [ ${VERBblue} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lamp" ]; then
-  /opt/verb/serfs/ensiteapache ${blueURI} b.${blueURI} cloud.${blueURI} ldap.${blueURI}
+  /opt/verb/serfs/ensiteapache ${blueURI} b.${blueURI} cloud.${blueURI} base.${blueURI} cab.${blueURI} kit.${blueURI} cloud.${blueURI} ldap.${blueURI}
 fi
 if [ ${VERBvip} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lamp" ]; then
   /opt/verb/serfs/ensiteapache ${vipURI} v.${vipURI}
 fi
 if [ ${VERBkiwi} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lamp" ]; then
-  /opt/verb/serfs/ensiteapache ${kiwiURI} k.${kiwiURI}
+  /opt/verb/serfs/ensiteapache ${kiwiURI} k.${kiwiURI} sound.${kiwiURI}
 fi
 if [ ${VERBred} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lamp" ]; then
-  /opt/verb/serfs/ensiteapache ${redURI} r.${redURI}
+  /opt/verb/serfs/ensiteapache ${redURI} r.${redURI} crm.${redURI} hrm.${redURI}
 fi
 if [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lamp" ]; then
   # /usr/bin/systemctl enable httpd; wait

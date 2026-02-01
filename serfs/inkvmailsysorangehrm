@@ -1,0 +1,104 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This creates or resets the OrangeHRM smtp user for inkvmail, such as is used by php to send emails
+## This also creates a cron task to run itself regularly; this is the proper workflor for creating that cron task, creating it the first time run and resetting it
+
+# How to use:
+## ./inkvmailsysorangehrm
+
+usagenotes="This creates or resets the OrangeHRM smtp user for inkvmail, such as is used by php to send emails"
+usageformat="inkvmailsysorangehrm"
+usageexample="inkvmailsysorangehrm"
+hierarchy=( tertiary installorangehrm )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installinkvmail )
+prerequesite=(  )
+usedby=( installorangehrm )
+useserfs=( setsecure )
+useconfigs=( servermailpath servernameip siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkvmailsysorangehrm.replace" ]; then . /opt/verb/mods/inkvmailsysorangehrm.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkvmailsysorangehrm.before" ]; then . /opt/verb/mods/inkvmailsysorangehrm.before; fi # Precedes this script
+
+
+# Check to see if inkvmail is installed
+. /opt/verb/conf/servermailpath
+if [ "$ServerMailStatus" != "VMAIL_SERVER" ]; then
+  /bin/echo "Vmail not installed. Do that first."
+  exit 0; fi
+
+# Include the config
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+
+# Cleanup previous entries
+if [ -f "/opt/verb/conf/sysmail.orangehrm" ]; then
+  . /opt/verb/conf/sysmail.orangehrm
+  /usr/bin/rm -rf /srv/vmail/${inkvmaildirectory}
+  oldusername="${username}"
+fi
+
+# Prep all vairables
+Password=$(/usr/bin/pwgen -s1 24)
+randomuser=$(/usr/bin/pwgen -s1A 5)
+/usr/bin/cat <<EOF > /opt/verb/conf/sysmail.orangehrm
+Password="${Password}"
+user="ohr_${randomuser}"
+username="ohr_${randomuser}@${nameURI}"
+maildomain="${nameURI}"
+name="OrangeHRM ${redURI}"
+inkvmaildirectory="${nameURI}/ohr_${randomuser}/"
+mailboxsize="1048576" # 1MB, 2GB=2097152000, 1GB=1048576000, 5GB=5242880000
+EOF
+
+# Security check
+/opt/verb/serfs/setsecure; wait
+
+# Disable the old entry in the database
+if [ -n "${oldusername}" ]; then
+  password="$(/bin/echo $Password | /usr/bin/openssl passwd -1 -stdin)"
+  /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqldb.vmail.cnf -e "UPDATE mailbox
+  SET username = 'ohr_${randomuser}@${nameURI}', password = '${password}', name = 'System', maildir = '${nameURI}/ohr_${randomuser}', domain = '${nameURI}', modified = CURRENT_TIMESTAMP, active = 1
+  WHERE username = '${oldusername}';
+  UPDATE alias
+  SET address = 'ohr_${randomuser}@${nameURI}', goto = 'ohr_${randomuser}@${nameURI}', domain = '${nameURI}', modified = CURRENT_TIMESTAMP, active = 1
+  WHERE address = '${oldusername}';"
+fi
+
+# Run it quick to create the account
+/opt/verb/donjon/sysmails.sh orangehrm; wait
+if [ "$?" != 0 ]; then
+  echo "Error updating new OrangeHRM mail user in databse"
+  exit 6;
+fi
+
+# Set up sysmails cron
+## OrangeHRM background jobs (manage the crontab files directly)
+/bin/echo '8 4 * * * root /opt/verb/serfs/inkvmailsysorangehrm' > /etc/cron.d/sysmailorangehrm
+## Permissions
+/bin/chmod 0644 /etc/cron.d/sysmailorangehrm
+
+# Mail config
+. /opt/verb/conf/vapps/vapp.orangehrm
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
+USE ${appDBase};
+UPDATE ohrm_email_configuration 
+SET mail_protocol = 'smtp',
+    smtp_host = 'mail.${nameURI}',
+    smtp_port = '587',
+    smtp_user = 'ohr_${randomuser}@${nameURI}',
+    smtp_pass = '${Password}',
+    smtp_auth = 'yes',
+    smtp_security = 'tls';"
+
+
+
+
+
+if [ -e "/opt/verb/mods/inkvmailsysorangehrm.after" ]; then . /opt/verb/mods/inkvmailsysorangehrm.after; fi # Follows this script

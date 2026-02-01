@@ -1,0 +1,91 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This creates or resets the SuiteCRM smtp user for inkemail, such as is used by php to send emails
+## This also creates a cron task to run itself regularly; this is the proper workflor for creating that cron task, creating it the first time run and resetting it
+
+# How to use:
+## ./inkemailsyssuitecrm
+
+usagenotes="This creates or resets the SuiteCRM smtp user for inkemail, such as is used by php to send emails"
+usageformat="inkemailsyssuitecrm"
+usageexample="inkemailsyssuitecrm"
+hierarchy=( tertiary installsuitecrm )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installinkemail )
+prerequesite=(  )
+usedby=( installsuitecrm )
+useserfs=( setsecure )
+useconfigs=( servermailpath servernameip siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkemailsyssuitecrm.replace" ]; then . /opt/verb/mods/inkemailsyssuitecrm.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkemailsyssuitecrm.before" ]; then . /opt/verb/mods/inkemailsyssuitecrm.before; fi # Precedes this script
+
+
+# Check to see if inkemail is installed
+. /opt/verb/conf/servermailpath
+if [ "$ServerMailStatus" != "MADDY_EMAIL_SERVER" ]; then
+  /bin/echo "Maddy email not installed. Do that first."
+  exit 0; fi
+
+# Include the config
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+
+# Cleanup previous entries
+if [ -f "/opt/verb/conf/sysmail.suitecrm" ]; then
+  . /opt/verb/conf/sysmail.suitecrm
+  oldusername="${username}"
+fi
+
+# Prep all vairables
+Password=$(/usr/bin/pwgen -s1 24)
+randomuser=$(/usr/bin/pwgen -s1A 5)
+/usr/bin/cat <<EOF > /opt/verb/conf/sysmail.suitecrm
+Password="${Password}"
+user="pdy_${randomuser}"
+username="pdy_${randomuser}@${nameURI}"
+maildomain="${nameURI}"
+name="SuireCRM ${redURI}"
+EOF
+. /opt/verb/conf/sysmail.suitecrm
+
+# Security check
+/opt/verb/serfs/setsecure; wait
+
+# Run it quick to create the account
+/opt/verb/donjon/sysmails.sh suitecrm; wait
+if [ "$?" != 0 ]; then
+  echo "Error updating new SuiteCRM mail user in databse"
+  exit 6;
+fi
+
+# Update Maddy
+if [ -n "$oldusername" ] && [ "$oldusername" != "$username" ]; then /usr/bin/sudo -u maddy maddyctl creds remove "$oldusername"; fi
+
+# Set up sysmails cron
+## SuiteCRM background jobs (manage the crontab files directly)
+/bin/echo '44 * * * * root /opt/verb/serfs/inkemailsyssuitecrm' > /etc/cron.d/sysmailsuitecrm
+## Permissions
+/bin/chmod 0644 /etc/cron.d/sysmailsuitecrm
+
+# Mail config
+/usr/bin/cat <<EOF > /srv/www/vapps/suitecrm/config_override.php
+// SuiteCRM SMTP: This file is maintained automatically; changes will be deleted
+\$sugar_config['mail_smtpserver'] = 'mail.${nameURI}';
+\$sugar_config['mail_smtpport'] = '587';
+\$sugar_config['mail_smtpuser'] = 'scr_${randomuser}@${nameURI}';
+\$sugar_config['mail_smtppass'] = '${Password}';
+\$sugar_config['mail_smtpauth_req'] = true;
+\$sugar_config['mail_smtpssl'] = 'tls';
+EOF
+/usr/bin/sudo -u http php bin/console cache:clear
+
+
+
+if [ -e "/opt/verb/mods/inkemailsyssuitecrm.after" ]; then . /opt/verb/mods/inkemailsyssuitecrm.after; fi # Follows this script

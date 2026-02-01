@@ -39,8 +39,8 @@ if [ "$ServerMailStatus" != "VMAIL_SERVER" ]; then
 . /opt/verb/conf/siteurilist
 
 # Cleanup previous entries
-if [ -f "/opt/verb/conf/vsysmail.msmtp" ]; then
-  . /opt/verb/conf/vsysmail.msmtp
+if [ -f "/opt/verb/conf/sysmail.msmtp" ]; then
+  . /opt/verb/conf/sysmail.msmtp
   oldusername="${username}"
   # Don't remove the entire vmail directory if the folder doesn't exist
   if [ -e "/srv/vmail/${inkvmaildirectory}" ]; then
@@ -51,7 +51,7 @@ fi
 # Prep all vairables
 Password=$(/usr/bin/pwgen -s1 24)
 randomuser=$(/usr/bin/pwgen -s1A 5)
-/usr/bin/cat <<EOF > /opt/verb/conf/vsysmail.msmtp
+/usr/bin/cat <<EOF > /opt/verb/conf/sysmail.msmtp
 Password="${Password}"
 user="sys_${randomuser}"
 username="sys_${randomuser}@${nameURI}"

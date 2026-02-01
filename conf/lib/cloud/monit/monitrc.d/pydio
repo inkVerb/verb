@@ -1,0 +1,12 @@
+check process pydio matching "cells start"
+  group cloud
+  start program = "/usr/bin/systemctl start cells"
+  stop  program = "/usr/bin/systemctl stop cells"
+  if failed host 127.0.0.1 port 8080 protocol http 
+    request "/a/frontend/state" 
+    with timeout 10 seconds 
+    then restart
+  if cpu usage > 70% for 3 cycles then alert
+  if memory usage > 1.5 GB for 5 cycles then restart
+  if 5 restarts within 5 cycles then timeout
+  depends on postgresql

@@ -18,8 +18,8 @@ $ORIGIN vipURI286.
 ;; End Root Site Defaults
 
 ; Site Record Defaults
-v.vipURI286.		IN  A		hostipv4286
-v.vipURI286.		IN  AAAA	hostipv6286
+v.vipURI286.	    	IN  A		hostipv4286
+v.vipURI286.	    	IN  AAAA	hostipv6286
 files.vipURI286.		IN  A		hostipv4286
 files.vipURI286.		IN  AAAA	hostipv6286
 

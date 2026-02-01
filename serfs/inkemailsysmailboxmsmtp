@@ -39,36 +39,25 @@ if [ "$ServerMailStatus" != "MADDY_EMAIL_SERVER" ]; then
 . /opt/verb/conf/siteurilist
 
 # Cleanup previous entries
-if [ -f "/opt/verb/conf/vsysmail.msmtp" ]; then
-  . /opt/verb/conf/vsysmail.msmtp
+if [ -f "/opt/verb/conf/sysmail.msmtp" ]; then
+  . /opt/verb/conf/sysmail.msmtp
   oldusername="${username}"
-  /usr/bin/sudo maddy -c "... delete '$oldusername'"
-  # Don't remove the entire email directory if the folder doesn't exist
-  if [ -e "/srv/email/maddy/${inkemaildirectory}" ]; then  ?? Does Maddy have this?
-    /usr/bin/rm -rf /srv/email/maddy/${inkemaildirectory}   ?? Does Maddy have this?
-  fi
 fi
 
 # Prep all vairables
 Password=$(/usr/bin/pwgen -s1 24)
 randomuser=$(/usr/bin/pwgen -s1A 5)
-/usr/bin/cat <<EOF > /opt/verb/conf/vsysmail.msmtp
+/usr/bin/cat <<EOF > /opt/verb/conf/sysmail.msmtp
 Password="${Password}"
 user="sys_${randomuser}"
 username="sys_${randomuser}@${nameURI}"
 maildomain="${nameURI}"
 name="System"
-inkemaildirectory="${nameURI}/sys_${randomuser}/"  ?? Does Maddy have this?
-mailboxsize="1048576" # 1MB, 2GB=2097152000, 1GB=1048576000, 5GB=5242880000
 EOF
+. /opt/verb/conf/sysmail.msmtp
 
 # Security check
 /opt/verb/serfs/setsecure; wait
-
-# Update Maddy
-/usr/bin/sudo maddy -c "... delete '$oldusername'"
-# Is this redundant?
-# /usr/bin/sudo maddy -c "... 'sys_$randomuser@$nameURI' '$Password'"
 
 # Run it quick to create the account
 /opt/verb/donjon/sysmails.sh msmtp; wait
@@ -76,6 +65,9 @@ if [ "$?" != 0 ]; then
   echo "Error updating new System mail user in databse"
   exit 6;
 fi
+
+# Update Maddy
+if [ -n "$oldusername" ] && [ "$oldusername" != "$username" ]; then /usr/bin/sudo -u maddy maddyctl creds remove "$oldusername"; fi
 
 # Set up cron
 ## MSMTP background jobs (manage the crontab files directly)

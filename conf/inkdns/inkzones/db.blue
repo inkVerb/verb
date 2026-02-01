@@ -18,10 +18,16 @@ $ORIGIN blueURI286.
 ;; End Root Site Defaults
 
 ; Site Record Defaults
-b.blueURI286.		IN  A		hostipv4286
-b.blueURI286.		IN  AAAA	hostipv6286
+b.blueURI286.		    IN  A		hostipv4286
+b.blueURI286.		    IN  AAAA	hostipv6286
 cloud.blueURI286.		IN  A		hostipv4286
 cloud.blueURI286.		IN  AAAA	hostipv6286
+base.blueURI286.		IN  A		hostipv4286
+base.blueURI286.		IN  AAAA	hostipv6286
+cab.blueURI286.		    IN  A		hostipv4286
+cab.blueURI286.		    IN  AAAA	hostipv6286
+kit.blueURI286.		    IN  A		hostipv4286
+kit.blueURI286.		    IN  AAAA	hostipv6286
 ldap.blueURI286.		IN  A		hostipv4286
 ldap.blueURI286.		IN  AAAA	hostipv6286
 

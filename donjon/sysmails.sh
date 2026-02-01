@@ -1,12 +1,13 @@
 #!/bin/bash
 # inkVerb donjon asset, verb.ink
 ## This script creates a Postfix vmail or Maddy email user account based on a config
+## This does not delete any old user for an old config, but it can be run multiple times to confirm conformityto the config
 ## This is intended to be run by cron regularly to ensure the same email account used by the backend of web apps while updating its password
 
 # Set the account
 accountConfig="$1"
 
-. /opt/verb/conf/vsysmail.${accountConfig}
+. /opt/verb/conf/sysmail.${accountConfig}
 . /opt/verb/conf/siteurilist
 . /opt/verb/conf/servermailpath
 
@@ -63,7 +64,7 @@ fi
 # Global settings
 if [ "$?" = 0 ]; then
   ## Update password in config
-  sed -i "s/Password=.*/Password=\"${Password}\"/" /opt/verb/conf/vsysmail.${accountConfig}
+  sed -i "s/Password=.*/Password=\"${Password}\"/" /opt/verb/conf/sysmail.${accountConfig}
 
   ## Refresh the msmtp config
   if [ "${accountConfig}" = "msmtp" ]; then

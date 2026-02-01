@@ -18,7 +18,7 @@ $ORIGIN inkURI286.
 ;; End Root Site Defaults
 
 ; Site Record Defaults
-i.inkURI286.		IN  A		hostipv4286
-i.inkURI286.		IN  AAAA	hostipv6286
+i.inkURI286.	    	IN  A		hostipv4286
+i.inkURI286.	    	IN  AAAA	hostipv6286
 
 ; Text Record Defaults

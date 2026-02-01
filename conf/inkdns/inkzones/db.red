@@ -18,7 +18,11 @@ $ORIGIN redURI286.
 ;; End Root Site Defaults
 
 ; Site Record Defaults
-r.redURI286.		IN  A		hostipv4286
-r.redURI286.		IN  AAAA	hostipv6286
+r.redURI286.	    	IN  A		hostipv4286
+r.redURI286.	    	IN  AAAA	hostipv6286
+crm.redURI286.	    	IN  A		hostipv4286
+crm.redURI286.	    	IN  AAAA	hostipv6286
+hrm.redURI286.	    	IN  A		hostipv4286
+hrm.redURI286.	    	IN  AAAA	hostipv6286
 
 ; Text Record Defaults

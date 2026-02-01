@@ -18,7 +18,7 @@ $ORIGIN oneURI286.
 ;; End Root Site Defaults
 
 ; Site Record Defaults
-o.oneURI286.		IN  A		hostipv4286
-o.oneURI286.		IN  AAAA	hostipv6286
+o.oneURI286.	    	IN  A		hostipv4286
+o.oneURI286.	    	IN  AAAA	hostipv6286
 
 ; Text Record Defaults

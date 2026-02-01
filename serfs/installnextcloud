@@ -2,15 +2,40 @@
 #inkVerbSerf! verb.ink
 
 # This downloads and installs Nextcloud manually and linnks it to ....verb.blue
+## The "cloud" subdomain is intended for heavyweight deployments dedicateing the .blue server to one cloud service, having multiple verb namespaces, with Pydio, OCIS, and Nextcloud all using the same "cloud" subdomsin with the three different namespaces
 
 # All options are optional, but must are sequential, omit last options first.
 
 # How to use:
-## ./installnextcloud [dbase] [dbuser] [dbpassword]
+## ./installnextcloud [ alt subdomain "cloud" - defualt "kit" ] [ dbase - optional ] [ dbuser - optional ] [ dbpassword - optional ]
 
 # Eg:
 ## ./installnextcloud
-## ./installnextcloud bestdbase bestdbuser besteverpass
+## ./installnextcloud cloud
+## ./installnextcloud kit bestdbase bestdbuser besteverpass
+## ./installnextcloud cloud bestdbase bestdbuser besteverpass
+
+usagenotes="This downloads and installs Nextcloud manually and runs it on ....verb.blue"
+usageformat="installnextcloud [ alt subdomain "cloud" - defualt "kit" ]"
+usageexample="installnextcloud
+installnextcloud cloud
+installnextcloud kit bestdbase bestdbuser besteverpass
+installnextcloud cloud bestdbase bestdbuser besteverpass"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=( "Alt subdomain: cloud" "Database" "Database user" "Database password" )
+vopttypes=( isChoice isSQLDatabasename isSQLDatabasename isSQLDatabasename )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( inkget setvapplinkon inkcertadd_ inkvmailsysnextcloud inkdriveapp )
+useconfigs=( servernameip siteurilist servertype servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/installnextcloud.replace" ]; then . /opt/verb/mods/installnextcloud.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installnextcloud.before" ]; then . /opt/verb/mods/installnextcloud.before; fi # Precedes this script
 
 
 cVappName=nextcloud
@@ -47,6 +72,13 @@ if [ -z ${2} ]; then
 dBaseUser=${dBase}
 else
 dBaseUser=$2
+fi
+
+# Subdomain
+if [ -n ${1} ] && [ "${1}" = "cloud" ]; then
+  subDom="cloud"
+else
+  subDom="kit"
 fi
 
 # Download as webapp
@@ -117,46 +149,60 @@ EOF
 /usr/bin/systemctl daemon-reload
 # Webserver setup
 if [ ${ServerType} = "laemp" ]; then
-  /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf.old
-  /usr/bin/mv /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf.old
-  /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud-nginx.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf
-  /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud-httpd.conf /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf
-  /usr/bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/cloud.${blueURI}.conf
+  /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf.old
+  /usr/bin/mv /opt/verb/conf/webserver/sites-available/httpd/${subDom}.${blueURI}.conf /opt/verb/conf/webserver/sites-available/httpd/${subDom}.${blueURI}.conf.old
+  /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud-nginx.conf /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud-httpd.conf /opt/verb/conf/webserver/sites-available/httpd/${subDom}.${blueURI}.conf
+  if [ "${subDom}" = "cloud" ]; then
+    /usr/bin/sed -i "s?kit\.${blueURI}?cloud.${blueURI}?g" /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf
+    /usr/bin/sed -i "s?kit\.${blueURI}?cloud.${blueURI}?g" /opt/verb/conf/webserver/sites-available/httpd/${subDom}.${blueURI}.conf
+    /usr/bin/sed -i "s?blue\.kit?blue.cloud?g" /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf
+    /usr/bin/sed -i "s?blue\.kit?blue.cloud?g" /opt/verb/conf/webserver/sites-available/httpd/${subDom}.${blueURI}.conf
+  fi
+  /usr/bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/${subDom}.${blueURI}.conf
   #These are for a revers-proxy configuration, but the .conf files don't work correctly and still need tweaking; Nginx alone works for this
-  # /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud-nginx.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf
-  # /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud-httpd.conf /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf
+  # /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud-nginx.conf /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf
+  # /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud-httpd.conf /opt/verb/conf/webserver/sites-available/httpd/${subDom}.${blueURI}.conf
   #DEV remove this block, no need to check if a LAEMP server has both A and E configs
-  #if [ -e "/opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf" ]; then
-  #  /usr/bin/mv /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf.old
-  #  /usr/bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/cloud.${blueURI}.conf
+  #if [ -e "/opt/verb/conf/webserver/sites-available/httpd/${subDom}.${blueURI}.conf" ]; then
+  #  /usr/bin/mv /opt/verb/conf/webserver/sites-available/httpd/${subDom}.${blueURI}.conf /opt/verb/conf/webserver/sites-available/httpd/${subDom}.${blueURI}.conf.old
+  #  /usr/bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/${subDom}.${blueURI}.conf
   #fi
 elif [ ${ServerType} = "lemp" ]; then
-  /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf.old
-  /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf
+  /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf.old
+  /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud.conf /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf
+  if [ "${subDom}" = "cloud" ]; then
+    /usr/bin/sed -i "s?kit\.${blueURI}?cloud.${blueURI}?g" /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf
+    /usr/bin/sed -i "s?blue\.kit?blue.cloud?g" /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf
+  fi
 elif [ ${ServerType} = "lamp" ]; then
   /usr/bin/su worker -c '/usr/bin/yay -S mod_itk --noconfirm'
   #/usr/local/usr/bin/yeo -S mod_itk --noconfirm
   # Include the virtual host configurations:
   echo "# Load the mod_itk module so Apache can use the nextcloud user
   LoadModule mpm_itk_module modules/mpm_itk.so" >> /etc/httpd/conf/httpd.conf
-  /usr/bin/mv /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf.old
-  /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud.conf /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf
+  /usr/bin/mv /opt/verb/conf/webserver/sites-available/httpd/${subDom}.${blueURI}.conf /opt/verb/conf/webserver/sites-available/httpd/${subDom}.${blueURI}.conf.old
+  /usr/bin/cp /opt/verb/conf/site-files/conf/nextcloud.conf /opt/verb/conf/webserver/sites-available/httpd/${subDom}.${blueURI}.conf
+  if [ "${subDom}" = "cloud" ]; then
+    /usr/bin/sed -i "s?kit\.${blueURI}?cloud.${blueURI}?g" /opt/verb/conf/webserver/sites-available/httpd/${subDom}.${blueURI}.conf
+    /usr/bin/sed -i "s?blue\.kit?blue.cloud?g" /opt/verb/conf/webserver/sites-available/httpd/${subDom}.${blueURI}.conf
+  fi
 fi
 
 # Setup for inkCert
 . /opt/verb/conf/inkcert/cli-ini/siteinkcert.${blueURI}
 case ${InkCerted} in
   DONE_SC)
-  /opt/verb/serfs/inkcertaddsc cloud.${blueURI} ${blueURI}
+  /opt/verb/serfs/inkcertaddsc ${subDom}.${blueURI} ${blueURI}
   ;;
   DONE_LE)
-  /opt/verb/serfs/inkcertaddle cloud.${blueURI} ${blueURI}
+  /opt/verb/serfs/inkcertaddle ${subDom}.${blueURI} ${blueURI}
   ;;
   DONE_CBSINGLE)
-  /opt/verb/serfs/inkcertaddcbsingle cloud.${blueURI} ${blueURI}
+  /opt/verb/serfs/inkcertaddcbsingle ${subDom}.${blueURI} ${blueURI}
   ;;
   DONE_CB)
-  /opt/verb/serfs/inkcertaddcb cloud.${blueURI} ${blueURI}
+  /opt/verb/serfs/inkcertaddcb ${subDom}.${blueURI} ${blueURI}
   ;;
   NO|NOT_YET)
     /usr/bin/echo "Nextcloud is currently using Snakeoil certs, ready for inkCert"
@@ -197,7 +243,7 @@ fi
   'directory'     => '/srv/www/vapps/nextcloud/data',
   'trusted_domains' =>
     [
-      'cloud.${blueURI}',
+      '${subDom}.${blueURI}',
       '${ServerIPv4}',
       '[${ServerIPv6}]'
     ],
@@ -209,9 +255,9 @@ EOF
 /usr/bin/cat <<EOF > /srv/www/vapps/nextcloud/config/basic.config.php
 <?php
 \$ConfIG = [
-'overwritehost' => 'cloud.${blueURI}',
-'overwrite.cli.url' => 'cloud.${blueURI}',
-'proxy' => 'cloud.${blueURI}',
+'overwritehost' => '${subDom}.${blueURI}',
+'overwrite.cli.url' => '${subDom}.${blueURI}',
+'proxy' => '${subDom}.${blueURI}',
 'defaultapp' => 'dashboard,files',
 'ratelimit.protection.enabled' => true,
 'auth.bruteforce.protection.enabled' => true
@@ -219,7 +265,18 @@ EOF
 EOF
 
 # Use msmtp for a real SMTP address
-/opt/verb/serfs/inkvmailsysnextcloud
+## Postfix vmail?
+if [ "${ServerMailStatus}" = "VMAIL_SERVER" ]; then
+  /opt/verb/serfs/inkvmailsysnextcloud
+
+## Maddy email?
+elif [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ]
+  /opt/verb/serfs/inkemailsysnextcloud
+
+## Neither
+else
+  /usr/bin/echo "No email server detected, so not configuring email settings."
+fi
 
 # Verify ownership
 /usr/bin/chown -R www:www /srv/www/vapps/${cVappName}; wait
@@ -240,9 +297,9 @@ EOF
 
 # Finish
 /usr/bin/echo "
-Go to https://cloud.${blueURI} to install.
+Go to https://${subDom}.${blueURI} to install.
 
-Tip: https://cloud.${blueURI}/index.php/settings/admin
+Tip: https://${subDom}.${blueURI}/index.php/settings/admin
 - Background jobs
   - Cron
 

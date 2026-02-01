@@ -18,7 +18,7 @@ $ORIGIN emailURI286.
 ;; End Root Site Defaults
 
 ; Site Record Defaults
-e.emailURI286.		IN  A		hostipv4286
-e.emailURI286.		IN  AAAA	hostipv6286
+e.emailURI286.	    	IN  A		hostipv4286
+e.emailURI286.	    	IN  AAAA	hostipv6286
 
 ; Text Record Defaults

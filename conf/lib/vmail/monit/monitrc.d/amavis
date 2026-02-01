@@ -1,6 +1,6 @@
 check process amavisd with pidfile /var/run/amavis/amavisd.pid
-  every 5 cycles
   group vmail
+  every 5 cycles
   start program = "/usr/bin/systemctl start amavis"
   stop  program = "/usr/bin/systemctl stop amavis"
   if failed port 10024 protocol smtp then restart

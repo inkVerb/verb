@@ -2,36 +2,39 @@
 #inkVerbSerf! verb.ink
 
 # This downloads and installs ownCloud (OCIS) manually and runs it on ....verb.blue
+## The "cloud" subdomain is intended for heavyweight deployments dedicateing the .blue server to one cloud service, having multiple verb namespaces, with Pydio, OCIS, and Nextcloud all using the same "cloud" subdomsin with the three different namespaces
 
 # An optional database block exists, but needs uncommenting and updates to usage meta and final message at end of script, see instructions all in the commented block
 ## The database is probably never used, only for External IDP Integration
 ## The purpose of this new database is to create a blank database that can be imported outside this script
 ## If used, the usage syntax would be:
-### installowncloud [dbase - optional] [dbuser - optional] [dbpassword - optional]
+### installowncloud [ dbase - optional ] [ dbuser - optional ] [ dbpassword - optional ]
 ## Eg:
 ### ./installowncloud bestdbase bestdbuser besteverpass
 ## Then serf header options would change to:
-# usageformat="installowncloud [dbase - optional] [dbuser - optional] [dbpassword - optional]"
+# usageformat="installowncloud [ cab/clooud ] [ dbase - optional ] [ dbuser - optional ] [dbpassword - optional ]"
 # usageexample="installowncloud
 # installowncloud bestdbase bestdbuser besteverpass"
 # voptnames=( "Database" "Database user" "Database password" )
 # vopttypes=( isSQLDatabasename isSQLDatabasename isSQLDatabasename )
 
 # How to use:
-## ./installowncloud
+## ./installowncloud [ alt subdomain "cloud" - defualt "cab" ]
 
 # Eg:
 ## ./installowncloud
+## ./installowncloud cloud
 
 
 usagenotes="This downloads and installs ownCloud (OCIS) manually and runs it on ....verb.blue"
-usageformat="installowncloud"
-usageexample="installowncloud"
+usageformat="installowncloud [ alt subdomain "cloud" - defualt "cab" ]"
+usageexample="installowncloud
+installowncloud cloud"
 hierarchy=( primary )
 vsetnames=(  )
 vsettypes=(  )
-voptnames=( "Database" "Database user" "Database password" )
-vopttypes=( isSQLDatabasename isSQLDatabasename isSQLDatabasename )
+voptnames=( "Alt subdomain: cloud" )
+vopttypes=( isChoice )
 voptflags=(  )
 voptflagpurpose=(  )
 dependencyinstall=(  )
@@ -72,23 +75,30 @@ Email server not installed, can't install ownCloud.
 "
 exit 0; fi
 
-# Auto database
-cleanName=$(/usr/bin/echo $cVappName | /usr/bin/sed -e 's/\.//g')
-if [ -z ${3} ]; then
-dBPassword=$(/usr/bin/pwgen -s -1 10)
+# Subdomain
+if [ -n ${1} ] && [ "${1}" = "cloud" ]; then
+  subDom="cloud"
 else
-dBPassword=$3
+  subDom="cab"
 fi
-if [ -z ${1} ]; then
-dBase=${cleanName}$(/usr/bin/pwgen -s -1 6)
-else
-dBase=$1
-fi
-if [ -z ${2} ]; then
-dBaseUser=${dBase}
-else
-dBaseUser=$2
-fi
+
+# # Auto database
+# cleanName=$(/usr/bin/echo $cVappName | /usr/bin/sed -e 's/\.//g')
+# if [ -z ${4} ]; then
+# dBPassword=$(/usr/bin/pwgen -s -1 10)
+# else
+# dBPassword="$4"
+# fi
+# if [ -z ${2} ]; then
+# dBase=${cleanName}$(/usr/bin/pwgen -s -1 6)
+# else
+# dBase="$2"
+# fi
+# if [ -z ${3} ]; then
+# dBaseUser=${dBase}
+# else
+# dBaseUser="$3"
+# fi
 
 # Download as vapp
 cd /srv/cloud || exit 6
@@ -128,7 +138,7 @@ WorkingDirectory=/srv/cloud/ocis
 Environment="OCIS_BASE_DATA_PATH=/srv/cloud/ocis"
 
 # Network
-Environment="OCIS_URL=https://cloud.${blueURI}"
+Environment="OCIS_URL=https://${subDom}.${blueURI}"
 Environment="PROXY_HTTP_ADDR=0.0.0.0:9200"
 Environment="PROXY_TLS=false" # Nginx handles SSL
 
@@ -147,7 +157,7 @@ EOF
 # ## Uncomment this block to use it, but for most implementations this should never be necessary
 # 
 # ## New usage meta:
-# usageformat="installowncloud [dbase] [dbuser] [dbpassword]"
+# usageformat="installowncloud  [ cab/clooud ] [dbase] [dbuser] [dbpassword]"
 # usageexample="installowncloud
 # installowncloud bestdbase bestdbuser besteverpass"
 # 
@@ -210,29 +220,37 @@ EOF
 
 # Webserver setup
 if [ ${ServerType} = "laemp" ]; then
-  /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf.old
-  /usr/bin/mv /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf /opt/verb/conf/webserver/sites-available/httpd/cloud.${blueURI}.conf.old
-  /usr/bin/cp /opt/verb/conf/site-files/conf/ocis.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf
-  /usr/bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/cloud.${blueURI}.conf
+  /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf.old
+  /usr/bin/mv /opt/verb/conf/webserver/sites-available/httpd/${subDom}.${blueURI}.conf /opt/verb/conf/webserver/sites-available/httpd/${subDom}.${blueURI}.conf.old
+  /usr/bin/cp /opt/verb/conf/site-files/conf/ocis.conf /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf
+  /usr/bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/${subDom}.${blueURI}.conf
+  if [ "${subDom}" = "cloud" ]; then
+    /usr/bin/sed -i "s?cab\.${blueURI}?cloud.${blueURI}?g" /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf
+    /usr/bin/sed -i "s?blue\.cab?blue.cloud?g" /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf
+  fi
 elif [ ${ServerType} = "lemp" ]; then
-  /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf.old
-  /usr/bin/cp /opt/verb/conf/site-files/conf/ocis.conf /opt/verb/conf/webserver/sites-available/nginx/cloud.${blueURI}.conf
+  /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf.old
+  /usr/bin/cp /opt/verb/conf/site-files/conf/ocis.conf /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf
+  if [ "${subDom}" = "cloud" ]; then
+    /usr/bin/sed -i "s?cab\.${blueURI}?cloud.${blueURI}?g" /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf
+    /usr/bin/sed -i "s?blue\.cab?blue.cloud?g" /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf
+  fi
 fi
 
 # Setup for inkCert
 . /opt/verb/conf/inkcert/cli-ini/siteinkcert.${blueURI}
 case ${InkCerted} in
   DONE_SC)
-  /opt/verb/serfs/inkcertaddsc cloud.${blueURI} ${blueURI}
+  /opt/verb/serfs/inkcertaddsc ${subDom}.${blueURI} ${blueURI}
   ;;
   DONE_LE)
-  /opt/verb/serfs/inkcertaddle cloud.${blueURI} ${blueURI}
+  /opt/verb/serfs/inkcertaddle ${subDom}.${blueURI} ${blueURI}
   ;;
   DONE_CBSINGLE)
-  /opt/verb/serfs/inkcertaddcbsingle cloud.${blueURI} ${blueURI}
+  /opt/verb/serfs/inkcertaddcbsingle ${subDom}.${blueURI} ${blueURI}
   ;;
   DONE_CB)
-  /opt/verb/serfs/inkcertaddcb cloud.${blueURI} ${blueURI}
+  /opt/verb/serfs/inkcertaddcb ${subDom}.${blueURI} ${blueURI}
   ;;
   NO|NOT_YET)
     /usr/bin/echo "Nextcloud is currently using Snakeoil certs, ready for inkCert"
@@ -261,7 +279,7 @@ if [ "${ServerMailStatus}" = "VMAIL_SERVER" ]; then
   /opt/verb/serfs/inkvmailsysowncloud
 
 ## Maddy email?
-  elif [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ]; then
+elif [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ]; then
   /opt/verb/serfs/inkemailsysowncloud
 
 ## Neither
@@ -281,7 +299,7 @@ fi
 
 # Finish
 /usr/bin/echo "
-Go to https://cloud.${blueURI} to finish installing.
+Go to https://${subDom}.${blueURI} to finish installing.
 
 "
 
@@ -294,7 +312,7 @@ if [ -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
     if [ "$?" = 0 ]; then
       /usr/bin/echo "InkDrive=\"${InkDriveCloud}\"" >> /opt/verb/conf/vapps/vapp.${cVappName}
     else
-      /usr/bin/echo "inkDrive hosting is expected, but unable to host Nextcloud on the drive. Something is very wrong!"
+      /usr/bin/echo "inkDrive hosting is expected, but unable to host ownCloud on the drive. Something is very wrong!"
       exit 6
     fi
   fi

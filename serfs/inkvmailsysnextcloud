@@ -38,8 +38,8 @@ if [ "$ServerMailStatus" != "VMAIL_SERVER" ]; then
 . /opt/verb/conf/siteurilist
 
 # Cleanup previous entries
-if [ -f "/opt/verb/conf/vsysmail.nextcloud" ]; then
-  . /opt/verb/conf/vsysmail.nextcloud
+if [ -f "/opt/verb/conf/sysmail.nextcloud" ]; then
+  . /opt/verb/conf/sysmail.nextcloud
   /usr/bin/rm -rf /srv/vmail/${inkvmaildirectory}
   oldusername="${username}"
 fi
@@ -47,7 +47,7 @@ fi
 # Prep all vairables
 Password=$(/usr/bin/pwgen -s1 24)
 randomuser=$(/usr/bin/pwgen -s1A 5)
-/usr/bin/cat <<EOF > /opt/verb/conf/vsysmail.nextcloud
+/usr/bin/cat <<EOF > /opt/verb/conf/sysmail.nextcloud
 Password="${Password}"
 user="nxc_${randomuser}"
 username="nxc_${randomuser}@${nameURI}"
@@ -89,7 +89,7 @@ fi
 <?php
 \$ConfIG = [
 'mail_domain' => '${nameURI}',
-'mail_from_address' => 'nxc_${randomuser}@${nameURI}',
+'mail_from_address' => 'noreply@${nameURI}',
 'mail_smtpmode' => 'smtp',
 'mail_smtphost' => 'mail.${nameURI}',
 'mail_smtpport' => 587,

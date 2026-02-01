@@ -1,0 +1,52 @@
+#!/bin/bash
+#inkVerb! repo donjon dragon, verb.ink
+#set -e
+
+# This updates the ownCloud repo package with ownCloud OCIS (not the PHP-driven ownCloud 10)
+
+# How to use:
+## ./pydio.updaterepo
+
+
+cVappName=pydio
+# Include the config files
+. /opt/verb/conf/serverinkget
+. /opt/verb/conf/inklists/repoverlist
+distVer="${owncloud}"
+
+if [ $InkGet_Method != "ZJZ" ]; then
+  cd /opt/verb/repo
+elif [ $InkGet_Method = "ZJZ" ] ; then
+  cd /srv/cloud
+fi
+
+# Announce
+/usr/bin/echo "Retrieving ownCloud v${distVer}..."
+
+# Get the package
+## Keep its distrib name for the SHA256 check
+/usr/bin/wget -O cells https://download.pydio.com
+if [ ! -f "cells" ]; then
+/usr/bin/echo "Failed download."; touch "${cVappName}.failed"
+exit 4; else
+/usr/bin/rm -f ${cVappName}.failed; fi
+## Version
+/usr/bin/chmod +x cells
+
+if [ $InkGet_Method != "ZJZ" ]; then
+  # Set it as the new package
+  /usr/bin/rm -f ${cVappName}.legacy.txz
+  /usr/bin/touch ${cVappName}.txz
+  /usr/bin/mv ${cVappName}.txz ${cVappName}.legacy.txz
+fi
+## Move the Go binary file into a vapp directory with the name it is properly known by, "ocis"
+/usr/bin/echo "Preparing from vendor..."
+/usr/bin/mkdir -p /srv/cloud/${cVappName}
+/usr/bin/mv -f /srv/cloud/cells /srv/cloud/${cVappName}/cells
+if [ $InkGet_Method != "ZJZ" ]; then
+  /opt/verb/serfs/vtxzin ${cVappName}; wait
+  /usr/bin/rm -rf ${cVappName}
+fi
+
+# Finish
+/usr/bin/echo "Downloaded the latest version of ownCloud."

@@ -4,6 +4,8 @@
 ## This does not relocate the entire vapp's folder
 ## This is not for ghost, owncloud, or other /srv/cloud/ apps
 ## This is designed on a per-vapp basis
+## Pydio note: supporting multiple data directories, pydio can take arguments as pydio (same as pydio1), pydio1, pydio2, pydio3, and pydio4
+### But, those other pydio "data sources" must already be enabled in the Pydio admin before running this
 
 # How to use:
 ## ./inkdriveapp [ vapp ] [ drive name - optional ]
@@ -41,14 +43,14 @@ else
   . /opt/verb/conf/inkdrive/inkdriveinfo
 fi
 
-# Defaults (prefer HDD)
+# Defaults (prefer SSD)
 Vapp="${1}"
 if [ -n "${2}" ]; then
   Mnt="${2}"
-elif [ -n "${HDDdefault}" ]; then
-  Mnt=${HDDdefault}
 elif [ -n "${SSDdefault}" ]; then
   Mnt=${SSDdefault}
+elif [ -n "${HDDdefault}" ]; then
+  Mnt=${HDDdefault}
 else
   /usr/bin/echo "There is no default drive. Something is very wrong."
   exit 6
@@ -75,19 +77,48 @@ fi
 if [[ "${Vapp}" =~ ^wp.* ]] && [ -e "/srv/www/vapps/${Vapp}/wp-content" ]; then
   VappType="WordPress"
   VappData="/srv/www/vapps/${Vapp}/wp-content"
-  DataName="wp-content"
+  DataDir="wp-content"
+  UserGroup="www:www"
 elif [ "${Vapp}" = "maddy" ] && [ -e "/srv/email/maddy/messages" ]; then
   VappType="Maddy"
   VappData="/srv/email/maddy/messages"
-  DataName="messages"
+  DataDir="messages"
+  UserGroup="maddy:maddy"
 elif [ "${Vapp}" = "owncloud" ] && [ -e "/srv/cloud/ocis" ]; then
   VappType="ownCloud"
   VappData="/srv/cloud/ocis"
-  DataName="ocis"
+  DataDir="ocis"
+  UserGroup="ocis:ocis"
 elif [ "${Vapp}" = "nextcloud" ] && [ -e "/srv/www/vapps/nextcloud/data" ]; then
   VappType="Nextcloud"
   VappData="/srv/www/vapps/nextcloud/data"
-  DataName="data"
+  DataDir="data"
+  UserGroup="www:www"
+elif [ "${Vapp}" = "pydio" ] && [ -e "/srv/cloud/pydio/data/pydiods1" ]; then
+  VappType="Pydio"
+  VappData="/srv/cloud/pydio/data/pydiods1"
+  DataDir="pydiods1"
+  UserGroup="pydio:pydio"
+elif [ "${Vapp}" = "pydio1" ] && [ -e "/srv/cloud/pydio/data/pydiods1" ]; then
+  VappType="Pydio"
+  VappData="/srv/cloud/pydio/data/pydiods1"
+  DataDir="pydiods1"
+  UserGroup="pydio:pydio"
+elif [ "${Vapp}" = "pydio2" ] && [ -e "/srv/cloud/pydio/data/pydiods2" ]; then
+  VappType="Pydio"
+  VappData="/srv/cloud/pydio/data/pydiods2"
+  DataDir="pydiods2"
+  UserGroup="pydio:pydio"
+elif [ "${Vapp}" = "pydio3" ] && [ -e "/srv/cloud/pydio/data/pydiods3" ]; then
+  VappType="Pydio"
+  VappData="/srv/cloud/pydio/data/pydiods3"
+  DataDir="pydiods3"
+  UserGroup="pydio:pydio"
+elif [ "${Vapp}" = "pydio4" ] && [ -e "/srv/cloud/pydio/data/pydiods4" ]; then
+  VappType="Pydio"
+  VappData="/srv/cloud/pydio/data/pydiods3"
+  DataDir="pydiods4"
+  UserGroup="pydio:pydio"
 else
   /usr/bin/echo "${Vapp} is not a vapp that can be mounted to a drive."
   exit 5
@@ -125,9 +156,14 @@ if [ ! -d "${VappData}" ]; then
 else
   /usr/bin/mkdir -p "/mnt/${Mnt}/vapps/${Vapp}"
   /usr/bin/mv "${VappData}" "/mnt/${Mnt}/vapps/${Vapp}/"
-  /usr/bin/ln -sfn "/mnt/${Mnt}/vapps/${Vapp}/${DataName}" "${VappData}"
-  /usr/bin/chown -R www:www "${VappData}"
-  /usr/bin/chown -R www:www "/mnt/${Mnt}/vapps/${Vapp}/${DataName}"
+  #/usr/bin/ln -sfn "/mnt/${Mnt}/vapps/${Vapp}/${DataDir}" "${VappData}" #DEV the blind mount in fstab is better
+  ## fstab
+  /usr/bin/echo "/mnt/${Mnt}/vapps/${Vapp}/${DataDir}  ${VappData}  none  bind  0  0 #${Vapp}" >> /etc/fstab # Remove with: sed -i "/#${Vapp}/d" /etc/fstab
+  /usr/bin/systemctl daemon-reload
+  /usr/bin/mount -a
+  ## Own
+  /usr/bin/chown -R ${UserGroup} "${VappData}"
+  /usr/bin/chown -R ${UserGroup} "/mnt/${Mnt}/vapps/${Vapp}/${DataDir}"
 fi
 if [ "$?" != 0 ]; then
   /usr/bin/echo "Vapp's data folder could not be mounted. Something is very wrong."

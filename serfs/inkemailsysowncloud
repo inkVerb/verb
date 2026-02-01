@@ -38,40 +38,36 @@ if [ "$ServerMailStatus" != "MADDY_EMAIL_SERVER" ]; then
 . /opt/verb/conf/siteurilist
 
 # Cleanup previous entries
-if [ -f "/opt/verb/conf/vsysmail.owncloud" ]; then
-  . /opt/verb/conf/vsysmail.owncloud
+if [ -f "/opt/verb/conf/sysmail.owncloud" ]; then
+  . /opt/verb/conf/sysmail.owncloud
   oldusername="${username}"
-  # Update Maddy
-  /usr/bin/sudo maddy -c "... delete '$oldusername'"
-  /usr/bin/rm -rf /srv/email/maddy/${inkemaildirectory}  ?? Does Maddy have this?
+  /usr/bin/sudo -u maddy maddyctl creds remove "$oldusername"
 fi
 
 # Prep all vairables
 Password=$(/usr/bin/pwgen -s1 24)
 randomuser=$(/usr/bin/pwgen -s1A 5)
-/usr/bin/cat <<EOF > /opt/verb/conf/vsysmail.owncloud
+/usr/bin/cat <<EOF > /opt/verb/conf/sysmail.owncloud
 Password="${Password}"
 user="ons_${randomuser}"
 username="ons_${randomuser}@${nameURI}"
 maildomain="${nameURI}"
 name="ownCloud ${blueURI}"
-inkemaildirectory="${nameURI}/ons_${randomuser}/"  ?? Does Maddy have this?
-mailboxsize="1048576" # 1MB, 2GB=2097152000, 1GB=1048576000, 5GB=5242880000
 EOF
+. /opt/verb/conf/sysmail.owncloud
 
 # Security check
 /opt/verb/serfs/setsecure; wait
 
-# Delete the old entry in the database
-# Is this redundant?
-# /usr/bin/sudo maddy -c "... 'sys_$randomuser@$nameURI' '$Password'"
-
 # Run it quick to create the account
-/opt/verb/donjon/sysmails.sh owncloud; wait
+/opt/verb/donjon/sysmails.sh pydio; wait
 if [ "$?" != 0 ]; then
-  echo "Error updating new ownCloud mail user in databse"
+  echo "Error updating new Pydio mail user in databse"
   exit 6;
 fi
+
+# Update Maddy
+if [ -n "$oldusername" ] && [ "$oldusername" != "$username" ]; then /usr/bin/sudo -u maddy maddyctl creds remove "$oldusername"; fi
 
 # Set up sysmails cron
 ## ownCloud background jobs (manage the crontab files directly)
@@ -87,7 +83,7 @@ fi
 smtp:
   host: "mail.${nameURI}"
   port: 587
-  sender: "ons_${randomuser}@${nameURI}"
+  sender: "noreply@${nameURI}"
   username: "ons_${randomuser}@${nameURI}"
   password: "${Password}"
   authentication: "login"

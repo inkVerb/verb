@@ -1,0 +1,98 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This creates or resets the Nextcloud smtp user for inkvmail, such as is used by php to send emails
+## This also creates a cron task to run itself regularly; this is the proper workflor for creating that cron task, creating it the first time run and resetting it
+
+# How to use:
+## ./inkvmailsyspydio
+
+usagenotes="This creates or resets the Nextcloud smtp user for inkvmail, such as is used by php to send emails"
+usageformat="inkvmailsyspydio"
+usageexample="inkvmailsyspydio"
+hierarchy=( tertiary installpydio )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( installinkvmail )
+prerequesite=(  )
+usedby=( installpydio )
+useserfs=( setsecure )
+useconfigs=( servermailpath servernameip siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkvmailsyspydio.replace" ]; then . /opt/verb/mods/inkvmailsyspydio.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkvmailsyspydio.before" ]; then . /opt/verb/mods/inkvmailsyspydio.before; fi # Precedes this script
+
+
+# Check to see if inkvmail is installed
+. /opt/verb/conf/servermailpath
+if [ "$ServerMailStatus" != "VMAIL_SERVER" ]; then
+  /bin/echo "Vmail not installed. Do that first."
+  exit 0; fi
+
+# Include the config
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+
+# Cleanup previous entries
+if [ -f "/opt/verb/conf/sysmail.pydio" ]; then
+  . /opt/verb/conf/sysmail.pydio
+  /usr/bin/rm -rf /srv/vmail/${inkvmaildirectory}
+  oldusername="${username}"
+fi
+
+# Prep all vairables
+Password=$(/usr/bin/pwgen -s1 24)
+randomuser=$(/usr/bin/pwgen -s1A 5)
+/usr/bin/cat <<EOF > /opt/verb/conf/sysmail.pydio
+Password="${Password}"
+user="pyd_${randomuser}"
+username="pyd_${randomuser}@${nameURI}"
+maildomain="${nameURI}"
+name="Pydio ${blueURI}"
+inkvmaildirectory="${nameURI}/pyd_${randomuser}/"
+mailboxsize="1048576" # 1MB, 2GB=2097152000, 1GB=1048576000, 5GB=5242880000
+EOF
+
+# Security check
+/opt/verb/serfs/setsecure; wait
+
+# Disable the old entry in the database
+if [ -n "${oldusername}" ]; then
+  password="$(/bin/echo $Password | /usr/bin/openssl passwd -1 -stdin)"
+  /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqldb.vmail.cnf -e "UPDATE mailbox
+  SET username = 'pyd_${randomuser}@${nameURI}', password = '${password}', name = 'System', maildir = '${nameURI}/pyd_${randomuser}', domain = '${nameURI}', modified = CURRENT_TIMESTAMP, active = 1
+  WHERE username = '${oldusername}';
+  UPDATE alias
+  SET address = 'pyd_${randomuser}@${nameURI}', goto = 'pyd_${randomuser}@${nameURI}', domain = '${nameURI}', modified = CURRENT_TIMESTAMP, active = 1
+  WHERE address = '${oldusername}';"
+fi
+
+# Run it quick to create the account
+/opt/verb/donjon/sysmails.sh nextcloud; wait
+if [ "$?" != 0 ]; then
+  echo "Error updating new Nextcloud mail user in databse"
+  exit 6;
+fi
+
+# Set up sysmails cron
+## Pydio background jobs (manage the crontab files directly)
+/bin/echo '8 4 * * * root /opt/verb/serfs/inkvmailsyspydio' > /etc/cron.d/sysmailpydio
+## Permissions
+/bin/chmod 0644 /etc/cron.d/sysmailpydio
+
+# Mail config
+if [ -f "/srv/cloud/pydio/pydio.json" ]; then
+  /usr/bin/jq ".configs.\"pydio.grpc.mailer\".SMTP_USER = \"pyd_${randomuser}@${nameURI}\" | .configs.\"pydio.grpc.mailer\".SMTP_PASSWORD = \"${Password}\"" /srv/cloud/pydio/pydio.json > /srv/cloud/pydio/tmp.json && /usr/bin/mv /srv/cloud/pydio/tmp.json /srv/cloud/pydio/pydio.json
+  /usr/bin/chown pydio:pydio /srv/cloud/pydio/pydio.json
+  /usr/bin/chmod 600 /srv/cloud/pydio/pydio.json
+fi
+
+
+
+
+
+if [ -e "/opt/verb/mods/inkvmailsyspydio.after" ]; then . /opt/verb/mods/inkvmailsyspydio.after; fi # Follows this script

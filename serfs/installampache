@@ -1,12 +1,36 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
 
-# This installs Ampache from inkisaverb.com/repo and links it to ampache....verb.kiwi
+# This installs Ampache from inkisaverb.com/repo and links it to sound....verb.kiwi
 
 # All options are optional, but must are sequential, omit last options first.
 
 # How to use:
-## ./installampache [dbase] [dbuser] [dbpassword]
+## ./installampache [ dbase - optional ] [ dbuser - optional ] [ dbpassword - optional ]
+
+# Eg:
+## ./installampache
+## ./installampache bestdbase bestdbuser besteverpass
+
+usagenotes="This installs Ampache from inkisaverb.com/repo and links it to sound....verb.kiwi"
+usageformat="installampache [ dbase - optional ] [ dbuser - optional ] [ dbpassword - optional ]"
+usageexample="installampache
+installampache bestdbase bestdbuser besteverpass"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=( "Database" "Database user" "Database password" )
+vopttypes=( isSQLDatabasename isSQLDatabasename isSQLDatabasename )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( inkget inkcert_ inkdriveapp )
+useconfigs=( servernameip siteurilist servertype )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/installampache.replace" ]; then . /opt/verb/mods/installampache.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installampache.before" ]; then . /opt/verb/mods/installampache.before; fi # Precedes this script
 
 
 cVappName=ampache
@@ -14,10 +38,25 @@ cVappName=ampache
 # Include the configs
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/siteurilist
+. /opt/verb/conf/servertype
 
 dBase=$1
 dBaseUser=$2
 dBPassword=$3
+
+# Check if already installed
+## Config
+if [ -f /opt/verb/conf/vapps/vapp.${cVappName} ]; then
+/usr/bin/echo "This is already installed."
+exit 0; fi
+## Directory
+if [ -d /srv/www/vapps/${cVappName} ]; then
+/usr/bin/echo "Ampache already exists in the system. If it isn't working, look deeper on the server. For now, doing nothing."
+exit 8; fi
+## Web server
+if [ ${ServerType} = "lamp" ]; then
+/usr/bin/echo "Only allowed with Nginx servers, LEMP or LAEMP; LAMP servers with Apache not allowed."
+exit 0; fi
 
 # Install
 cd /srv/www/vapps || exit 6
@@ -50,6 +89,53 @@ FLUSH PRIVILEGES;"
 #sed -i "s/database_password = password/database_password = ${dBPassword}/g" /srv/www/vapps/ampache/config/ampache.cfg.php
 ## Add the tables to the database
 #mysql --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf ${dBase} < /srv/www/vapps/ampache/sql/ampache.sql
+
+# Webserver setup
+if [ ${ServerType} = "laemp" ]; then
+  /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/sound.${kiwiURI}.conf /opt/verb/conf/webserver/sites-available/nginx/sound.${kiwiURI}.conf.old
+  /usr/bin/mv /opt/verb/conf/webserver/sites-available/httpd/sound.${kiwiURI}.conf /opt/verb/conf/webserver/sites-available/httpd/sound.${kiwiURI}.conf.old
+  /usr/bin/cp /opt/verb/conf/site-files/conf/ampache.conf /opt/verb/conf/webserver/sites-available/nginx/sound.${kiwiURI}.conf
+  /usr/bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/sound.${kiwiURI}.conf
+elif [ ${ServerType} = "lemp" ]; then
+  /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/sound.${kiwiURI}.conf /opt/verb/conf/webserver/sites-available/nginx/sound.${kiwiURI}.conf.old
+  /usr/bin/cp /opt/verb/conf/site-files/conf/ampache.conf /opt/verb/conf/webserver/sites-available/nginx/sound.${kiwiURI}.conf
+fi
+
+# Setup for inkCert
+. /opt/verb/conf/inkcert/cli-ini/siteinkcert.${kiwiURI}
+case ${InkCerted} in
+  DONE_SC)
+  /opt/verb/serfs/inkcertaddsc sound.${kiwiURI} ${kiwiURI}
+  ;;
+  DONE_LE)
+  /opt/verb/serfs/inkcertaddle sound.${kiwiURI} ${kiwiURI}
+  ;;
+  DONE_CBSINGLE)
+  /opt/verb/serfs/inkcertaddcbsingle sound.${kiwiURI} ${kiwiURI}
+  ;;
+  DONE_CB)
+  /opt/verb/serfs/inkcertaddcb sound.${kiwiURI} ${kiwiURI}
+  ;;
+  NO|NOT_YET)
+    /usr/bin/echo "Nextcloud is currently using Snakeoil certs, ready for inkCert"
+  ;;
+  *)
+    if ! /usr/bin/grep -q "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
+      /usr/bin/echo "Something's wrong with the inkCert siteinkcert configs! Aborting"
+      exit 6
+    else
+      /usr/bin/echo "Nextcloud is currently using Snakeoil certs, ready for inkCert"
+    fi
+  ;;
+esac
+
+# Webserver restart
+if [ ${ServerType} = "laemp" ]; then
+  /usr/bin/systemctl restart nginx; wait
+  /usr/bin/systemctl restart httpd; wait
+elif [ ${ServerType} = "lemp" ]; then
+  /usr/bin/systemctl restart nginx; wait
+fi
 
 # Write the config for backup
 /bin/echo "#!/bin/bash
@@ -86,7 +172,7 @@ Next page: All info should be correct already
 
 *Make sure you look through Admin areas for some important options after you complete the installation and login.
 
-Go to http://ampache.${kiwiURI} to install.
+Go to https://sound.${kiwiURI} to install.
 "
 
 

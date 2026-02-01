@@ -1,12 +1,33 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
 
-# This downloads and installs OrangeHRM manually from inkisaverb.com/repo and linnks it to ....verb.blue
+# This downloads and installs OrangeHRM and links it to ....verb.red
 
 # All options are optional, but must are sequential, omit last options first.
 
 # How to use:
-## ./installorangehrm [dbase] [dbuser] [dbpassword]
+## ./installorangehrm [ dbase - optional ] [ dbuser - optional ] [ dbpassword - optional ]
+
+
+usagenotes="This downloads and installs OrangeHRM and links it to ....verb.red"
+usageformat="installorangehrm [ dbase - optional ] [ dbuser - optional ] [ dbpassword - optional ]"
+usageexample="installorangehrm
+installorangehrm bestdbase bestdbuser besteverpass"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=( "Database" "Database user" "Database password" )
+vopttypes=( isSQLDatabasename isSQLDatabasename isSQLDatabasename )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( inkget inkcert_ )
+useconfigs=( servernameip siteurilist servertype servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/installorangehrm.replace" ]; then . /opt/verb/mods/installorangehrm.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installorangehrm.before" ]; then . /opt/verb/mods/installorangehrm.before; fi # Precedes this script
 
 
 cVappName=orangehrm
@@ -14,6 +35,8 @@ cVappName=orangehrm
 # Include the configs
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/siteurilist
+. /opt/verb/conf/servertype
+. /opt/verb/conf/servermailpath
 
 dBase=$1
 dBaseUser=$2
@@ -29,6 +52,10 @@ exit 0; fi
 if [ -d /srv/www/vapps/${cVappName} ]; then
 /bin/echo "OrangeHRM already exists in the system. If it isn't working, look deeper on the server. For now, doing nothing."
 exit 8; fi
+## Web server
+if [ ${ServerType} = "lamp" ]; then
+/usr/bin/echo "Only allowed with Nginx servers, LEMP or LAEMP; LAMP servers with Apache not allowed."
+exit 0; fi
 
 # Download and unpack the latest checked version from inkisaverb.com/repo
 cd /srv/www/vapps || exit 6
@@ -64,13 +91,75 @@ FLUSH PRIVILEGES;"
 #sed -i "s/dbpass   = 'orangehrm'/dbpass   = '${dBPassword}'/g" /srv/www/vapps/orangehrm/lib/confs/Conf.php
 
 # Firewall
-/usr/bin/ufw allow 3306
+#DEV No! because the SQL server is on localhost
+#/usr/bin/ufw allow 3306
 
 # Write the config for backup
 /bin/echo "#!/bin/bash
 appDBase=${dBase}
 appDDBUsr=${dBaseUser}
 appDDBPass=${dBPassword}" > /opt/verb/conf/vapps/vapp.${cVappName}
+
+# Webserver setup
+if [ ${ServerType} = "laemp" ]; then
+  /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/hrm.${redURI286}.conf /opt/verb/conf/webserver/sites-available/nginx/hrm.${redURI286}.conf.old
+  /usr/bin/mv /opt/verb/conf/webserver/sites-available/httpd/hrm.${redURI286}.conf /opt/verb/conf/webserver/sites-available/httpd/hrm.${redURI286}.conf.old
+  /usr/bin/cp /opt/verb/conf/site-files/conf/orangehrm.conf /opt/verb/conf/webserver/sites-available/nginx/hrm.${redURI286}.conf
+  /usr/bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/hrm.${redURI286}.conf
+elif [ ${ServerType} = "lemp" ]; then
+  /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/hrm.${redURI286}.conf /opt/verb/conf/webserver/sites-available/nginx/hrm.${redURI286}.conf.old
+  /usr/bin/cp /opt/verb/conf/site-files/conf/orangehrm.conf /opt/verb/conf/webserver/sites-available/nginx/hrm.${redURI286}.conf
+fi
+
+# Setup for inkCert
+. /opt/verb/conf/inkcert/cli-ini/siteinkcert.${redURI286}
+case ${InkCerted} in
+  DONE_SC)
+  /opt/verb/serfs/inkcertaddsc hrm.${redURI286} ${redURI286}
+  ;;
+  DONE_LE)
+  /opt/verb/serfs/inkcertaddle hrm.${redURI286} ${redURI286}
+  ;;
+  DONE_CBSINGLE)
+  /opt/verb/serfs/inkcertaddcbsingle hrm.${redURI286} ${redURI286}
+  ;;
+  DONE_CB)
+  /opt/verb/serfs/inkcertaddcb hrm.${redURI286} ${redURI286}
+  ;;
+  NO|NOT_YET)
+    /usr/bin/echo "OrangeHRM is currently using Snakeoil certs, ready for inkCert"
+  ;;
+  *)
+    if ! /usr/bin/grep -q "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
+      /usr/bin/echo "Something's wrong with the inkCert siteinkcert configs! Aborting"
+      exit 6
+    else
+      /usr/bin/echo "OrangeHRM is currently using Snakeoil certs, ready for inkCert"
+    fi
+  ;;
+esac
+
+# Webserver restart
+if [ ${ServerType} = "laemp" ]; then
+  /usr/bin/systemctl restart nginx; wait
+  /usr/bin/systemctl restart httpd; wait
+elif [ ${ServerType} = "lemp" ]; then
+  /usr/bin/systemctl restart nginx; wait
+fi
+
+# Use msmtp for a real SMTP address
+## Postfix vmail?
+if [ "${ServerMailStatus}" = "VMAIL_SERVER" ]; then
+  /opt/verb/serfs/inkvmailsysorangehrm
+
+## Maddy email?
+  elif [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ]; then
+  /opt/verb/serfs/inkemailsysorangehrm
+
+## Neither
+else
+  /usr/bin/echo "No email server detected, so not configuring email settings."
+fi
 
 /bin/echo "These are setup:
 
@@ -82,7 +171,7 @@ Database user password: ${dBPassword}
 *Select \"Existing database\" in setup to make life easier, if you want.
 *Enable Data Encryption? - Probably NOT!
 
-Go to http://hrm.${redURI} to install.
+Go to https://hrm.${redURI} to install.
 "
 
 

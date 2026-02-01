@@ -1,0 +1,336 @@
+#!/usr/bin/bash
+#inkVerbSerf! verb.ink
+
+# This downloads and installs Pydio manually and runs it on ....verb.blue
+## The "cloud" subdomain is intended for heavyweight deployments dedicateing the .blue server to one cloud service, having multiple verb namespaces, with Pydio, OCIS, and Nextcloud all using the same "cloud" subdomsin with the three different namespaces
+
+
+# How to use:
+## ./installpydio [ alt subdomain "cloud" - defualt "base" ] [ dbase - optional ] [ dbuser - optional ] [ dbpassword - optional ]
+
+# Eg:
+### ./installpydio
+### ./installpydio cloud
+### ./installpydio base bestdbase bestdbuser besteverpass
+### ./installpydio cloud bestdbase bestdbuser besteverpass
+
+
+usagenotes="This downloads and installs Pydio manually and runs it on ....verb.blue"
+usageformat="installpydio [ alt subdomain "cloud" - defualt "base" ] [ dbase - optional ] [ dbuser - optional ] [ dbpassword - optional ]"
+usageexample="installpydio
+installpydio cloud
+installpydio base bestdbase bestdbuser besteverpass
+installpydio cloud bestdbuser besteverpass"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=( "Alt subdomain: cloud" "Database" "Database user" "Database password" )
+vopttypes=( isChoice isSQLDatabasename isSQLDatabasename isSQLDatabasename )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( inkget inkemailsysowncloud inkvmailsysowncloud inkcert_ inkdriveapp )
+useconfigs=( servernameip siteurilist servertype servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/installpydio.replace" ]; then . /opt/verb/mods/installpydio.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installpydio.before" ]; then . /opt/verb/mods/installpydio.before; fi # Precedes this script
+
+
+cVappName=owncloud
+
+# Include the configs
+. /opt/verb/conf/servernameip
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/servertype
+. /opt/verb/conf/servermailpath
+
+# Check if already installed
+## Config
+if [ -f /opt/verb/conf/vapps/vapp.${cVappName} ]; then
+/usr/bin/echo "This is already installed."
+exit 0; fi
+## Directory
+if [ -d /srv/cloud/${cVappName} ]; then
+/usr/bin/echo "ownCloud already exists in the system. If it isn't working, look deeper on the server. For now, doing nothing."
+exit 8; fi
+## Web server
+if [ ${ServerType} = "lamp" ]; then
+/usr/bin/echo "Only allowed with Nginx servers, LEMP or LAEMP; LAMP servers with Apache not allowed."
+exit 0; fi
+# Check prerequesites
+if [ ${ServerMailStatus} = "EMAIL_NOT_INSTALLED" ]; then
+/usr/bin/echo "
+Email server not installed, can't install Pydio.
+"
+exit 0; fi
+
+# Subdomain
+if [ -n ${1} ] && [ "${1}" = "cloud" ]; then
+  subDom="cloud"
+else
+  subDom="base"
+fi
+
+# Auto database
+cleanName=$(/usr/bin/echo $cVappName | /usr/bin/sed -e 's/\.//g')
+if [ -z ${4} ]; then
+dBPassword=$(/usr/bin/pwgen -s -1 10)
+else
+dBPassword="$4"
+fi
+if [ -z ${2} ]; then
+dBase=${cleanName}$(/usr/bin/pwgen -s -1 6)
+else
+dBase="$2"
+fi
+if [ -z ${3} ]; then
+dBaseUser=${dBase}
+else
+dBaseUser="$3"
+fi
+
+# Download as vapp
+cd /srv/cloud || exit 6
+/opt/verb/serfs/inkget ${cVappName} check
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+
+# Install as local/bin
+/usr/bin/mkdir -p /usr/local/bin
+/usr/bin/mv -f /srv/cloud/pydio/cells /usr/local/bin/cells
+/usr/bin/echo "Binary at /usr/local/bin/cells" > /srv/cloud/pydio/cells.bin.installed
+/usr/bin/chmod 755 /usr/local/bin/cells
+## Allow the cells binary to bind to privileged ports (80/443) without root
+/usr/bin/setcap 'cap_net_bind_service=+ep' /usr/local/bin/cells
+
+# User & data directories
+/usr/bin/useradd -r -U -s /usr/bin/bash -d /srv/cloud/pydio pydio
+## Served data (block storage serve-ready)
+/usr/bin/mkdir -p /srv/cloud/pydio
+/usr/bin/chown -R pydio:pydio /srv/cloud/pydio
+
+# Configure in the service file
+/usr/bin/cat << EOF > /etc/systemd/system/cells.service
+[Unit]
+Description=Pydio Cells
+After=network-online.target postgresql.service
+
+[Service]
+User=pydio
+Group=pydio
+# Arch best practice: use the dedicated /srv path
+WorkingDirectory=/srv/cloud/pydio
+# Explicitly tell Cells where to store its data/config
+Environment=CELLS_WORKING_DIR=/srv/cloud/pydio
+Environment=CELLS_BIND=127.0.0.1:8080
+Environment=CELLS_EXTERNAL_URL=https://${subDom}.${blueURI}
+ExecStart=/usr/local/bin/cells start
+Restart=on-failure
+# Security Hardening
+ProtectSystem=full
+PrivateTmp=true
+# Monit
+RuntimeDirectory=pydio
+PIDFile=/run/pydio/pydio.pid
+ExecStartPre=/bin/sh -c 'echo $MAINPID > /run/pydio/pydio.pid'
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+
+# Auto database
+cleanName=$(/usr/bin/echo $cVappName | /usr/bin/sed -e 's/\.//g')
+if [ -z ${4} ]; then
+dBPassword=$(/usr/bin/pwgen -s -1 10)
+else
+dBPassword="$4"
+fi
+if [ -z ${1} ]; then
+dBase=${cleanName}$(/usr/bin/pwgen -s -1 6)
+else
+dBase="$2"
+fi
+if [ -z ${3} ]; then
+dBaseUser=${dBase}
+else
+dBaseUser="$3"
+fi
+
+## Create the database and credentials (needed now, before service starts)
+/usr/bin/sudo -u postgres psql -c "CREATE USER ${dBaseUser} WITH PASSWORD '${dBPassword}';"
+/usr/bin/sudo -u postgres psql -c "CREATE DATABASE ${dBase} OWNER ${dBaseUser};"
+/usr/bin/sudo -u postgres psql -c "GRANT ALL ON SCHEMA public TO ${dBaseUser};"
+## Write the config for backup
+/usr/bin/echo "appDBase=${dBase}
+appDDBUsr=${dBaseUser}
+appDDBPass=${dBPassword}" > /opt/verb/conf/vapps/vapp.${cVappName}
+
+# Use msmtp for a real SMTP address
+## Postfix vmail?
+if [ "${ServerMailStatus}" = "VMAIL_SERVER" ]; then
+  /opt/verb/serfs/inkvmailsyspydio
+
+## Maddy email?
+  elif [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ]; then
+  /opt/verb/serfs/inkemailsyspydio
+
+## Neither
+else
+  /usr/bin/echo "No email server detected, so not configuring email settings."
+fi
+## Get the sysmail creds
+if [ -e "/opt/verb/conf/sysmail.pydio" ]; then
+  . /opt/verb/conf/sysmail.pydio
+  emailName="${name}"
+  emailUsername="${username}"
+  emailDomain="${maildomain}"
+  emailPassword="${Password}"
+fi
+
+# Setup the config in a yaml file
+/usr/bin/cat << EOF > /srv/cloud/pydio/config.yaml
+# install.yaml
+dbConnections:
+  - name: pydio
+    driver: postgres
+    host: 127.0.0.1
+    port: 5432
+    user: ${dBaseUser}
+    password: ${dBPassword}
+    dbname: ${dBase}
+adminPassword: your_admin_password # Admin user for the Web UI
+frontend:
+  plugin:
+    core.pydio:
+      APPLICATION_TITLE: Base Cloud
+      # Any other custom branding can go here
+proxyconfig:
+  bind: :8080
+  external: https://${subDom}.${blueURI}
+  # SSL is handled by Nginx, so we run Cells in HTTP mode internally
+  tls: none 
+customconfigs:
+  pydio.grpc.mailer/SENDER_EMAIL: "noreply@${emailDomain}"
+  pydio.grpc.mailer/SENDER_NAME: "${emailName} Admin"
+  pydio.grpc.mailer/SMTP_HOST: "mail.${emailDomain}"
+  pydio.grpc.mailer/SMTP_PORT: "587"
+  pydio.grpc.mailer/SMTP_USER: "${emailUsername}"
+  pydio.grpc.mailer/SMTP_PASSWORD: "${emailPassword}"
+  pydio.grpc.mailer/SMTP_SECURE: "true"
+
+EOF
+
+# Webserver setup
+if [ ${ServerType} = "laemp" ]; then
+  /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf.old
+  /usr/bin/mv /opt/verb/conf/webserver/sites-available/httpd/${subDom}.${blueURI}.conf /opt/verb/conf/webserver/sites-available/httpd/${subDom}.${blueURI}.conf.old
+  /usr/bin/cp /opt/verb/conf/site-files/conf/cells.conf /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf
+  /usr/bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/${subDom}.${blueURI}.conf
+  if [ "${subDom}" = "cloud" ]; then
+    /usr/bin/sed -i "s?base\.${blueURI}?cloud.${blueURI}?g" /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf
+    /usr/bin/sed -i "s?blue\.base?blue.cloud?g" /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf
+  fi
+elif [ ${ServerType} = "lemp" ]; then
+  /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf.old
+  /usr/bin/cp /opt/verb/conf/site-files/conf/cells.conf /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf
+  if [ "${subDom}" = "cloud" ]; then
+    /usr/bin/sed -i "s?base\.${blueURI}?cloud.${blueURI}?g" /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf
+    /usr/bin/sed -i "s?blue\.base?blue.cloud?g" /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf
+  fi
+fi
+
+# Setup for inkCert
+. /opt/verb/conf/inkcert/cli-ini/siteinkcert.${blueURI}
+case ${InkCerted} in
+  DONE_SC)
+  /opt/verb/serfs/inkcertaddsc ${subDom}.${blueURI} ${blueURI}
+  ;;
+  DONE_LE)
+  /opt/verb/serfs/inkcertaddle ${subDom}.${blueURI} ${blueURI}
+  ;;
+  DONE_CBSINGLE)
+  /opt/verb/serfs/inkcertaddcbsingle ${subDom}.${blueURI} ${blueURI}
+  ;;
+  DONE_CB)
+  /opt/verb/serfs/inkcertaddcb ${subDom}.${blueURI} ${blueURI}
+  ;;
+  NO|NOT_YET)
+    /usr/bin/echo "Nextcloud is currently using Snakeoil certs, ready for inkCert"
+  ;;
+  *)
+    if ! /usr/bin/grep -q "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
+      /usr/bin/echo "Something's wrong with the inkCert siteinkcert configs! Aborting"
+      exit 6
+    else
+      /usr/bin/echo "Nextcloud is currently using Snakeoil certs, ready for inkCert"
+    fi
+  ;;
+esac
+
+# Webserver restart
+if [ ${ServerType} = "laemp" ]; then
+  /usr/bin/systemctl restart nginx; wait
+  /usr/bin/systemctl restart httpd; wait
+elif [ ${ServerType} = "lemp" ]; then
+  /usr/bin/systemctl restart nginx; wait
+fi
+
+
+
+# Run the setup
+/usr/bin/sudo -u pydio HOME=/srv/cloud/pydio /usr/local/bin/cells configure --yaml /srv/cloud/pydio/config.yaml
+## Delete theconfig yaml file
+/usr/bin/rm -f /srv/cloud/pydio/config.yaml
+## Secure everything
+/usr/bin/chown -R pydio:pydio /srv/cloud/pydio
+/usr/bin/chmod 600 /srv/cloud/pydio/pydio.json
+/usr/bin/chmod 700 /srv/cloud/pydio
+
+# Initialize
+/usr/bin/systemctl daemon-reload
+/usr/bin/systemctl enable --now pydio # enable and start in one command
+
+# Monit
+/usr/bin/cp /opt/verb/conf/lib/cloud/monit/monitrc.d/pydio /etc/monit/monitrc.d/
+/usr/bin/chmod 700 /etc/monit/monitrc.d/*
+## Restart or enable, just be safe
+if systemctl is-active monit -q; then
+  /usr/bin/systemctl restart monit
+else 
+  /usr/bin/systemctl enable --now monit
+fi
+
+# Finish
+/usr/bin/echo "
+These are setup:
+
+Database: ${dBase}
+Database user: ${dBaseUser}
+Database password: ${dBPassword}
+"
+/usr/bin/echo "
+Go to https://${subDom}.${blueURI} to finish installing.
+
+"
+
+# inkDrive? (last so above message shows, even if we need to exit non-zero next)
+if [ -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then
+  . /opt/verb/conf/inkdrive/inkdriveinfo
+  if [ "${InkDriveCloud}" != "off" ]; then
+    /usr/bin/echo "Mounting 'pydio' to a drive..."
+    /opt/verb/serfs/inkdriveapp "${cVappName}" "${InkDriveCloud}"
+    if [ "$?" = 0 ]; then
+      /usr/bin/echo "InkDrive=\"${InkDriveCloud}\"" >> /opt/verb/conf/vapps/vapp.${cVappName}
+    else
+      /usr/bin/echo "inkDrive hosting is expected, but unable to host Pydio on the drive. Something is very wrong!"
+      exit 6
+    fi
+  fi
+fi
+
+
+
+
+if [ -e "/opt/verb/mods/installpydio.after" ]; then . /opt/verb/mods/installpydio.after; fi # Follows this script

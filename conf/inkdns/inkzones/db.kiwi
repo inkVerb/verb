@@ -18,7 +18,9 @@ $ORIGIN kiwiURI286.
 ;; End Root Site Defaults
 
 ; Site Record Defaults
-k.kiwiURI286.		IN  A		hostipv4286
-k.kiwiURI286.		IN  AAAA	hostipv6286
+k.kiwiURI286.	    	IN  A		hostipv4286
+k.kiwiURI286.		    IN  AAAA	hostipv6286
+sound.kiwiURI286.		IN  A		hostipv4286
+sound.kiwiURI286.		IN  AAAA	hostipv6286
 
 ; Text Record Defaults

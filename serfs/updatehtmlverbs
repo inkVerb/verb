@@ -48,14 +48,20 @@ if [ ! -e "ink.i" ]; then /bin/cp -r 0ne ink.i; fi
 if [ ! -e "blue" ]; then /bin/cp -r 0ne blue; fi
 if [ ! -e "blue.b" ]; then /bin/cp -r 0ne blue.b; fi
 if [ ! -e "blue.cloud" ]; then /bin/cp -r 0ne blue.cloud; fi
+if [ ! -e "blue.base" ]; then /bin/cp -r 0ne blue.base; fi
+if [ ! -e "blue.cab" ]; then /bin/cp -r 0ne blue.cab; fi
+if [ ! -e "blue.kit" ]; then /bin/cp -r 0ne blue.kit; fi
 if [ ! -e "blue.ldap" ]; then /bin/cp -r 0ne blue.ldap; fi
 if [ ! -e "vip" ]; then /bin/cp -r 0ne vip; fi
 if [ ! -e "vip.v" ]; then /bin/cp -r 0ne vip.v; fi
 if [ ! -e "vip.files" ]; then /bin/cp -r 0ne vip.files; fi
 if [ ! -e "kiwi" ]; then /bin/cp -r 0ne kiwi; fi
 if [ ! -e "kiwi.k" ]; then /bin/cp -r 0ne kiwi.k; fi
+if [ ! -e "kiwi.sound" ]; then /bin/cp -r 0ne kiwi.sound; fi
 if [ ! -e "red" ]; then /bin/cp -r 0ne red; fi
 if [ ! -e "red.r" ]; then /bin/cp -r 0ne red.r; fi
+if [ ! -e "red.crm" ]; then /bin/cp -r 0ne red.crm; fi
+if [ ! -e "red.hrm" ]; then /bin/cp -r 0ne red.hrm; fi
 
 # Serve URI
 /bin/rm -rf /srv/www/verb/${ServerServeTLD}.serve
@@ -105,14 +111,20 @@ fi
 /bin/chmod -R 750 blue
 /bin/chmod -R 750 blue.b
 /bin/chmod -R 750 blue.cloud
+/bin/chmod -R 750 blue.base
+/bin/chmod -R 750 blue.cab
+/bin/chmod -R 750 blue.kit
 /bin/chmod -R 750 blue.ldap
 /bin/chmod -R 750 vip
 /bin/chmod -R 750 vip.v
 /bin/chmod -R 750 vip.files
 /bin/chmod -R 750 kiwi
 /bin/chmod -R 750 kiwi.k
+/bin/chmod -R 750 kiwi.sound
 /bin/chmod -R 750 red
 /bin/chmod -R 750 red.r
+/bin/chmod -R 750 red.crm
+/bin/chmod -R 750 red.hrm
 
 # Finish
 /bin/echo "Done. Except for any installed apps, any missing Verber html folders have been set to original setup state."

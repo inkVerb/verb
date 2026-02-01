@@ -38,8 +38,8 @@ if [ "$ServerMailStatus" != "VMAIL_SERVER" ]; then
 . /opt/verb/conf/siteurilist
 
 # Cleanup previous entries
-if [ -f "/opt/verb/conf/vsysmail.owncloud" ]; then
-  . /opt/verb/conf/vsysmail.owncloud
+if [ -f "/opt/verb/conf/sysmail.owncloud" ]; then
+  . /opt/verb/conf/sysmail.owncloud
   /usr/bin/rm -rf /srv/vmail/${inkvmaildirectory}
   oldusername="${username}"
 fi
@@ -47,7 +47,7 @@ fi
 # Prep all vairables
 Password=$(/usr/bin/pwgen -s1 24)
 randomuser=$(/usr/bin/pwgen -s1A 5)
-/usr/bin/cat <<EOF > /opt/verb/conf/vsysmail.owncloud
+/usr/bin/cat <<EOF > /opt/verb/conf/sysmail.owncloud
 Password="${Password}"
 user="ons_${randomuser}"
 username="ons_${randomuser}@${nameURI}"
@@ -92,7 +92,7 @@ fi
 smtp:
   host: "mail.${nameURI}"
   port: 587
-  sender: "ons_${randomuser}@${nameURI}"
+  sender: "noreply@${nameURI}"
   username: "ons_${randomuser}@${nameURI}"
   password: "${Password}"
   authentication: "login"
