@@ -2,7 +2,7 @@
 #inkVerbSerf! verb.ink
 
 # This purges (deletes) the inkemail directory of an email domain from the inkemail server
-##DEV this is not tested yet, waiting to confirm directory structure and whether this is necessary after maddyctl creds remove on all emails
+##DEV this is not tested yet, waiting to confirm directory structure and whether this is necessary after maddy creds remove on all emails
 
 # How to use:
 ## ./inkemailpurgedomain [ domain ]

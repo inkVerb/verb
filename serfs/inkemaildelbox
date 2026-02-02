@@ -38,7 +38,7 @@ if [[ -z "${emailaddress}" ]]; then
   exit 0; fi
 
 # Delete from Maddy
-/usr/bin/sudo -u maddy maddyctl creds remove "$emailaddress"
+/usr/bin/sudo -u maddy maddy creds remove "$emailaddress"
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 # Restart Maddy

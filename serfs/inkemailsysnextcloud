@@ -66,7 +66,7 @@ if [ "$?" != 0 ]; then
 fi
 
 # Update Maddy
-if [ -n "$oldusername" ] && [ "$oldusername" != "$username" ]; then /usr/bin/sudo -u maddy maddyctl creds remove "$oldusername"; fi
+if [ -n "$oldusername" ] && [ "$oldusername" != "$username" ]; then /usr/bin/sudo -u maddy maddy creds remove "$oldusername"; fi
 
 # Set up sysmails cron
 ## Nextcloud background jobs (manage the crontab files directly)

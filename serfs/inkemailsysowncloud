@@ -41,7 +41,7 @@ if [ "$ServerMailStatus" != "MADDY_EMAIL_SERVER" ]; then
 if [ -f "/opt/verb/conf/sysmail.owncloud" ]; then
   . /opt/verb/conf/sysmail.owncloud
   oldusername="${username}"
-  /usr/bin/sudo -u maddy maddyctl creds remove "$oldusername"
+  /usr/bin/sudo -u maddy maddy creds remove "$oldusername"
 fi
 
 # Prep all vairables
@@ -67,7 +67,7 @@ if [ "$?" != 0 ]; then
 fi
 
 # Update Maddy
-if [ -n "$oldusername" ] && [ "$oldusername" != "$username" ]; then /usr/bin/sudo -u maddy maddyctl creds remove "$oldusername"; fi
+if [ -n "$oldusername" ] && [ "$oldusername" != "$username" ]; then /usr/bin/sudo -u maddy maddy creds remove "$oldusername"; fi
 
 # Set up sysmails cron
 ## ownCloud background jobs (manage the crontab files directly)

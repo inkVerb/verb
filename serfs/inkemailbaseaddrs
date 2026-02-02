@@ -39,7 +39,7 @@ passwordMessage="recorded at email/pass/${emailUser}-${domain}; shred after view
 adminemail="admin@$nameURI"
 
 # Run the Maddy entry
-/usr/bin/sudo -u maddy maddyctl creds create --hash "$adminemail" <<< "$hashedPassword"
+/usr/bin/sudo -u maddy maddy creds create --hash "$adminemail" <<< "$hashedPassword"
 /opt/verb/serfs/inkemailalias abuse $nameURI $adminemail
 /opt/verb/serfs/inkemailalias hostmaster $nameURI $adminemail
 /opt/verb/serfs/inkemailalias postmaster $nameURI $adminemail

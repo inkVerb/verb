@@ -43,6 +43,7 @@ if [ -e "/opt/verb/mods/inkemailpasshash.before" ]; then . /opt/verb/mods/inkema
 . /opt/verb/conf/servermailpath
 if [ "$ServerMailStatus" != "MADDY_EMAIL_SERVER" ]; then
   /usr/bin/echo "Maddy email not installed. Do that first."
+  exit 8; fi
 
 # Variables
 ## Silent input

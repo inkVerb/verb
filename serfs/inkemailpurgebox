@@ -2,7 +2,7 @@
 #inkVerbSerf! verb.ink
 
 # This purges (deletes) the inkemail directory of an email box from the inkemail server
-##DEV this is not tested yet, waiting to confirm directory structure and whether this is necessary after maddyctl creds remove
+##DEV this is not tested yet, waiting to confirm directory structure and whether this is necessary after maddy creds remove
 
 # How to use:
 ## ./inkemailpurgebox [ emailuser (no domain) ] [ domain ]
@@ -43,7 +43,7 @@ emailaddress="$domain@$emailUser"
 ## May be redundant from *emaildel*
 
 # Delete from Maddy
- /usr/bin/sudo -u maddy maddyctl creds remove "$emailaddress"
+ /usr/bin/sudo -u maddy maddy creds remove "$emailaddress"
 
 # Delete files
 /usr/bin/rm -rf /srv/email/maddy/messages/$inkemaildirectory

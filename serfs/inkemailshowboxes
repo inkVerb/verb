@@ -42,7 +42,7 @@ domain="$1"
 # All domains
 if [ -z "$1" ]; then
   # Run the check
-  /usr/bin/sudo sudo -u maddy maddyctl creds list
+  /usr/bin/sudo sudo -u maddy maddy creds list
 
 # Specified domain
 else
@@ -52,7 +52,7 @@ else
     exit 0; fi
 
   # Run the check
-  /usr/bin/sudo -u maddy maddyctl creds list | /usr/bin/grep "${domain}"
+  /usr/bin/sudo -u maddy maddy creds list | /usr/bin/grep "${domain}"
 fi
 
 

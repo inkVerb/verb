@@ -24,7 +24,7 @@ if [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ]; then
   hashedPassword="$(/opt/verb/serfs/inkemailpasshash c "$Password")"
 
   # Email address status
-  check_name="$(/usr/bin/sudo -u maddy maddyctl creds list | /usr/bin/grep "${emailaddress}")"
+  check_name="$(/usr/bin/sudo -u maddy maddy creds list | /usr/bin/grep "${emailaddress}")"
 
   ## User exists, password update
   if [ -n "${check_name}" ]; then
@@ -36,7 +36,7 @@ if [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ]; then
   fi
   
   # Update the password
-  /usr/bin/sudo -u maddy maddyctl creds ${create_passwd} --hash "$emailaddress" <<< "$hashedPassword"
+  /usr/bin/sudo -u maddy maddy creds ${create_passwd} --hash "$emailaddress" <<< "$hashedPassword"
 
 # Postfix vmail?
 elif [ "${ServerMailStatus}" = "VMAIL_SERVER" ]; then
