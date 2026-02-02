@@ -60,7 +60,7 @@ EOF
 /opt/verb/serfs/setsecure; wait
 
 # Run it quick to create the account
-/opt/verb/donjon/sysmails.sh pydio; wait
+/opt/verb/donjon/sysmails.sh owncloud; wait
 if [ "$?" != 0 ]; then
   echo "Error updating new Pydio mail user in databse"
   exit 6;

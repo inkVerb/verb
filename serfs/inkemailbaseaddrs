@@ -19,7 +19,7 @@ voptflagpurpose=(  )
 dependencyinstall=( installmaddymail )
 prerequesite=(  )
 usedby=( installmaddymail ) # backupinkemailrestore?
-useserfs=(  )
+useserfs=( inkemailalias )
 useconfigs=( siteurilist )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/inkemailbaseaddrs.replace" ]; then . /opt/verb/mods/inkemailbaseaddrs.replace; return 0; fi # Replaces this script
@@ -32,20 +32,18 @@ if [ -e "/opt/verb/mods/inkemailbaseaddrs.before" ]; then . /opt/verb/mods/inkem
 
 # Set the variables
 verberdomain="$nameURI"
-Password=$(/usr/bin/pwgen -s -1 20)
-password="$(/bin/echo $Password | /usr/bin/openssl passwd -1 -stdin)"
-username="admin@$nameURI"
-name="Change Me Dont Delete Me"
-inkemaildirectory="$nameURI/verberadmin/"
-mailboxsize="524288000" # 0.5GB, 2GB=2097152000, 1GB=1048576000, 5GB=5242880000
+rawPassword=$(/usr/bin/pwgen -s 15)
+hashedPassword="$(/opt/verb/serfs/inkemailpasshash c "$rawPassword")"
+/usr/bin/echo "$rawPassword" > "/srv/email/pass/${emailUser}-${domain}"
+passwordMessage="recorded at email/pass/${emailUser}-${domain}; shred after viewing with: 'shred -uf /srv/email/pass/${emailUser}-${domain}'"
+adminemail="admin@$nameURI"
 
 # Run the Maddy entry
-/usr/bin/sudo maddy -c "...'$username', '$password', '$name', '$inkemaildirectory', '$mailboxsize', '$nameURI'"
-/usr/bin/sudo maddy -c "...'$username', '$username', '$nameURI'"
-/usr/bin/sudo maddy -c "...'abuse@$nameURI', '$username', '$nameURI'"
-/usr/bin/sudo maddy -c "...'hostmaster@$nameURI', '$username', '$nameURI'"
-/usr/bin/sudo maddy -c "...'postmaster@$nameURI', '$username', '$nameURI'"
-/usr/bin/sudo maddy -c "...'webmaster@$nameURI', '$username', '$nameURI'"
-/usr/bin/sudo maddy -c "...'dmark@$nameURI', '$username', '$nameURI'"
+/usr/bin/sudo -u maddy maddyctl creds create --hash "$adminemail" <<< "$hashedPassword"
+/opt/verb/serfs/inkemailalias abuse $nameURI $adminemail
+/opt/verb/serfs/inkemailalias hostmaster $nameURI $adminemail
+/opt/verb/serfs/inkemailalias postmaster $nameURI $adminemail
+/opt/verb/serfs/inkemailalias webmaster $nameURI $adminemail
+/opt/verb/serfs/inkemailalias dmark $nameURI $adminemail
 
 if [ -e "/opt/verb/mods/inkemailbaseaddrs.after" ]; then . /opt/verb/mods/inkemailbaseaddrs.after; fi # Follows this script

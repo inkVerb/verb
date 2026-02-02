@@ -18,9 +18,9 @@ Password=$(/usr/bin/pwgen -s1 24)
 if [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ]; then
 
   ## Hash password
-  password_hash="$(/opt/verb/serfs/inkemailpasshash c "$Password")"
+  hashedPassword="$(/opt/verb/serfs/inkemailpasshash c "$Password")"
   # Update the password
-  /usr/bin/sudo maddy -c "...$user $Password $username $name"
+  /usr/bin/sudo -u maddy maddyctl creds create --hash "$username" <<< "$hashedPassword"
 
 # Postfix vmail?
 elif [ "${ServerMailStatus}" = "VMAIL_SERVER" ]; then

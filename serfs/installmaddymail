@@ -95,6 +95,15 @@ cd /srv/cloud || exit 6
 /opt/verb/serfs/inkget ${cVappName} check
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
+# Maddy email user
+#DEV one line, check which is best
+# /usr/bin/useradd -mrU -s /sbin/nologin -d /srv/email/maddy -c "maddy mail server" maddy
+/usr/bin/groupadd -g 5000 maddy
+/usr/bin/useradd -u 5000 -g maddy -s /usr/bin/nologin maddy
+/usr/bin/usermod -d /srv/email/maddy maddy
+/usr/bin/chmod -R 770 /srv/email
+/usr/bin/chown -R maddy:maddy /srv/email/maddy
+
 # Install as local/bin
 /usr/bin/mkdir -p /usr/local/bin
 /usr/bin/mv /srv/cloud/maddy/maddy /usr/local/bin/
@@ -105,15 +114,6 @@ e="$?"; [[ "$e" = "0" ]] || exit "$e"
 /usr/bin/mkdir -p /srv/email/maddy/messages
 /usr/bin/chown -R maddy:maddy /srv/email/maddy/
 /usr/bin/chmod -R 750 /srv/email/maddy/
-
-# Maddy email user
-#DEV one line, check which is best
-# /usr/bin/useradd -mrU -s /sbin/nologin -d /srv/email/maddy -c "maddy mail server" maddy
-/usr/bin/groupadd -g 5000 maddy
-/usr/bin/useradd -u 5000 -g maddy -s /usr/bin/nologin maddy
-/usr/bin/usermod -d /srv/email/maddy maddy
-/usr/bin/chmod -R 770 /srv/email
-/usr/bin/chown -R maddy:maddy /srv/email/maddy
 
 ## Symlink for legacy support
 if [ ! -d "/var/email/maddy" ]; then
@@ -160,7 +160,7 @@ echo "localhost:5432:email:email:emailpass${mailpassgen}" > /opt/verb/conf/sql/p
 /usr/bin/chmod 0640 /etc/maddy/conf.d/aliases.conf
 
 ## Unsubscribe framework
-/usr/bin/cp /opt/verb/conf/lib/cloud/maddy/unsubscribe.conf /etc/maddy/conf.d/unsubscribe.conf
+/usr/bin/cp /opt/verb/conf/lib/cloud/maddy/conf.d/unsubscribe.conf /etc/maddy/conf.d/unsubscribe.conf
 /usr/bin/chown maddy:maddy /etc/maddy/conf.d/unsubscribe.conf
 /usr/bin/chmod 0640 /etc/maddy/conf.d/unsubscribe.conf
 /usr/bin/sed -i "s/domain286/${nameURI}/g" /etc/maddy/maddy.conf
