@@ -81,7 +81,6 @@ fi
 # Service
 case $Svc in
   www) SrcPath="/srv/www"; Owner="www:www"; Service='web' ;;
-  ocis) SrcPath="/srv/cloud/owncloud"; Owner="ocis:ocis"; Service='cloud' ;;
   mysql) SrcPath="/var/lib/mysql"; Owner="mysql:mysql"; Service='sql'
     # MySQL won't work becuase we need to figure out how to properly set it up
     # Consider this: https://unix.stackexchange.com/questions/151523/mysql-different-database-location
@@ -91,7 +90,6 @@ case $Svc in
     /usr/bin/echo "Note PostgreSQL is not yet configured to be able to work on a cloud drive."
   ;;
   vmail) SrcPath="/srv/vmail"; Owner="vmail:vmail"; Service='mail' ;;
-  maddy) SrcPath="/srv/email/maddy"; Owner="maddy:maddy"; Service='mail' ;;
 esac
 
 # Checks

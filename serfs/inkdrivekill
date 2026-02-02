@@ -1,6 +1,6 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
-# This removes a block storage drive to the /mnt/ directory and removes the entry in /etc/fstab
+# This removes a block storage drive from the /mnt/ directory and removes the entry in /etc/fstab
 ## All credentials must be entered correctly for accurate confirmation
 
 # How to use:

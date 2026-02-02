@@ -1,6 +1,7 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
 # This moves a mounted folder from a block storage drive to another drive or back to its original location
+## This removes and puts back data folders that were mounted to storage using both inkdriveapp and inkdriveadd
 ## All credentials must be entered correctly for accurate confirmation
 
 # How to use:
@@ -43,51 +44,74 @@ if [ -z "${1}" ]; then
   /usr/bin/echo "You must specify a vapp or service. I quit."
   exit 5
 else
-  VappSvc="${1}"
+  Vapp="${1}"
 fi
-if [[ "${VappSvc}" =~ ^wp.* ]] && [ -e "/srv/www/vapps/${Vapp}/wp-content" ]; then
-  VappSvcType="WordPress"
-  VappSvcData="/srv/www/vapps/${Vapp}/wp-content"
-  VappSvcDataFolder="/srv/www/vapps/${Vapp}"
-  DataName="wp-content"
-  Owner="www:www"
-elif [ "${VappSvc}" = "nextcloud" ] && [ -e "/srv/www/vapps/nextcloud/data" ]; then
-  VappSvcType="Nextcloud"
-  VappSvcData="/srv/www/vapps/nextcloud/data"
-  VappSvcDataFolder="/srv/www/vapps/nextcloud"
-  DataName="data"
-  Owner="www:www"
-elif [ "${VappSvc}" = "www" ]; then
-  VappSvcType="Web folder"
-  VappSvcData="/srv/www"
-  VappSvcDataFolder="/srv"
-  DataName="www"
-  Owner="www:www"
-elif [ "${VappSvc}" = "mysql" ]; then
-  VappSvcType="MySQL"
-  VappSvcData="/var/lib/mysql"
-  VappSvcDataFolder="/var/lib"
-  DataName="mysql"
-  Owner="mysql:mysql"
-elif [ "${VappSvc}" = "vmail" ]; then
-  VappSvcType="Vmail"
-  VappSvcData="/srv/vmail"
-  VappSvcDataFolder="/srv"
-  DataName="vmail"
-  Owner="vmail:vmail"
+if [[ "${Vapp}" =~ ^wp.* ]] && [ -e "/srv/www/vapps/${Vapp}/wp-content" ]; then
+  VappType="WordPress"
+  VappData="/srv/www/vapps/${Vapp}/wp-content"
+  DataDir="wp-content"
+  UserGroup="www:www"
+elif [ "${Vapp}" = "maddy" ] && [ -e "/srv/email/maddy/messages" ]; then
+  VappType="Maddy"
+  VappData="/srv/email/maddy/messages"
+  DataDir="messages"
+  UserGroup="maddy:maddy"
+elif [ "${Vapp}" = "owncloud" ] && [ -e "/srv/cloud/ocis" ]; then
+  VappType="ownCloud"
+  VappData="/srv/cloud/ocis"
+  DataDir="ocis"
+  UserGroup="ocis:ocis"
+elif [ "${Vapp}" = "nextcloud" ] && [ -e "/srv/www/vapps/nextcloud/data" ]; then
+  VappType="Nextcloud"
+  VappData="/srv/www/vapps/nextcloud/data"
+  DataDir="data"
+  UserGroup="www:www"
+elif [ "${Vapp}" = "pydio" ] && [ -e "/srv/cloud/pydio/data/pydiods1" ]; then
+  VappType="Pydio"
+  VappData="/srv/cloud/pydio/data/pydiods1"
+  DataDir="pydiods1"
+  UserGroup="pydio:pydio"
+elif [ "${Vapp}" = "pydio1" ] && [ -e "/srv/cloud/pydio/data/pydiods1" ]; then
+  VappType="Pydio"
+  VappData="/srv/cloud/pydio/data/pydiods1"
+  DataDir="pydiods1"
+  UserGroup="pydio:pydio"
+elif [ "${Vapp}" = "pydio2" ] && [ -e "/srv/cloud/pydio/data/pydiods2" ]; then
+  VappType="Pydio"
+  VappData="/srv/cloud/pydio/data/pydiods2"
+  DataDir="pydiods2"
+  UserGroup="pydio:pydio"
+elif [ "${Vapp}" = "pydio3" ] && [ -e "/srv/cloud/pydio/data/pydiods3" ]; then
+  VappType="Pydio"
+  VappData="/srv/cloud/pydio/data/pydiods3"
+  DataDir="pydiods3"
+  UserGroup="pydio:pydio"
+elif [ "${Vapp}" = "pydio4" ] && [ -e "/srv/cloud/pydio/data/pydiods4" ]; then
+  VappType="Pydio"
+  VappData="/srv/cloud/pydio/data/pydiods3"
+  DataDir="pydiods4"
+  UserGroup="pydio:pydio"
+elif [ "${Vapp}" = "www" ] || [ "${Vapp}" = "ocis" ] || [ "${Vapp}" = "mysql" ] || [ "${Vapp}" = "postgres" ] || [ "${Vapp}" = "vmail" ] || [ "${Vapp}" = "maddy" ]; then
+  case $Vapp in
+    www) Dest="/srv";;
+    mysql) Dest="/var/lib";;
+    postgres) Dest="/var/lib";;
+    vmail) Dest="/srv";;
+    *) Dest="/srv/www/vapps/${Vapp}";;
+  esac
 else
-  /usr/bin/echo "${VappSvc} is not services by inkDrive. Nothing to do."
+  /usr/bin/echo "${Vapp} is not services by inkDrive. Nothing to do."
   exit 8
 fi
 
 # Check that it is actually mounted
-if [ -d "${VappSvcData}" ]; then
-  /usr/bin/echo "${VappSvc} is not mounted to any drive, therefore there is nothing to move. Use inkdriveapp or inkdrivesvc appropriatly."
+if [ -d "${VappData}" ]; then
+  /usr/bin/echo "${Vapp} is not mounted to any drive, therefore there is nothing to move. Use inkdriveapp or inkdrivesvc appropriatly."
   exit 5
 fi
 
 # Origin
-Origin="$(/usr/bin/readlink -f "${VappSvcData}")"
+Origin="$(/usr/bin/readlink -f "${VappData}")"
 
 # Move to new drive
 if [ -n "${2}" ]; then
@@ -103,16 +127,10 @@ if [ -n "${2}" ]; then
     /usr/bin/echo "${Mnt} is a mounted drive, but has no config. Something is very wrong."
     exit 6
   fi
-  Dest="/mnt/${Mnt}/${VappSvc}"
+  Dest="/mnt/${Mnt}/${Vapp}"
 
 # Move back to original location
 else
-    case $VappSvc in
-        www) Dest="/srv";;
-        mysql) Dest="/var/lib";;
-        vmail) Dest="/srv";;
-        *) Dest="/srv/www/vapps/${VappSvc}";;
-    esac
     restore="true"
 fi
 
@@ -127,37 +145,37 @@ if [ "${SpaceNeed}" -gt "${SpaceAvail}" ]; then
 fi
 
 # Move
-/usr/bin/rm -f ${VappSvcData}
-if [ -e "${VappSvcData}" ]; then
-  /usr/bin/echo "${VappSvcType} could not be properly prepared to relocate. Something is very wrong."
+/usr/bin/rm -f ${VappData}
+if [ -e "${VappData}" ]; then
+  /usr/bin/echo "${VappType} could not be properly prepared to relocate. Something is very wrong."
   exit 6
 fi
 /usr/bin/mkdir -p "${Dest}"
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
-/usr/bin/mv "${Origin}/${DataName}" "${Dest}/"
-if [ ! -d "${Dest}/${DataName}" ]; then
+/usr/bin/mv "${Origin}/${DataDir}" "${Dest}/"
+if [ ! -d "${Dest}/${DataDir}" ]; then
     /usr/bin/echo "Could not move. Something is very wrong."
     exit 6
 fi
 ## Mounting and need to re-link?
 if [ -n "${Mnt}" ]; then
-    /usr/bin/ln -sfn "${Dest}/${DataName}" "${VappSvcDataFolder}/"
-    if [ ! -e "${VappSvcDataFolder}/${DataName}" ]; then
+    /usr/bin/ln -sfn "${Dest}/${DataDir}" "${VappDataFolder}/"
+    if [ ! -e "${VappDataFolder}/${DataDir}" ]; then
       /usr/bin/echo "Could not move. Something is very wrong."
       exit 6
     fi
-    /usr/bin/chown -R ${Owner} "${VappSvcDataFolder}/${DataName}"
+    /usr/bin/chown -R ${Owner} "${VappDataFolder}/${DataDir}"
 fi
-/usr/bin/chown -R ${Owner} "${Dest}/${DataName}"
+/usr/bin/chown -R ${Owner} "${Dest}/${DataDir}"
 
 # Restore to original location
 if [ "${restore}" = "true" ]; then
   ## Conf for vmail
-  if [ "${VappSvc}" = "vmail" ]; then
+  if [ "${Vapp}" = "vmail" ]; then
     confOrigin="$(/usr/bin/readlink /opt/verb/conf/servermailpass)"
     /usr/bin/rm -f /opt/verb/conf/servermailpass
     if [ -e "/opt/verb/conf/servermailpass" ]; then
-      /usr/bin/echo "${VappSvcType} pass config could not be properly prepared to relocate. Something is very wrong."
+      /usr/bin/echo "${VappType} pass config could not be properly prepared to relocate. Something is very wrong."
       exit 6
     fi
     /usr/bin/mv "${confOrigin}" /opt/verb/conf/servermailpass
@@ -165,7 +183,7 @@ if [ "${restore}" = "true" ]; then
     confOrigin="$(/usr/bin/readlink /opt/verb/conf/servermailpath)"
     /usr/bin/rm -f /opt/verb/conf/servermailpath
     if [ -e "/opt/verb/conf/servermailpath" ]; then
-      /usr/bin/echo "${VappSvcType} path config could not be properly prepared to relocate. Something is very wrong."
+      /usr/bin/echo "${VappType} path config could not be properly prepared to relocate. Something is very wrong."
       exit 6
     fi
     /usr/bin/mv "${confOrigin}" /opt/verb/conf/servermailpath
@@ -173,22 +191,33 @@ if [ "${restore}" = "true" ]; then
     ### Legacy for vmail
     /usr/bin/ln -sfn /srv/vmail /var/vmail
     e="$?"; [[ "$e" = "0" ]] || exit "$e"
+  #DEV PostreSQL doesn't have a root password, but operates on a per-database basis
+  # ## Conf for postgres
+  # elif [ "${Vapp}" = "postgres" ]; then
+  #   confOrigin="$(/usr/bin/readlink /opt/verb/conf/sql/mysqlrootpassword)"
+  #   /usr/bin/rm -f /opt/verb/conf/sql/mysqlrootpassword
+  #   if [ -e "/opt/verb/conf/sql/mysqlrootpassword" ]; then
+  #     /usr/bin/echo "${VappType} config could not be properly prepared to relocate. Something is very wrong."
+  #     exit 6
+  #   fi
+  #   /usr/bin/mv "${confOrigin}" /opt/verb/conf/sql/mysqlrootpassword
+  #   e="$?"; [[ "$e" = "0" ]] || exit "$e"
   ## Conf for mysql
-  elif [ "${VappSvc}" = "mysql" ]; then
+  elif [ "${Vapp}" = "mysql" ]; then
     confOrigin="$(/usr/bin/readlink /opt/verb/conf/sql/mysqlrootpassword)"
     /usr/bin/rm -f /opt/verb/conf/sql/mysqlrootpassword
     if [ -e "/opt/verb/conf/sql/mysqlrootpassword" ]; then
-      /usr/bin/echo "${VappSvcType} config could not be properly prepared to relocate. Something is very wrong."
+      /usr/bin/echo "${VappType} config could not be properly prepared to relocate. Something is very wrong."
       exit 6
     fi
     /usr/bin/mv "${confOrigin}" /opt/verb/conf/sql/mysqlrootpassword
     e="$?"; [[ "$e" = "0" ]] || exit "$e"
   ## Conf for www
-  elif [ "${VappSvc}" = "www" ]; then
+  elif [ "${Vapp}" = "www" ]; then
     confOrigin="$(/usr/bin/readlink /opt/verb/conf/vapps)"
     /usr/bin/rm -f /opt/verb/conf/vapps
     if [ -e "/opt/verb/conf/vapps" ]; then
-      /usr/bin/echo "${VappSvcType} config could not be properly prepared to relocate. Something is very wrong."
+      /usr/bin/echo "${VappType} config could not be properly prepared to relocate. Something is very wrong."
       exit 6
     fi
     /usr/bin/mv "${confOrigin}" /opt/verb/conf/vapps
@@ -203,23 +232,23 @@ if [ "${restore}" = "true" ]; then
       /usr/bin/mv "/mnt/${VappDrive}/.conf/vapps/vapp.${Vapp}" /opt/verb/conf/vapps/
       e="$?"; [[ "$e" = "0" ]] || exit "$e"
     else
-      /usr/bin/echo "${VappSvcType} configs are not where they should be. Something is very wrong."
+      /usr/bin/echo "${VappType} configs are not where they should be. Something is very wrong."
       exit 6
     fi
   fi   
 
   ## Finish
   if [ -d "${SrcPath}" ]; then
-    /usr/bin/echo "${VappSvcType} folder successfully restored to original location."
+    /usr/bin/echo "${VappType} folder successfully restored to original location."
   else
-    /usr/bin/echo "${VappSvcType} folder is not where it should be. Something is very wrong."
+    /usr/bin/echo "${VappType} folder is not where it should be. Something is very wrong."
     exit 6
   fi
 
 # Relocate to different drive
 else
   ## Conf for vmail
-  if [ "${VappSvc}" = "vmail" ]; then
+  if [ "${Vapp}" = "vmail" ]; then
     servermailpassOrigin="$(/usr/bin/readlink /opt/verb/conf/servermailpass)"
     /usr/bin/mv "${servermailpassOrigin}" "/mnt/${Mnt}/.conf/"
     /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/servermailpass" /opt/verb/conf/
@@ -232,13 +261,20 @@ else
     /usr/bin/ln -sfn "${Dest}/vmail" /var/vmail
     /usr/bin/chown -R ${Owner} /var/vmail
   ## Conf for mysql
-  elif [ "${VappSvc}" = "mysql" ]; then
+  elif [ "${Vapp}" = "mysql" ]; then
     mysqlrootpasswordOrigin="$(/usr/bin/readlink /opt/verb/conf/sql/mysqlrootpassword)"
     /usr/bin/mv "${mysqlrootpasswordOrigin}" "/mnt/${Mnt}/.conf/"
     /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/sql/mysqlrootpassword" /opt/verb/conf/sql/
     e="$?"; [[ "$e" = "0" ]] || exit "$e"
+  #DEV PostreSQL doesn't have a root password, but operates on a per-database basis
+  # ## Conf for postgres
+  # elif [ "${Vapp}" = "postgres" ]; then
+  #   mysqlrootpasswordOrigin="$(/usr/bin/readlink /opt/verb/conf/sql/mysqlrootpassword)"
+  #   /usr/bin/mv "${mysqlrootpasswordOrigin}" "/mnt/${Mnt}/.conf/"
+  #   /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/sql/mysqlrootpassword" /opt/verb/conf/sql/
+  #   e="$?"; [[ "$e" = "0" ]] || exit "$e"
   ## Conf for www
-  elif [ "${VappSvc}" = "www" ]; then
+  elif [ "${Vapp}" = "www" ]; then
     confvappsOrigin="$(/usr/bin/readlink /opt/verb/conf/vapps/vapp.)"
     /usr/bin/mv "${confvappsOrigin}" "/mnt/${Mnt}/.conf/"
     /usr/bin/ln -sfn "/mnt/${Mnt}/.conf/vapps" /opt/verb/conf/
@@ -246,10 +282,10 @@ else
   fi
 
   ## Finish
-  if [ -d "/mnt/${Mnt}/${VappSvc}/${DataName}" ] && [ "$(/usr/bin/readlink -f "${VappSvcDataFolder}/${DataName}")" = "/mnt/${Mnt}/${VappSvc}/${DataName}" ]; then
-    /usr/bin/echo "${VappSvcType} folder successfully mounted on ${Typ} drive at /mnt/${Mnt}"
+  if [ -d "/mnt/${Mnt}/${Vapp}/${DataDir}" ] && [ "$(/usr/bin/readlink -f "${VappDataFolder}/${DataDir}")" = "/mnt/${Mnt}/${Vapp}/${DataDir}" ]; then
+    /usr/bin/echo "${VappType} folder successfully mounted on ${Typ} drive at /mnt/${Mnt}"
   else
-    /usr/bin/echo "${VappSvcType} folder is not where it should be. Something is very wrong."
+    /usr/bin/echo "${VappType} folder is not where it should be. Something is very wrong."
     exit 6
   fi
 

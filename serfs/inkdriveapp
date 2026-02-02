@@ -156,6 +156,7 @@ if [ ! -d "${VappData}" ]; then
 else
   /usr/bin/mkdir -p "/mnt/${Mnt}/vapps/${Vapp}"
   /usr/bin/mv "${VappData}" "/mnt/${Mnt}/vapps/${Vapp}/"
+  /usr/bin/mkdir -p "${VappData}" # fstab needs something to mount to
   #/usr/bin/ln -sfn "/mnt/${Mnt}/vapps/${Vapp}/${DataDir}" "${VappData}" #DEV the blind mount in fstab is better
   ## fstab
   /usr/bin/echo "/mnt/${Mnt}/vapps/${Vapp}/${DataDir}  ${VappData}  none  bind  0  0 #${Vapp}" >> /etc/fstab # Remove with: sed -i "/#${Vapp}/d" /etc/fstab
