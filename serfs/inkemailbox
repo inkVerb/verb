@@ -82,7 +82,7 @@ if [ -n "${check_name}" ] && [ -n "$4" ] && [ "$4" = "-" ]; then
   create_passwd="passwd"
 
 ## User exists, no password update
-elif [ -n "${check_name}" ]
+elif [ -n "${check_name}" ]; then
   /usr/bin/echo "User $emailaddress already exists. See instructions to update password."
   exit 7
 

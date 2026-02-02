@@ -17,10 +17,26 @@ Password=$(/usr/bin/pwgen -s1 24)
 # Maddy email?
 if [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ]; then
 
+  ## From the sysmail.ACCOUNTCONFIG file
+  emailaddress="${username}"
+
   ## Hash password
   hashedPassword="$(/opt/verb/serfs/inkemailpasshash c "$Password")"
+
+  # Email address status
+  check_name="$(/usr/bin/sudo -u maddy maddyctl creds list | /usr/bin/grep "${emailaddress}")"
+
+  ## User exists, password update
+  if [ -n "${check_name}" ]; then
+    create_passwd="passwd"
+
+  ## New user
+  else
+    create_passwd="create"
+  fi
+  
   # Update the password
-  /usr/bin/sudo -u maddy maddyctl creds create --hash "$username" <<< "$hashedPassword"
+  /usr/bin/sudo -u maddy maddyctl creds ${create_passwd} --hash "$emailaddress" <<< "$hashedPassword"
 
 # Postfix vmail?
 elif [ "${ServerMailStatus}" = "VMAIL_SERVER" ]; then
