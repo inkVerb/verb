@@ -192,7 +192,7 @@ fi
 
 # inkCert mail certs
 if [ "${certdomain}" = "${nameURI}" ]; then
-  /opt/verb/serfs/setinkcertmailcerts ${certdomain} inkvmail
+  /opt/verb/serfs/setinkcertmailcerts ${certdomain} inkmail
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
 elif [ "${certdomain}" != "${emailURI}" ] && [ "${certdomain}" != "${oneURI}" ] && [ "${certdomain}" != "${inkURI}" ] && [ "${certdomain}" != "${blueURI}" ] && [ "${certdomain}" != "${vipURI}" ] && [ "${certdomain}" != "${kiwiURI}" ] && [ "${certdomain}" != "${redURI}" ]; then
   /opt/verb/serfs/setinkcertmailcerts ${certdomain}

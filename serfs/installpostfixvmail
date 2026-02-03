@@ -274,7 +274,7 @@ if /usr/bin/grep -Fq "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.$
 ## inkCert
 else
   #/opt/verb/serfs/setinkcertmailcerts ${nameURI} inkvmail #DEV this is redundant, run right away in serfs/setinkcertmail
-  /opt/verb/serfs/setinkcertmail ${nameURI} vmail
+  /opt/verb/serfs/setinkcertmail ${nameURI} inkmail
 fi
 
 # Create the mailbox table

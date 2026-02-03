@@ -3,16 +3,14 @@
 
 # This sets up basic mail certificates and subdomain dummy sites for inkCert-LE
 ## This is run automatically by setup, installpostfixvmail, installmaddymail, and newdomainshell, and normally should not be run independently
-## vmail is for Postfix vmail
-## email is for Maddy email
+## inkmail is for Postfix or Maddy
 
 # How to use:
-## ./setinkcertmail [ domain.tld ] [ switch 'email' or 'vmail', optional skip inkCert cli.ini, used by installpostfixvmail and installmaddymail ]
+## ./setinkcertmail [ domain.tld ] [ switch 'inkmail', optional skip inkCert cli.ini, used by installpostfixvmail and installmaddymail ]
 
 # Eg:
 ## ./setinkcertmail somedomain.tld
-## ./setinkcertmail name.verb.ink vmail
-## ./setinkcertmail name.verb.ink email
+## ./setinkcertmail name.verb.ink inkmail
 
 
 # Dependencies
@@ -37,7 +35,7 @@ domain="$1"
 . /opt/verb/conf/servermailpath
 
 # inkCert
-if [ "$2" != "vmail" ] && [ "$2" != "email" ]; then
+if [ "$2" != "inkmail" ]; then
   /opt/verb/serfs/setinkcertmailsubdomains ${domain}
 fi
 
@@ -53,10 +51,8 @@ EOF
 /usr/bin/chown -R www:www /srv/www/mailcatch
 
 # Mail cert links
-if [ "$2" = "vmail" ]; then
-  /opt/verb/serfs/setinkcertmailcerts ${domain} inkvmail
-elif [ "$2" = "email" ]; then
-  /opt/verb/serfs/setinkcertmailcerts ${domain} inkemail
+if [ "$2" = "inkmail" ]; then
+  /opt/verb/serfs/setinkcertmailcerts ${domain} inkmail
 else
   /opt/verb/serfs/setinkcertmailcerts ${domain}
 fi

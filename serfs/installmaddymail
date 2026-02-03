@@ -24,7 +24,7 @@ voptflagpurpose=(  )
 dependencyinstall=(  )
 prerequesite=( "inkCert certs should be installled for at least the nameURI for this verber" )
 usedby=( installinkemail )
-useserfs=( inkget inkemailaddscriptfilter setinkcertmailcerts setinkcertmail inkdnsaddmail inkdnsaddinkdkim inkemailbaseaddrs inkemailsysmailboxmsmtp inkdriveapp)
+useserfs=( inkget inkemailaddscriptfilter setinkcertmail inkdnsaddmail inkdnsaddinkdkim inkemailbaseaddrs inkemailsysmailboxmsmtp inkdriveapp)
 useconfigs=( servernameip siteurilist servertype servermailpath )	# List config files of any kind used in this serf, please preserve order of appearance
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/installmaddymail.replace" ]; then . /opt/verb/mods/installmaddymail.replace; return 0; fi # Replaces this script
@@ -177,13 +177,13 @@ else
   ### Certificates & structure
   #/opt/verb/serfs/setinkcertmailcerts ${nameURI} inkemail #DEV this is redundant, run right away in serfs/setinkcertmail
   #### We don't actually need these, but let's keep our framework in place
-  /opt/verb/serfs/setinkcertmail ${nameURI} email
+  /opt/verb/serfs/setinkcertmail ${nameURI} inkmail
   if [ -d "/etc/letsencrypt" ]; then
     ##### Maddy requires this or it cannot read the certs and will fail
     /usr/bin/setfacl -R -m u:maddy:rX /etc/letsencrypt/{live,archive}
     ##### Maddy specifically loves this
-    #/usr/bin/ln -sfn /etc/letsencrypt/live /etc/maddy/certs
-    /usr/bin/ln -sfn /etc/inkcert/le/live /etc/maddy/certs
+    /usr/bin/ln -sfn /etc/letsencrypt/live /etc/maddy/certs
+    #/usr/bin/ln -sfn /etc/inkcert/le/live /etc/maddy/certs # viable alternative compatible with inkcert
   else
     /usr/bin/echo "Can't find certs for Maddy. It might not work."
   fi
@@ -252,7 +252,7 @@ ConfigurationDirectoryMode=0755
 
 # File system & database
 ReadWritePaths=/srv/email/maddy
-ReadOnlyPaths=/etc/ssl/server/mail/  /run/postgresql/
+ReadOnlyPaths=/etc/maddy/certs/ /etc/letsencrypt/archive/ /etc/letsencrypt/live/ /run/postgresql/
 
 # Restrict access to system directories
 ProtectSystem=full

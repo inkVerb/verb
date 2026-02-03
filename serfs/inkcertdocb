@@ -77,7 +77,7 @@ e="$?"; [[ "$e" = "0" ]] || exit "$e"
 # Domain check for mail certs
 . /opt/verb/conf/siteurilist
 if [ "${domain}" = "${nameURI}" ]; then
-  opt/verb/serfs/setinkcertmailcerts ${domain} inkvmail
+  opt/verb/serfs/setinkcertmailcerts ${domain} inkmail
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
 elif [ "${domain}" != "${emailTLD}" ] && [ "${domain}" != "${hostURI}" ] && [ "${domain}" != "${serveURI}" ] && [ "${domain}" != "${emailTLDURI}" ] && [ "${domain}" != "${emailURI}" ] && [ "${domain}" != "${oneURI}" ] && [ "${domain}" != "${inkURI}" ] && [ "${domain}" != "${blueURI}" ] && [ "${domain}" != "${vipURI}" ] && [ "${domain}" != "${kiwiURI}" ] && [ "${domain}" != "${redURI}" ]; then
   /opt/verb/serfs/setinkcertmailcerts ${domain}

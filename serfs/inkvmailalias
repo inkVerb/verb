@@ -1,7 +1,7 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
 
-# This adds or appends forwarding addresses to an alias for an existing domain  in inkvmail
+# This adds or appends forwarding addresses to an alias for an existing domain in inkvmail
 
 # How to use:
 ## ./inkvmailalias [ emailuser (no domain) ] [ domain ] [ forward email ] [ forward email ] [ forward email ] [ forward email ] ...

@@ -5,7 +5,7 @@
 ## This is run automatically by installpostfixvmail, setinkcertmail, inkmaildomains, and inkcertdo* and normally should not be run independently
 
 # How to use:
-## ./setinkcertmailcerts [ domain.tld ] [ switch 'inkvmail', optional for system email certs, used by installpostfixvmail installmaddymail ]
+## ./setinkcertmailcerts [ domain.tld ] [ switch 'inkmail', optional for system email certs, used by installpostfixvmail installmaddymail ]
 
 
 # Dependencies
@@ -28,10 +28,12 @@ fi
 
 domain="$1"
 
-if [ -n "$2" ] && [ "$2" = "inkvmail" ]; then
-  dest="vmail"
-elif [ -n "$2" ] && [ "$2" = "inkemail" ]; then
-  dest="email"
+if [ -n "$2" ] && [ "$2" = "inkmail" ]; then
+  if [ "${ServerMailStatus}" = "VMAIL_SERVER" ] || [ "${ServerMailStatus}" = "VMAIL_READY" ]; then
+    dest="vmail"
+  elif [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ] || [ "${ServerMailStatus}" = "MADDY_EMAIL_READY" ]; then
+    dest="email"
+  fi
 else
   dest="$1"
 fi
