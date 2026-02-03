@@ -835,7 +835,7 @@ if [ ${VERBblue} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = 
   /opt/verb/serfs/ensiteapache ${blueURI} b.${blueURI} cloud.${blueURI} base.${blueURI} cab.${blueURI} kit.${blueURI} cloud.${blueURI} ldap.${blueURI}
 fi
 if [ ${VERBvip} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lamp" ]; then
-  /opt/verb/serfs/ensiteapache ${vipURI} v.${vipURI}
+  /opt/verb/serfs/ensiteapache ${vipURI} v.${vipURI} files.${vipURI}
 fi
 if [ ${VERBkiwi} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lamp" ]; then
   /opt/verb/serfs/ensiteapache ${kiwiURI} k.${kiwiURI} sound.${kiwiURI}
