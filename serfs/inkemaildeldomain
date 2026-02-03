@@ -47,6 +47,7 @@ if /usr/bin/grep -q "${domain}" /etc/maddy/conf.d/domains.conf || [[ "${domain}"
 
 # Delete the domain
 /usr/bin/sed -i "s/ ${domain}//" /etc/maddy/conf.d/domains.conf
+/usr/bin/sed -i "s/ ${domain}//" /etc/maddy/conf.d/unsub_domains.conf
 
 # Restart Maddy
 /usr/bin/systemctl restart maddy.service

@@ -49,7 +49,10 @@ if /usr/bin/grep -q "${domain}" /etc/maddy/conf.d/domains.conf || [[ "${domain}"
   exit 0; fi
 
 # Make the entry
-/usr/bin/sed -i "/extra_domains/ s/$/ ${domain}/" /etc/maddy/conf.d/domains.conf
+/usr/bin/sed -i "/^\$(extra_domains) =/ s/$/ ${domain}/" /etc/maddy/conf.d/domains.conf
+# /usr/bin/sed -i "/extra_domains/ s/$/ ${domain}/" /etc/maddy/conf.d/domains.conf #DEV Commented for above line; switch badk if broken
+/usr/bin/echo "source ${domain} { modify { import unsub_headers; replace_header { replace List-Unsubscribe-Post \"List-Unsubscribe=One-Click\"; replace List-Unsubscribe \"<mailto:unsubscribe@${domain}>\" } } deliver_to &remote_queue  }" >> /etc/maddy/conf.d/unsub_domains.conf
+
 
 # Restart Maddy
 /usr/bin/systemctl restart maddy.service

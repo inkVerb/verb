@@ -87,7 +87,7 @@ if [ "${ServerMailStatus}" != "EMAIL_NOT_INSTALLED" ]; then
   ## Maddy email?
   elif [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ]; then
     ## Add the local domain entry
-    /usr/bin/sed -i "/^\$(local_domains) =/ s/$/ ${newdomain}/" /etc/maddy/maddy.conf
+    /usr/bin/sed -i "/^\$(extra_domains) =/ s/$/ ${newdomain}/" /etc/maddy/conf.d/domains.conf
     ## Restart Maddy
     /usr/bin/systemctl restart maddy
   fi

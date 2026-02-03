@@ -75,9 +75,9 @@ if /usr/bin/grep -q "^${forward_entry}" /etc/maddy/conf.d/aliases.conf; then
 /usr/bin/systemctl restart maddy.service
 
 # Finish
-/usr/bin/echo "Updated:
-Alias: ${email}
-Forarding to: ${newgoto}"
+/usr/bin/echo "Updated email forwarding.
+Alias: ${emailaddress}
+Forarding to: ${goto}"
 
 
 

@@ -273,7 +273,7 @@ if /usr/bin/grep -Fq "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.$
   /usr/bin/sed -i "s?^ssl_dh = </etc/dovecot/dh.pem?#ssl_dh = </etc/dovecot/dh.pem?" /etc/dovecot/conf.d/10-ssl.conf
 ## inkCert
 else
-  /opt/verb/serfs/setinkcertmailcerts ${nameURI} inkvmail
+  #/opt/verb/serfs/setinkcertmailcerts ${nameURI} inkvmail #DEV this is redundant, run right away in serfs/setinkcertmail
   /opt/verb/serfs/setinkcertmail ${nameURI} vmail
 fi
 

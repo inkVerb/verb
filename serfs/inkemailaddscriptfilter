@@ -33,6 +33,12 @@ if [ -e "/opt/verb/mods/inkemailaddscriptfilter.before" ]; then . /opt/verb/mods
 # Include the config files
 . /opt/verb/conf/servermailpath
 
+# Variables (even for check messages)
+emailuser="$1"
+domain="$2"
+emailaddress="${emailuser}@${domain}"
+scriptname="${emailuser}-$(/usr/bin/echo ${domain} | /usr/bin/sed "s/[^[:alnum:]]/-/g")"
+
 # Check to see if inkemail is installed
 if [ "$ServerMailStatus" != "MADDY_EMAIL_SERVER" ]; then
   /usr/bin/echo "Maddy email not installed, not adding $domain"
@@ -42,11 +48,6 @@ if [ "$ServerMailStatus" != "MADDY_EMAIL_SERVER" ]; then
 if [ -z "$2" ]; then
   /usr/bin/echo "Must enter emailuser and domain as separate arguments"
   exit 5; fi
-
-emailuser="$1"
-domain="$2"
-emailaddress="${emailuser}@${domain}"
-scriptname="${emailuser}-$(/usr/bin/echo ${domain} | /usr/bin/sed "s/[^[:alnum:]]/-/g")"
 
 # Check script
 if [ ! -f "/srv/vip/email/customscripts/${scriptname}" ] && [ "${emailuser}" != "unsubscribe" ]; then

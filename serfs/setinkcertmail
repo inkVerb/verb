@@ -114,12 +114,12 @@ if [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
   /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxmailcatch.conf /opt/verb/conf/webserver/sites-available/nginx/pop3.${domain}.conf
   /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxmailcatch.conf /opt/verb/conf/webserver/sites-available/nginx/pop2.${domain}.conf
   /usr/bin/cp /opt/verb/conf/site-files/conf/newnginxmailcatch.conf /opt/verb/conf/webserver/sites-available/nginx/pop.${domain}.conf
-  /bin/sed -i "s/mailcatchdomain/mail.${domain}/g" /opt/verb/conf/webserver/sites-available/nginx/mail.${domain}.conf
-  /bin/sed -i "s/mailcatchdomain/smtp.${domain}/g" /opt/verb/conf/webserver/sites-available/nginx/smtp.${domain}.conf
-  /bin/sed -i "s/mailcatchdomain/imap.${domain}/g" /opt/verb/conf/webserver/sites-available/nginx/imap.${domain}.conf
-  /bin/sed -i "s/mailcatchdomain/pop3.${domain}/g" /opt/verb/conf/webserver/sites-available/nginx/pop3.${domain}.conf
-  /bin/sed -i "s/mailcatchdomain/pop2.${domain}/g" /opt/verb/conf/webserver/sites-available/nginx/pop2.${domain}.conf
-  /bin/sed -i "s/mailcatchdomain/pop.${domain}/g" /opt/verb/conf/webserver/sites-available/nginx/pop.${domain}.conf
+  /usr/bin/sed -i "s/mailcatchdomain/mail.${domain}/g" /opt/verb/conf/webserver/sites-available/nginx/mail.${domain}.conf
+  /usr/bin/sed -i "s/mailcatchdomain/smtp.${domain}/g" /opt/verb/conf/webserver/sites-available/nginx/smtp.${domain}.conf
+  /usr/bin/sed -i "s/mailcatchdomain/imap.${domain}/g" /opt/verb/conf/webserver/sites-available/nginx/imap.${domain}.conf
+  /usr/bin/sed -i "s/mailcatchdomain/pop3.${domain}/g" /opt/verb/conf/webserver/sites-available/nginx/pop3.${domain}.conf
+  /usr/bin/sed -i "s/mailcatchdomain/pop2.${domain}/g" /opt/verb/conf/webserver/sites-available/nginx/pop2.${domain}.conf
+  /usr/bin/sed -i "s/mailcatchdomain/pop.${domain}/g" /opt/verb/conf/webserver/sites-available/nginx/pop.${domain}.conf
   /opt/verb/serfs/ensitenginx mail.${domain} smtp.${domain} imap.${domain} pop3.${domain} pop2.${domain} pop.${domain}
 
 elif [ ${ServerType} = "lamp" ]; then
@@ -130,12 +130,12 @@ elif [ ${ServerType} = "lamp" ]; then
   /usr/bin/cp /opt/verb/conf/site-files/conf/newnapachemailcatch.conf /opt/verb/conf/webserver/sites-available/httpd/pop3.${domain}.conf
   /usr/bin/cp /opt/verb/conf/site-files/conf/newnapachemailcatch.conf /opt/verb/conf/webserver/sites-available/httpd/pop2.${domain}.conf
   /usr/bin/cp /opt/verb/conf/site-files/conf/newnapachemailcatch.conf /opt/verb/conf/webserver/sites-available/httpd/pop.${domain}.conf
-  /bin/sed -i "s/mailcatchdomain/mail.${domain}/g" /opt/verb/conf/webserver/sites-available/httpd/mail.${domain}.conf
-  /bin/sed -i "s/mailcatchdomain/smtp.${domain}/g" /opt/verb/conf/webserver/sites-available/httpd/smtp.${domain}.conf
-  /bin/sed -i "s/mailcatchdomain/imap.${domain}/g" /opt/verb/conf/webserver/sites-available/httpd/imap.${domain}.conf
-  /bin/sed -i "s/mailcatchdomain/pop3.${domain}/g" /opt/verb/conf/webserver/sites-available/httpd/pop3.${domain}.conf
-  /bin/sed -i "s/mailcatchdomain/pop2.${domain}/g" /opt/verb/conf/webserver/sites-available/httpd/pop2.${domain}.conf
-  /bin/sed -i "s/mailcatchdomain/pop.${domain}/g" /opt/verb/conf/webserver/sites-available/httpd/pop.${domain}.conf
+  /usr/bin/sed -i "s/mailcatchdomain/mail.${domain}/g" /opt/verb/conf/webserver/sites-available/httpd/mail.${domain}.conf
+  /usr/bin/sed -i "s/mailcatchdomain/smtp.${domain}/g" /opt/verb/conf/webserver/sites-available/httpd/smtp.${domain}.conf
+  /usr/bin/sed -i "s/mailcatchdomain/imap.${domain}/g" /opt/verb/conf/webserver/sites-available/httpd/imap.${domain}.conf
+  /usr/bin/sed -i "s/mailcatchdomain/pop3.${domain}/g" /opt/verb/conf/webserver/sites-available/httpd/pop3.${domain}.conf
+  /usr/bin/sed -i "s/mailcatchdomain/pop2.${domain}/g" /opt/verb/conf/webserver/sites-available/httpd/pop2.${domain}.conf
+  /usr/bin/sed -i "s/mailcatchdomain/pop.${domain}/g" /opt/verb/conf/webserver/sites-available/httpd/pop.${domain}.conf
   /opt/verb/serfs/ensiteapache mail.${domain} smtp.${domain} imap.${domain} pop3.${domain} pop2.${domain} pop.${domain}
 
 fi

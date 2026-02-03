@@ -71,6 +71,13 @@ if [ "${ServerMailStatus}" = "VMAIL_SERVER" ] || [ "${ServerMailStatus}" = "VMAI
 ## Maddy email?
 elif [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ] || [ "${ServerMailStatus}" = "MADDY_EMAIL_READY" ]; then
   if [ -f "/etc/inkcert/le/live/${domain}/fullchain.pem" ] && [ -f "/etc/inkcert/le/live/${domain}/privkey.pem" ]; then
+    #DEV This didn't make maddy work, just keep it as it is
+    # /usr/bin/chown -R root:maddy /etc/ssl/server/mail/
+    # /usr/bin/chmod 0750 /etc/ssl/server/ /etc/ssl/server/mail/
+    # /usr/bin/chmod 0644 /etc/ssl/server/mail/${dest}.crt
+    # /usr/bin/chmod 0640 /etc/ssl/server/mail/${dest}.key
+    # /usr/bin/setfacl -R -m u:maddy:rX /etc/ssl/server/mail/{${dest}.crt,${dest}.key}
+    ### Maddy doesn't use this, but they are still here for cuz
     /usr/bin/ln -sfn /etc/inkcert/le/live/${domain}/fullchain.pem /etc/ssl/server/mail/${dest}.crt
     /usr/bin/chmod 0444 /etc/ssl/server/mail/${dest}.crt
     /usr/bin/ln -sfn /etc/inkcert/le/live/${domain}/privkey.pem /etc/ssl/server/mail/${dest}.key

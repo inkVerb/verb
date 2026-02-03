@@ -114,8 +114,9 @@ e="$?"; [[ "$e" = "0" ]] || exit "$e"
 /usr/bin/chmod 755 /usr/local/bin/maddy
 
 # Own everything
-/usr/bin/chown -R maddy:maddy /srv/email/maddy/
-/usr/bin/chmod -R 750 /srv/email/maddy/
+/usr/bin/chown -R maddy:maddy /srv/email/maddy
+/usr/bin/chmod -R 755 /srv/email
+/usr/bin/chmod -R 750 /srv/email/maddy
 
 ## Symlink for legacy support
 if [ ! -d "/var/email/maddy" ]; then
@@ -127,7 +128,7 @@ fi
 mailpassgen="$(/usr/bin/pwgen -s -1 5)"
 
 # Create the PostgreSQL login .pgpass
-echo "localhost:5432:email:email:emailpass${mailpassgen}" > /opt/verb/conf/sql/pgsqldb.email.pgpass
+/usr/bin/echo "localhost:5432:email:email:emailpass${mailpassgen}" > /opt/verb/conf/sql/pgsqldb.email.pgpass
 /usr/bin/chmod 0600 /opt/verb/conf/sql/pgsqldb.email.pgpass
 
 ## Set the config for backup
@@ -156,6 +157,11 @@ echo "localhost:5432:email:email:emailpass${mailpassgen}" > /opt/verb/conf/sql/p
 /usr/bin/chown maddy:maddy /etc/maddy/conf.d/domains.conf
 /usr/bin/chmod 0640 /etc/maddy/conf.d/domains.conf
 
+## Unsubscribe header listings
+/usr/bin/cp /opt/verb/conf/lib/cloud/maddy/conf.d/unsub_domains.conf /etc/maddy/conf.d/unsub_domains.conf
+/usr/bin/chown maddy:maddy /etc/maddy/conf.d/unsub_domains.conf
+/usr/bin/chmod 0640 /etc/maddy/conf.d/unsub_domains.conf
+
 ## Aliases framework
 /usr/bin/cp /opt/verb/conf/lib/cloud/maddy/conf.d/aliases.conf /etc/maddy/conf.d/aliases.conf
 /usr/bin/chown maddy:maddy /etc/maddy/conf.d/aliases.conf
@@ -166,8 +172,6 @@ echo "localhost:5432:email:email:emailpass${mailpassgen}" > /opt/verb/conf/sql/p
 /usr/bin/chown maddy:maddy /etc/maddy/conf.d/unsubscribe.conf
 /usr/bin/chmod 0640 /etc/maddy/conf.d/unsubscribe.conf
 /usr/bin/sed -i "s/domain286/${nameURI}/g" /etc/maddy/maddy.conf
-### First unsubscribe entry
-/opt/verb/serfs/inkemailaddscriptfilter unsubscribe ${nameURI}
 
 ## Custom scripts framework
 /usr/bin/echo "# This file is maintained automatically by inkemailaddscriptfilter, edits could break the file and other structure
@@ -181,16 +185,25 @@ echo "localhost:5432:email:email:emailpass${mailpassgen}" > /opt/verb/conf/sql/p
 ## Snakeoil?
 if /usr/bin/grep -Fq "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${nameURI}; then
   /usr/bin/rm -f /etc/ssl/server/mail/email.crt
+  /usr/bin/echo "InkCert not set up. No certs available for Maddy. It might not work."
 ## inkCert
 else
   ### Certificates & structure
-  /opt/verb/serfs/setinkcertmailcerts ${nameURI} inkemail
+  #/opt/verb/serfs/setinkcertmailcerts ${nameURI} inkemail #DEV this is redundant, run right away in serfs/setinkcertmail
+  #### We don't actually need these, but let's keep our framework in place
   /opt/verb/serfs/setinkcertmail ${nameURI} email
+  if [ -d "/etc/letsencrypt" ]; then
+    ##### Maddy requires this or it cannot read the certs and will fail
+    /usr/bin/setfacl -R -m u:maddy:rX /etc/letsencrypt/{live,archive}
+    ##### Maddy specifically loves this
+    #/usr/bin/ln -sfn /etc/letsencrypt/live /etc/maddy/certs
+    /usr/bin/ln -sfn /etc/inkcert/le/live /etc/maddy/certs
+  else
+    /usr/bin/echo "Can't find certs for Maddy. It might not work."
+  fi
 fi
-## DKIM keys & TXT records
-# /opt/verb/serfs/newinkdkim ${nameURI}; wait # Handled by Maddy
-#NOTE Maddy or Postfix must be installed for this to work:
-/opt/verb/serfs/inkdnsaddinkdkim ${nameURI} verber; wait
+## Maddy wants at least one extra domain in /etc/maddy/conf.d/domains.conf
+/usr/bin/sed -i "/^\$(extra_domains) =/ s/$/ ${emailTLDURI}/" /etc/maddy/conf.d/domains.conf # Rather than using serfs/inkemaildomain
 
 # UFW (services and ports below them if known)
 /usr/bin/ufw allow smtp
@@ -230,12 +243,6 @@ if [ ${ServerType} = "laemp" ]; then
   /usr/bin/chown www:www /var/log/phpmail.log
 fi
 
-# System domains & addresses
-## Add base domains & addresses
-/opt/verb/serfs/inkemailbaseaddrs
-## Setup system mail
-/opt/verb/serfs/inkemailsysmailboxmsmtp
-
 # Service
 /usr/bin/cat <<EOF > /etc/systemd/system/maddy.service
 [Unit]
@@ -249,7 +256,10 @@ Type=exec
 User=maddy
 Group=maddy
 WorkingDirectory=/srv/email/maddy
-ExecStart=/usr/local/bin/maddy -config /etc/maddy/maddy.conf
+BindPaths=/srv/email/maddy
+ConfigurationDirectoryMode=0750
+ExecStart=
+ExecStart=/usr/local/bin/maddy run
 ExecReload=/bin/kill -HUP $MAINPID
 KillMode=mixed
 Restart=on-failure
@@ -295,6 +305,25 @@ fi
 /usr/bin/sed -i "s/ServerMailStatus=.*/ServerMailStatus=\"MADDY_EMAIL_SERVER\"/g" /opt/verb/conf/servermailpath
 ## PFA not allowed for Maddy
 /usr/bin/sed -i "s/PFA_NOT_INSTALLED/PFA_NOT_ALLOWED/g" /opt/verb/conf/servermailpath
+
+# Maddy must be running for everything after this
+
+# System domains & addresses (Requires ServerMailStatus="MADDY_EMAIL_SERVER")
+## Add base domains & addresses
+/opt/verb/serfs/inkemailbaseaddrs
+## Setup system mail
+/opt/verb/serfs/inkemailsysmailboxmsmtp
+## First unsubscribe entry
+/opt/verb/serfs/inkemailaddscriptfilter unsubscribe ${nameURI}
+
+# DKIM keys & TXT records
+# /opt/verb/serfs/newinkdkim ${nameURI}; wait # Handled by Maddy
+#NOTE Maddy or Postfix must be installed for this to work:
+/opt/verb/serfs/inkdnsaddinkdkim ${nameURI} verber; wait
+## Add the DNS records for the mail server TLD itself
+/opt/verb/serfs/inkdnsaddmail ${emailTLDURI} verber ; wait
+/opt/verb/serfs/inkdnsaddinkdkim ${emailTLDURI} verber; wait
+
 
 # Finish
 /usr/bin/echo "The Maddy email server for inkVerb has been installed.
