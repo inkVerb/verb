@@ -143,41 +143,27 @@ mailpassgen="$(/usr/bin/pwgen -s -1 5)"
 
 # Config
 /usr/bin/mkdir -p /etc/maddy/conf.d
-/usr/bin/chmod 0750 /etc/maddy
+/usr/bin/chmod 0755 /etc/maddy /etc/maddy/conf.d
 /usr/bin/cp /opt/verb/conf/lib/cloud/maddy/maddy.conf /etc/maddy/
-/usr/bin/chown maddy:maddy /etc/maddy/maddy.conf
-/usr/bin/chmod 0640 /etc/maddy/maddy.conf
 
 ## Settings
 /usr/bin/sed -i "s/domain286/${nameURI}/g" /etc/maddy/maddy.conf
 /usr/bin/sed -i "s/emaildbpass286/emailpass${mailpassgen}/g" /etc/maddy/maddy.conf
-
 ## Domains framework
 /usr/bin/cp /opt/verb/conf/lib/cloud/maddy/conf.d/domains.conf /etc/maddy/conf.d/domains.conf
-/usr/bin/chown maddy:maddy /etc/maddy/conf.d/domains.conf
-/usr/bin/chmod 0640 /etc/maddy/conf.d/domains.conf
-
 ## Unsubscribe header listings
 /usr/bin/cp /opt/verb/conf/lib/cloud/maddy/conf.d/unsub_domains.conf /etc/maddy/conf.d/unsub_domains.conf
-/usr/bin/chown maddy:maddy /etc/maddy/conf.d/unsub_domains.conf
-/usr/bin/chmod 0640 /etc/maddy/conf.d/unsub_domains.conf
-
 ## Aliases framework
 /usr/bin/cp /opt/verb/conf/lib/cloud/maddy/conf.d/aliases.conf /etc/maddy/conf.d/aliases.conf
-/usr/bin/chown maddy:maddy /etc/maddy/conf.d/aliases.conf
-/usr/bin/chmod 0640 /etc/maddy/conf.d/aliases.conf
-
 ## Unsubscribe framework
 /usr/bin/cp /opt/verb/conf/lib/cloud/maddy/conf.d/unsubscribe.conf /etc/maddy/conf.d/unsubscribe.conf
-/usr/bin/chown maddy:maddy /etc/maddy/conf.d/unsubscribe.conf
-/usr/bin/chmod 0640 /etc/maddy/conf.d/unsubscribe.conf
 /usr/bin/sed -i "s/domain286/${nameURI}/g" /etc/maddy/maddy.conf
-
 ## Custom scripts framework
 /usr/bin/echo "# This file is maintained automatically by inkemailaddscriptfilter, edits could break the file and other structure
 ## No tab syntax, each entry on one line for single-line entry and deletion" > /etc/maddy/conf.d/customscripts.conf
-/usr/bin/chown maddy:maddy /etc/maddy/conf.d/customscripts.conf
-/usr/bin/chmod 0640 /etc/maddy/conf.d/customscripts.conf
+## Ownership
+/usr/bin/chown root:maddy /etc/maddy/*.conf /etc/maddy/conf.d/*.conf
+/usr/bin/chmod 0644 /etc/maddy/*.conf /etc/maddy/conf.d/*.conf
 
 # Mail Domain DNS & SSL
 ## Directory
@@ -202,7 +188,7 @@ else
     /usr/bin/echo "Can't find certs for Maddy. It might not work."
   fi
 fi
-## Maddy wants at least one extra domain in /etc/maddy/conf.d/domains.conf
+## Maddy wants at least one extra domain in /etc/maddy/conf.d/domains.conf BEFORE it can start (so we won't use inkemaildomain)
 /usr/bin/sed -i "/^\$(extra_domains) =/ s/$/ ${emailTLDURI}/" /etc/maddy/conf.d/domains.conf # Rather than using serfs/inkemaildomain
 
 # UFW (services and ports below them if known)
@@ -217,16 +203,6 @@ fi
 ## Close DKIM ports (Maddy doesn't need them, and validation is through DNS records, not contacting the server)
 /usr/bin/ufw deny 8891
 /usr/bin/ufw deny 12301
-
-# Monit
-/usr/bin/cp /opt/verb/conf/lib/cloud/monit/monitrc.d/maddy /etc/monit/monitrc.d/
-/usr/bin/chmod 700 /etc/monit/monitrc.d/*
-## Restart or enable, just be safe
-if systemctl is-active monit -q; then
-  /usr/bin/systemctl restart monit
-else 
-  /usr/bin/systemctl enable --now monit # enable and start in one command
-fi
 
 # PHP mail log (Maddy can't work on LAMP, PHP not needed on LEMP)
 if [ ${ServerType} = "laemp" ]; then
@@ -257,10 +233,9 @@ User=maddy
 Group=maddy
 WorkingDirectory=/srv/email/maddy
 BindPaths=/srv/email/maddy
-ConfigurationDirectoryMode=0750
 ExecStart=
 ExecStart=/usr/local/bin/maddy run
-ExecReload=/bin/kill -HUP $MAINPID
+ExecReload=/bin/kill -HUP \$MAINPID
 KillMode=mixed
 Restart=on-failure
 
@@ -271,8 +246,9 @@ NoNewPrivileges=true
 
 # Storage and funtime directories
 RuntimeDirectory=maddy
-RuntimeDirectoryMode=0750
+RuntimeDirectoryMode=0755
 ConfigurationDirectory=maddy
+ConfigurationDirectoryMode=0755
 
 # File system & database
 ReadWritePaths=/srv/email/maddy
@@ -286,10 +262,23 @@ PrivateTmp=true
 [Install]
 WantedBy=multi-user.target
 EOF
+## Own
+/usr/bin/chown root:root /etc/systemd/system/maddy.service
+/usr/bin/sudo chmod 0644 /etc/systemd/system/maddy.service
 
 # Start the service
 /usr/bin/systemctl daemon-reload; wait
 /usr/bin/systemctl enable --now maddy; wait # enable and start in one command
+
+# Monit
+/usr/bin/cp /opt/verb/conf/lib/cloud/monit/monitrc.d/maddy /etc/monit/monitrc.d/
+/usr/bin/chmod 700 /etc/monit/monitrc.d/*
+## Restart or enable, just be safe
+if systemctl is-active monit -q; then
+  /usr/bin/systemctl restart monit
+else 
+  /usr/bin/systemctl enable --now monit # enable and start in one command
+fi
 
 # Grand Restart
 if [ ${ServerType} = "laemp" ]; then
@@ -315,6 +304,7 @@ fi
 /opt/verb/serfs/inkemailsysmailboxmsmtp
 ## First unsubscribe entry
 /opt/verb/serfs/inkemailaddscriptfilter unsubscribe ${nameURI}
+/opt/verb/serfs/inkemailaddscriptfilter unsubscribe ${emailTLDURI}
 
 # DKIM keys & TXT records
 # /opt/verb/serfs/newinkdkim ${nameURI}; wait # Handled by Maddy

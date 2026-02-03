@@ -768,8 +768,30 @@ fi
 # Enable sites
 ## Note services are initiated in the make-laemp etc because they take so much time with cloud-init
 . /opt/verb/conf/servertldstatus
-# /usr/bin/systemctl enable php-fpm; wait
-# /usr/bin/systemctl start php-fpm; wait
+
+## Email verb domains
+if [ ${ServerType} = "laemp" ]; then
+  /usr/bin/cp /opt/verb/conf/site-files/conf/box-nginx.conf /opt/verb/conf/webserver/sites-available/nginx/box.${emailTLDURI}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/box-httpd.conf /opt/verb/conf/webserver/sites-available/httpd/box.${emailTLDURI}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/po-nginx.conf /opt/verb/conf/webserver/sites-available/nginx/po.${emailTLDURI}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/po-httpd.conf /opt/verb/conf/webserver/sites-available/httpd/po.${emailTLDURI}.conf
+  /opt/verb/serfs/ensitenginx box.${emailTLDURI}
+  /opt/verb/serfs/ensiteapache box.${emailTLDURI}
+  /opt/verb/serfs/ensitenginx po.${emailTLDURI}
+  /opt/verb/serfs/ensiteapache po.${emailTLDURI}
+elif [ ${ServerType} = "lemp" ]; then
+  /usr/bin/cp /opt/verb/conf/site-files/conf/box-nginx.conf /opt/verb/conf/webserver/sites-available/nginx/box.${emailTLDURI}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/po-nginx.conf /opt/verb/conf/webserver/sites-available/nginx/po.${emailTLDURI}.conf
+  /opt/verb/serfs/ensitenginx box.${emailTLDURI}
+  /opt/verb/serfs/ensitenginx po.${emailTLDURI}
+elif [ ${ServerType} = "lamp" ]; then
+  /usr/bin/cp /opt/verb/conf/site-files/conf/box-httpd.conf /opt/verb/conf/webserver/sites-available/httpd/box.${emailTLDURI}.conf
+  /usr/bin/cp /opt/verb/conf/site-files/conf/po-httpd.conf /opt/verb/conf/webserver/sites-available/httpd/po.${emailTLDURI}.conf
+  /opt/verb/serfs/ensiteapache box.${emailTLDURI}
+  /opt/verb/serfs/ensiteapache po.${emailTLDURI}
+fi
+
+## Standard verb domains
 if [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
   /opt/verb/serfs/ensitenginx sql.${itsqlTLDURI}
 fi
@@ -795,8 +817,6 @@ if [ ${VERBred} = "true" ] && [ ${ServerType} = "laemp" ] || [ ${ServerType} = "
   /opt/verb/serfs/ensitenginx ${redURI} r.${redURI} crm.${redURI} hrm.${redURI}
 fi
 if [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lemp" ]; then
-  # /usr/bin/systemctl enable nginx; wait
-  # /usr/bin/systemctl start nginx; wait
   /bin/systemctl restart nginx; wait
 fi
 if [ ${ServerType} = "laemp" ] || [ ${ServerType} = "lamp" ]; then

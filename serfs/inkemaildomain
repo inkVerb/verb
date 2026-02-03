@@ -53,7 +53,7 @@ if /usr/bin/grep -q "${domain}" /etc/maddy/conf.d/domains.conf || [[ "${domain}"
 /usr/bin/sed -i "/^\$(extra_domains) =/ s/$/ ${domain}/" /etc/maddy/conf.d/domains.conf
 # /usr/bin/sed -i "/extra_domains/ s/$/ ${domain}/" /etc/maddy/conf.d/domains.conf #DEV Commented for above line; switch badk if broken
 ## unsubscribe block
-/usr/bin/echo "source ${domain} { modify { replace_header List-Unsubscribe-Post \".*\" \"List-Unsubscribe=One-Click\"; replace_header List-Unsubscribe \".*\" \"<mailto:unsubscribe@${domain}>\"; } deliver_to &remote_queue; }" >> /etc/maddy/conf.d/unsub_domains.conf
+/usr/bin/echo "source ${domain} { modify { add_header List-Unsubscribe-Post \".*\" \"List-Unsubscribe=One-Click\"; add_header List-Unsubscribe \".*\" \"<mailto:unsubscribe@${domain}>\"; } deliver_to &remote_queue; }" >> /etc/maddy/conf.d/unsub_domains.conf
 #DEV NOT this:
 #/usr/bin/echo "source ${domain} { modify { import unsub_headers; replace_header { replace List-Unsubscribe-Post \"List-Unsubscribe=One-Click\"; replace List-Unsubscribe \"<mailto:unsubscribe@${domain}>\" } } deliver_to &remote_queue  }" >> /etc/maddy/conf.d/unsub_domains.conf
 

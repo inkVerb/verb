@@ -60,7 +60,7 @@ elif [ "${emailuser}" = "unsubscribe" ]; then
     exit 7
   fi
   scriptpath="/srv/vip/email/nativescripts/${scriptname}"
-  /usr/bin/echo "destination ${emailaddress} { check { command ${scriptpath} {sender} } deliver_to dummy }" >> /etc/maddy/conf.d/unsubscribe.conf
+  /usr/bin/echo "destination ${emailaddress} {; check {; command \"${scriptpath}\" { sender }; }; deliver_to dummy; }" >> /etc/maddy/conf.d/unsubscribe.conf
   /usr/bin/echo '#!/bin/bash' > "${scriptpath}"
   /usr/bin/echo '/usr/bin/echo "$1" | /usr/bin/sed '\''s/^From: //; s/.*<\([^>]*\)>.*/\1/; s/[<>\" ]//g'\'' >> /srv/vip/email/unsubscribe/'"${scriptname}" >> "${scriptpath}"
   /usr/bin/chmod 750 "${scriptpath}"
