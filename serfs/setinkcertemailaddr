@@ -5,7 +5,7 @@
 ## It only affects future certificates and does NOT affect renewals
 
 # How to use:
-## ./setinkcertemail [email address]
+## ./setinkcertemailaddr [email address]
 
 
 newEmail=$1
@@ -16,4 +16,4 @@ newEmail=$1
 
 
 
-if [ -e "/opt/verb/mods/setinkcertemail.after" ]; then . /opt/verb/mods/setinkcertemail.after; fi # Follows this script
+if [ -e "/opt/verb/mods/setinkcertemailaddr.after" ]; then . /opt/verb/mods/setinkcertemailaddr.after; fi # Follows this script

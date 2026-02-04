@@ -46,7 +46,7 @@ fi
 
 # Check inkCert installed
 if [ "${InkCertInstalled}" = "NOT_YET" ]; then
-/bin/echo "inkCert not yet installed.
+/usr/bin/echo "inkCert not yet installed.
 
 First run inkcertinstall
 "
@@ -55,7 +55,7 @@ fi
 
 # Check variables
 if [ -z ${1} ]; then
-/bin/echo "You need to specify a domain. Read the instructions."; exit 0
+/usr/bin/echo "You need to specify a domain. Read the instructions."; exit 0
 fi
 
 # Request and get the certs
@@ -63,7 +63,7 @@ fi
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 # Install the certs
-if /bin/grep -q "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
+if /usr/bin/grep -q "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
   if [ -e "/etc/inkcert/le/live/${domain}" ]; then
     /opt/verb/serfs/inkcertaddallle ${domain}
     e="$?"; [[ "$e" = "0" ]] || exit "$e"
@@ -91,10 +91,10 @@ if [ ! -e "/etc/inkcert/le/live/${domain}/cert.pem" ] || [ ! -e "/etc/inkcert/le
 fi
 
 # Update the inkCert-DOMAIN config file, fail silently (eg. when used on subdomains)
-/bin/sed -i "s/InkCerted=.*/InkCerted=DONE_LE/" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain} 2> /dev/null
+/usr/bin/sed -i "s/InkCerted=.*/InkCerted=DONE_LE/" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain} 2> /dev/null
 
 # Finish
-/bin/echo "
+/usr/bin/echo "
 Excellent!
 
 Now, ${domain} and all subdomains are now live with inkCert Letsencrypt certificates.
