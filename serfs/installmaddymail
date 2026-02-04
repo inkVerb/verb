@@ -135,8 +135,8 @@ mailpassgen="$(/usr/bin/pwgen -s -1 5)"
 /usr/bin/sed -i "s/ServerMailPassApg.*/ServerMailPassApg=\"${mailpassgen}\"/g" /opt/verb/conf/servermailpass
 
 # Create the SQL items
-## Make sure it is running because it can take a while after system reboot
-until /usr/bin/systemctl is-active --quiet postgresql; do /usr/bin/echo "Waiting for PostgreSQL..."; /usr/bin/sleep 1; done; /usr/bin/echo "PostgreSQL is up!"
+## Make sure Postgres is running because it can take a while after system reboot, and it doesn't use systemctl
+until /usr/bin/pg_isready --quiet; do /usr/bin/echo "Waiting for PostgreSQL..."; /usr/bin/sleep 1; done
 /usr/bin/sudo -u postgres psql -c "CREATE USER email WITH PASSWORD 'emailpass${mailpassgen}';"
 /usr/bin/sudo -u postgres psql -c "CREATE DATABASE email OWNER email;"
 
