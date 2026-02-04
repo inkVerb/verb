@@ -1,4 +1,4 @@
-check process maddy with pidfile /var/run/maddy.pid
+check process maddy matching "/usr/local/bin/maddy"
   group email
   start program = "/usr/bin/systemctl start maddy"
   stop program = "/usr/bin/systemctl stop maddy"

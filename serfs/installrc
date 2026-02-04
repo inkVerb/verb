@@ -123,17 +123,18 @@ if [ "$?" = 4 ]; then
 /usr/bin/chown -R www:www /srv/www/verb/${ServerEmailTLD}.box; wait
 /usr/bin/chown -R www:www /srv/www/email/roundcube; wait
 
-# inkCert
-. /opt/verb/conf/inkcert/cli-ini/siteinkcert.${emailURI}
-if [ "${InkCerted}" = "DONE_LE" ]; then
-  /opt/verb/serfs/inkcertaddle box.${emailURI} ${emailURI}
-elif [ "${InkCerted}" = "DONE_CB" ]; then
-  /opt/verb/serfs/inkcertaddcb box.${emailURI} ${emailURI}
-elif [ "${InkCerted}" = "DONE_CBSINGLE" ]; then
-  /opt/verb/serfs/inkcertaddcbsingle box.${emailURI}
-elif [ "${InkCerted}" = "DONE_SC" ]; then
-  /opt/verb/serfs/inkcertaddsc box.${emailURI}
-fi
+#DEV This is already done in our new frameworks, delete if everything works
+# # inkCert
+# . /opt/verb/conf/inkcert/cli-ini/siteinkcert.${emailURI}
+# if [ "${InkCerted}" = "DONE_LE" ]; then
+#   /opt/verb/serfs/inkcertaddle box.${emailURI} ${emailURI}
+# elif [ "${InkCerted}" = "DONE_CB" ]; then
+#   /opt/verb/serfs/inkcertaddcb box.${emailURI} ${emailURI}
+# elif [ "${InkCerted}" = "DONE_CBSINGLE" ]; then
+#   /opt/verb/serfs/inkcertaddcbsingle box.${emailURI}
+# elif [ "${InkCerted}" = "DONE_SC" ]; then
+#   /opt/verb/serfs/inkcertaddsc box.${emailURI}
+# fi
 
 # Settings
 /usr/bin/cp /opt/verb/conf/lib/vmail/roundcube/mime.types /srv/www/email/roundcube/
