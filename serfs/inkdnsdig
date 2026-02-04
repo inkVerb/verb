@@ -29,7 +29,7 @@ dependencyinstall=( inkdnsinstall )
 prerequesite=(  )
 usedby=( inkdnsdigverbs "adddomain - via donjon/digdomain.sh" )
 useserfs=(  )
-useconfigs=( inkdnsconf servernameip )
+useconfigs=( inkdnsconf servernameip servertype )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/inkdnsdig.replace" ]; then . /opt/verb/mods/inkdnsdig.replace; return 0; fi # Replaces this script
 if [ -e "/opt/verb/mods/inkdnsdig.before" ]; then . /opt/verb/mods/inkdnsdig.before; fi # Precedes this script
@@ -43,6 +43,7 @@ fi
 # Include the configs
 . /opt/verb/conf/inkdnsconf
 . /opt/verb/conf/servernameip
+. /opt/verb/conf/servertype
 
 # Argument check
 if [ -z "$1" ]; then
