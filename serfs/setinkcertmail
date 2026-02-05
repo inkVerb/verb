@@ -20,7 +20,7 @@ fi
 if ! /usr/bin/grep -q 'InkDNSStat="INSTALLED"' /opt/verb/conf/inkdnsconf; then
   /usr/bin/echo "Install inkDNS first, I quit."; exit 8
 fi
-if ! /usr/bin/grep -q 'ServerMailStatus="VMAIL_SERVER"' /opt/verb/conf/servermailpath && ! /usr/bin/grep -q 'ServerMailStatus="MADDY_EMAIL_SERVER"' /opt/verb/conf/servermailpath; then
+if ! /usr/bin/grep -q 'ServerMailStatus="VMAIL_"' /opt/verb/conf/servermailpath && ! /usr/bin/grep -q 'ServerMailStatus="MADDY_EMAIL_"' /opt/verb/conf/servermailpath; then
   /usr/bin/echo "Install either Maddy Email or Postfix Vmail first, I quit."; exit 8
 fi
 if ! /usr/bin/grep -q 'EmailAllowed="YES"' /opt/verb/conf/servernameip; then

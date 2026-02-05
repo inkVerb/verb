@@ -71,6 +71,15 @@ Email Control Records not declared in the email domain DNS zone file. This won't
 "
 exit 8; fi
 
+# Get inkVerb's latest and install
+cd /srv/www/email
+/opt/verb/serfs/inkget ${cVappName} check
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+### Check
+if [ "$?" = 4 ]; then
+  /bin/echo "Repo failed to retrieve the file."
+  exit 4; fi
+
 # Security & path
 ## See if previously installed (and removed by installrcremove, which leaves the database in place)
 if [ "${ServerPFAPath}" != "PFA_NOT_INSTALLED" ] && [ -n "$1" ] && [ "$1" = "--pfapath" ]; then
@@ -106,15 +115,6 @@ if [ "${ServerBoxPath}" = "${rcFolder}" ]; then
   rcFolder="$(/usr/bin/pwgen -0 5 1)"
   echo "Folder already taken by box, new folder will be: ${rcFolder}. This can be changed with setrcpath"
 fi
-
-# Get inkVerb's latest and install
-cd /srv/www/email
-/opt/verb/serfs/inkget ${cVappName} check
-e="$?"; [[ "$e" = "0" ]] || exit "$e"
-### Check
-if [ "$?" = 4 ]; then
-  /bin/echo "Repo failed to retrieve the file."
-  exit 4; fi
 
 # Webserver
 ## Web directories
