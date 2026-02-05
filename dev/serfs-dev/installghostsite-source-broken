@@ -163,7 +163,7 @@ fi
 ## User dependency
 /usr/bin/id -u ghost &>/dev/null || /usr/bin/useradd --system --user-group ghost
 ## Can't use ghost as root
-/usr/bin/su www -c "export GHOST_NODE_VERSION_CHECK=false; /usr/bin/ghost install --dir '/srv/ghost/${domain}' --url '${domain}' --port '${ghostport}' --ip '127.0.0.1' --mail 'SMTP' --mailport '465' --mailhost 'smtp.${domain}' --mailuser 'web@${domain}' --mailpass '${emailPassword}' --db 'mysql' --dbhost 'localhost' --dbuser '${dBaseUser} '--dbpass '${dBPassword}' --dbname '${dBase}' --production --start "
+/usr/bin/sudo -u worker /bin/bash -c "export GHOST_NODE_VERSION_CHECK=false; /usr/bin/ghost install --dir '/srv/ghost/${domain}' --url '${domain}' --port '${ghostport}' --ip '127.0.0.1' --mail 'SMTP' --mailport '465' --mailhost 'smtp.${domain}' --mailuser 'web@${domain}' --mailpass '${emailPassword}' --db 'mysql' --dbhost 'localhost' --dbuser '${dBaseUser} '--dbpass '${dBPassword}' --dbname '${dBase}' --production --start "
 if [ "$?" != "0" ]; then /usr/bin/echo 'Ghost install failed: !!'; exit 4; fi
 
 # --setup-mysql --setup-nginx --setup-ssl --setup-systemd

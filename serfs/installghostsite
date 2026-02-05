@@ -196,10 +196,10 @@ fi
 /usr/bin/chown -R worker:worker /srv/ghost/${domain}
 ## MySQL install command (can't be root)
 ### No --start because we need to sort out user permissions and service first
-/usr/bin/su worker -c "export GHOST_NODE_VERSION_CHECK=false; /usr/bin/ghost install --dir=/srv/ghost/${domain} --url=${domain} --port=${ghostport} --ip=127.0.0.1 --mail=SMTP --mailport=465 --mailhost=smtp.${domain} --mailuser=${emailUser} --mailpass=${emailPassword} --db=mysql --dbhost=localhost --dbname=${dBase} --dbuser=${dBaseUser} --dbpass=${dBPassword} --production --no-start --no-setup-systemd --no-setup-nginx --no-setup-ssl --no-setup-linux-user --no-setup-migrate"
+/usr/bin/sudo -u worker /bin/bash -c "export GHOST_NODE_VERSION_CHECK=false; /usr/bin/ghost install --dir=/srv/ghost/${domain} --url=${domain} --port=${ghostport} --ip=127.0.0.1 --mail=SMTP --mailport=465 --mailhost=smtp.${domain} --mailuser=${emailUser} --mailpass=${emailPassword} --db=mysql --dbhost=localhost --dbname=${dBase} --dbuser=${dBaseUser} --dbpass=${dBPassword} --production --no-start --no-setup-systemd --no-setup-nginx --no-setup-ssl --no-setup-linux-user --no-setup-migrate"
 ## SQLite3 install command (can't be root)
 ###DEV SQLite3 untested
-#/usr/bin/su worker -c "export GHOST_NODE_VERSION_CHECK=false; /usr/bin/ghost install --dir=/srv/ghost/${domain} --url=${domain} --port=${ghostport} --ip=127.0.0.1 --mail=SMTP --mailport=465 --mailhost=smtp.${domain} --mailuser=${emailUser} --mailpass=${emailPassword} --db=sqlite3 --dbpath=content/data/ghost_dev.db --production --no-start --no-setup-systemd --no-setup-nginx --no-setup-ssl --no-setup-linux-user --no-setup-migrate"
+#/usr/bin/sudo -u worker /bin/bash -c "export GHOST_NODE_VERSION_CHECK=false; /usr/bin/ghost install --dir=/srv/ghost/${domain} --url=${domain} --port=${ghostport} --ip=127.0.0.1 --mail=SMTP --mailport=465 --mailhost=smtp.${domain} --mailuser=${emailUser} --mailpass=${emailPassword} --db=sqlite3 --dbpath=content/data/ghost_dev.db --production --no-start --no-setup-systemd --no-setup-nginx --no-setup-ssl --no-setup-linux-user --no-setup-migrate"
 if [ "$?" != "0" ]; then /usr/bin/echo 'Ghost install failed: !!'; exit 4; fi
 ## Now ghost owns the installation so the .service can run it
 /usr/bin/chown -R ghost:ghost /srv/ghost/${domain}

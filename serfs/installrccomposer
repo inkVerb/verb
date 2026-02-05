@@ -42,13 +42,13 @@ cd /srv/www/email/roundcube
 
 # Run the Composer installation
 ## Update the lock file
-/usr/bin/su www -c 'php composer.phar update --lock'
+/usr/bin/sudo -u worker /bin/bash -c 'php composer.phar update --lock'
 ## Ignore requirements that trip false warnings: --ignore-platform-req=
 ## Use the www user so changes can be made to the web directory
-/usr/bin/su www -c 'php composer.phar install -n --ignore-platform-req=php --ignore-platform-req=ext-gd --ignore-platform-req=ext-ldap --ignore-platform-req=ext-iconv'
+/usr/bin/sudo -u worker /bin/bash -c 'php composer.phar install -n --ignore-platform-req=php --ignore-platform-req=ext-gd --ignore-platform-req=ext-ldap --ignore-platform-req=ext-iconv'
 ### Update if the install failed (for running later)
 if [ "$?" != "0" ]; then
-  /usr/bin/su www -c 'php composer.phar update -n --ignore-platform-req=php --ignore-platform-req=ext-gd --ignore-platform-req=ext-ldap --ignore-platform-req=ext-iconv'
+  /usr/bin/sudo -u worker /bin/bash -c 'php composer.phar update -n --ignore-platform-req=php --ignore-platform-req=ext-gd --ignore-platform-req=ext-ldap --ignore-platform-req=ext-iconv'
 fi
 
 # Confirm success status

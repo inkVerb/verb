@@ -254,7 +254,7 @@ fi
 # Remove unneeded packages
 /usr/bin/pacman -Rsc --noconfirm
 /usr/bin/pacman -Scc --noconfirm
-/usr/bin/su worker -c '/usr/bin/yay -Scc --noconfirm'
+/usr/bin/sudo -u worker /bin/bash -c '/usr/bin/yay -Scc --noconfirm'
 
 
 

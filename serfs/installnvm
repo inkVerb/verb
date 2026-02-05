@@ -7,7 +7,7 @@
 # How to use:
 ## ./installnvm
 
-/usr/bin/su worker -c '/usr/bin/yay -S --noconfirm --needed nvm'
+/usr/bin/sudo -u worker /bin/bash -c '/usr/bin/yay -S --noconfirm --needed nvm'
 #/usr/local/bin/yeo -S --noconfirm --needed nvm
 if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi
 

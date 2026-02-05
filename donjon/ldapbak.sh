@@ -2,8 +2,8 @@
 # inkVerb donjon asset, verb.ink
 ## This script backs up the LDAP database and configuration with automatic preference for what drives are mounted
 ## Restore with these commands:
-### Database: /usr/bin/su ldap -c slapadd -v -n 1 -F /etc/openldap/slapd.d -l BACKUPNAME.ldif
-### Config: /usr/bin/su ldap -c slapadd -v -n 0 -F /etc/openldap/slapd.d -l BACKUPNAME.conf.ldif
+### Database: /usr/bin/sudo -u worker /bin/bash -c slapadd -v -n 1 -F /etc/openldap/slapd.d -l BACKUPNAME.ldif
+### Config: /usr/bin/sudo -u worker /bin/bash -c slapadd -v -n 0 -F /etc/openldap/slapd.d -l BACKUPNAME.conf.ldif
 
 
 if [ -z "$1" ]; then
@@ -39,7 +39,7 @@ if /usr/bin/systemctl is-active slapd; then
     /usr/bin/mv "${backdir}/slapd.${ldapHost}.${backsuffix}.ldif" "${backdir}/slapd.${ldapHost}.${backsuffix}.ldif.yesterday"
   fi
   ## Run the backup
-  /usr/bin/su ldap -c "slapcat -v -n 1 -l ${backdir}/slapd.${ldapHost}.${backsuffix}.ldif"
+  /usr/bin/sudo -u worker /bin/bash -c "slapcat -v -n 1 -l ${backdir}/slapd.${ldapHost}.${backsuffix}.ldif"
 
   # Config
   ## Remove any old backup from yesterday
@@ -51,7 +51,7 @@ if /usr/bin/systemctl is-active slapd; then
     /usr/bin/mv "${backdir}/slapd.${ldapHost}.${backsuffix}.conf.ldif" "${backdir}/slapd.${ldapHost}.${backsuffix}.conf.ldif.yesterday"
   fi
   ## Run the backup
-  /usr/bin/su ldap -c "slapcat -vF /etc/openldap/slapd.d -n 0 -l ${backdir}/slapd.${ldapHost}.${backsuffix}.conf.ldif"
+  /usr/bin/sudo -u worker /bin/bash -c "slapcat -vF /etc/openldap/slapd.d -n 0 -l ${backdir}/slapd.${ldapHost}.${backsuffix}.conf.ldif"
 
   # Start the service
   /usr/bin/systemctl start slapd

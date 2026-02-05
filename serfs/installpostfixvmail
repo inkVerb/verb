@@ -580,7 +580,7 @@ fi
 # Remove unneeded packages
 /usr/bin/pacman -Rsc --noconfirm
 /usr/bin/pacman -Scc --noconfirm
-#/usr/bin/su worker -c '/usr/bin/yay -Scc --noconfirm' # We didn't install an AUR packages
+#/usr/bin/sudo -u worker /bin/bash -c '/usr/bin/yay -Scc --noconfirm' # We didn't install an AUR packages
 #/usr/local/bin/yeo -Scc --noconfirm # We didn't install an AUR packages
 
 # Finish

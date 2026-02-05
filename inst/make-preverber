@@ -108,7 +108,7 @@ syntax on' >> /etc/vimrc
 #/usr/bin/usermod -a -G wheel worker # Should not be necessary with the sudoers.d/ entry
 /usr/bin/echo 'worker ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/worker
 /usr/bin/usermod -L worker
-/usr/bin/chsh -s /usr/sbin/bash worker 1> /dev/null 2>& 1 # It generates STDOUT and STDERR
+/usr/bin/chsh -s /usr/bin/nologin worker 1> /dev/null 2>& 1 # It generates STDOUT and STDERR, don't use su ... -c
 /usr/bin/chown -R worker:worker /opt/verb/worker
 ## Ghost
 #/usr/bin/id -u ghost &>/dev/null || /usr/bin/useradd -r -U ghost #DEV keep for reference
@@ -117,15 +117,17 @@ syntax on' >> /etc/vimrc
 /usr/bin/mkdir -p /srv/ghost
 /usr/bin/usermod -d /srv/ghost ghost
 /usr/bin/usermod -L ghost
-/usr/bin/chsh -s /usr/bin/nologin ghost 1> /dev/null 2>& 1 # We won't use su -c, but only Systemd to run this, so nologin
+/usr/bin/chsh -s /usr/bin/nologin ghost 1> /dev/null 2>& 1 # We only use Systemd to run this
 /usr/bin/chown -R ghost:ghost /srv/ghost
 ## Web user & directory
 /usr/bin/mkdir -p /srv/www/html
-/usr/bin/useradd -rg www www
+/usr/bin/useradd -r -g www www
 /usr/bin/chmod u+w /srv/www/html
 /usr/bin/chown -R www:www /srv/www
 /usr/bin/mkdir -p /home/www
 /usr/bin/usermod -d /home/www www
+/usr/bin/usermod -L worker
+/usr/bin/chsh -s /usr/bin/nologin worker 1> /dev/null 2>& 1 # It generates STDOUT and STDERR, don't use su ... -c
 /usr/bin/chown -R www:www /home/www
 
 # Let's use sudo
@@ -136,11 +138,11 @@ syntax on' >> /etc/vimrc
 /usr/bin/pacman -S --noconfirm --needed base-devel # Dependencies
 e="$?"; [[ "$e" = "0" ]] || ( /usr/bin/echo 'Failed: !!' && exit "$e" )
 cd /opt/verb/worker || exit 6
-/usr/bin/su worker -c '/usr/bin/git clone https://aur.archlinux.org/yay.git'
+/usr/bin/sudo -u worker /bin/bash -c '/usr/bin/git clone https://aur.archlinux.org/yay.git'
 cd yay || exit 6
-#/usr/bin/su worker -c '/usr/bin/git clone https://aur.archlinux.org/yay-bin.git' # Some temp problems solved at https://github.com/Jguer/yay/issues/2508#issuecomment-2365429225
+#/usr/bin/sudo -u worker /bin/bash -c '/usr/bin/git clone https://aur.archlinux.org/yay-bin.git' # Some temp problems solved at https://github.com/Jguer/yay/issues/2508#issuecomment-2365429225
 #cd yay-bin || exit 6
-/usr/bin/su worker -c '/usr/bin/makepkg -si --noconfirm'
+/usr/bin/sudo -u worker /bin/bash -c '/usr/bin/makepkg -si --noconfirm'
 cd .. || exit 6
 /usr/bin/rm -rf yay-bin
 
@@ -148,12 +150,12 @@ cd .. || exit 6
 /usr/bin/ln -sfn /opt/verb/donjon/yeo.sh /usr/local/bin/yeo
 
 # Update yay
-/usr/bin/su worker -c '/usr/bin/yay -Syyu --noconfirm'
+/usr/bin/sudo -u worker /bin/bash -c '/usr/bin/yay -Syyu --noconfirm'
 #/usr/local/bin/yeo -Syyu --noconfirm
 
 ## Now, use this to run non-root commands:
-### /usr/bin/su worker -c '/usr/bin/yay --noconfirm -S some-package'
-### /usr/bin/su worker -c '/path/to/command arg1 arg2 -etc'
+### /usr/bin/sudo -u worker /bin/bash -c '/usr/bin/yay --noconfirm -S some-package'
+### /usr/bin/sudo -u worker /bin/bash -c '/path/to/command arg1 arg2 -etc'
 
 # No managed /etc/hosts file
 ## Comment any current statement
@@ -166,8 +168,8 @@ fi
 # Remove unneeded packages
 /usr/bin/pacman -Rsc --noconfirm
 /usr/bin/pacman -Scc --noconfirm
-/usr/bin/su worker -c '/usr/bin/yay -Scc --noconfirm'
-/usr/bin/su worker -c '/usr/bin/yay -Yc --noconfirm'
+/usr/bin/sudo -u worker /bin/bash -c '/usr/bin/yay -Scc --noconfirm'
+/usr/bin/sudo -u worker /bin/bash -c '/usr/bin/yay -Yc --noconfirm'
 wait
 
 # Delete this one-time script

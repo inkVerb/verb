@@ -129,7 +129,7 @@ EOF
 /usr/bin/chown -R ldap:ldap /etc/openldap/config.ldif
 
 ### Import settings as the ldap user
-/usr/bin/su ldap -c 'slapadd -n 0 -F /etc/openldap/slapd.d/ -l /etc/openldap/config.ldif'
+/usr/bin/sudo -u worker /bin/bash -c 'slapadd -n 0 -F /etc/openldap/slapd.d/ -l /etc/openldap/config.ldif'
 
 ### Set the environment service to use ldaps (SSL) in addition to 127 localhost
 /usr/bin/cat <<EOF > /etc/conf.d/slapd

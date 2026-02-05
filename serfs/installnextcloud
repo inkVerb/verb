@@ -176,7 +176,7 @@ elif [ ${ServerType} = "lemp" ]; then
     /usr/bin/sed -i "s?blue\.kit?blue.cloud?g" /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf
   fi
 elif [ ${ServerType} = "lamp" ]; then
-  /usr/bin/su worker -c '/usr/bin/yay -S mod_itk --noconfirm'
+  /usr/bin/sudo -u worker /bin/bash -c '/usr/bin/yay -S mod_itk --noconfirm'
   #/usr/local/usr/bin/yeo -S mod_itk --noconfirm
   # Include the virtual host configurations:
   echo "# Load the mod_itk module so Apache can use the nextcloud user

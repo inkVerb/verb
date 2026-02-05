@@ -54,7 +54,7 @@ fi
 /usr/bin/pacman -Sy archlinux-keyring --noconfirm
 # Update Packages
 /usr/bin/pacman -Syyu --noconfirm --needed
-/usr/bin/su worker -c '/usr/bin/yay -Syyu --noconfirm'
+/usr/bin/sudo -u worker /bin/bash -c '/usr/bin/yay -Syyu --noconfirm'
 #/usr/local/bin/yeo -Syyu --noconfirm
 
 # Swap
@@ -65,7 +65,7 @@ fi
 
 # Live patch
 ## Learn more here https://wiki.archlinux.org/title/Kernel_live_patching
-#/usr/bin/su worker -c '/usr/bin/yay --noconfirm -S kpatch'
+#/usr/bin/sudo -u worker /bin/bash -c '/usr/bin/yay --noconfirm -S kpatch'
 ##/usr/local/bin/yeo --noconfirm -S kpatch
 
 # Link serfs & tools to boss box
@@ -375,8 +375,8 @@ e="$?"; [[ "$e" = "0" ]] || /usr/bin/echo 'Failed: !!'; exit "$e"
 # Remove unneeded packages
 /usr/bin/pacman -Rsc --noconfirm
 /usr/bin/pacman -Scc --noconfirm
-/usr/bin/su worker -c '/usr/bin/yay -Scc --noconfirm'
-/usr/bin/su worker -c '/usr/bin/yay -Yc --noconfirm'
+/usr/bin/sudo -u worker /bin/bash -c '/usr/bin/yay -Scc --noconfirm'
+/usr/bin/sudo -u worker /bin/bash -c '/usr/bin/yay -Yc --noconfirm'
 
 # Restart Server and reconnect at the new port
 /usr/bin/echo "
