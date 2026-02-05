@@ -99,7 +99,7 @@ syntax on' >> /etc/vimrc
 /opt/verb/serfs/setsecure; wait
 
 # System users
-/usr/bin/groupadd www # web user is created in make-verber-*, but we need the group now
+/usr/bin/groupadd www # web user is used for the worker too
 ## Woker user (for yay, etc)
 /usr/bin/useradd -r -U worker
 /usr/bin/usermod -a -G www worker
@@ -119,6 +119,14 @@ syntax on' >> /etc/vimrc
 /usr/bin/usermod -L ghost
 /usr/bin/chsh -s /usr/bin/nologin ghost 1> /dev/null 2>& 1 # We won't use su -c, but only Systemd to run this, so nologin
 /usr/bin/chown -R ghost:ghost /srv/ghost
+## Web user & directory
+/usr/bin/mkdir -p /srv/www/html
+/usr/bin/useradd -rg www www
+/usr/bin/chmod u+w /srv/www/html
+/usr/bin/chown -R www:www /srv/www
+/usr/bin/mkdir -p /home/www
+/usr/bin/usermod -d /home/www www
+/usr/bin/chown -R www:www /home/www
 
 # Let's use sudo
 /usr/bin/groupadd sudo

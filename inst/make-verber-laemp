@@ -80,11 +80,6 @@ fi
 /usr/bin/echo "${mysqlrootpass}" > /opt/verb/conf/sql/mysqlrootpassword
 
 # LAEMP Server
-## Web directory
-/usr/bin/mkdir -p /srv/www/html
-/usr/bin/useradd -g www www
-/usr/bin/chmod u+w /srv/www/html
-/usr/bin/chown -R www:www /srv/www/html
 
 ## Snakeoil install (small file just so the server works)
 /usr/bin/mkdir -p /etc/ssl/server
