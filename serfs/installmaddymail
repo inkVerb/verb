@@ -272,6 +272,9 @@ EOF
 /usr/bin/systemctl daemon-reload; wait
 /usr/bin/systemctl enable --now maddy; wait # enable and start in one command
 
+#BUG
+/usr/bin/echo "1"
+
 # Monit
 /usr/bin/cp /opt/verb/conf/lib/cloud/monit/monitrc.d/maddy /etc/monit/monitrc.d/
 /usr/bin/chmod 700 /etc/monit/monitrc.d/*
@@ -281,6 +284,9 @@ if systemctl is-active monit -q; then
 else 
   /usr/bin/systemctl enable --now monit # enable and start in one command
 fi
+
+#BUG
+/usr/bin/echo "2"
 
 # Grand Restart
 if [ ${ServerType} = "laemp" ]; then
@@ -292,6 +298,9 @@ elif [ ${ServerType} = "lamp" ]; then
   /usr/bin/systemctl restart httpd; wait
 fi
 
+#BUG
+/usr/bin/echo "3"
+
 # Config settings to Maddy's version of "EMAIL_INSTALLED"
 /usr/bin/sed -i "s/ServerMailStatus=.*/ServerMailStatus=\"MADDY_EMAIL_SERVER\"/g" /opt/verb/conf/servermailpath
 ## PFA not allowed for Maddy
@@ -302,11 +311,23 @@ fi
 # System domains & addresses (Requires ServerMailStatus="MADDY_EMAIL_SERVER")
 ## Add base domains & addresses
 /opt/verb/serfs/inkemailbaseaddrs
+
+#BUG
+/usr/bin/echo "4"
 ## Setup system mail
 /opt/verb/serfs/inkemailsysmailboxmsmtp
+
+#BUG
+/usr/bin/echo "5"
 ## First unsubscribe entry
 /opt/verb/serfs/inkemailaddscriptfilter unsubscribe ${nameURI}
+
+#BUG
+/usr/bin/echo "6"
 /opt/verb/serfs/inkemailaddscriptfilter unsubscribe ${emailTLDURI}
+
+#BUG
+/usr/bin/echo "7"
 
 # DKIM keys & TXT records
 # /opt/verb/serfs/newinkdkim ${nameURI}; wait # Handled by Maddy

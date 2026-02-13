@@ -149,8 +149,8 @@ III. inst/ contains files only used at installation and updates and some importa
 		  - Obtain inkCert certs for all "verb" domains
 		  - Then the verber is ready to function
 
-IV. The "donjon" - assets or "native apps"
-	A. This is where native apps are kept. They may be written in Python or any other language.
+IV. The "donjon" - system scripts and assets, or "native apps"
+	A. This is where native apps, assets, and system-used scripts are kept. They may be written in Python or any other language.
 	B. These apps are essential for the work of some routine tasks, often tied to cron tasks
 	  - List of cron task times: (you may want to either avoid or be aware these times)
 	    - `* 4 * * * root /opt/verb/donjon/mysqlbak.sh`

@@ -34,11 +34,18 @@ cd /srv/www/email/roundcube
 /usr/bin/curl -s https://getcomposer.org/installer | php
 /usr/bin/cp composer.json-dist composer.json
 
+# Roundcube version (very important)
+## Get our integrated installer's version
+. /opt/verb/conf/inklists/repoverlist
+distVer="${roundcube}"
+## Set the version in JSON
+/usr/bin/sed -i "/\"name\":/a \    \"version\": \"${distVer}\"," composer.json
+
 # Other plugins
 #/usr/bin/sed -i '/"require": {/a "johndoh\/sauserprefs": ">=1.21.0"', composer.json # We don't use spamassassin anymore
-/usr/bin/sed -i '/"require": {/a "johndoh\/contextmenu": ">=3.3.1"', composer.json
-/usr/bin/sed -i '/"require": {/a "prodrigestivill\/gravatar": ">=1.6"', composer.json
-/usr/bin/sed -i '/"require": {/a "weird-birds\/thunderbird_labels": ">=1.6.2"', composer.json
+/usr/bin/sed -i '/"require": {/a "johndoh\/contextmenu": ">=3.3.1",' composer.json
+/usr/bin/sed -i '/"require": {/a "prodrigestivill\/gravatar": ">=1.6",' composer.json
+/usr/bin/sed -i '/"require": {/a "weird-birds\/thunderbird_labels": ">=1.6.2",' composer.json
 
 # Run the Composer installation
 ## Update the lock file
