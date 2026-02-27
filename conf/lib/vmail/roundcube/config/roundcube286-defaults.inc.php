@@ -703,7 +703,7 @@ $config['sent_mbox'] = 'Sent';
 $config['trash_mbox'] = 'Trash';
 
 // Same as above for IMAP (from Arch Wiki)
-// Should be created automatically by Maddy and rsync-blacklist sync script
+// Should be created automatically by Maddy and rspamd-blacklist sync script
 $config['default_imap_folders'] = array('INBOX', 'Archive', 'Drafts', 'Sent', 'Junk', 'Trash', 'Blacklist');
 
 // automatically create the above listed default folders on user login
