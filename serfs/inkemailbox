@@ -138,6 +138,9 @@ fi
 # Restart Maddy
 /usr/bin/systemctl restart maddy.service
 
+# Run the Blacklist script now (ensuring all folders exist)
+/opt/verb/donjon/sync-blacklist.sh
+
 # Finish
 /usr/bin/echo "Created new email inbox!
 Email address: $emailaddress

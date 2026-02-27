@@ -46,6 +46,8 @@ adminemail="admin@$nameURI"
 /opt/verb/serfs/inkemailalias webmaster $nameURI $adminemail
 /opt/verb/serfs/inkemailalias dmark $nameURI $adminemail
 
+# Run the Blacklist script now (ensuring all folders exist)
+/opt/verb/donjon/sync-blacklist.sh
 
 
 if [ -e "/opt/verb/mods/inkemailbaseaddrs.after" ]; then . /opt/verb/mods/inkemailbaseaddrs.after; fi # Follows this script

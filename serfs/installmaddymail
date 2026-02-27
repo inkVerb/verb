@@ -331,8 +331,15 @@ EOF
 reject = 9999;  # Effectively disabling score-based spam rejection
 add_header = 6; # Scores above 6 trigger quarantine in Maddy, thus move to Junk folder
 EOF
+#BUG
+/usr/bin/echo "0-b"
 ### Blacklisting
-#DEV coming soon
+/usr/bin/go install github.com/fho/rspamd-iscan@latest
+/usr/bin/cp ~/go/bin/rspamd-iscan /usr/local/bin/
+/usr/bin/chmod 0755 /usr/local/bin/rspamd-iscan
+
+/usr/bin/echo '*/5 * * * * root /opt/verb/donjon/sync-blacklist.sh' > /etc/cron.d/maddy-rspam-blacklist-sync
+/usr/bin/chmod 0644 /etc/cron.d/maddy-rspam-blacklist-sync
 
 #BUG
 /usr/bin/echo "1"
@@ -349,6 +356,12 @@ EOF
 /usr/bin/systemctl daemon-reload; wait
 /usr/bin/systemctl enable --now rspamd; wait # get our rspamd service for maddy to use
 /usr/bin/systemctl enable --now maddy; wait # enable and start in one command
+
+#BUG
+/usr/bin/echo "3-b"
+# Run the Blacklist script now (ensuring all folders exist)
+/opt/verb/donjon/sync-blacklist.sh
+
 # Monit
 /usr/bin/cp /opt/verb/conf/lib/cloud/monit/monitrc.d/maddy /etc/monit/monitrc.d/
 /usr/bin/chmod 700 /etc/monit/monitrc.d/*
@@ -370,7 +383,6 @@ elif [ ${ServerType} = "lemp" ]; then
 elif [ ${ServerType} = "lamp" ]; then
   /usr/bin/systemctl restart httpd; wait
 fi
-
 
 # Config settings to Maddy's version of "EMAIL_INSTALLED"
 /usr/bin/sed -i "s/ServerMailStatus=.*/ServerMailStatus=\"MADDY_EMAIL_SERVER\"/g" /opt/verb/conf/servermailpath

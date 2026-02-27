@@ -74,7 +74,7 @@ EOF >> /etc/maddy/conf.d/unsubscribe/${filename_email}.conf
 
   /usr/bin/echo '#!/bin/bash' > "${scriptpath}"
   /usr/bin/echo '/usr/bin/echo "$1" | /usr/bin/sed '\''s/^From: //; s/.*<\([^>]*\)>.*/\1/; s/[<>\" ]//g'\'' >> /srv/vip/email/unsubscribe/'"${scriptname}" >> "${scriptpath}"
-  /usr/bin/chmod 755 "${scriptpath}"
+  /usr/bin/chmod 0755 "${scriptpath}"
 else
   ## Already added?
   if [ -f "/etc/maddy/conf.d/customscripts/${filename_email}.conf" ]; then
@@ -91,7 +91,7 @@ destination ${emailaddress} {
   deliver_to dummy
 }
 EOF >> /etc/maddy/conf.d/unsubscribe/${filename_email}.conf
-  /usr/bin/chmod 755 "${scriptpath}" # Ensure proper permissions for the pre-existing script
+  /usr/bin/chmod 0755 "${scriptpath}" # Ensure proper permissions for the pre-existing script
 fi
 
 # Restart Maddy

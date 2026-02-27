@@ -703,11 +703,16 @@ $config['sent_mbox'] = 'Sent';
 $config['trash_mbox'] = 'Trash';
 
 // Same as above for IMAP (from Arch Wiki)
-//$config['default_imap_folders'] = array('INBOX', 'Archive', 'Drafts', 'Sent', 'Junk', 'Trash');
+// Should be created automatically by Maddy and rsync-blacklist sync script
+$config['default_imap_folders'] = array('INBOX', 'Archive', 'Drafts', 'Sent', 'Junk', 'Trash', 'Blacklist');
 
 // automatically create the above listed default folders on user login
 // inkVerb: Postfix Admin won't create them because it requires www to own /srv/vmail, which must be owned by vmail:mail
 $config['create_default_folders'] = true;
+
+// Ensures folder subscription is not optional but forced
+//// Requires the built-in "subscriptions_option" plugin we also enable
+$config['subscriptions_option'] = false;
 
 // protect the default folders from renames, deletes, and subscription changes
 $config['protect_default_folders'] = true;
