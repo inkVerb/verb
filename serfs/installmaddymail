@@ -321,6 +321,19 @@ verb_email {
 }
 EOF
 
+## Spam handling
+### Disable Graylisting
+/usr/bin/cat <<EOF > /etc/rspamd/local.d/greylist.conf
+enabled = false;
+EOF
+### Disable automatic spam rejection
+/usr/bin/cat <<EOF > /etc/rspamd/local.d/actions.conf
+reject = 9999;  # Effectively disabling score-based spam rejection
+add_header = 6; # Scores above 6 trigger quarantine in Maddy, thus move to Junk folder
+EOF
+### Blacklisting
+#DEV coming soon
+
 #BUG
 /usr/bin/echo "1"
 ## First unsubscribe entry
