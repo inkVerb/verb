@@ -306,6 +306,9 @@ EOF
 /usr/bin/systemctl enable --now httpd; wait
 /usr/bin/systemctl enable --now cronie; wait
 
+# Rspam (Maddy framework)
+/usr/bin/pacman -S --noconfirm --needed rspamd
+
 # PostgreSQL
 /usr/bin/pacman -S --noconfirm --needed postgresql
 /usr/bin/su postgres -c 'initdb --locale en_US.UTF-8 -D /var/lib/postgres/data'

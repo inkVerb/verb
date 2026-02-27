@@ -33,6 +33,7 @@ if [ -e "/opt/verb/mods/installrccomposer.before" ]; then . /opt/verb/mods/insta
 cd /srv/www/email/roundcube
 /usr/bin/curl -s https://getcomposer.org/installer | php
 /usr/bin/cp composer.json-dist composer.json
+/usr/bin/chown -R www:www /srv/www/email/roundcube/
 
 # Roundcube version (very important)
 ## Get our integrated installer's version
@@ -49,13 +50,15 @@ distVer="${roundcube}"
 
 # Run the Composer installation
 ## Update the lock file
-/usr/bin/sudo -u worker /bin/bash -c 'php composer.phar update --lock'
+/usr/bin/sudo -u www /bin/bash -c 'php composer.phar update --lock --ignore-platform-reqs'
 ## Ignore requirements that trip false warnings: --ignore-platform-req=
+## Specific: --ignore-platform-req=php --ignore-platform-req=ext-gd --ignore-platform-req=ext-ldap --ignore-platform-req=ext-iconv
+## General all PHP (future-proof): --ignore-platform-reqs
 ## Use the www user so changes can be made to the web directory
-/usr/bin/sudo -u worker /bin/bash -c 'php composer.phar install -n --ignore-platform-req=php --ignore-platform-req=ext-gd --ignore-platform-req=ext-ldap --ignore-platform-req=ext-iconv'
+/usr/bin/sudo -u www /bin/bash -c 'php composer.phar install -n --ignore-platform-reqs'
 ### Update if the install failed (for running later)
 if [ "$?" != "0" ]; then
-  /usr/bin/sudo -u worker /bin/bash -c 'php composer.phar update -n --ignore-platform-req=php --ignore-platform-req=ext-gd --ignore-platform-req=ext-ldap --ignore-platform-req=ext-iconv'
+  /usr/bin/sudo -u www /bin/bash -c 'php composer.phar update -n --ignore-platform-reqs'
 fi
 
 # Confirm success status

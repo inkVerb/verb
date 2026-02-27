@@ -46,6 +46,8 @@ emailuser="$1"
 domain="$2"
 emailaddress="${emailuser}@${domain}"
 scriptname="${emailuser}-$(/usr/bin/echo ${domain} | /usr/bin/sed "s/[^[:alnum:]]/-/g")"
+filename_domain="$(/usr/bin/echo "${domain}" | /usr/bin/sed 's/\./_/g')"
+filename_email=${emailuser}-${filename_domain}
 
 # Check script
 if [ ! -f "/srv/vip/email/customscripts/${scriptname}" ] && [ "${emailuser}" != "unsubscribe" ]; then
@@ -55,11 +57,13 @@ fi
 # Remove by type
 if [ "${emailuser}" = "unsubscribe" ]; then
   scriptpath="/srv/vip/email/nativescripts/${scriptname}"
-  /usr/bin/sed -i "\:${scriptpath}:d" /etc/maddy/conf.d/unsubscribe.conf # Colon because $scriptpath contains slash /
+  /usr/bin/sed -i "\:${filename_email}:d" /etc/maddy/conf.d/unsubscribe.conf # Colon because $scriptpath contains slash /
+  /usr/bin/rm -f /etc/maddy/conf.d/unsubscribe/${filename_email}.conf
   /usr/bin/rm -f ${scriptpath}
 else
   scriptpath="/srv/vip/email/customscripts/${scriptname}"
-  /usr/bin/sed -i "\:${scriptpath}:d" /etc/maddy/conf.d/customscripts.conf # Colon because $scriptpath contains slash /
+  /usr/bin/sed -i "\:${filename_email}:d" /etc/maddy/conf.d/customscripts.conf # Colon because $scriptpath contains slash /
+  /usr/bin/rm -f /etc/maddy/conf.d/customscripts/${filename_email}.conf
 fi
 
 # Restart Maddy

@@ -142,9 +142,13 @@ if ! /usr/bin/pg_isready --quiet; then /usr/bin/echo "Waiting for PostgreSQL..."
 
 # Utility directories
 /usr/bin/mkdir -p /srv/email/pass /srv/vip/email/customscripts /srv/vip/email/nativescripts /srv/vip/email/unsubscribe
+## ACL
+/usr/bin/setfacl -m u:maddy:rx /srv/vip/email/customscripts/
+/usr/bin/setfacl -m u:maddy:rx /srv/vip/email/nativescripts/
+/usr/bin/setfacl -m u:maddy:rx /srv/vip/email/unsubscribe/
 
 # Config
-/usr/bin/mkdir -p /etc/maddy/conf.d
+/usr/bin/mkdir -p /etc/maddy/conf.d/unsubscribe /etc/maddy/conf.d/customscripts
 /usr/bin/chmod 0755 /etc/maddy /etc/maddy/conf.d
 /usr/bin/cp /opt/verb/conf/lib/cloud/maddy/maddy.conf /etc/maddy/
 
@@ -153,8 +157,9 @@ if ! /usr/bin/pg_isready --quiet; then /usr/bin/echo "Waiting for PostgreSQL..."
 /usr/bin/sed -i "s/emaildbpass286/emailpass${mailpassgen}/g" /etc/maddy/maddy.conf
 ## Domains framework
 /usr/bin/cp /opt/verb/conf/lib/cloud/maddy/conf.d/domains.conf /etc/maddy/conf.d/domains.conf
-## Unsubscribe header listings
-/usr/bin/cp /opt/verb/conf/lib/cloud/maddy/conf.d/unsub_domains.conf /etc/maddy/conf.d/unsub_domains.conf
+#DEV Now obsolete, replaced by rspamd infrastructure
+# # Unsubscribe header listings
+# /usr/bin/cp /opt/verb/conf/lib/cloud/maddy/conf.d/unsub_domains.conf /etc/maddy/conf.d/unsub_domains.conf
 ## Aliases framework
 /usr/bin/cp /opt/verb/conf/lib/cloud/maddy/conf.d/aliases.conf /etc/maddy/conf.d/aliases.conf
 ## Unsubscribe framework
@@ -268,13 +273,69 @@ EOF
 /usr/bin/chown root:root /etc/systemd/system/maddy.service
 /usr/bin/sudo chmod 0644 /etc/systemd/system/maddy.service
 
-# Start the service
-/usr/bin/systemctl daemon-reload; wait
-/usr/bin/systemctl enable --now maddy; wait # enable and start in one command
+# Rspamd
+## Universal
+/usr/bin/cat <<EOF > /etc/rspamd/local.d/milter_headers.conf
+use = ["custom"];
+EOF
+
+/usr/bin/mkdir -p /etc/rspamd/local.d/unsubscribe-domains
+
+/usr/bin/cat <<EOF > /etc/rspamd/local.d/settings.conf
+.include(try=true,priority=1,duplicate=merge) "\$LOCAL_CONFDIR/local.d/unsubscribe-domains/*.conf"
+EOF
+
+## Unsubscribe header listings (default domains)
+### nameURI
+filename_domain="$(/usr/bin/echo "${nameURI}" | /usr/bin/sed 's/\./_/g')"
+domain="${nameURI}"
+/usr/bin/cat <<EOF > /etc/rspamd/local.d/unsubscribe-domains/${filename_domain}.conf
+verb_ink {
+  priority = 10;
+  from = "@${domain}";
+  apply {
+    milter_headers {
+      custom {
+        "List-Unsubscribe-Post" = "List-Unsubscribe=One-Click";
+        "List-Unsubscribe" = "<mailto:unsubscribe@${domain}>";
+      }
+    }
+  }
+}
+EOF
+### emailTLDURI
+filename_domain="$(/usr/bin/echo "${emailTLDURI}" | /usr/bin/sed 's/\./_/g')"
+domain="${emailTLDURI}"
+/usr/bin/cat <<EOF > /etc/rspamd/local.d/unsubscribe-domains/${filename_domain}.conf
+verb_email {
+  priority = 10;
+  from = "@${domain}";
+  apply {
+    milter_headers {
+      custom {
+        "List-Unsubscribe-Post" = "List-Unsubscribe=One-Click";
+        "List-Unsubscribe" = "<mailto:unsubscribe@${domain}>";
+      }
+    }
+  }
+}
+EOF
 
 #BUG
 /usr/bin/echo "1"
+## First unsubscribe entry
+/opt/verb/serfs/inkemailaddscriptfilter unsubscribe ${nameURI}
 
+#BUG
+/usr/bin/echo "2"
+/opt/verb/serfs/inkemailaddscriptfilter unsubscribe ${emailTLDURI}
+
+#BUG
+/usr/bin/echo "3"
+# Start the services
+/usr/bin/systemctl daemon-reload; wait
+/usr/bin/systemctl enable --now rspamd; wait # get our rspamd service for maddy to use
+/usr/bin/systemctl enable --now maddy; wait # enable and start in one command
 # Monit
 /usr/bin/cp /opt/verb/conf/lib/cloud/monit/monitrc.d/maddy /etc/monit/monitrc.d/
 /usr/bin/chmod 700 /etc/monit/monitrc.d/*
@@ -286,8 +347,7 @@ else
 fi
 
 #BUG
-/usr/bin/echo "2"
-
+/usr/bin/echo "4"
 # Grand Restart
 if [ ${ServerType} = "laemp" ]; then
   /usr/bin/systemctl restart nginx; wait
@@ -298,8 +358,6 @@ elif [ ${ServerType} = "lamp" ]; then
   /usr/bin/systemctl restart httpd; wait
 fi
 
-#BUG
-/usr/bin/echo "3"
 
 # Config settings to Maddy's version of "EMAIL_INSTALLED"
 /usr/bin/sed -i "s/ServerMailStatus=.*/ServerMailStatus=\"MADDY_EMAIL_SERVER\"/g" /opt/verb/conf/servermailpath
@@ -308,23 +366,16 @@ fi
 
 # Maddy must be running for everything after this
 
+#BUG
+/usr/bin/echo "5"
 # System domains & addresses (Requires ServerMailStatus="MADDY_EMAIL_SERVER")
 ## Add base domains & addresses
 /opt/verb/serfs/inkemailbaseaddrs
 
 #BUG
-/usr/bin/echo "4"
+/usr/bin/echo "6"
 ## Setup system mail
 /opt/verb/serfs/inkemailsysmailboxmsmtp
-
-#BUG
-/usr/bin/echo "5"
-## First unsubscribe entry
-/opt/verb/serfs/inkemailaddscriptfilter unsubscribe ${nameURI}
-
-#BUG
-/usr/bin/echo "6"
-/opt/verb/serfs/inkemailaddscriptfilter unsubscribe ${emailTLDURI}
 
 #BUG
 /usr/bin/echo "7"

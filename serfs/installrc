@@ -178,9 +178,6 @@ if [ -f "/srv/www/email/roundcube/plugins/sauserprefs/config.inc.php" ]; then
   /bin/sed -i "s/\$config\['sauserprefs_db_dsnw'\].*/\$config\['sauserprefs_db_dsnw'\] = 'mysql:\/\/spamass:spampass${ServerSpamPassApg}@localhost\/spamass?new_link=true';/" /srv/www/email/roundcube/plugins/sauserprefs/config.inc.php
 fi
 
-/bin/sed -i "s/\$config\['sauserprefs_db_dsnw'\].*/\$config\['sauserprefs_db_dsnw'\] = 'mysql:\/\/spamass:spampass0597@localhost\/spamass?new_link=true';/" /srv/www/email/roundcube/plugins/sauserprefs/config.inc.php
-
-
 #DEV This is handled directly in the file itself
 # /usr/bin/cat <<EOF >> /srv/www/email/roundcube/config/config.inc.php
 

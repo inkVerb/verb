@@ -38,6 +38,8 @@ emailuser="$1"
 domain="$2"
 emailaddress="${emailuser}@${domain}"
 scriptname="${emailuser}-$(/usr/bin/echo ${domain} | /usr/bin/sed "s/[^[:alnum:]]/-/g")"
+filename_domain="$(/usr/bin/echo "${domain}" | /usr/bin/sed 's/\./_/g')"
+filename_email=${emailuser}-${filename_domain}
 
 # Check to see if inkemail is installed
 if [ "$ServerMailStatus" != "MADDY_EMAIL_SERVER" ]; then
@@ -55,24 +57,41 @@ if [ ! -f "/srv/vip/email/customscripts/${scriptname}" ] && [ "${emailuser}" != 
   exit 8
 elif [ "${emailuser}" = "unsubscribe" ]; then
   ## Already added?
-  if /usr/bin/grep -q "${scriptname}" /etc/maddy/conf.d/unsubscribe.conf; then
-    /usr/bin/echo "The unsubscribe script for ${domain} is already entered. Nothing more to do."
+   if [ -f "/etc/maddy/conf.d/unsubscribe/${filename_email}.conf" ]; then
+    /usr/bin/echo "The unsubscribe script for ${domain} is already entered; nothing more to do"
     exit 7
   fi
   scriptpath="/srv/vip/email/nativescripts/${scriptname}"
-  /usr/bin/echo "destination ${emailaddress} {; check {; command \"${scriptpath}\" { sender }; }; deliver_to dummy; }" >> /etc/maddy/conf.d/unsubscribe.conf
+  /usr/bin/echo "import /etc/maddy/conf.d/unsubscribe/${filename_email}.conf" >> /etc/maddy/conf.d/unsubscribe.conf
+  /usr/bin/cat << EOF
+destination ${emailaddress} {
+  check {
+    command ${scriptpath} {sender}
+  }   
+  deliver_to dummy
+}
+EOF >> /etc/maddy/conf.d/unsubscribe/${filename_email}.conf
+
   /usr/bin/echo '#!/bin/bash' > "${scriptpath}"
   /usr/bin/echo '/usr/bin/echo "$1" | /usr/bin/sed '\''s/^From: //; s/.*<\([^>]*\)>.*/\1/; s/[<>\" ]//g'\'' >> /srv/vip/email/unsubscribe/'"${scriptname}" >> "${scriptpath}"
-  /usr/bin/chmod 750 "${scriptpath}"
+  /usr/bin/chmod 755 "${scriptpath}"
 else
   ## Already added?
-  if /usr/bin/grep -q "${scriptname}" /etc/maddy/conf.d/customscripts.conf; then
-    /usr/bin/echo "The script \"${scriptname}\" is already entered. Nothing more to do."
+  if [ -f "/etc/maddy/conf.d/customscripts/${filename_email}.conf" ]; then
+    /usr/bin/echo "The script \"${scriptname}\" is already entered; nothing more to do"
     exit 7
   fi
   scriptpath="/srv/vip/email/customscripts/${scriptname}"
-  /usr/bin/echo "destination ${emailaddress} { check { command ${scriptpath} {sender} } deliver_to dummy }" >> /etc/maddy/conf.d/customscripts.conf
-  /usr/bin/chmod 750 ${scriptpath} # Ensure proper permissions for the pre-existing script
+  /usr/bin/echo "import /etc/maddy/conf.d/customscripts/${filename_email}.conf" >> /etc/maddy/conf.d/customscripts.conf
+  /usr/bin/cat << EOF
+destination ${emailaddress} {
+  check {
+    command ${scriptpath} {sender}
+  }   
+  deliver_to dummy
+}
+EOF >> /etc/maddy/conf.d/unsubscribe/${filename_email}.conf
+  /usr/bin/chmod 755 "${scriptpath}" # Ensure proper permissions for the pre-existing script
 fi
 
 # Restart Maddy

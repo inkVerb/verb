@@ -235,6 +235,9 @@ e="$?"; [[ "$e" = "0" ]] || /usr/bin/echo 'Failed: !!'; exit "$e"
 /usr/bin/systemctl enable --now php-fpm; wait
 /usr/bin/systemctl enable --now cronie; wait
 
+# Rspam (Maddy framework)
+/usr/bin/pacman -S --noconfirm --needed rspamd
+
 # PostgreSQL
 /usr/bin/pacman -S --noconfirm --needed postgresql
 /usr/bin/su postgres -c 'initdb --locale en_US.UTF-8 -D /var/lib/postgres/data'

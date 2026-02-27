@@ -40,14 +40,15 @@ if [[ -z "${domain}" ]]; then
   /usr/bin/echo "Domain not specified, not adding"
   exit 0; fi
 
-# Domain already added
-if /usr/bin/grep -q "${domain}" /etc/maddy/conf.d/domains.conf || [[ "${domain}" = "${nameURI}" ]]; then
-  /usr/bin/echo "The domain $domain already added, doing nothing"
+# Domain is required default
+if /usr/bin/grep -q "${domain}" /etc/maddy/conf.d/domains.conf || [[ "${domain}" = "${nameURI}" ]] || [[ "${domain}" = "${emailTLDURI}" ]]; then
+  /usr/bin/echo "The domain $domain is a required default and cannot be removed, doing nothing"
   exit 0; fi
 
 # Delete the domain
 /usr/bin/sed -i "s/ ${domain}//" /etc/maddy/conf.d/domains.conf
-/usr/bin/sed -i "s/ ${domain}//" /etc/maddy/conf.d/unsub_domains.conf
+filename_domain="$(/usr/bin/echo "${domain}" | /usr/bin/sed 's/\./_/g')"
+/usr/bin/rm -f /etc/rspamd/local.d/unsubscribe-domains/${filename_domain}.conf
 
 # Restart Maddy
 /usr/bin/systemctl restart maddy.service

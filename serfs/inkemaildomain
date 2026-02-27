@@ -44,7 +44,7 @@ if [[ -z "${domain}" ]]; then
   exit 0; fi
 
 # Domain already added
-if /usr/bin/grep -q "${domain}" /etc/maddy/conf.d/domains.conf || [[ "${domain}" = "${nameURI}" ]]; then
+if /usr/bin/grep -q "${domain}" /etc/maddy/conf.d/domains.conf || [[ "${domain}" = "${nameURI}" ]] || [[ "${domain}" = "${emailTLDURI}" ]]; then
   /usr/bin/echo "The domain $domain already added, doing nothing"
   exit 0; fi
 
@@ -52,10 +52,22 @@ if /usr/bin/grep -q "${domain}" /etc/maddy/conf.d/domains.conf || [[ "${domain}"
 ## extra_domains
 /usr/bin/sed -i "/^\$(extra_domains) =/ s/$/ ${domain}/" /etc/maddy/conf.d/domains.conf
 # /usr/bin/sed -i "/extra_domains/ s/$/ ${domain}/" /etc/maddy/conf.d/domains.conf #DEV Commented for above line; switch badk if broken
-## unsubscribe block
-/usr/bin/echo "source ${domain} { modify.headers { add_header List-Unsubscribe-Post \".*\" \"List-Unsubscribe=One-Click\"; add_header List-Unsubscribe \".*\" \"<mailto:unsubscribe@${domain}>\"; } deliver_to &remote_queue; }" >> /etc/maddy/conf.d/unsub_domains.conf
-#DEV NOT this:
-#/usr/bin/echo "source ${domain} { modify { import unsub_headers; replace_header { replace List-Unsubscribe-Post \"List-Unsubscribe=One-Click\"; replace List-Unsubscribe \"<mailto:unsubscribe@${domain}>\" } } deliver_to &remote_queue  }" >> /etc/maddy/conf.d/unsub_domains.conf
+## unsubscribe block (this cannot be on one line)
+filename_domain="$(/usr/bin/echo "${domain}" | /usr/bin/sed 's/\./_/g')"
+/usr/bin/cat <<EOF > /etc/rspamd/local.d/unsubscribe-domains/${filename_domain}.conf
+${filename_domain} {
+  priority = 10;
+  from = "@${domain}";
+  apply {
+    milter_headers {
+      custom {
+        "List-Unsubscribe-Post" = "List-Unsubscribe=One-Click";
+        "List-Unsubscribe" = "<mailto:unsubscribe@${domain}>";
+      }
+    }
+  }
+}
+EOF
 
 # Restart Maddy
 /usr/bin/systemctl restart maddy.service
