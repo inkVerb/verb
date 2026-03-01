@@ -18,7 +18,7 @@ done
 
 # Find all new messages in any .Blacklist folder across all users
 ## Then extract From address, append to map, remove any dups
-/usr/bin/find "${Storage}" -type d -path "*/.Blacklist/new" -exec grep -hR "^From: " {} + | \
+/usr/bin/find "${Storage}" -mindepth 1 -type d -path "*/.Blacklist/new" -exec grep -hR "^From: " {} +
 /usr/bin/grep -oE "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}" | \
 /usr/bin/sort -u >> "$BlacklistMap"
 

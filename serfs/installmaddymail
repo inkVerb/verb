@@ -135,10 +135,13 @@ mailpassgen="$(/usr/bin/pwgen -s -1 5)"
 /usr/bin/sed -i "s/ServerMailPassApg.*/ServerMailPassApg=\"${mailpassgen}\"/g" /opt/verb/conf/servermailpass
 
 # Create the SQL items
+## Make sure the database works after anu updates
+/usr/bin/sudo -u postgres psql -c "REINDEX DATABASE postgres; ALTER DATABASE postgres REFRESH COLLATION VERSION; REINDEX DATABASE email; ALTER DATABASE email REFRESH COLLATION VERSION;"
 ## Make sure Postgres is running because it can take a while after system reboot, and it doesn't use systemctl
 if ! /usr/bin/pg_isready --quiet; then /usr/bin/echo "Waiting for PostgreSQL..."; until /usr/bin/pg_isready --quiet; do /usr/bin/sleep 1; done; fi
 /usr/bin/sudo -u postgres psql -c "CREATE USER email WITH PASSWORD 'emailpass${mailpassgen}';"
-/usr/bin/sudo -u postgres psql -c "CREATE DATABASE email OWNER email;"
+#DEV delete if everything worls # /usr/bin/sudo -u postgres psql -c "CREATE DATABASE email OWNER email;"  #DEV gets error 'collation version mismatch' and 'collation version 2.42, but the operating system provides version 2.43'
+/usr/bin/sudo -u postgres psql -c "CREATE DATABASE email OWNER email TEMPLATE template0 LC_COLLATE='C' LC_CTYPE='C';"
 
 # Utility directories
 /usr/bin/mkdir -p /srv/email/pass /srv/vip/email/customscripts /srv/vip/email/nativescripts /srv/vip/email/unsubscribe
@@ -245,6 +248,7 @@ ExecStart=/usr/local/bin/maddy run
 ExecReload=/bin/kill -HUP \$MAINPID
 KillMode=mixed
 Restart=on-failure
+PermissionsStartOnly=true
 
 # Security and Sandboxing
 CapabilityBoundingSet=CAP_NET_BIND_SERVICE
@@ -331,12 +335,25 @@ EOF
 reject = 9999;  # Effectively disabling score-based spam rejection
 add_header = 6; # Scores above 6 trigger quarantine in Maddy, thus move to Junk folder
 EOF
-#BUG
-/usr/bin/echo "0-b"
 ### Blacklisting
 /usr/bin/go install github.com/fho/rspamd-iscan@latest
 /usr/bin/cp ~/go/bin/rspamd-iscan /usr/local/bin/
 /usr/bin/chmod 0755 /usr/local/bin/rspamd-iscan
+#### Maps
+/usr/bin/cat <<EOF > /etc/rspamd/local.d/multimap.conf
+MANUAL_BLACKLIST {
+    type = "from";
+    filter = "email";
+    map = "/etc/rspamd/maps/blacklist.map";
+    symbol = "MANUAL_BLACKLIST";
+    action = "reject";
+    description = "Sender is in our manual blacklist";
+}
+EOF
+/usr/bin/mkdir -p /etc/rspamd/maps
+/usr/bin/touch /etc/rspamd/maps/blacklist.map
+/usr/bin/chown root:rspamd /etc/rspamd/maps/blacklist.map
+/usr/bin/chmod 0664 /etc/rspamd/maps/blacklist.map
 
 /usr/bin/echo '*/5 * * * * root /opt/verb/donjon/sync-blacklist.sh' > /etc/cron.d/maddy-rspam-blacklist-sync
 /usr/bin/chmod 0644 /etc/cron.d/maddy-rspam-blacklist-sync

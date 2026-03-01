@@ -31,15 +31,16 @@ if [ -e "/opt/verb/mods/inkemailbaseaddrs.before" ]; then . /opt/verb/mods/inkem
 . /opt/verb/conf/siteurilist
 
 # Set the variables
-verberdomain="$nameURI"
+emailUser="admin"
+adminemail="${emailUser}@${nameURI}"
 rawPassword=$(/usr/bin/pwgen -s 15)
-hashedPassword="$(/opt/verb/serfs/inkemailpasshash c "$rawPassword")"
-/usr/bin/echo "$rawPassword" > "/srv/email/pass/${emailUser}-${domain}"
-passwordMessage="recorded at email/pass/${emailUser}-${domain}; shred after viewing with: 'shred -uf /srv/email/pass/${emailUser}-${domain}'"
-adminemail="admin@$nameURI"
+#DEV hashedPassword="$(/opt/verb/serfs/inkemailpasshash c "$rawPassword")" # the hash is too long for CLI input with this tool
+/usr/bin/echo "$rawPassword" > "/srv/email/pass/${emailUser}-${nameURI}"
+passwordMessage="recorded at email/pass/${emailUser}-${nameURI}; shred after viewing with: 'shred -uf /srv/email/pass/${emailUser}-${nameURI}'"
 
 # Run the Maddy entry
-/usr/bin/sudo -u maddy maddy creds create --hash "$adminemail" <<< "$hashedPassword"
+#DEV /usr/bin/sudo -u maddy maddy creds create $adminemail --hash <<< "$hashedPassword" # not with the other #DEV line commented-out
+/usr/bin/sudo -u maddy maddy creds create -password "$rawPassword" $adminemail
 /opt/verb/serfs/inkemailalias abuse $nameURI $adminemail
 /opt/verb/serfs/inkemailalias hostmaster $nameURI $adminemail
 /opt/verb/serfs/inkemailalias postmaster $nameURI $adminemail

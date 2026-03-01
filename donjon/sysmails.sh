@@ -12,7 +12,7 @@ accountConfig="$1"
 . /opt/verb/conf/servermailpath
 
 # Update the password
-Password=$(/usr/bin/pwgen -s1 24)
+rawPassword=$(/usr/bin/pwgen -s1 24)
 
 # Maddy email?
 if [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ]; then
@@ -21,7 +21,7 @@ if [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ]; then
   emailaddress="${username}"
 
   ## Hash password
-  hashedPassword="$(/opt/verb/serfs/inkemailpasshash c "$Password")"
+  #DEV hashedPassword="$(/opt/verb/serfs/inkemailpasshash c "$rawPassword")" # This serf should probably be depreciated, see its notes
 
   # Email address status
   check_name="$(/usr/bin/sudo -u maddy maddy creds list | /usr/bin/grep "${emailaddress}")"
@@ -36,7 +36,7 @@ if [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ]; then
   fi
   
   # Update the password
-  /usr/bin/sudo -u maddy maddy creds ${create_passwd} --hash "$emailaddress" <<< "$hashedPassword"
+  /usr/bin/sudo -u maddy maddy creds ${create_passwd} -password "$rawPassword" $emailaddress
 
 # Postfix vmail?
 elif [ "${ServerMailStatus}" = "VMAIL_SERVER" ]; then

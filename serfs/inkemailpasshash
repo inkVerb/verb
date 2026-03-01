@@ -6,6 +6,8 @@
 ## The "c" CLI option might be useful when: 1. automated use inside scripts, 2. assigning an insecure password so that the user should set their own password soon, or 3. for testing/demo purposes
 ## In theory, this is the only script that hashes passwords for SHA-512 use in email; all other scripts depend on this
 ## It could be used standalone to prepare a password hash to enter directly, such as for serfs/inkemailbox
+##DEV this may need to be depreciated because it generates a hash longer than the maddy cli tool can handle
+###DEV moreover, it achieves absolutely nothing since the password is auto-generated within a script or entered into the CLI to start with anyway
 
 # See documentation at end of file for hashing passwords in a GUI layer and other languages, such as a web interface like a PostfixAdmin alternative
 
@@ -55,6 +57,7 @@ if [ "$1" = i ]; then
   exit 5; fi
 
 ## CLI input (for scripting)
+elif [ "$1" = c ]; then
   rawPassword="$2"
   if [ -z "$rawPassword" ]; then
     /usr/bin/echo "No password argued."

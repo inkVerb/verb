@@ -63,14 +63,14 @@ elif [ "${emailuser}" = "unsubscribe" ]; then
   fi
   scriptpath="/srv/vip/email/nativescripts/${scriptname}"
   /usr/bin/echo "import /etc/maddy/conf.d/unsubscribe/${filename_email}.conf" >> /etc/maddy/conf.d/unsubscribe.conf
-  /usr/bin/cat << EOF
+  /usr/bin/cat <<EOF > /etc/maddy/conf.d/unsubscribe/${filename_email}.conf
 destination ${emailaddress} {
   check {
     command ${scriptpath} {sender}
   }   
   deliver_to dummy
 }
-EOF >> /etc/maddy/conf.d/unsubscribe/${filename_email}.conf
+EOF
 
   /usr/bin/echo '#!/bin/bash' > "${scriptpath}"
   /usr/bin/echo '/usr/bin/echo "$1" | /usr/bin/sed '\''s/^From: //; s/.*<\([^>]*\)>.*/\1/; s/[<>\" ]//g'\'' >> /srv/vip/email/unsubscribe/'"${scriptname}" >> "${scriptpath}"
@@ -83,14 +83,14 @@ else
   fi
   scriptpath="/srv/vip/email/customscripts/${scriptname}"
   /usr/bin/echo "import /etc/maddy/conf.d/customscripts/${filename_email}.conf" >> /etc/maddy/conf.d/customscripts.conf
-  /usr/bin/cat << EOF
+  /usr/bin/cat <<EOF > /etc/maddy/conf.d/unsubscribe/${filename_email}.conf
 destination ${emailaddress} {
   check {
     command ${scriptpath} {sender}
   }   
   deliver_to dummy
 }
-EOF >> /etc/maddy/conf.d/unsubscribe/${filename_email}.conf
+EOF
   /usr/bin/chmod 0755 "${scriptpath}" # Ensure proper permissions for the pre-existing script
 fi
 
