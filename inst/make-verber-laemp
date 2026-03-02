@@ -314,6 +314,7 @@ EOF
 /usr/bin/su postgres -c 'initdb --locale en_US.UTF-8 -D /var/lib/postgres/data'
 /usr/bin/systemctl enable --now postgresql; wait
 ## Update Postgres when its dependencies are updated by pacman (to avoid errors)
+/usr/bin/mkdir -p /etc/pacman.d/hooks/
 /usr/bin/cat <<'EOF' > /etc/pacman.d/hooks/postgres-collation.hook
 [Trigger]
 Operation = Upgrade
