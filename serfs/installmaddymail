@@ -136,7 +136,9 @@ mailpassgen="$(/usr/bin/pwgen -s -1 5)"
 
 # Create the SQL items
 ## Make sure the database works after anu updates
-/usr/bin/sudo -u postgres psql -c "REINDEX DATABASE postgres; ALTER DATABASE postgres REFRESH COLLATION VERSION; REINDEX DATABASE email; ALTER DATABASE email REFRESH COLLATION VERSION;"
+/usr/bin/sudo -u postgres psql -c "REINDEX DATABASE postgres"
+/usr/bin/sudo -u postgres psql -c "ALTER DATABASE postgres REFRESH COLLATION VERSION"
+
 ## Make sure Postgres is running because it can take a while after system reboot, and it doesn't use systemctl
 if ! /usr/bin/pg_isready --quiet; then /usr/bin/echo "Waiting for PostgreSQL..."; until /usr/bin/pg_isready --quiet; do /usr/bin/sleep 1; done; fi
 /usr/bin/sudo -u postgres psql -c "CREATE USER email WITH PASSWORD 'emailpass${mailpassgen}';"
@@ -425,9 +427,10 @@ fi
 # DKIM keys & TXT records
 # /opt/verb/serfs/newinkdkim ${nameURI}; wait # Handled by Maddy
 #NOTE Maddy or Postfix must be installed for this to work:
-/opt/verb/serfs/inkdnsaddinkdkim ${nameURI} verber; wait
-## Add the DNS records for the mail server TLD itself
+/opt/verb/serfs/inkdnsaddmail ${nameURI} verber ; wait
 /opt/verb/serfs/inkdnsaddmail ${emailTLDURI} verber ; wait
+## Add the DNS records for the mail server TLD itself
+/opt/verb/serfs/inkdnsaddinkdkim ${nameURI} verber; wait
 /opt/verb/serfs/inkdnsaddinkdkim ${emailTLDURI} verber; wait
 
 

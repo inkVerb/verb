@@ -78,7 +78,7 @@ if [ "${ServerMailStatus}" = "VMAIL_SERVER" ]; then
   /usr/bin/echo $(/usr/bin/cat /etc/opendkim/keys/${dnsDomain}/inkdkim.txt | /usr/bin/sed -z -E 's/"\s+"//') >> /opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}
 
 ## Maddy email?
-  elif [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ]; then
+  elif [[ "${ServerMailStatus}" == "MADDY_EMAIL_"* ]]; then # For serfs inside installmaddymail
   /usr/bin/echo "default._domainkey IN TXT \"v=DKIM1; k=rsa; p=$(/usr/bin/cat /srv/email/maddy/dkim_keys/${dnsDomain}_default.dns | /usr/bin/grep -oP 'p=\K[^"]+')\"" >> /opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}
 fi
 

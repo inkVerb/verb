@@ -484,6 +484,7 @@ cd ${oldPwd} || exit 6
 # DKIM keys & TXT records
 /opt/verb/serfs/newinkdkim ${nameURI}; wait
 #NOTE Maddy or Postfix must be installed for this to work:
+/opt/verb/serfs/inkdnsaddmail ${nameURI} verber ; wait
 /opt/verb/serfs/inkdnsaddinkdkim ${nameURI} verber; wait
 
 # UFW (services and ports below them if known)

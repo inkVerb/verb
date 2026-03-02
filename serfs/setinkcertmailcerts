@@ -31,7 +31,8 @@ domain="$1"
 if [ -n "$2" ] && [ "$2" = "inkmail" ]; then
   if [ "${ServerMailStatus}" = "VMAIL_SERVER" ] || [ "${ServerMailStatus}" = "VMAIL_READY" ]; then
     dest="vmail"
-  elif [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ] || [ "${ServerMailStatus}" = "MADDY_EMAIL_READY" ]; then
+  elif [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ] || [ "${ServerMailStatus}" = "MADDY_EMAIL_READY" ]; then # OR if [[ "${ServerMailStatus}" == "MADDY_EMAIL_"* ]]; then # For serfs inside installmaddymail
+
     dest="email"
   fi
 else

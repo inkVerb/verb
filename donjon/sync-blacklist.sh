@@ -18,19 +18,20 @@ done
 
 # Find all new messages in any .Blacklist folder across all users
 ## Then extract From address, append to map, remove any dups
-/usr/bin/find "${Storage}" -mindepth 1 -type d -path "*/.Blacklist/new" -exec grep -hR "^From: " {} +
-/usr/bin/grep -oE "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}" | \
-/usr/bin/sort -u >> "$BlacklistMap"
+/usr/bin/find "${Storage}" -mindepth 1 -type d -path "*/.Blacklist/new" -exec grep -hR "^From: " {} + | \
+/usr/bin/grep -oE "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}" >> "$BlacklistMap"
 
-# Resort the map file
+## Resort the map file
 /usr/bin/sort -u "$BlacklistMap" -o "$BlacklistMap"
 
 # Learn spam in Rspamd since we're here (optional, but we want this)
-/usr/bin/find "${Storage}" -type d -path "*/.Blacklist/new" -exec rspamc learn_spam {} +
+/usr/bin/find "${Storage}" -type f -path "*/.Blacklist/new/*" -exec /usr/bin/rspamc learn_spam {} +
 
-# Move processed mail to 'cur' so we don't process it twice
-## In maddy/Roundcube, Trash is usually '.Trash'
-/usr/bin/find "${Storage}" -type d -path "*/.Blacklist/new" -mindepth 1 -exec mv {} "${Storage}"/{}/../../.Trash/cur/ \;
+## Move mail so the loop stops; use a while loop here because 'find -exec mv' struggles with relative parent paths
+/usr/bin/find "${Storage}" -type f -path "*/.Blacklist/new/*" | while read -r file; do
+    dest_dir=$(dirname "$file" | sed 's/\/new$/\/cur/')
+    /usr/bin/mv "$file" "$dest_dir/"
+done
 
 # Reload rspamd
 /usr/bin/systemctl reload rspamd

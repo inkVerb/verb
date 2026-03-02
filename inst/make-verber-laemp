@@ -313,6 +313,18 @@ EOF
 /usr/bin/pacman -S --noconfirm --needed postgresql
 /usr/bin/su postgres -c 'initdb --locale en_US.UTF-8 -D /var/lib/postgres/data'
 /usr/bin/systemctl enable --now postgresql; wait
+## Update Postgres when its dependencies are updated by pacman (to avoid errors)
+/usr/bin/cat <<'EOF' > /etc/pacman.d/hooks/postgres-collation.hook
+[Trigger]
+Operation = Upgrade
+Type = Package
+Target = glibc
+
+[Action]
+Description = Fixing PostgreSQL collation mismatch after glibc update...
+When = PostTransaction
+Exec = /usr/bin/sudo -u postgres psql -c "REINDEX DATABASE postgres; ALTER DATABASE postgres REFRESH COLLATION VERSION; REINDEX DATABASE email; ALTER DATABASE email REFRESH COLLATION VERSION;"
+EOF
 
 # MySQL (viz MariaDB)
 /usr/bin/pacman -S --noconfirm --needed mariadb
