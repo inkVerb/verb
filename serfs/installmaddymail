@@ -408,9 +408,6 @@ fi
 ## Setup system mail
 /opt/verb/serfs/inkemailsysmailboxmsmtp
 
-#BUG
-/usr/bin/echo "7"
-
 # DKIM keys & TXT records
 # /opt/verb/serfs/newinkdkim ${nameURI}; wait # Handled by Maddy
 #NOTE Maddy or Postfix must be installed for this to work:
