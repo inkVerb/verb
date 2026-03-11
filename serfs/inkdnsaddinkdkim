@@ -54,8 +54,8 @@ if [ "${ServerMailStatus}" = "VMAIL_SERVER" ]; then
   fi
 
 ## Maddy email?
-  elif [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ]; then
-    if [ ! -e "/srv/email/maddy/dkim_keys/${dnsDomain}_default.dns" ]; then
+elif [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ]; then
+  if [ ! -e "/srv/email/maddy/dkim_keys/${dnsDomain}_default.dns" ]; then
     /usr/bin/echo "DKIM key does not exist, something is wrong."
     exit 6;
   fi
