@@ -1244,9 +1244,6 @@ EOF
 /usr/bin/echo '*/5 * * * * root /opt/verb/donjon/digverbs.sh' > /etc/cron.d/digverbs
 /usr/bin/chmod 0644 /etc/cron.d/digverbs
 
-# Update verber
-/opt/verb/serfs/updateverber
-
 # Controlled verber?
 if [ "${RinkConfigured}" = "true" ]; then
   /usr/bin/echo "I am controlled by the Rink."
@@ -1266,7 +1263,7 @@ elif [ "${ServerIPv6}" != "NOIP6" ]; then
   IPaddBlockroot="'ssh root@${ServerIPv6} -p ${newport}'"
   IPaddBlockboss="'ssh ${newBoss}@${ServerIPv6} -p ${newport}'"
 fi
-/bin/echo "Setup is finished, this verber is unique
+/usr/bin/echo "Setup is finished, this verber is unique
 1. reboot
 2. Then for SSH,
   - login root: ${IPaddBlockroot}
