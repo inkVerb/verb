@@ -83,19 +83,19 @@ for digdom in ${domains}; do
   /usr/bin/dig @${ServerNS1DNS} ${digdom} aaaa | /usr/bin/tee -a ${outraw} | /usr/bin/grep AAAA | /usr/bin/tee -a ${output} | /usr/bin/grep "${ServerIPv6}" >> ${output} 2>&1 || ( /usr/bin/echo "No AAAA record for ${ServerIPv6}" && /usr/bin/rm -f /opt/verb/dig/.digging && exit 4 ) >> ${output} 2>&1
   ## Verify the server files
   if [ ${ServerType} = "lemp" ]; then
-    if [ ! -f /opt/verb/conf/webserver/sites-available/nginx/${newdomain}.conf ] || [ ! -e /opt/verb/conf/webserver/sites-enabled/nginx/${newdomain}.conf ]; then
+    if [ ! -f /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf ] || [ ! -e /opt/verb/conf/webserver/sites-enabled/nginx/${domain}.conf ]; then
       /usr/bin/echo "No site config fils on the server! Something is wrong."
       exit 6
     fi
   elif [ ${ServerType} = "lamp" ]; then
-    if [ ! -f /opt/verb/conf/webserver/sites-available/httpd/${newdomain}.conf ] || [ ! -f /opt/verb/conf/webserver/sites-enabled/httpd/${newdomain}.conf ]; then
+    if [ ! -f /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf ] || [ ! -f /opt/verb/conf/webserver/sites-enabled/httpd/${domain}.conf ]; then
       /usr/bin/echo "No site config file on the server! Something is wrong."
       exit 6
     fi
   elif [ ${ServerType} = "laemp" ]; then
   ### We only check Nginx configs on LAEMP servers because only Nginx is used for certbot/inkcert validation; this is not a full web host audit
   #### This is closely related to the reason that mail domains only reside in Nginx on LAEMP servers
-    if [ ! -f /opt/verb/conf/webserver/sites-available/nginx/${newdomain}.conf ] || [ ! -e /opt/verb/conf/webserver/sites-enabled/nginx/${newdomain}.conf ]; then
+    if [ ! -f /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf ] || [ ! -e /opt/verb/conf/webserver/sites-enabled/nginx/${domain}.conf ]; then
       /usr/bin/echo "No site config file on the server! Something is wrong."
       exit 6
     fi
