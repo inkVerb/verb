@@ -4,6 +4,9 @@
 # This installs inkCert-Certbot Apache/Nginx credentials for a given domain with wildcard subdomains
 ## Prerequesite: inkcertreqcbsingle
 ## This is intended as a subscript of inkcertdocbsingle or to add certs to specific server configs as they are installed after the fact, such as in updates.
+## Nginx (LAEMP/LEMP) or Apache (LAMP) should be stopped before this script and started after, all outside this script
+### This script has a failsafe check for status of the Nginx/Apache running status in the event this is run by itself
+### The isssue is that we don't want restarts with each subdomain because it causes a "too many restarts" type of systemctl error if it stops and starts with each subdomain when run through inkcertaddall*
 
 # How to use:
 ## ./inkcertaddcb [ domain.tld or sub.domain.tld ] [ DOMAIN OF PARENT, ie: domain.tld ]
@@ -11,6 +14,7 @@
 # Eg:
 ## ./inkcertaddcb NAME.verb.ink (will apply ONLY to NAME.verb.ink)
 ## ./inkcertaddcb inkisaverb.com
+## ./inkcertaddcb sub.inkisaverb.com
 ## ./inkcertaddcb sub.inkisaverb.com inkisaverb.com (this wildcard feature shouldn't be necessary if used correctly)
 
 usagenotes="This installs inkCert-Certbot Apache/Nginx credentials for a given domain with wildcard subdomains"
@@ -36,7 +40,12 @@ if [ -e "/opt/verb/mods/inkcertaddcb.before" ]; then . /opt/verb/mods/inkcertadd
 
 
 sitedomain=$1
-parentdomain=$2
+# Set variable for same certificate as domain (most all scenarios)
+if [ -z ${2} ]; then
+  certdomain=$1
+else
+  certdomain=$2
+fi
 
 # Include the configs
 . /opt/verb/conf/servernameip
@@ -58,14 +67,9 @@ if [ -z ${1} ]; then
 /bin/echo "You need to specify a domain. Read the instructions."; exit 0
 fi
 
-# Set variable for same certificate as domain (most all scenarios)
-if [ -z ${2} ]; then
-parentdomain=$1
-fi
-
 # Certs should already be in place from inkcertreqle
 ## This is a test for the inkcert directories:
-if [ ! -e "/etc/inkcert/le/live/${parentdomain}/cert.pem" ] || [ ! -e "/etc/inkcert/le/live/${parentdomain}/chain.pem" ] || [ ! -e "/etc/inkcert/le/live/${parentdomain}/fullchain.pem" ] || [ ! -e "/etc/inkcert/le/live/${parentdomain}/privkey.pem" ]; then
+if [ ! -e "/etc/inkcert/le/live/${certdomain}/cert.pem" ] || [ ! -e "/etc/inkcert/le/live/${certdomain}/chain.pem" ] || [ ! -e "/etc/inkcert/le/live/${certdomain}/fullchain.pem" ] || [ ! -e "/etc/inkcert/le/live/${certdomain}/privkey.pem" ]; then
   if [ "${ServerIPv4}" != "NOIP4" ] && [ "${ServerIPv6}" != "NOIP6" ]; then
     ipAddrBlock="A ${ServerIPv4} and AAAA ${ServerIPv6}"
   ## IP4?
@@ -77,13 +81,13 @@ if [ ! -e "/etc/inkcert/le/live/${parentdomain}/cert.pem" ] || [ ! -e "/etc/inkc
   fi
 /bin/echo "Something's wrong...
 
-inkCert-Letsencrypt certs were not installed for ${sitedomain} because the ${parentdomain} certs don't exist. Common problems can include:
+inkCert-Letsencrypt certs were not installed for ${sitedomain} because the ${certdomain} certs don't exist. Common problems can include:
   - DNS records: ${sitedomain} should point to ${ipAddrBlock}
   - DNS for ${sitedomain} may need a \"wildcard\" * CNAME record that points to ${sitedomain} as the \"hostname\"
   - DNS records can take about 4 hours to have effect
   - You need to first run: inkcertreqcbsingle
   - Do not run inkcertreqle for individual subdomains with a shared certificate, but only for: ${blueURI}, inkisaverb.com, etc.
-  - The verb/conf/inkcert/cli-ini/ file for ${parentdomain} may not contain the subdomain you are using.
+  - The verb/conf/inkcert/cli-ini/ file for ${certdomain} may not contain the subdomain you are using.
 "
 exit 8
 fi
@@ -94,6 +98,7 @@ if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
     /bin/echo "Site config does not exist."
     exit 0
   fi
+
   ## Check config status
   if /bin/grep -Fq "#INKVERB-INKCERT=INK_NO" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf ; then
    /bin/echo "Setting inkCert configs for ${sitedomain}..."
@@ -126,14 +131,19 @@ if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
     exit 8
   fi
 
+  ## Check Nginx status
+  if /usr/bin/systemctl is-active --quiet nginx; then
+    NginxStatus=true
+  fi
+
   ## Stop Nginx
-  /bin/systemctl stop nginx; wait
+  [[ -n $NginxStaus ]] && /usr/bin/systemctl stop nginx
 
   ## Comment the Snakeoil certs
   /bin/sed -i "s/ssl_certificate/#INKVERB-INKCERT-COMMENT-ssl_certificate/g" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf
 
   ## Insert the inkCert certs
-  /bin/sed -i "s/#INKVERB-INKCERT=INK_.*/#INKVERB-INKCERT=DONE_CBSINGLE\n  ssl_certificate\t\/etc\/inkcert\/le\/live\/${parentdomain}\/fullchain\.pem;\n  ssl_certificate_key\t\/etc\/inkcert\/le\/live\/${parentdomain}\/privkey\.pem;\n  #INKVERB-INKCERT-stop/" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf
+  /bin/sed -i "s/#INKVERB-INKCERT=INK_.*/#INKVERB-INKCERT=DONE_CBSINGLE\n  ssl_certificate\t\/etc\/inkcert\/le\/live\/${certdomain}\/fullchain\.pem;\n  ssl_certificate_key\t\/etc\/inkcert\/le\/live\/${certdomain}\/privkey\.pem;\n  #INKVERB-INKCERT-stop/" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf
 
   ## inkCert status & exit
   if [ "${FirstInkCertAddCBSINGLE}" = "NOT_YET" ]; then
@@ -158,6 +168,7 @@ elif [ ${ServerType} = "lamp" ]; then
     /bin/echo "Site config does not exist."
     exit 0
   fi
+
   ## Check config status
   if /bin/grep -Fq "#INKVERB-INKCERT=INK_NO" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf ; then
     /bin/echo "Setting inkCert configs for ${sitedomain}..."
@@ -190,15 +201,20 @@ elif [ ${ServerType} = "lamp" ]; then
     exit 8
   fi
 
+  ## Check Apache status
+    if /usr/bin/systemctl is-active --quiet httpd; then
+    ApacheStatus=true
+  fi
+
   ## Stop Apache
-  /bin/systemctl stop httpd; wait
+  [[ -n $ApacheStatus ]] && /usr/bin/systemctl stop httpd; wait
 
   ## Comment the Snakeoil certs
   /bin/sed -i "s/SSLCertificateFile/#INKVERB-INKCERT-COMMENT-SSLCertificateFile/g" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf
   /bin/sed -i "s/SSLCertificateKeyFile/#INKVERB-INKCERT-COMMENT-SSLCertificateKeyFile/g" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf
 
   ## Insert the inkCert certs
-  /bin/sed -i "s/#INKVERB-INKCERT=INK_.*/#INKVERB-INKCERT=DONE_CBSINGLE\n  SSLCertificateFile\t\/etc\/inkcert\/le\/live\/${parentdomain}\/cert\.pem\n  SSLCertificateKeyFile\t\/etc\/inkcert\/le\/live\/${parentdomain}\/privkey\.pem\n  SSLCertificateChainFile\t\/etc\/inkcert\/le\/live\/${parentdomain}\/chain\.pem\n  #INKVERB-INKCERT-stop/" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf
+  /bin/sed -i "s/#INKVERB-INKCERT=INK_.*/#INKVERB-INKCERT=DONE_CBSINGLE\n  SSLCertificateFile\t\/etc\/inkcert\/le\/live\/${certdomain}\/cert\.pem\n  SSLCertificateKeyFile\t\/etc\/inkcert\/le\/live\/${certdomain}\/privkey\.pem\n  SSLCertificateChainFile\t\/etc\/inkcert\/le\/live\/${certdomain}\/chain\.pem\n  #INKVERB-INKCERT-stop/" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf
 
   ## inkCert status & exit
   if [ "${FirstInkCertAddCBSINGLE}" = "NOT_YET" ]; then
@@ -215,19 +231,9 @@ elif [ ${ServerType} = "lamp" ]; then
   /usr/bin/touch /var/log/inkcert/inkcertcble.log
 
   ## Start Apache
-  /bin/systemctl start httpd; wait
+  [[ -n $ApacheStatus ]] && /usr/bin/systemctl start httpd; wait
 
 fi
-
-#DEV This is redundant from installpostfixvmail and installmaddymail, both via setinkcertmail
-# # inkCert mail certs
-# if [ "${certdomain}" = "${nameURI}" ]; then
-#   /opt/verb/serfs/setinkcertmailcerts ${certdomain} inkmail
-#   e="$?"; [[ "$e" = "0" ]] || exit "$e"
-# elif [ "${certdomain}" != "${emailURI}" ] && [ "${certdomain}" != "${oneURI}" ] && [ "${certdomain}" != "${inkURI}" ] && [ "${certdomain}" != "${blueURI}" ] && [ "${certdomain}" != "${vipURI}" ] && [ "${certdomain}" != "${kiwiURI}" ] && [ "${certdomain}" != "${redURI}" ]; then
-#   /opt/verb/serfs/setinkcertmailcerts ${certdomain}
-#   e="$?"; [[ "$e" = "0" ]] || exit "$e"
-# fi
 
 # Finish
 /bin/echo "

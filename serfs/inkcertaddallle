@@ -45,6 +45,9 @@ else
   certdomain=$2
 fi
 
+# Include the config
+. /opt/verb/conf/servertype
+
 # Check inkCert installed
 if [ "${InkCertInstalled}" = "NOT_YET" ]; then
 /bin/echo "inkCert not yet installed.
@@ -59,6 +62,13 @@ if [ -z ${1} ]; then
 /bin/echo "You need to specify a domain. Read the instructions."; exit 0
 fi
 
+# Stop web server
+if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
+  /usr/bin/systemctl stop nginx; wait
+elif [ ${ServerType} = "lamp" ]; then
+  /usr/bin/systemctl stop httpd; wait
+fi 
+
 # Get each subdomain from the cli-ini file that the certificate was based on and that the domain-subdomain structure was based on from adddomain and newdomainshell
 domainlist=$(/usr/bin/grep 'domains = ' /opt/verb/conf/inkcert/cli-ini/cli.${certdomain}.ini | /usr/bin/sed 's/domains = //')
 for eachsite in ${domainlist//,/ }; do
@@ -67,25 +77,12 @@ for eachsite in ${domainlist//,/ }; do
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
 done
 
-#DEV Replaced with above cli-ini file, more exact
-# # For the main domain first
-# /opt/verb/serfs/inkcertaddle ${sitedomain}
-# wait
-#
-# # For any/all sub-domains
-# if [ ${ServerType} = "lamp" ] || [ ${ServerType} = "laemp" ]; then
-#   cd /opt/verb/conf/webserver/sites-available/httpd
-# elif [ ${ServerType} = "lemp" ]; then
-#   cd /opt/verb/conf/webserver/sites-available/nginx
-# fi
-# ## Get the name of each subdomain .conf file available
-# find . -name "*.${sitedomain}.conf"|while read findsitesubdomain; do
-# ## Strip the .conf extension
-#  sitesubdomain=$(basename ${findsitesubdomain} .conf)
-# ## Run inkCertAddLE per site config
-#  /opt/verb/serfs/inkcertaddle ${sitesubdomain} ${certdomain}
-# wait
-# done
+# Start web server
+if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
+  /usr/bin/systemctl start nginx; wait
+elif [ ${ServerType} = "lamp" ]; then
+  /usr/bin/systemctl start httpd; wait
+fi 
 
 # Finish
 /bin/echo "

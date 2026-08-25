@@ -4,6 +4,9 @@
 # This installs inkCert-Letsencrypt Apache/Nginx credentials for a given domain, including inkVerb namespace domains
 ## Prerequesite: inkcertreqle
 ## This is intended as a subscript of inkcertdole or to add certs to specific server configs as they are installed after the fact, such as in updates.
+## Nginx (LAEMP/LEMP) or Apache (LAMP) should be stopped before this script and started after, all outside this script
+### This script has a failsafe check for status of the Nginx/Apache running status in the event this is run by itself
+### The isssue is that we don't want restarts with each subdomain because it causes a "too many restarts" type of systemctl error if it stops and starts with each subdomain when run through inkcertaddall*
 
 # How to use:
 ## ./inkcertaddle [ domain.tld or sub.domain.tld ] [ DOMAIN OF CERTIFICATE IF DIFFERENT, ie: domain.tld ]
@@ -43,7 +46,12 @@ if [ -e "/opt/verb/mods/inkcertaddle.before" ]; then . /opt/verb/mods/inkcertadd
 
 
 sitedomain=$1
-certdomain=$2
+# Set variable for same certificate as domain (most all scenarios)
+if [ -z ${2} ]; then
+  certdomain=$1
+else
+  certdomain=$2
+fi
 
 # Include the configs
 . /opt/verb/conf/servernameip
@@ -98,32 +106,33 @@ fi
 if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
   ## Check if config file exists
   if [ ! -f "/opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf" ]; then
-    /bin/echo "Site config does not exist."
+    /usr/bin/echo "Site config does not exist."
     exit 0
   fi
+
   ## Check config status
-  if /bin/grep -Fq "#INKVERB-INKCERT=INK_NO" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf ; then
-   /bin/echo "Setting inkCert configs for ${sitedomain}..."
-  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_CBSINGLE" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf ; then
-   /bin/echo "Already certified by inkCert-CBSINGLE: ${sitedomain}. Moving on..."
+  if /usr/bin/grep -Fq "#INKVERB-INKCERT=INK_NO" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf ; then
+   /usr/bin/echo "Setting inkCert configs for ${sitedomain}..."
+  elif /usr/bin/grep -Fq "#INKVERB-INKCERT=DONE_CBSINGLE" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf ; then
+   /usr/bin/echo "Already certified by inkCert-CBSINGLE: ${sitedomain}. Moving on..."
    exit 0
-  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_CB" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf ; then
-   /bin/echo "Already certified by inkCert-CB: ${sitedomain}. Moving on..."
+  elif /usr/bin/grep -Fq "#INKVERB-INKCERT=DONE_CB" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf ; then
+   /usr/bin/echo "Already certified by inkCert-CB: ${sitedomain}. Moving on..."
    exit 0
-  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_LE" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf ; then
-   /bin/echo "Already certified by inkCert-LE: ${sitedomain}. Moving on..."
+  elif /usr/bin/grep -Fq "#INKVERB-INKCERT=DONE_LE" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf ; then
+   /usr/bin/echo "Already certified by inkCert-LE: ${sitedomain}. Moving on..."
    exit 0
-  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_SC" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf ; then
-   /bin/echo "Already certified by inkCert-SC: ${sitedomain}. Moving on..."
+  elif /usr/bin/grep -Fq "#INKVERB-INKCERT=DONE_SC" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf ; then
+   /usr/bin/echo "Already certified by inkCert-SC: ${sitedomain}. Moving on..."
    exit 0
-  elif /bin/grep -Fq "#INKVERB-INKCERT=NA" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf ; then
-   /bin/echo "inkCert certs do not apply here: ${sitedomain}. Moving on..."
+  elif /usr/bin/grep -Fq "#INKVERB-INKCERT=NA" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf ; then
+   /usr/bin/echo "inkCert certs do not apply here: ${sitedomain}. Moving on..."
    exit 0
-  elif /bin/grep -Fq "#INKVERB-INKCERT=MAIL" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf ; then
-   /bin/echo "inkCert certs not needed for mail certs: ${sitedomain}. Moving on..."
+  elif /usr/bin/grep -Fq "#INKVERB-INKCERT=MAIL" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf ; then
+   /usr/bin/echo "inkCert certs not needed for mail certs: ${sitedomain}. Moving on..."
    exit 0
   else
-   /bin/echo "Something's really wrong with ${sitedomain}. No inkCert, no non-inkCert either. I quit here."
+   /usr/bin/echo "Something's really wrong with ${sitedomain}. No inkCert, no non-inkCert either. I quit here."
    exit 6
   fi
 
@@ -133,61 +142,67 @@ if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
     exit 8
   fi
 
+  ## Check Nginx status
+  if /usr/bin/systemctl is-active --quiet nginx; then
+    NginxStatus=true
+  fi
+
   ## Stop Nginx
-  /bin/systemctl stop nginx; wait
+  [[ -n $NginxStaus ]] && /usr/bin/systemctl stop nginx
 
   ## Comment the Snakeoil certs
-  /bin/sed -i "s/ssl_certificate/#INKVERB-INKCERT-COMMENT-ssl_certificate/g" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf
+  /usr/bin/sed -i "s/ssl_certificate/#INKVERB-INKCERT-COMMENT-ssl_certificate/g" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf
 
   ## Insert the inkCert certs
-  /bin/sed -i "s/#INKVERB-INKCERT=INK_.*/#INKVERB-INKCERT=DONE_LE\n  ssl_certificate\t\/etc\/inkcert\/le\/live\/${certdomain}\/fullchain\.pem;\n  ssl_certificate_key\t\/etc\/inkcert\/le\/live\/${certdomain}\/privkey\.pem;\n  #INKVERB-INKCERT-stop/" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf
+  /usr/bin/sed -i "s/#INKVERB-INKCERT=INK_.*/#INKVERB-INKCERT=DONE_LE\n  ssl_certificate\t\/etc\/inkcert\/le\/live\/${certdomain}\/fullchain\.pem;\n  ssl_certificate_key\t\/etc\/inkcert\/le\/live\/${certdomain}\/privkey\.pem;\n  #INKVERB-INKCERT-stop/" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf
 
   ## inkCert status & exit
   if [ "${FirstInkCertAddLE}" = "NOT_YET" ]; then
     ### Config status: first inkCert done
-    /bin/sed -i "s/FirstInkCertAddLE=\"NOT_YET\"/FirstInkCertAddLE=\"DONE\"/g" /opt/verb/conf/inkcertstatus
+    /usr/bin/sed -i "s/FirstInkCertAddLE=\"NOT_YET\"/FirstInkCertAddLE=\"DONE\"/g" /opt/verb/conf/inkcertstatus
     ### Create the cron job
     #### Add inkCertLE's auto updater to the cron
-    /bin/echo '2 2 * * * root /opt/verb/donjon/inkcertcble-renew-all.sh' > /etc/cron.d/inkcertrenewcblecron
-    /bin/chmod 0644 /etc/cron.d/inkcertrenewcblecron
+    /usr/bin/echo '2 2 * * * root /opt/verb/donjon/inkcertcble-renew-all.sh' > /etc/cron.d/inkcertrenewcblecron
+    /usr/bin/chmod 0644 /etc/cron.d/inkcertrenewcblecron
   fi
 
   ## Create the inkCert log file
-  /bin/mkdir -p /var/log/inkcert/
+  /usr/bin/mkdir -p /var/log/inkcert/
   /usr/bin/touch /var/log/inkcert/inkcertcble.log
 
   ## Start Nginx
-  /bin/systemctl start nginx; wait
+  [[ -n $NginxStaus ]] && /usr/bin/systemctl start nginx
 
 elif [ ${ServerType} = "lamp" ]; then
   ## Check if config file exists
   if [ ! -f "/opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf" ]; then
-    /bin/echo "Site config does not exist."
+    /usr/bin/echo "Site config does not exist."
     exit 0
   fi
+
   ## Check config status
-  if /bin/grep -Fq "#INKVERB-INKCERT=INK_NO" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf ; then
-   /bin/echo "Setting inkCert configs for ${sitedomain}..."
-  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_CBSINGLE" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf ; then
-   /bin/echo "Already certified by inkCert-CBSINGLE: ${sitedomain}. Moving on..."
+  if /usr/bin/grep -Fq "#INKVERB-INKCERT=INK_NO" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf ; then
+   /usr/bin/echo "Setting inkCert configs for ${sitedomain}..."
+  elif /usr/bin/grep -Fq "#INKVERB-INKCERT=DONE_CBSINGLE" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf ; then
+   /usr/bin/echo "Already certified by inkCert-CBSINGLE: ${sitedomain}. Moving on..."
    exit 0
-  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_CB" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf ; then
-   /bin/echo "Already certified by inkCert-CB: ${sitedomain}. Moving on..."
+  elif /usr/bin/grep -Fq "#INKVERB-INKCERT=DONE_CB" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf ; then
+   /usr/bin/echo "Already certified by inkCert-CB: ${sitedomain}. Moving on..."
    exit 0
-  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_LE" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf ; then
-   /bin/echo "Already certified by inkCert-LE: ${sitedomain}. Moving on..."
+  elif /usr/bin/grep -Fq "#INKVERB-INKCERT=DONE_LE" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf ; then
+   /usr/bin/echo "Already certified by inkCert-LE: ${sitedomain}. Moving on..."
    exit 0
-  elif /bin/grep -Fq "#INKVERB-INKCERT=DONE_SC" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf ; then
-   /bin/echo "Already certified by inkCert-SC: ${sitedomain}. Moving on..."
+  elif /usr/bin/grep -Fq "#INKVERB-INKCERT=DONE_SC" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf ; then
+   /usr/bin/echo "Already certified by inkCert-SC: ${sitedomain}. Moving on..."
    exit 0
-  elif /bin/grep -Fq "#INKVERB-INKCERT=NA" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf ; then
-   /bin/echo "inkCert certs do not apply here: ${sitedomain}. Moving on..."
+  elif /usr/bin/grep -Fq "#INKVERB-INKCERT=NA" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf ; then
+   /usr/bin/echo "inkCert certs do not apply here: ${sitedomain}. Moving on..."
    exit 0
-  elif /bin/grep -Fq "#INKVERB-INKCERT=MAIL" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf ; then
-   /bin/echo "inkCert certs not needed for mail certs: ${sitedomain}. Moving on..."
+  elif /usr/bin/grep -Fq "#INKVERB-INKCERT=MAIL" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf ; then
+   /usr/bin/echo "inkCert certs not needed for mail certs: ${sitedomain}. Moving on..."
    exit 0
   else
-   /bin/echo "Something's really wrong with ${sitedomain}. No inkCert, no non-inkCert either. I quit here."
+   /usr/bin/echo "Something's really wrong with ${sitedomain}. No inkCert, no non-inkCert either. I quit here."
    exit 6
   fi
 
@@ -197,44 +212,39 @@ elif [ ${ServerType} = "lamp" ]; then
     exit 8
   fi
 
+  ## Check Apache status
+    if /usr/bin/systemctl is-active --quiet httpd; then
+    ApacheStatus=true
+  fi
+
   ## Stop Apache
-  /bin/systemctl stop httpd; wait
+  [[ -n $ApacheStatus ]] && /usr/bin/systemctl stop httpd; wait
 
   ## Comment the Snakeoil certs
-  /bin/sed -i "s/SSLCertificateFile/#INKVERB-INKCERT-COMMENT-SSLCertificateFile/g" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf
-  /bin/sed -i "s/SSLCertificateKeyFile/#INKVERB-INKCERT-COMMENT-SSLCertificateKeyFile/g" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf
+  /usr/bin/sed -i "s/SSLCertificateFile/#INKVERB-INKCERT-COMMENT-SSLCertificateFile/g" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf
+  /usr/bin/sed -i "s/SSLCertificateKeyFile/#INKVERB-INKCERT-COMMENT-SSLCertificateKeyFile/g" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf
 
   ## Insert the inkCert certs
-  /bin/sed -i "s/#INKVERB-INKCERT=INK_.*/#INKVERB-INKCERT=DONE_LE\n  SSLCertificateFile\t\/etc\/inkcert\/le\/live\/${certdomain}\/cert\.pem\n  SSLCertificateKeyFile\t\/etc\/inkcert\/le\/live\/${certdomain}\/privkey\.pem\n  SSLCertificateChainFile\t\/etc\/inkcert\/le\/live\/${certdomain}\/chain\.pem\n  #INKVERB-INKCERT-stop/" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf
+  /usr/bin/sed -i "s/#INKVERB-INKCERT=INK_.*/#INKVERB-INKCERT=DONE_LE\n  SSLCertificateFile\t\/etc\/inkcert\/le\/live\/${certdomain}\/cert\.pem\n  SSLCertificateKeyFile\t\/etc\/inkcert\/le\/live\/${certdomain}\/privkey\.pem\n  SSLCertificateChainFile\t\/etc\/inkcert\/le\/live\/${certdomain}\/chain\.pem\n  #INKVERB-INKCERT-stop/" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf
 
   ## inkCert status & exit
   if [ "${FirstInkCertAddLE}" = "NOT_YET" ]; then
     ### Config status: first inkCert done
-    /bin/sed -i "s/FirstInkCertAddLE=\"NOT_YET\"/FirstInkCertAddLE=\"DONE\"/g" /opt/verb/conf/inkcertstatus
+    /usr/bin/sed -i "s/FirstInkCertAddLE=\"NOT_YET\"/FirstInkCertAddLE=\"DONE\"/g" /opt/verb/conf/inkcertstatus
     ### Create the cron job
     #### Add inkCertLE's auto updater to the cron
-    /bin/echo '2 2 * * * root /opt/verb/donjon/inkcertcble-renew-all.sh' > /etc/cron.d/inkcertrenewcblecron
-    /bin/chmod 0644 /etc/cron.d/inkcertrenewcblecron
+    /usr/bin/echo '2 2 * * * root /opt/verb/donjon/inkcertcble-renew-all.sh' > /etc/cron.d/inkcertrenewcblecron
+    /usr/bin/chmod 0644 /etc/cron.d/inkcertrenewcblecron
   fi
 
   ## Create the inkCert log file
-  /bin/mkdir -p /var/log/inkcert/
+  /usr/bin/mkdir -p /var/log/inkcert/
   /usr/bin/touch /var/log/inkcert/inkcertcble.log
 
   ## Start Apache
-  /bin/systemctl start httpd; wait
+  [[ -n $ApacheStatus ]] && /usr/bin/systemctl start httpd; wait
 
 fi
-
-#DEV This is redundant from installpostfixvmail and installmaddymail, both via setinkcertmail
-# # inkCert mail certs
-# if [ "${certdomain}" = "${nameURI}" ]; then
-#   /opt/verb/serfs/setinkcertmailcerts ${certdomain} inkmail
-#   e="$?"; [[ "$e" = "0" ]] || exit "$e"
-# elif [ "${certdomain}" != "${emailURI}" ] && [ "${certdomain}" != "${oneURI}" ] && [ "${certdomain}" != "${inkURI}" ] && [ "${certdomain}" != "${blueURI}" ] && [ "${certdomain}" != "${vipURI}" ] && [ "${certdomain}" != "${kiwiURI}" ] && [ "${certdomain}" != "${redURI}" ]; then
-#   /opt/verb/serfs/setinkcertmailcerts ${certdomain}
-#   e="$?"; [[ "$e" = "0" ]] || exit "$e"
-# fi
 
 # Finish
 /bin/echo "

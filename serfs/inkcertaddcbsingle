@@ -4,15 +4,19 @@
 # This installs inkCert-Certbot Apache/Nginx credentials for a given domain, including inkVerb namespace domains
 ## Prerequesite: inkcertreqcb
 ## This is intended as a subscript of inkcertdocbsingle or to add certs to specific server configs as they are installed after the fact, such as in updates.
+## Nginx (LAEMP/LEMP) or Apache (LAMP) should be stopped before this script and started after, all outside this script
+### This script has a failsafe check for status of the Nginx/Apache running status in the event this is run by itself
+### The isssue is that we don't want restarts with each subdomain because it causes a "too many restarts" type of systemctl error if it stops and starts with each subdomain when run through inkcertaddall*
 
 # How to use:
-## ./inkcertaddcbsingle [ domain.tld or sub.domain.tld ]
+## ./inkcertaddcbsingle [ domain.tld or sub.domain.tld ] [ DOMAIN OF PARENT, ie: domain.tld ]
 
 # Eg:
 ## ./inkcertaddcbsingle NAME.verb.ink (will apply ONLY to NAME.verb.ink)
 ## ./inkcertaddcbsingle blog.NAME.verb.ink
 ## ./inkcertaddcbsingle inkisaverb.com
 ## ./inkcertaddcbsingle sub.inkisaverb.com
+## ./inkcertaddcbsingle sub.inkisaverb.com inkisaverb.com (this wildcard feature shouldn't be necessary if used correctly)
 
 usagenotes="This installs inkCert-Certbot Apache/Nginx credentials for a given domain, including inkVerb namespace domains"
 usageformat="inkcertaddcbsingle [ domain.tld or sub.domain.tld ] [ DOMAIN OF CERTIFICATE IF DIFFERENT, ie: domain.tld ]"
@@ -41,6 +45,12 @@ if [ -e "/opt/verb/mods/inkcertaddcbsingle.before" ]; then . /opt/verb/mods/inkc
 
 
 sitedomain=$1
+# Set variable for same certificate as domain (most all scenarios)
+if [ -z ${2} ]; then
+  certdomain=$1
+else
+  certdomain=$2
+fi
 
 # Include the configs
 . /opt/verb/conf/servernameip
@@ -94,6 +104,7 @@ if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
     /bin/echo "Site config does not exist."
     exit 0
   fi
+
   ## Check config status
   if /bin/grep -Fq "#INKVERB-INKCERT=INK_NO" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf ; then
    /bin/echo "Setting inkCert configs for ${sitedomain}..."
@@ -126,8 +137,13 @@ if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
     exit 8
   fi
 
+  ## Check Nginx status
+  if /usr/bin/systemctl is-active --quiet nginx; then
+    NginxStatus=true
+  fi
+
   ## Stop Nginx
-  /bin/systemctl stop nginx; wait
+  [[ -n $NginxStaus ]] && /usr/bin/systemctl stop nginx
 
   ## Comment the Snakeoil certs
   /bin/sed -i "s/ssl_certificate/#INKVERB-INKCERT-COMMENT-ssl_certificate/g" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf
@@ -158,6 +174,7 @@ elif [ ${ServerType} = "lamp" ]; then
     /bin/echo "Site config does not exist."
     exit 0
   fi
+
   ## Check config status
   if /bin/grep -Fq "#INKVERB-INKCERT=INK_NO" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf ; then
    /bin/echo "Setting inkCert configs for ${sitedomain}..."
@@ -190,8 +207,13 @@ elif [ ${ServerType} = "lamp" ]; then
     exit 8
   fi
 
+  ## Check Apache status
+    if /usr/bin/systemctl is-active --quiet httpd; then
+    ApacheStatus=true
+  fi
+
   ## Stop Apache
-  /bin/systemctl stop httpd; wait
+  [[ -n $ApacheStatus ]] && /usr/bin/systemctl stop httpd; wait
 
   ## Comment the Snakeoil certs
   /bin/sed -i "s/SSLCertificateFile/#INKVERB-INKCERT-COMMENT-SSLCertificateFile/g" /opt/verb/conf/webserver/sites-available/httpd/${sitedomain}.conf
@@ -215,19 +237,9 @@ elif [ ${ServerType} = "lamp" ]; then
   /usr/bin/touch /var/log/inkcert/inkcertcble.log
 
   ## Start Apache
-  /bin/systemctl start httpd; wait
+  [[ -n $ApacheStatus ]] && /usr/bin/systemctl start httpd; wait
 
 fi
-
-#DEV This is redundant from installpostfixvmail and installmaddymail, both via setinkcertmail
-# # inkCert mail certs
-# if [ "${certdomain}" = "${nameURI}" ]; then
-#   /opt/verb/serfs/setinkcertmailcerts ${certdomain} inkmail
-#   e="$?"; [[ "$e" = "0" ]] || exit "$e"
-# elif [ "${certdomain}" != "${emailURI}" ] && [ "${certdomain}" != "${oneURI}" ] && [ "${certdomain}" != "${inkURI}" ] && [ "${certdomain}" != "${blueURI}" ] && [ "${certdomain}" != "${vipURI}" ] && [ "${certdomain}" != "${kiwiURI}" ] && [ "${certdomain}" != "${redURI}" ]; then
-#   /opt/verb/serfs/setinkcertmailcerts ${certdomain}
-#   e="$?"; [[ "$e" = "0" ]] || exit "$e"
-# fi
 
 # Finish
 /bin/echo "
