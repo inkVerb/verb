@@ -1,6 +1,28 @@
-driver = mysql
-connect = host=localhost dbname=mail user=mail password=mailpassword
-#default_pass_scheme = SHA512-CRYPT # Secure, but breaks Postfix Admin
-default_pass_scheme = MD5-CRYPT
-password_query = SELECT username as user, password, '/srv/vmail/%d/%n' as userdb_home, 'maildir:/srv/vmail/%d/%n' as userdb_mail, 5000 as userdb_uid, 5000 as userdb_gid FROM mailbox WHERE username = '%u' AND active = '1'
-user_query = SELECT '/srv/vmail/%d/%n' as home, 'maildir:/srv/vmail/%d/%n' as mail, 5000 AS uid, 5000 AS gid, concat('dirsize:storage=', quota) AS quota FROM mailbox WHERE username = '%u' AND active = '1'
+sql_driver = mysql
+
+mysql localhost {
+  user = mail
+  password = mailpassword
+  dbname = mail
+}
+
+passdb sql {
+  default_password_scheme = MD5-CRYPT
+  query = SELECT username AS user, password, \
+                 '/srv/vmail/%{user | domain}/%{user | username}' AS userdb_home, \
+                 'maildir:/srv/vmail/%{user | domain}/%{user | username}' AS userdb_mail, \
+                 5000 AS userdb_uid, \
+                 5000 AS userdb_gid \
+          FROM mailbox \
+          WHERE username = '%{user}' AND active = '1'
+}
+
+userdb sql {
+  query = SELECT '/srv/vmail/%{user | domain}/%{user | username}' AS home, \
+                 'maildir:/srv/vmail/%{user | domain}/%{user | username}' AS mail, \
+                 5000 AS uid, \
+                 5000 AS gid, \
+                 concat('dirsize:storage=', quota) AS quota \
+          FROM mailbox \
+          WHERE username = '%{user}' AND active = '1'
+}

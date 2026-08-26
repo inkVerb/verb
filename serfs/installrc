@@ -50,34 +50,33 @@ cVappName="roundcube"
 
 # Check dependencies and to see if already installed
 if [ "${ServerMailStatus}" != "MADDY_EMAIL_SERVER" ] && [ "${ServerMailStatus}" != "VMAIL_SERVER" ]; then
-/bin/echo "
+/usr/bin/echo "
 The email server must be installed first. Run: installmaddymail or installpostfixvmail
 "
 exit 8; fi
 if [ "${ServerRCPath}" = "RC_NOT_ALLOWED" ]; then
-/bin/echo "
+/usr/bin/echo "
 This is a backup email server and Roundcube is not allowed.
 "
 exit 0; fi
 if [ "${ServerRCPath}" != "RC_NOT_INSTALLED" ]; then
-/bin/echo "
+/usr/bin/echo "
 Roundcube is already installed.
 "
 exit 0; fi
-if /bin/grep -Fq "Email Control Records" /opt/verb/conf/inkdns/inkzones/db.${emailTLDURI}; then
-/bin/echo "Proceeding..."; else
-/bin/echo "
+if /usr/bin/grep -Fq "Email Control Records" /opt/verb/conf/inkdns/inkzones/db.${emailTLDURI}; then
+/usr/bin/echo "Proceeding..."; else
+/usr/bin/echo "
 Email Control Records not declared in the email domain DNS zone file. This won't work.
 "
 exit 8; fi
 
 # Get inkVerb's latest and install
-cd /srv/www/email
 /opt/verb/serfs/inkget ${cVappName} check
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 ### Check
 if [ "$?" = 4 ]; then
-  /bin/echo "Repo failed to retrieve the file."
+  /usr/bin/echo "Repo failed to retrieve the file."
   exit 4; fi
 
 # Security & path
@@ -123,19 +122,6 @@ fi
 /usr/bin/chown -R www:www /srv/www/verb/${ServerEmailTLD}.box; wait
 /usr/bin/chown -R www:www /srv/www/email/roundcube; wait
 
-#DEV This is already done in our new frameworks, delete if everything works
-# # inkCert
-# . /opt/verb/conf/inkcert/cli-ini/siteinkcert.${emailURI}
-# if [ "${InkCerted}" = "DONE_LE" ]; then
-#   /opt/verb/serfs/inkcertaddle box.${emailURI} ${emailURI}
-# elif [ "${InkCerted}" = "DONE_CB" ]; then
-#   /opt/verb/serfs/inkcertaddcb box.${emailURI} ${emailURI}
-# elif [ "${InkCerted}" = "DONE_CBSINGLE" ]; then
-#   /opt/verb/serfs/inkcertaddcbsingle box.${emailURI}
-# elif [ "${InkCerted}" = "DONE_SC" ]; then
-#   /opt/verb/serfs/inkcertaddsc box.${emailURI}
-# fi
-
 # Settings
 /usr/bin/cp /opt/verb/conf/lib/vmail/roundcube/mime.types /srv/www/email/roundcube/
 #cp /etc/httpd/conf/mime.types /srv/www/email/roundcube/mime.types # If getting mime types from server
@@ -152,7 +138,7 @@ fi
 if [ -e "/srv/www/email/postfixadmin/config.inc.php" ]; then
   /usr/bin/sed -i "s/rcfolder286/${rcFolder}/g" /srv/www/email/postfixadmin/config.inc.php
   if [ "$?" = "0" ]; then
-    /bin/sed -i "s/\$Conf\['show_footer_text'\] = 'NO';/\$Conf\['show_footer_text'\] = 'YES';/" /srv/www/email/postfixadmin/config.local.php
+    /usr/bin/sed -i "s/\$Conf\['show_footer_text'\] = 'NO';/\$Conf\['show_footer_text'\] = 'YES';/" /srv/www/email/postfixadmin/config.local.php
   fi
 fi
 
@@ -175,7 +161,7 @@ fi
 
 ## SauserPrefs plugin database setting
 if [ -f "/srv/www/email/roundcube/plugins/sauserprefs/config.inc.php" ]; then
-  /bin/sed -i "s/\$config\['sauserprefs_db_dsnw'\].*/\$config\['sauserprefs_db_dsnw'\] = 'mysql:\/\/spamass:spampass${ServerSpamPassApg}@localhost\/spamass?new_link=true';/" /srv/www/email/roundcube/plugins/sauserprefs/config.inc.php
+  /usr/bin/sed -i "s/\$config\['sauserprefs_db_dsnw'\].*/\$config\['sauserprefs_db_dsnw'\] = 'mysql:\/\/spamass:spampass${ServerSpamPassApg}@localhost\/spamass?new_link=true';/" /srv/www/email/roundcube/plugins/sauserprefs/config.inc.php
 fi
 
 #DEV This is handled directly in the file itself
@@ -190,7 +176,7 @@ fi
 #/opt/verb/serfs/postinstallrc # uncomment when everything works
 
 # Finished
-/bin/echo "
+/usr/bin/echo "
 Roundcube is installed and can be accessed at: https://box.${emailTLDURI}/${rcFolder}
 (It may be using self-signed SSL certificates until the production certificates are installed.)
 "
