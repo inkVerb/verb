@@ -4,6 +4,10 @@ Wildcard certs (`*.domain.tld` plus `domain.tld`) require Letsencrypt DNS-01.
 HTTP-01 cannot prove a wildcard. inkCert-CB (`inkcertdocb` / `ink cert do -w`)
 now does this without typing TXT records by hand.
 
+**LAMP is refused.** `inkcertcb*` (`inkcertdocb`, `inkcertreqcb`,
+`inkcertdocb-all-verbs`) exits on `ServerType=lamp`. Use `inkcertdocbsingle`
+or `inkcertdole`, or rebuild as LEMP/LAEMP.
+
 ## Where things live
 
 - `conf/inkcert/` — ACME/Certbot material (cli-ini per domain, TSIG key, rfc2136.ini)
@@ -14,6 +18,21 @@ now does this without typing TXT records by hand.
 The TSIG secret stays on the Verber (the Bind master). Slaves do not need it.
 Letsencrypt queries ns1/ns2; those boxes only need the zone transfer of the
 TXT that nsupdate just wrote on the master.
+
+## Zone-file persistence (like inkDKIM)
+
+`inkdnsrefreshbind` recopies `conf/inkdns/{inkzones,zones}/db.*` over live BIND.
+An nsupdate-only TXT would be wiped. So the auth hook also writes the zone
+file via `inkdnsaddacme` (same kind of method as `inkdnsaddinkdkim`):
+
+```
+; ACME challenge domain.tld
+_acme-challenge.domain.tld.  60  IN  TXT  "..."
+;; End ACME challenge domain.tld
+```
+
+Cleanup calls `killinkdnsacme`. Neither hook runs `inkdnsrefreshbind` (too
+slow for certbot). Serial is bumped. nsupdate is still the live publish path.
 
 ## Why this was stuck
 
@@ -44,12 +63,14 @@ TXT that nsupdate just wrote on the master.
    - `--manual-cleanup-hook donjon/inkcert-dns01-cleanup.sh`
    - RSA 2048 (same as `cli-ini` `rsa-key-size`)
 2. Auth hook:
+   - `inkdnsaddacme` writes `_acme-challenge` TXT into `db.*`
    - `nsupdate -k inkcertbot.key` adds `_acme-challenge.domain.tld` TXT on localhost
    - `inkdnsslaveacme` SSH to `ns1` and `ns2` (same Host aliases as `rinkadddomain`)
      and runs `rndc retransfer domain.tld` so the slaves AXFR immediately
    - poll `dig @ns1` / `@ns2` until the TXT is visible, then exit 0
 3. Certbot tells Letsencrypt to check. LE queries the registrar NS (ns1/ns2).
-4. Cleanup hook deletes that TXT value and retransfers slaves again.
+4. Cleanup hook deletes that TXT value from the zone file and via nsupdate,
+   then retransfers slaves again.
 
 No web server stop is required for DNS-01.
 

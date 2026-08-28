@@ -10,7 +10,7 @@ surfname="installbadad"
 # About message
 aboutMsg="$(cat <<EOU
 This downloads and installs badAd as a vapp on a hosted domain
-badAd resides in www/vapps/badad.DOMAIN.TLD; Nginx proxies to a localhost Go binary
+badAd resides in www/vapps/badad.DOMAIN.TLD; web at DOMAIN, API at api.DOMAIN
 EOU
 )"
 
@@ -87,7 +87,7 @@ if [ -z "${SOd}" ]; then
 fi
 
 # Message prep
-success_message="badAd installed on ${SOd}. Open https://${SOd}/"
+success_message="badAd installed on ${SOd}. Open https://${SOd}/ and https://api.${SOd}/"
 fail_message="badAd failed to install on ${SOd}."
 
 # Prepare command (sequential args, same as serfs/installbadad)

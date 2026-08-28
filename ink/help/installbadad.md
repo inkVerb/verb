@@ -1,9 +1,12 @@
 # install badad
 
 ## This downloads and installs badAd on a hosted domain
+- One network per domain; dedicated-server scale
 - Uses `inkget badad` (ZJZ dragon `donjon/repoupdate/badad.updaterepo`) to fetch the GitHub tarball (golang branch until it is merged to main)
-- Lives in `www/vapps/badad.DOMAIN.TLD`
-- Builds the Go binary, binds `127.0.0.1`, Nginx reverse-proxies the domain
+- Machine name: `www/vapps/badad.DOMAIN.TLD`
+- Web at `DOMAIN`; API engine at `api.DOMAIN` (second localhost port, `addsubdomain api`)
+- Builds the Go binary, binds `127.0.0.1`, Nginx reverse-proxies both hosts
+- BIMI at `https://domain.tld/bimi.svg`
 - Writes PostgreSQL credentials to `verb/conf/vapps/vapp.badad.DOMAIN.TLD`
 - Writes the app config to `verb/conf/vapps/badad.DOMAIN.config` (`BADAD_CONFIG`)
 - Adds the domain with `adddomain` if it is not already hosted
@@ -20,7 +23,7 @@
   - Creates `www/vapps/badad.inkisaverb.com`
   - Autogenerates database, user, and password
   - Writes `verb/conf/vapps/vapp.badad.inkisaverb.com`
-  - Open `https://inkisaverb.com/`
+  - Open `https://inkisaverb.com/` and `https://api.inkisaverb.com/`
 
 - `ink install badad -d inkisaverb.com -b somedb -u someuser -p somepass`
   - Same as `./installbadad inkisaverb.com somedb someuser somepass`

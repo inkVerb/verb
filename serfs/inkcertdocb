@@ -4,6 +4,7 @@
 # This batch runs inkCert-Certbot request and install scripts for a given domain, including inkVerb namespace domains
 ## It DOES NOT apply to subdomains for that domain, CB is done on a per-domain basis
 ## Prereqesite: inkcertinstall
+## Wildcard CB is LEMP/LAEMP only (DNS-01). LAMP uses inkcertdocbsingle / inkcertdole.
 
 # How to use:
 ## ./inkcertdocb [ domain.tld NO SUBDOMAINS ]
@@ -29,11 +30,22 @@ dependencyinstall=( inkcertinstall )
 prerequesite=( inkcertinstall )
 usedby=( inkcertdo-all-verbs inknetmakeca )
 useserfs=( inkcertreqcb inkcertaddcb inkcertcheck setinkcertmailcerts )
-useconfigs=( siteurilist )
+useconfigs=( siteurilist servertype inkcertstatus )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/inkcertdocb.replace" ]; then . /opt/verb/mods/inkcertdocb.replace; return 0; fi # Replaces this script
 if [ -e "/opt/verb/mods/inkcertdocb.before" ]; then . /opt/verb/mods/inkcertdocb.before; fi # Precedes this script
 
+
+. /opt/verb/conf/servertype
+. /opt/verb/conf/inkcertstatus
+
+# Wildcard Certbot is DNS-01 via Nginx (LEMP/LAEMP). LAMP stays HTTP-01.
+if [ "${ServerType}" = "lamp" ]; then
+/bin/echo "Wildcard inkCert-Certbot needs Nginx (LEMP or LAEMP). This server is LAMP.
+Use inkcertdocbsingle / inkcertdole, or rebuild as LEMP/LAEMP.
+"
+exit 8
+fi
 
 domain=$1
 
@@ -77,7 +89,7 @@ e="$?"; [[ "$e" = "0" ]] || exit "$e"
 # Domain check for mail certs
 . /opt/verb/conf/siteurilist
 if [ "${domain}" = "${nameURI}" ]; then
-  opt/verb/serfs/setinkcertmailcerts ${domain} inkmail
+  /opt/verb/serfs/setinkcertmailcerts ${domain} inkmail
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
 elif [ "${domain}" != "${emailTLD}" ] && [ "${domain}" != "${hostURI}" ] && [ "${domain}" != "${serveURI}" ] && [ "${domain}" != "${emailTLDURI}" ] && [ "${domain}" != "${emailURI}" ] && [ "${domain}" != "${oneURI}" ] && [ "${domain}" != "${inkURI}" ] && [ "${domain}" != "${blueURI}" ] && [ "${domain}" != "${vipURI}" ] && [ "${domain}" != "${kiwiURI}" ] && [ "${domain}" != "${redURI}" ]; then
   /opt/verb/serfs/setinkcertmailcerts ${domain}

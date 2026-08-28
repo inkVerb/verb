@@ -1,0 +1,69 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This removes an ACME DNS-01 _acme-challenge TXT from the zone file
+## Does NOT refreshbind (too slow for a certbot cleanup hook)
+
+# How to use:
+## ./killinkdnsacme [ domain.tld ] [ txt-value ]
+## ./killinkdnsacme [ domain.tld ] [ txt-value ] verber
+
+usagenotes="This removes an ACME DNS-01 _acme-challenge TXT from the inkDNS zone file"
+usageformat="killinkdnsacme [ domain.tld ] [ txt-value ]"
+usageexample="killinkdnsacme inkisaverb.com abcdef123"
+hierarchy=( tertiary inkcertreqcb )
+vsetnames=( "Domain" "TXT value" )
+vsettypes=( isDomain isazAZ09lines )
+voptnames=( "verber" )
+vopttypes=( string_match )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( inkdnsaddacme )
+usedby=(  )
+useserfs=( inkdnsserial )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/killinkdnsacme.replace" ]; then . /opt/verb/mods/killinkdnsacme.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/killinkdnsacme.before" ]; then . /opt/verb/mods/killinkdnsacme.before; fi # Precedes this script
+
+
+dnsDomain="$1"
+txtval="$2"
+if [ -z "${dnsDomain}" ]; then
+  exit 0
+fi
+if [ -n "$3" ] && [ "$3" = "verber" ]; then
+  zonedir="inkzones"
+  verberny=" verber"
+else
+  zonedir="zones"
+fi
+
+zonefile="/opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}"
+if [ ! -f "${zonefile}" ]; then
+  exit 0
+fi
+
+if [ -n "${txtval}" ]; then
+  /usr/bin/sed -i "/_acme-challenge\.${dnsDomain}\..*\"${txtval}\"/d" "${zonefile}"
+else
+  /usr/bin/sed -i "/; ACME challenge ${dnsDomain}/,/;; End ACME challenge ${dnsDomain}/d" "${zonefile}"
+fi
+
+# Drop the wrapper if no TXT lines remain in the block
+if /usr/bin/grep -Fq "; ACME challenge ${dnsDomain}" "${zonefile}"; then
+  if ! /usr/bin/grep -q "_acme-challenge\.${dnsDomain}\." "${zonefile}"; then
+    /usr/bin/sed -i "/; ACME challenge ${dnsDomain}/d" "${zonefile}"
+    /usr/bin/sed -i "/;; End ACME challenge ${dnsDomain}/d" "${zonefile}"
+  fi
+fi
+
+/opt/verb/serfs/inkdnsserial ${dnsDomain}${verberny} || true
+
+exit 0
+
+
+
+
+if [ -e "/opt/verb/mods/killinkdnsacme.after" ]; then . /opt/verb/mods/killinkdnsacme.after; fi # Follows this script

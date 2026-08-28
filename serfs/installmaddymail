@@ -24,7 +24,7 @@ voptflagpurpose=(  )
 dependencyinstall=(  )
 prerequesite=( "inkCert certs should be installled for at least the nameURI for this verber" )
 usedby=( installinkemail )
-useserfs=( inkget inkemailaddscriptfilter setinkcertmail inkdnsaddmail inkdnsaddinkdkim inkemailbaseaddrs inkemailsysmailboxmsmtp inkdriveapp)
+useserfs=( inkget inkemailaddscriptfilter setinkcertmail inkdnsaddmail inkdnsaddinkdkim inkdnsaddbimi inkemailbaseaddrs inkemailsysmailboxmsmtp inkdriveapp installinkemailadmin)
 useconfigs=( servernameip siteurilist servertype servermailpath )	# List config files of any kind used in this serf, please preserve order of appearance
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/installmaddymail.replace" ]; then . /opt/verb/mods/installmaddymail.replace; return 0; fi # Replaces this script
@@ -416,12 +416,17 @@ fi
 ## Add the DNS records for the mail server TLD itself
 /opt/verb/serfs/inkdnsaddinkdkim ${nameURI} verber; wait
 /opt/verb/serfs/inkdnsaddinkdkim ${emailTLDURI} verber; wait
+/opt/verb/serfs/inkdnsaddbimi ${nameURI} verber; wait
+/opt/verb/serfs/inkdnsaddbimi ${emailTLDURI} verber; wait
 
+# inkEmail Admin (Maddy control plane). Roundcube stays webmail-only.
+/opt/verb/serfs/installinkemailadmin
 
 # Finish
 /usr/bin/echo "The Maddy email server for inkVerb has been installed.
 The email server is https://${emailTLDURI}
 "
+
 
 # inkDrive? (last so above message shows, even if we need to exit non-zero next)
 if [ -f "/opt/verb/conf/inkdrive/inkdriveinfo" ]; then

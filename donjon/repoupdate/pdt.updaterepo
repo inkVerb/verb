@@ -4,13 +4,13 @@
 # This updates the pdt-news repo package from GitHub (tarball, not git clone)
 
 # How to use:
-## ./pdtnews.updaterepo
+## ./pdt.updaterepo
 
-cVappName=pdtnews
+cVappName=pdt
 # Include the config files
 . /opt/verb/conf/serverinkget
 . /opt/verb/conf/inklists/repoverlist
-distVer="${pdtnews}"
+distVer="${pdt}"
 
 if [ $InkGet_Method != "ZJZ" ]; then
   cd /opt/verb/repo
@@ -29,9 +29,9 @@ exit 4; else
 /bin/rm -f ${cVappName}.failed; fi
 
 ## Check the hash unless SKIP (rolling branch until a tagged release is pinned)
-if [ -n "${pdtnewssha}" ] && [ "${pdtnewssha}" != "SKIP" ]; then
+if [ -n "${pdtsha}" ] && [ "${pdtsha}" != "SKIP" ]; then
   checksha=$(/usr/bin/sha256sum ${cVappName}.tgz)
-  if [ "${checksha}" = "${pdtnewssha}  ${cVappName}.tgz" ]; then
+  if [ "${checksha}" = "${pdtsha}  ${cVappName}.tgz" ]; then
     /usr/bin/echo "Download checks out."
   else
     /usr/bin/echo "SHA check failed. The downloaded file ${PWD}/${cVappName}.tgz is not what was expected."

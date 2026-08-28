@@ -2,14 +2,15 @@
 #inkVerbSerf! verb.ink
 
 # This downloads and installs badAd (golang branch) as a vapp on a hosted domain
-## App resides in www/vapps/badad.DOMAIN.TLD, Go binary on a localhost port, Nginx proxies the domain
-## Credentials in verb/conf/vapps/vapp.badad.DOMAIN.TLD
+## One network per domain. Machine name: www/vapps/badad.DOMAIN.TLD
+## Front: DOMAIN (web) and api.DOMAIN (API engine, second localhost port)
+## Dedicated-server scale.
 
 # How to use:
 ## ./installbadad [domain.tld] [dbase] [dbuser] [dbpassword]
 ## ./installbadad [domain.tld]
 
-usagenotes="This downloads and installs badAd to a specified domain"
+usagenotes="This downloads and installs badAd to a specified domain (web + api subdomain)"
 usageformat="installbadad [ domain.tld ] [ dbase - optional ] [ dbuser - optional ] [ dbpassword - optional ]"
 usageexample="installbadad inkisaverb.com
 installbadad inkisaverb.com somedb someuser somepass"
@@ -23,7 +24,7 @@ voptflagpurpose=(  )
 dependencyinstall=(  )
 prerequesite=(  )
 usedby=(  )
-useserfs=( inkget adddomain pgsqlnewdb setnginxvappproxy )
+useserfs=( inkget adddomain addsubdomain pgsqlnewdb setnginxvappproxy )
 useconfigs=( servertype )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/installbadad.replace" ]; then . /opt/verb/mods/installbadad.replace; return 0; fi # Replaces this script
@@ -39,6 +40,7 @@ dBPassword=$4
 cleanName=$(/usr/bin/echo ${domain} | /usr/bin/sed -e 's/\.//g')
 svcName="badad-$(/usr/bin/echo ${domain} | /usr/bin/tr '.' '-')"
 appPort=$(( 9300 + $(/usr/bin/printf '%s' "${domain}" | /usr/bin/cksum | /usr/bin/awk '{print $1 % 600}') ))
+apiPort=$(( appPort + 1 ))
 
 if [ -z ${1} ]; then
 /bin/echo "You must designate a domain. Read the How to use. Can't continue."
@@ -57,6 +59,10 @@ fi
 
 if [ ! -d "/srv/www/domains/${domain}" ]; then
 /opt/verb/serfs/adddomain ${domain}
+wait
+fi
+if [ ! -d "/srv/www/domains/api.${domain}" ]; then
+/opt/verb/serfs/addsubdomain api ${domain}
 wait
 fi
 
@@ -102,6 +108,9 @@ cfg="/opt/verb/conf/vapps/${cVappName}.${domain}.config"
 web_bind=127.0.0.1
 web_port=${appPort}
 web_url=https://${domain}
+api_bind=127.0.0.1
+api_port=${apiPort}
+api_url=https://api.${domain}
 db_host=127.0.0.1
 db_port=5432
 db_name=${dBase}
@@ -120,6 +129,7 @@ appDDBUsr=${dBaseUser}
 appDDBPass=${dBPassword}
 appEngine=postgres
 appPort=${appPort}
+appApiPort=${apiPort}
 appConfig=${cfg}
 appService=${svcName}
 appEtcLink=/etc/badad/${domain}" > /opt/verb/conf/vapps/vapp.${cVappName}.${domain}
@@ -148,15 +158,18 @@ EOF
 
 /opt/verb/serfs/setnginxvappproxy ${domain} 127.0.0.1:${appPort}
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
+/opt/verb/serfs/setnginxvappproxy api.${domain} 127.0.0.1:${apiPort}
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 /usr/bin/echo "These are setup:
 
 Database: ${dBase}
 Database user: ${dBaseUser}
 Database password: ${dBPassword}
-Proxy: 127.0.0.1:${appPort}
+Web: 127.0.0.1:${appPort}  https://${domain}/
+API: 127.0.0.1:${apiPort}  https://api.${domain}/
 
-Payment keys stay in ${cfg} (SysAdmin). Open https://${domain}/
+Payment keys stay in ${cfg} (SysAdmin). One network per domain.
 "
 
 

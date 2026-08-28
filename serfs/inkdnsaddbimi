@@ -1,0 +1,87 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This adds the BIMI TXT record to an existing DNS zone file on the server
+## Logo lives at https://domain.tld/bimi.svg (SVG Tiny PS)
+## TXT: default._bimi IN TXT "v=BIMI1; l=https://domain.tld/bimi.svg;"
+
+# How to use:
+## ./inkdnsaddbimi [ domain.tld ]
+## ./inkdnsaddbimi [ domain.tld ] verber
+
+usagenotes="This adds the BIMI TXT record to an existing DNS zone file on the server"
+usageformat="inkdnsaddbimi [ domain.tld ]"
+usageexample="inkdnsaddbimi inkisaverb.com
+inkdnsaddbimi NAME.verb.email verber"
+hierarchy=( tertiary adddomain )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=( "verber" )
+vopttypes=( string_match )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkdnsinstall )
+prerequesite=( inkdnsadddomain )
+usedby=( newdomainshell installmaddymail )
+useserfs=( inkdnsserial inkdnsrefreshbind )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdnsaddbimi.replace" ]; then . /opt/verb/mods/inkdnsaddbimi.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdnsaddbimi.before" ]; then . /opt/verb/mods/inkdnsaddbimi.before; fi # Precedes this script
+
+
+dnsDomain="$1"
+if [ -n "$2" ] && [ "$2" = "verber" ]; then
+  zonedir="inkzones"
+  verberny=" verber"
+else
+  zonedir="zones"
+fi
+
+zonefile="/opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}"
+if [ ! -f "${zonefile}" ]; then
+  /usr/bin/echo "No zone file for ${dnsDomain}."
+  exit 8
+fi
+
+# Check if already added
+if /usr/bin/grep -Fq "; BIMI ${dnsDomain}" "${zonefile}"; then
+/usr/bin/echo "The BIMI record for ${dnsDomain} has already been added. Use killinkdnsbimi to remove it."
+exit 0; fi
+if /bin/grep -Fq "default._bimi" "${zonefile}"; then
+/usr/bin/echo "The ${dnsDomain} zone file already mentions BIMI. Fix that first or use killinkdnsbimi."
+exit 7; fi
+
+# Ensure the logo file exists at the served path (adddomain copies site-files/bimi.svg)
+if [ ! -f "/srv/www/html/${dnsDomain}/bimi.svg" ] && [ -f "/opt/verb/conf/lib/logo/nib-logo.svg" ]; then
+  /usr/bin/mkdir -p "/srv/www/html/${dnsDomain}"
+  /usr/bin/cp /opt/verb/conf/lib/logo/nib-logo.svg "/srv/www/html/${dnsDomain}/bimi.svg"
+  /usr/bin/chown www:www "/srv/www/html/${dnsDomain}/bimi.svg" 2>/dev/null || true
+  /usr/bin/chmod 644 "/srv/www/html/${dnsDomain}/bimi.svg"
+fi
+
+# Add the entry
+/usr/bin/echo "; BIMI ${dnsDomain}" >> "${zonefile}"
+/usr/bin/echo "default._bimi.${dnsDomain}.	IN  TXT	\"v=BIMI1; l=https://${dnsDomain}/bimi.svg;\"" >> "${zonefile}"
+/usr/bin/echo ";; End BIMI ${dnsDomain}" >> "${zonefile}"
+
+# Set the Serial No
+/opt/verb/serfs/inkdnsserial ${dnsDomain}${verberny}
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+
+# Refresh zones
+if [ -f "/opt/verb/conf/inkdnsconf" ]; then
+  . /opt/verb/conf/inkdnsconf
+  if [ "${InkDNSStat}" = "INSTALLED" ]; then
+    /opt/verb/serfs/inkdnsrefreshbind
+    e="$?"; [[ "$e" = "0" ]] || exit "$e"
+  fi
+fi
+
+# Finish
+/usr/bin/echo "The BIMI record has been added to the ${dnsDomain} DNS zone file."
+
+
+
+
+if [ -e "/opt/verb/mods/inkdnsaddbimi.after" ]; then . /opt/verb/mods/inkdnsaddbimi.after; fi # Follows this script

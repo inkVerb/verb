@@ -23,7 +23,7 @@ voptflagpurpose=(  )
 dependencyinstall=(  )
 prerequesite=( adddomain )
 usedby=( killdomainsoft killdomainhard )
-useserfs=( killinkcertdomain inkvmailkillscriptfilter killinkcertmail killinkdkim rinkkilldomain )
+useserfs=( killinkcertdomain inkvmailkillscriptfilter killinkcertmail killinkdkim killinkdnsbimi rinkkilldomain )
 useconfigs=( servertype servermailpath inkdnsconf inkcertstatus siteurilist )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/killdomainshell.replace" ]; then . /opt/verb/mods/killdomainshell.replace; return 0; fi # Replaces this script
@@ -34,6 +34,7 @@ killdomain=$1
 
 # Include the config files
 . /opt/verb/conf/servertype
+. /opt/verb/conf/servermailpath
 
 # Dependencies
 if [ ! -f "/opt/verb/conf/inkcertstatus" ]; then
@@ -91,6 +92,9 @@ elif [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ]; then
   ## Restart Maddy
   /usr/bin/systemctl restart maddy
 fi
+
+# BIMI TXT
+/opt/verb/serfs/killinkdnsbimi ${killdomain}; wait
 
 # Notify the NS slave servers
 /opt/verb/serfs/rinkkilldomain ${killdomain}; wait

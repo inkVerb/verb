@@ -10,7 +10,7 @@ surfname="installpw99"
 # About message
 aboutMsg="$(cat <<EOU
 This downloads and installs PinkWrite 99 as a vapp on a hosted domain
-PinkWrite 99 resides in www/vapps/pw99.DOMAIN.TLD and is linked from www/html/DOMAIN.TLD
+PinkWrite 99 resides in www/vapps/pw99.DOMAIN.TLD; front-facing host is 99.DOMAIN.TLD
 EOU
 )"
 
@@ -87,7 +87,7 @@ if [ -z "${SOd}" ]; then
 fi
 
 # Message prep
-success_message="PinkWrite 99 installed on ${SOd}. Finish at https://${SOd}/install.php"
+success_message="PinkWrite 99 installed on 99.${SOd}. Finish at https://99.${SOd}/install.php"
 fail_message="PinkWrite 99 failed to install on ${SOd}."
 
 # Prepare command (sequential args, same as serfs/installpw99)

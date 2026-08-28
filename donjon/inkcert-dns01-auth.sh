@@ -2,6 +2,8 @@
 # inkVerb donjon asset, verb.ink
 # certbot --manual-auth-hook for DNS-01 wildcard certs
 # Env from certbot: CERTBOT_DOMAIN CERTBOT_VALIDATION
+# Persist the TXT in the inkDNS zone file (inkdnsaddacme) AND nsupdate live.
+# Do not inkdnsrefreshbind here — too slow for a certbot hook.
 
 # Wildcard challenges still use _acme-challenge.domain.tld (strip leading *.)
 domain="${CERTBOT_DOMAIN#\*.}"
@@ -18,6 +20,13 @@ if [ ! -f "${keyfile}" ]; then
 fi
 
 . /opt/verb/conf/servernameip
+
+# Zone-file persistence (survives inkdnsrefreshbind). No keys copied to ns1/ns2.
+if [ -f "/opt/verb/conf/inkdns/inkzones/db.${domain}" ]; then
+  /opt/verb/serfs/inkdnsaddacme "${domain}" "${CERTBOT_VALIDATION}" verber || true
+else
+  /opt/verb/serfs/inkdnsaddacme "${domain}" "${CERTBOT_VALIDATION}" || true
+fi
 
 # Publish TXT on this Verber (Bind master)
 /usr/bin/nsupdate -k "${keyfile}" <<EOF

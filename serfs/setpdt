@@ -2,19 +2,19 @@
 #inkVerbSerf! verb.ink
 
 # This modifies settings for an installed pdt-news vapp
-## Writes verb/conf/vapps/pdtnews.DOMAIN.config and matching keys in vapp.pdtnews.DOMAIN
+## Writes verb/conf/vapps/pdt.DOMAIN.config and matching keys in vapp.pdt.DOMAIN
 ## Restarts the systemd unit
 
 # How to use:
-## ./setpdtnews [domain.tld] [key=value] [key=value] ...
-## ./setpdtnews inkisaverb.com mode=network
-## ./setpdtnews inkisaverb.com db_name=newdb db_user=newuser db_pass=newpass
+## ./setpdt [domain.tld] [key=value] [key=value] ...
+## ./setpdt inkisaverb.com mode=network
+## ./setpdt inkisaverb.com db_name=newdb db_user=newuser db_pass=newpass
 
 usagenotes="This modifies settings for an installed pdt-news vapp"
-usageformat="setpdtnews [ domain.tld ] [ key=value ] [ key=value ] ..."
-usageexample="setpdtnews inkisaverb.com mode=network
-setpdtnews inkisaverb.com web_url=https://inkisaverb.com
-setpdtnews inkisaverb.com db_name=newdb db_user=newuser db_pass=secret"
+usageformat="setpdt [ domain.tld ] [ key=value ] [ key=value ] ..."
+usageexample="setpdt inkisaverb.com mode=network
+setpdt inkisaverb.com web_url=https://inkisaverb.com
+setpdt inkisaverb.com db_name=newdb db_user=newuser db_pass=secret"
 hierarchy=( primary )
 vsetnames=( "Domain" )
 vsettypes=( isDomain )
@@ -23,18 +23,18 @@ vopttypes=( isChoice isSQLDatabasename isSQLDatabasename isSQLDatabasename isazA
 voptflags=(  )
 voptflagpurpose=(  )
 dependencyinstall=(  )
-prerequesite=( installpdtnews )
+prerequesite=( installpdt )
 usedby=(  )
 useserfs=(  )
 useconfigs=(  )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
-if [ -e "/opt/verb/mods/setpdtnews.replace" ]; then . /opt/verb/mods/setpdtnews.replace; return 0; fi # Replaces this script
-if [ -e "/opt/verb/mods/setpdtnews.before" ]; then . /opt/verb/mods/setpdtnews.before; fi # Precedes this script
+if [ -e "/opt/verb/mods/setpdt.replace" ]; then . /opt/verb/mods/setpdt.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setpdt.before" ]; then . /opt/verb/mods/setpdt.before; fi # Precedes this script
 
 
 domain=$1
 shift
-cVappName=pdtnews
+cVappName=pdt
 vcfg="/opt/verb/conf/vapps/vapp.${cVappName}.${domain}"
 if [ -z "${domain}" ] || [ ! -f "${vcfg}" ]; then
   /usr/bin/echo "pdt-news is not installed on ${domain}."
@@ -86,4 +86,4 @@ fi
 /usr/bin/echo "Updated ${cfg}"
 
 
-if [ -e "/opt/verb/mods/setpdtnews.after" ]; then . /opt/verb/mods/setpdtnews.after; fi # Follows this script
+if [ -e "/opt/verb/mods/setpdt.after" ]; then . /opt/verb/mods/setpdt.after; fi # Follows this script

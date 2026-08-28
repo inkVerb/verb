@@ -45,6 +45,14 @@ domain=$1
 . /opt/verb/conf/servertype
 . /opt/verb/conf/inkcertstatus
 
+# Wildcard Certbot is DNS-01 via Nginx (LEMP/LAEMP). LAMP stays HTTP-01 (inkcertreqcbsingle / inkcertdole).
+if [ "${ServerType}" = "lamp" ]; then
+/bin/echo "Wildcard inkCert-Certbot needs Nginx (LEMP or LAEMP). This server is LAMP.
+Use inkcertdocbsingle / inkcertdole, or rebuild as LEMP/LAEMP.
+"
+exit 8
+fi
+
 # Check inkCert installed
 if [ "${InkCertInstalled}" = "NOT_YET" ]; then
 /bin/echo "inkCert not yet installed.

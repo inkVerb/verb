@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the serf name
-surfname="setpdtnews"
+surfname="setpdt"
 
 # Include the settings & functions
 . ${InkSet}
@@ -10,7 +10,7 @@ surfname="setpdtnews"
 # About message
 aboutMsg="$(cat <<EOU
 This modifies settings for a pdt-news vapp already installed on a hosted domain
-Writes verb/conf/vapps/pdtnews.DOMAIN.config and restarts the service
+Writes verb/conf/vapps/pdt.DOMAIN.config and restarts the service
 EOU
 )"
 

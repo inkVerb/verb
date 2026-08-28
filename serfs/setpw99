@@ -2,17 +2,17 @@
 #inkVerbSerf! verb.ink
 
 # This modifies settings for an installed PinkWrite 99 vapp
-## Writes pw99-config.php (PHP array) and matching keys in vapp.pw99.DOMAIN
+## Writes config.php (PHP array) and matching keys in vapp.pw99.DOMAIN
 
 # How to use:
 ## ./setpw99 [domain.tld] [key=value] [key=value] ...
-## ./setpw99 inkisaverb.com host=inkisaverb.com
+## ./setpw99 inkisaverb.com host=99.inkisaverb.com
 ## ./setpw99 inkisaverb.com allow_create_super=false
 ## Keys: host, site_title, allow_create_super, db_name, db_user, db_pass, db_host, mail_from
 
 usagenotes="This modifies settings for an installed PinkWrite 99 vapp"
 usageformat="setpw99 [ domain.tld ] [ key=value ] [ key=value ] ..."
-usageexample="setpw99 inkisaverb.com host=inkisaverb.com
+usageexample="setpw99 inkisaverb.com host=99.inkisaverb.com
 setpw99 inkisaverb.com allow_create_super=false
 setpw99 inkisaverb.com db_name=newdb db_user=newuser db_pass=secret"
 hierarchy=( primary )
@@ -36,7 +36,7 @@ domain=$1
 shift
 cVappName=pw99
 vcfg="/opt/verb/conf/vapps/vapp.${cVappName}.${domain}"
-php="/srv/www/vapps/${cVappName}.${domain}/pw99-config.php"
+php="/srv/www/vapps/${cVappName}.${domain}/config.php"
 if [ -z "${domain}" ] || [ ! -f "${vcfg}" ]; then
   /usr/bin/echo "PinkWrite 99 is not installed on ${domain}."
   exit 8

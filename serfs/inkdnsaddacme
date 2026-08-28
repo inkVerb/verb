@@ -1,0 +1,75 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This adds an ACME DNS-01 _acme-challenge TXT to the zone file (same kind as inkDKIM)
+## nsupdate still publishes live for Letsencrypt; this keeps inkdnsrefreshbind from wiping it
+## Does NOT refreshbind (too slow for a certbot auth hook)
+
+# How to use:
+## ./inkdnsaddacme [ domain.tld ] [ txt-value ]
+## ./inkdnsaddacme [ domain.tld ] [ txt-value ] verber
+
+usagenotes="This adds an ACME DNS-01 _acme-challenge TXT to the inkDNS zone file"
+usageformat="inkdnsaddacme [ domain.tld ] [ txt-value ]"
+usageexample="inkdnsaddacme inkisaverb.com abcdef123"
+hierarchy=( tertiary inkcertreqcb )
+vsetnames=( "Domain" "TXT value" )
+vsettypes=( isDomain isazAZ09lines )
+voptnames=( "verber" )
+vopttypes=( string_match )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkdnsinstall )
+prerequesite=( inkdnsadddomain )
+usedby=(  )
+useserfs=( inkdnsserial )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdnsaddacme.replace" ]; then . /opt/verb/mods/inkdnsaddacme.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdnsaddacme.before" ]; then . /opt/verb/mods/inkdnsaddacme.before; fi # Precedes this script
+
+
+dnsDomain="$1"
+txtval="$2"
+if [ -z "${dnsDomain}" ] || [ -z "${txtval}" ]; then
+  /usr/bin/echo "Domain and TXT value required."
+  exit 5
+fi
+if [ -n "$3" ] && [ "$3" = "verber" ]; then
+  zonedir="inkzones"
+  verberny=" verber"
+else
+  zonedir="zones"
+fi
+
+zonefile="/opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}"
+if [ ! -f "${zonefile}" ]; then
+  /usr/bin/echo "No zone file for ${dnsDomain}."
+  exit 8
+fi
+
+# Already this value?
+if /usr/bin/grep -Fq "\"${txtval}\"" "${zonefile}"; then
+  /usr/bin/echo "ACME TXT already in zone for ${dnsDomain}."
+  exit 0
+fi
+
+txtline="_acme-challenge.${dnsDomain}.	60	IN	TXT	\"${txtval}\""
+
+if /usr/bin/grep -Fq "; ACME challenge ${dnsDomain}" "${zonefile}"; then
+  /usr/bin/sed -i "/;; End ACME challenge ${dnsDomain}/i ${txtline}" "${zonefile}"
+else
+  /usr/bin/echo "; ACME challenge ${dnsDomain}" >> "${zonefile}"
+  /usr/bin/echo "${txtline}" >> "${zonefile}"
+  /usr/bin/echo ";; End ACME challenge ${dnsDomain}" >> "${zonefile}"
+fi
+
+# Serial only — do not refreshbind from a certbot hook
+/opt/verb/serfs/inkdnsserial ${dnsDomain}${verberny} || true
+
+/usr/bin/echo "ACME TXT added to ${dnsDomain} zone file."
+
+
+
+
+if [ -e "/opt/verb/mods/inkdnsaddacme.after" ]; then . /opt/verb/mods/inkdnsaddacme.after; fi # Follows this script

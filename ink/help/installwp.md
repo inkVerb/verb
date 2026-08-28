@@ -5,7 +5,7 @@
 - Lives in `www/vapps/wp.DOMAIN.TLD`, linked from `www/html/DOMAIN.TLD`
 - Writes MariaDB credentials to `verb/conf/vapps/vapp.wp.DOMAIN.TLD`
 - Adds the domain with `adddomain` if it is not already hosted
-- Does not run inkCert; obtain certs separately with `ink cert do`
+- BIMI: copies `conf/lib/logo/nib-logo.svg` to `vapps/wp.DOMAIN/bimi.svg` (`https://domain.tld/bimi.svg`). WP `try_files` / `!-f` serves the real file.
 
 ## Usage
 - `ink install wp -d [ domain.tld ] [ -b database ] [ -u dbuser ] [ -p dbpassword ]`

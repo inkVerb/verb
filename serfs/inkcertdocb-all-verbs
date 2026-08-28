@@ -30,6 +30,16 @@ if [ -e "/opt/verb/mods/inkcertdocb-all-verbs.before" ]; then . /opt/verb/mods/i
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/siteurilist
 . /opt/verb/conf/servertldstatus
+. /opt/verb/conf/servertype
+
+# Wildcard CB is LEMP/LAEMP only
+if [ "${ServerType}" = "lamp" ]; then
+/bin/echo "Wildcard inkCert-Certbot needs Nginx (LEMP or LAEMP). This server is LAMP.
+Use inkcertdocbsingle-all-verbs / inkcertdole-all-verbs, or rebuild as LEMP/LAEMP.
+"
+exit 8
+fi
+
 
 # Verify that it's not a domain Dod Verber
 if /bin/grep -Fq "ServerName=DOMAIN_MOD-" /opt/verb/conf/servernameip; then

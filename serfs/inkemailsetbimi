@@ -1,0 +1,54 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This writes a BIMI SVG to www/html/domain.tld/bimi.svg and ensures the DNS TXT
+## Used by inkemailadmin when PHP cannot write the html tree
+
+# How to use:
+## ./inkemailsetbimi [ domain.tld ] [ /path/to.svg ]
+
+usagenotes="This writes BIMI SVG to www/html/domain.tld/bimi.svg and adds the DNS TXT"
+usageformat="inkemailsetbimi [ domain.tld ] [ svg path ]"
+usageexample="inkemailsetbimi inkisaverb.com /tmp/logo.svg"
+hierarchy=( tertiary )
+vsetnames=( "Domain" "SVG path" )
+vsettypes=( isDomain isazAZ09lines )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( inkdnsaddbimi )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkemailsetbimi.replace" ]; then . /opt/verb/mods/inkemailsetbimi.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkemailsetbimi.before" ]; then . /opt/verb/mods/inkemailsetbimi.before; fi # Precedes this script
+
+
+domain="$1"
+src="$2"
+if [ -z "${domain}" ] || [ ! -f "${src}" ]; then
+  /usr/bin/echo "Domain and SVG path required."
+  exit 5
+fi
+if ! /usr/bin/grep -qi '<svg' "${src}"; then
+  /usr/bin/echo "Not an SVG."
+  exit 8
+fi
+
+dest="/srv/www/html/${domain}/bimi.svg"
+/usr/bin/mkdir -p "/srv/www/html/${domain}"
+/usr/bin/cp "${src}" "${dest}"
+/usr/bin/chown www:www "${dest}"
+/usr/bin/chmod 644 "${dest}"
+
+/opt/verb/serfs/inkdnsaddbimi "${domain}" || true
+
+/usr/bin/echo "BIMI logo at https://${domain}/bimi.svg"
+
+
+
+
+if [ -e "/opt/verb/mods/inkemailsetbimi.after" ]; then . /opt/verb/mods/inkemailsetbimi.after; fi # Follows this script

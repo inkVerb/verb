@@ -2,19 +2,19 @@
 #inkVerbSerf! verb.ink
 
 # This downloads and installs pdt-news as a vapp on a hosted domain
-## App resides in www/vapps/pdtnews.DOMAIN.TLD, Go binary on a localhost port, Nginx proxies the domain
-## Credentials in verb/conf/vapps/vapp.pdtnews.DOMAIN.TLD; app config in verb/conf/vapps/pdtnews.DOMAIN.config
+## App resides in www/vapps/pdt.DOMAIN.TLD, Go binary on a localhost port, Nginx proxies the domain
+## Credentials in verb/conf/vapps/vapp.pdt.DOMAIN.TLD; app config in verb/conf/vapps/pdt.DOMAIN.config
 ## Domain is added if missing. Does NOT run inkCert.
 
 # How to use:
-## ./installpdtnews [domain.tld] [single|network - optional] [dbase] [dbuser] [dbpassword]
-## ./installpdtnews [domain.tld]
+## ./installpdt [domain.tld] [single|network - optional] [dbase] [dbuser] [dbpassword]
+## ./installpdt [domain.tld]
 
 usagenotes="This downloads and installs pdt-news to a specified domain"
-usageformat="installpdtnews [ domain.tld ] [ single|network - optional ] [ dbase - optional ] [ dbuser - optional ] [ dbpassword - optional ]"
-usageexample="installpdtnews inkisaverb.com
-installpdtnews inkisaverb.com network
-installpdtnews inkisaverb.com single somedb someuser somepass"
+usageformat="installpdt [ domain.tld ] [ single|network - optional ] [ dbase - optional ] [ dbuser - optional ] [ dbpassword - optional ]"
+usageexample="installpdt inkisaverb.com
+installpdt inkisaverb.com network
+installpdt inkisaverb.com single somedb someuser somepass"
 hierarchy=( primary )
 vsetnames=( "Domain" )
 vsettypes=( isDomain )
@@ -28,11 +28,11 @@ usedby=(  )
 useserfs=( inkget adddomain pgsqlnewdb setnginxvappproxy )
 useconfigs=( servertype )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
-if [ -e "/opt/verb/mods/installpdtnews.replace" ]; then . /opt/verb/mods/installpdtnews.replace; return 0; fi # Replaces this script
-if [ -e "/opt/verb/mods/installpdtnews.before" ]; then . /opt/verb/mods/installpdtnews.before; fi # Precedes this script
+if [ -e "/opt/verb/mods/installpdt.replace" ]; then . /opt/verb/mods/installpdt.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installpdt.before" ]; then . /opt/verb/mods/installpdt.before; fi # Precedes this script
 
 
-cVappName=pdtnews
+cVappName=pdt
 
 domain=$1
 if [ "$2" = "single" ] || [ "$2" = "network" ] || [ "$2" = "multi" ]; then
@@ -47,7 +47,7 @@ else
   dBPassword=$4
 fi
 cleanName=$(/usr/bin/echo ${domain} | /usr/bin/sed -e 's/\.//g')
-svcName="pdtnews-$(/usr/bin/echo ${domain} | /usr/bin/tr '.' '-')"
+svcName="pdt-$(/usr/bin/echo ${domain} | /usr/bin/tr '.' '-')"
 appPort=$(( 9100 + $(/usr/bin/printf '%s' "${domain}" | /usr/bin/cksum | /usr/bin/awk '{print $1 % 800}') ))
 
 if [ -z ${1} ]; then
@@ -176,4 +176,4 @@ Go to https://${domain}/install to finish pdt-news (passwordless by default).
 
 
 
-if [ -e "/opt/verb/mods/installpdtnews.after" ]; then . /opt/verb/mods/installpdtnews.after; fi # Follows this script
+if [ -e "/opt/verb/mods/installpdt.after" ]; then . /opt/verb/mods/installpdt.after; fi # Follows this script

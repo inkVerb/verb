@@ -27,7 +27,7 @@ voptflagpurpose=(  )
 dependencyinstall=(  )
 prerequesite=( newftpvip 'or' newftpfiler )
 usedby=( adddomain addsubdomain )
-useserfs=( setinkcertmail inkdnsadddomain newinkdkim inkemaildomain inkemailaddscriptfilter inkvmaildomain inkdnsaddmail inkdnsaddinkdkim )
+useserfs=( setinkcertmail inkdnsadddomain newinkdkim inkemaildomain inkemailaddscriptfilter inkvmaildomain inkdnsaddmail inkdnsaddinkdkim inkdnsaddbimi )
 useconfigs=( servernameip servermailpath inkcertstatus )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/newdomainshell.replace" ]; then . /opt/verb/mods/newdomainshell.replace; return 0; fi # Replaces this script
@@ -98,8 +98,14 @@ if [ "${ServerMailStatus}" != "EMAIL_NOT_INSTALLED" ]; then
   if [ -f "/opt/verb/conf/inkdns/zones/db.${newdomain}" ]; then
   /opt/verb/serfs/inkdnsaddmail ${newdomain}; wait
   /opt/verb/serfs/inkdnsaddinkdkim ${newdomain}; wait
+  /opt/verb/serfs/inkdnsaddbimi ${newdomain}; wait
   fi
 
+fi
+
+# BIMI even when mail is not the reason for the domain (logo at /bimi.svg)
+if [ -f "/opt/verb/conf/inkdns/zones/db.${newdomain}" ]; then
+  /opt/verb/serfs/inkdnsaddbimi ${newdomain}; wait
 fi
 
 # Parked?

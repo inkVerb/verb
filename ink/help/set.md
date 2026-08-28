@@ -1,7 +1,7 @@
 # set
 
 ## This modifies settings for vapps already installed with `ink install`
-- pdt-news (`ink set pdtnews`)
+- pdt-news (`ink set pdt`)
 - badAd (`ink set badad`)
 - PinkWrite 99 (`ink set pw99`)
 - Database credentials are rewritten in `verb/conf/vapps/vapp.APP.DOMAIN`

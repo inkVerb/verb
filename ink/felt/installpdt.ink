@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the serf name
-surfname="installpdtnews"
+surfname="installpdt"
 
 # Include the settings & functions
 . ${InkSet}
@@ -10,7 +10,7 @@ surfname="installpdtnews"
 # About message
 aboutMsg="$(cat <<EOU
 This downloads and installs pdt-news as a vapp on a hosted domain
-pdt-news resides in www/vapps/pdtnews.DOMAIN.TLD; Nginx proxies to a localhost Go binary
+pdt-news resides in www/vapps/pdt.DOMAIN.TLD; Nginx proxies to a localhost Go binary
 EOU
 )"
 

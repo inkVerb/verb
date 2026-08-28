@@ -15,7 +15,7 @@ usagenotes="This completely removes a 'vapp' (inkVerb web app), it's database, a
 usageformat="killvapp [ app namespace ]"
 usageexample="killvapp wp
 killvapp wp.inkisaverb.com
-killvapp pdtnews.inkisaverb.com"
+killvapp pdt.inkisaverb.com"
 hierarchy=( primary )
 vsetnames=( "Vapp name" )
 vsettypes=( isazAZ09lines )

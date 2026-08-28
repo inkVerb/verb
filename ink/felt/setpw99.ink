@@ -10,7 +10,7 @@ surfname="setpw99"
 # About message
 aboutMsg="$(cat <<EOU
 This modifies settings for a PinkWrite 99 vapp already installed on a hosted domain
-Writes pw99-config.php (SysAdmin config; host is after https:// only)
+Writes config.php (SysAdmin config; host is after https:// only)
 EOU
 )"
 

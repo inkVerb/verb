@@ -1,0 +1,68 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This removes the BIMI TXT record from an existing DNS zone file on the server
+
+# How to use:
+## ./killinkdnsbimi [ domain.tld ]
+## ./killinkdnsbimi [ domain.tld ] verber
+
+usagenotes="This removes the BIMI TXT record from an existing DNS zone file on the server"
+usageformat="killinkdnsbimi [ domain.tld ]"
+usageexample="killinkdnsbimi inkisaverb.com
+killinkdnsbimi NAME.verb.email verber"
+hierarchy=( tertiary killdomainshell )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=( "verber" )
+vopttypes=( string_match )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( inkdnsaddbimi )
+usedby=( killdomainshell )
+useserfs=( inkdnsserial inkdnsrefreshbind )
+useconfigs=( inkdnsconf )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/killinkdnsbimi.replace" ]; then . /opt/verb/mods/killinkdnsbimi.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/killinkdnsbimi.before" ]; then . /opt/verb/mods/killinkdnsbimi.before; fi # Precedes this script
+
+
+dnsDomain="$1"
+if [ -n "$2" ] && [ "$2" = "verber" ]; then
+  zonedir="inkzones"
+  verberny=" verber"
+else
+  zonedir="zones"
+fi
+
+zonefile="/opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}"
+if [ ! -f "${zonefile}" ]; then
+  /usr/bin/echo "No zone file for ${dnsDomain}."
+  exit 0
+fi
+
+# Check if added
+if ! /bin/grep -Fq "; BIMI ${dnsDomain}" "${zonefile}"; then
+/bin/echo "The BIMI record for ${dnsDomain} has not been added. Use inkdnsaddbimi to add it."
+exit 0; fi
+
+# Remove the key
+/bin/sed -i "/; BIMI ${dnsDomain}/,/;; End BIMI ${dnsDomain}/d" "${zonefile}"
+
+# Set the Serial No
+/opt/verb/serfs/inkdnsserial ${dnsDomain}${verberny}
+
+# Refresh zones
+if [ -f "/opt/verb/conf/inkdnsconf" ]; then
+  . /opt/verb/conf/inkdnsconf
+  if [ "${InkDNSStat}" = "INSTALLED" ]; then
+/opt/verb/serfs/inkdnsrefreshbind; fi; fi
+
+# Finish
+/bin/echo "The BIMI record has been removed from the ${dnsDomain} DNS zone file."
+
+
+
+
+if [ -e "/opt/verb/mods/killinkdnsbimi.after" ]; then . /opt/verb/mods/killinkdnsbimi.after; fi # Follows this script

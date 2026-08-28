@@ -42,7 +42,8 @@ filename_domain="$(/usr/bin/echo "${domain}" | /usr/bin/sed 's/\./_/g')"
 filename_email=${emailuser}-${filename_domain}
 
 # Check to see if inkemail is installed
-if [[ "${ServerMailStatus}" == "MADDY_EMAIL_"* ]]; then # For serfs inside installmaddymail
+# MADDY_EMAIL_READY during installmaddymail; MADDY_EMAIL_SERVER after
+if [[ "${ServerMailStatus}" != "MADDY_EMAIL_"* ]]; then
   /usr/bin/echo "Maddy email not installed, not adding $domain"
   exit 0; fi
 
@@ -83,7 +84,7 @@ else
   fi
   scriptpath="/srv/vip/email/customscripts/${scriptname}"
   /usr/bin/echo "import /etc/maddy/conf.d/customscripts/${filename_email}.conf" >> /etc/maddy/conf.d/customscripts.conf
-  /usr/bin/cat <<EOF > /etc/maddy/conf.d/unsubscribe/${filename_email}.conf
+  /usr/bin/cat <<EOF > /etc/maddy/conf.d/customscripts/${filename_email}.conf
 destination ${emailaddress} {
   check {
     command ${scriptpath} {sender}
