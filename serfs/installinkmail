@@ -59,7 +59,8 @@ if [ ! -f "${src}/cmd/inkmail/main.go" ]; then
 fi
 
 if ! /usr/bin/command -v go >/dev/null 2>&1; then
-  /usr/bin/pacman -S --noconfirm --needed go
+  /usr/bin/echo "Go is not installed. It should have been installed by make-verber (lamp/lemp/laemp)."
+  exit 6
 fi
 
 dst="/srv/www/vapps/inkmail"

@@ -31,14 +31,14 @@ voptflagpurpose=(  )
 dependencyinstall=(  )
 prerequesite=(  )
 usedby=(  )
-useserfs=( inkget inkemailsysowncloud inkvmailsysowncloud inkcert_ inkdriveapp )
+useserfs=( inkget inkemailsyspydio inkvmailsyspydio inkcert_ inkdriveapp setvappconfig )
 useconfigs=( servernameip siteurilist servertype servermailpath )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/installpydio.replace" ]; then . /opt/verb/mods/installpydio.replace; return 0; fi # Replaces this script
 if [ -e "/opt/verb/mods/installpydio.before" ]; then . /opt/verb/mods/installpydio.before; fi # Precedes this script
 
 
-cVappName=owncloud
+cVappName=pydio
 
 # Include the configs
 . /opt/verb/conf/servernameip
@@ -53,7 +53,7 @@ if [ -f /opt/verb/conf/vapps/vapp.${cVappName} ]; then
 exit 0; fi
 ## Directory
 if [ -d /srv/cloud/${cVappName} ]; then
-/usr/bin/echo "ownCloud already exists in the system. If it isn't working, look deeper on the server. For now, doing nothing."
+/usr/bin/echo "Pydio already exists in the system. If it isn't working, look deeper on the server. For now, doing nothing."
 exit 8; fi
 ## Web server
 if [ ${ServerType} = "lamp" ]; then
@@ -139,24 +139,6 @@ ExecStartPre=/bin/sh -c 'echo $MAINPID > /run/pydio/pydio.pid'
 WantedBy=multi-user.target
 EOF
 
-
-# Auto database
-cleanName=$(/usr/bin/echo $cVappName | /usr/bin/sed -e 's/\.//g')
-if [ -z ${4} ]; then
-dBPassword=$(/usr/bin/pwgen -s -1 10)
-else
-dBPassword="$4"
-fi
-if [ -z ${1} ]; then
-dBase=${cleanName}$(/usr/bin/pwgen -s -1 6)
-else
-dBase="$2"
-fi
-if [ -z ${3} ]; then
-dBaseUser=${dBase}
-else
-dBaseUser="$3"
-fi
 
 ## Create the database and credentials (needed now, before service starts)
 /usr/bin/sudo -u postgres psql -c "CREATE USER ${dBaseUser} WITH PASSWORD '${dBPassword}';"
@@ -257,14 +239,14 @@ case ${InkCerted} in
   /opt/verb/serfs/inkcertaddcb ${subDom}.${blueURI} ${blueURI}
   ;;
   NO|NOT_YET)
-    /usr/bin/echo "Nextcloud is currently using Snakeoil certs, ready for inkCert"
+    /usr/bin/echo "Pydio is currently using Snakeoil certs, ready for inkCert"
   ;;
   *)
     if ! /usr/bin/grep -q "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
       /usr/bin/echo "Something's wrong with the inkCert siteinkcert configs! Aborting"
       exit 6
     else
-      /usr/bin/echo "Nextcloud is currently using Snakeoil certs, ready for inkCert"
+      /usr/bin/echo "Pydio is currently using Snakeoil certs, ready for inkCert"
     fi
   ;;
 esac
@@ -287,10 +269,11 @@ fi
 /usr/bin/chown -R pydio:pydio /srv/cloud/pydio
 /usr/bin/chmod 600 /srv/cloud/pydio/pydio.json
 /usr/bin/chmod 700 /srv/cloud/pydio
+/opt/verb/serfs/setvappconfig "vapp.${cVappName}" "/srv/cloud/pydio/pydio.json"
 
 # Initialize
 /usr/bin/systemctl daemon-reload
-/usr/bin/systemctl enable --now pydio # enable and start in one command
+/usr/bin/systemctl enable --now cells # unit is cells.service; monit starts/stops cells
 
 # Monit
 /usr/bin/cp /opt/verb/conf/lib/cloud/monit/monitrc.d/pydio /etc/monit/monitrc.d/

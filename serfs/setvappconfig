@@ -1,14 +1,15 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
 
-# This records the live config path on a vapp.* file as the third assignment line (appConfig=)
-## and snapshots the installed original to verb/conf/vapps/orig/vapp.NAME so the verb web UI can reset it.
+# This records the live config path on a vapp.* file as the first assignment line (appConfig=)
+## then the database lines (appDBase / appDDBUsr / appDDBPass). Snapshots the installed original
+## to verb/conf/vapps/orig/vapp.NAME so the verb web UI can reset it.
 ## The web UI reads appConfig=; it does not browse the filesystem.
 
 # How to use:
 ## ./setvappconfig [ vapp.NAME | NAME ] [ /absolute/path/to/config ]
 
-usagenotes="This sets appConfig= on a vapp.* file (third line) and snapshots the original config for reset"
+usagenotes="This sets appConfig= on a vapp.* file (first line, then the DB credentials) and snapshots the original config for reset"
 usageformat="setvappconfig [ vapp.NAME ] [ config path ]"
 usageexample="setvappconfig vapp.wp.inkisaverb.com /srv/www/vapps/wp.inkisaverb.com/wp-config.php
 setvappconfig nextcloud /srv/www/vapps/nextcloud/config/config.php"
@@ -21,7 +22,7 @@ voptflags=(  )
 voptflagpurpose=(  )
 dependencyinstall=(  )
 prerequesite=(  )
-usedby=( installwp installpdt installpw99 installbadad installsuitecrm installorangehrm installnextcloud installowncloud installampache installmediawiki postinstallmediawiki installphpmyadmin installwpinkbb installwpinkblog wpdup installghostsite installghostinkblog installcollaboraonline installiwpadmin installnet2ftp )
+usedby=( installwp installpdt installpw99 installbadad installsuitecrm installorangehrm installnextcloud installowncloud installampache installmediawiki postinstallmediawiki installphpmyadmin installwpinkbb installwpinkblog wpdup installghostsite installghostinkblog installcollaboraonline installiwpadmin installnet2ftp installpydio )
 useserfs=(  )
 useconfigs=(  )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
@@ -60,15 +61,14 @@ esac
 /usr/bin/mkdir -p /opt/verb/conf/vapps/orig
 vfile="/opt/verb/conf/vapps/${base}"
 if [ ! -f "${vfile}" ]; then
-  /usr/bin/printf 'appDBase=\nappDDBUsr=\nappConfig=%s\n' "${cfgpath}" > "${vfile}"
+  /usr/bin/printf 'appConfig=%s\nappDBase=\nappDDBUsr=\nappDDBPass=\n' "${cfgpath}" > "${vfile}"
 else
   /usr/bin/sed -i '/^appConfig=/d' "${vfile}"
-  if /usr/bin/grep -q '^appDDBUsr=' "${vfile}"; then
-    /usr/bin/sed -i "/^appDDBUsr=/a appConfig=${cfgpath}" "${vfile}"
-  elif /usr/bin/grep -q '^appDBase=' "${vfile}"; then
-    /usr/bin/sed -i "/^appDBase=/a appConfig=${cfgpath}" "${vfile}"
-  else
+  first="$(/usr/bin/head -n1 "${vfile}")"
+  if [[ "${first}" == \#!* ]]; then
     /usr/bin/sed -i "1a appConfig=${cfgpath}" "${vfile}"
+  else
+    /usr/bin/sed -i "1i appConfig=${cfgpath}" "${vfile}"
   fi
 fi
 

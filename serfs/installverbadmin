@@ -50,7 +50,8 @@ if [ ! -f "${src}/cmd/verbadmin/main.go" ]; then
   exit 8
 fi
 if ! /usr/bin/command -v go >/dev/null 2>&1; then
-  /usr/bin/pacman -S --noconfirm --needed go sqlite
+  /usr/bin/echo "Go is not installed. It should have been installed by make-verber (lamp/lemp/laemp)."
+  exit 6
 fi
 /usr/bin/pacman -S --noconfirm --needed sqlite python-pam 2>/dev/null || true
 

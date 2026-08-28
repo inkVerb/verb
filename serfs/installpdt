@@ -86,7 +86,8 @@ appMode="single"; fi
 /bin/mv ${cVappName} ${cVappName}.${domain}
 
 if ! /usr/bin/command -v go >/dev/null 2>&1; then
-  /usr/bin/pacman -S --noconfirm --needed go
+  /usr/bin/echo "Go is not installed. It should have been installed by make-verber (lamp/lemp/laemp)."
+  exit 6
 fi
 cd /srv/www/vapps/${cVappName}.${domain} || exit 6
 /usr/bin/mkdir -p bin
