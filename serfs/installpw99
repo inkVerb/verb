@@ -1,0 +1,156 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This downloads and installs PinkWrite 99 as a vapp with www/html/DOMAIN.TLD link from adddomain
+## PinkWrite 99 resides in www/vapps/pw99.DOMAIN.TLD
+## Same progression as installwp: domain folder stays in www/domains; vapp is the live tree
+## The domain will be added if it has not been already
+## This will NOT run inkCert
+
+# All options after the domain are optional, but are sequential
+
+# How to use:
+## ./installpw99 [domain.tld] [dbase] [dbuser] [dbpassword]
+## ./installpw99 [domain.tld]
+
+usagenotes="This downloads and installs PinkWrite 99 to a specified domain"
+usageformat="installpw99 [ domain.tld ] [ dbase - optional ] [ dbuser - optional ] [ dbpassword - optional ]"
+usageexample="installpw99 inkisaverb.com
+installpw99 sub.inkisaverb.com
+installpw99 inkisaverb.com somedatabase somedbuser somedbpassword"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=( "Database" "Database user" "Database password" )
+vopttypes=( isSQLDatabasename isSQLDatabasename isSQLDatabasename )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( inkget adddomain )
+useconfigs=( servertype )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/installpw99.replace" ]; then . /opt/verb/mods/installpw99.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installpw99.before" ]; then . /opt/verb/mods/installpw99.before; fi # Precedes this script
+
+
+cVappName=pw99
+
+domain=$1
+dBase=$2
+dBaseUser=$3
+dBPassword=$4
+cleanName=$(/usr/bin/echo ${domain} | /usr/bin/sed -e 's/\.//g')
+
+if [ -z ${1} ]; then
+/bin/echo "You must designate a domain. Read the How to use. Can't continue."
+exit 8; fi
+if [ -f /opt/verb/conf/vapps/vapp.${cVappName}.${domain} ]; then
+/bin/echo "This is already installed."
+exit 0; fi
+if [ -d /srv/www/vapps/${cVappName}.${domain} ]; then
+/bin/echo "That PinkWrite 99 site already exists in the system. If it isn't working, look deeper on the server. For now, doing nothing."
+exit 0; fi
+
+if [ ! -d "/srv/www/domains/${domain}" ]; then
+/opt/verb/serfs/adddomain ${domain}
+wait
+fi
+
+cd /srv/www/vapps || exit 6
+/opt/verb/serfs/inkget ${cVappName} check
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+
+if [ -z "${dBPassword}" ]; then
+dBPassword=$(/usr/bin/pwgen -s -1 10); fi
+if [ -z "${dBase}" ]; then
+dBase=pw99$(/usr/bin/echo ${cleanName} | /usr/bin/cut -c1-20)$(/usr/bin/pwgen -s -1 6); fi
+if [ -z "${dBaseUser}" ]; then
+dBaseUser=${dBase}; fi
+
+/bin/mv ${cVappName} ${cVappName}.${domain}
+/bin/rm -f /srv/www/html/${domain}
+/bin/ln -sfn /srv/www/vapps/${cVappName}.${domain} /srv/www/html/${domain}
+/bin/ln -sfn /srv/www/vapps/${cVappName}.${domain} /srv/vip/_webapps/; wait
+/bin/chown -R www:www /srv/www/html/${domain}; wait
+/bin/chown -R www:www /srv/www/vapps/${cVappName}.${domain}; wait
+
+/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
+CREATE DATABASE ${dBase};
+GRANT ALL PRIVILEGES ON ${dBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '${dBPassword}';
+FLUSH PRIVILEGES;"
+
+if [ -f /srv/www/vapps/${cVappName}.${domain}/sql/schema.sql ]; then
+  /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf ${dBase} < /srv/www/vapps/${cVappName}.${domain}/sql/schema.sql
+fi
+
+/usr/bin/mkdir -p /opt/verb/conf/vapps
+/bin/echo "appDBase=${dBase}
+appDDBUsr=${dBaseUser}
+appDDBPass=${dBPassword}
+appEngine=mariadb" > /opt/verb/conf/vapps/vapp.${cVappName}.${domain}
+
+# SysAdmin config (PHP return array). Host is after https:// only.
+# allow_create_super true so the first Superintendent can be created at /install.php; set false after.
+/usr/bin/cat > /srv/www/vapps/${cVappName}.${domain}/pw99-config.php <<EOF
+<?php
+return [
+    'configured' => true,
+    'allow_create_super' => true,
+    'host' => '${domain}',
+    'site_title' => 'PinkWrite 99',
+    'db' => [
+        'host' => '127.0.0.1',
+        'port' => 3306,
+        'name' => '${dBase}',
+        'user' => '${dBaseUser}',
+        'pass' => '${dBPassword}',
+        'charset' => 'utf8mb4',
+    ],
+    'mail' => [
+        'transport' => 'mail',
+        'from' => 'noreply@${domain}',
+        'from_name' => 'PinkWrite 99',
+        'smtp_host' => '127.0.0.1',
+        'smtp_port' => 587,
+        'smtp_user' => '',
+        'smtp_pass' => '',
+        'smtp_secure' => 'tls',
+    ],
+    'github' => 'https://github.com/PinkWrite/99.git',
+    'github_branch' => 'master',
+    'oauth' => [
+        'google' => ['id' => '', 'secret' => ''],
+        'apple'  => ['id' => '', 'secret' => ''],
+        'github' => ['id' => '', 'secret' => ''],
+    ],
+];
+EOF
+/bin/chown www:www /srv/www/vapps/${cVappName}.${domain}/pw99-config.php
+/bin/chmod 640 /srv/www/vapps/${cVappName}.${domain}/pw99-config.php
+
+/bin/chown -R www:www /srv/www/vapps/${cVappName}.${domain}
+. /opt/verb/conf/servertype
+if [ ${ServerType} = "lemp" ]; then
+  /usr/bin/systemctl restart nginx
+elif [ ${ServerType} = "lamp" ]; then
+  /usr/bin/systemctl restart httpd
+elif [ ${ServerType} = "laemp" ]; then
+  /usr/bin/systemctl restart httpd
+  /usr/bin/systemctl restart nginx
+fi
+
+/usr/bin/echo "These are setup:
+
+Database: ${dBase}
+Database user: ${dBaseUser}
+Database password: ${dBPassword}
+
+Go to https://${domain}/install.php to create the first Superintendent.
+Then set allow_create_super to false in pw99-config.php.
+"
+
+
+
+if [ -e "/opt/verb/mods/installpw99.after" ]; then . /opt/verb/mods/installpw99.after; fi # Follows this script

@@ -13,7 +13,9 @@
 
 usagenotes="This completely removes a 'vapp' (inkVerb web app), it's database, and it's config file"
 usageformat="killvapp [ app namespace ]"
-usageexample="killvapp wp"
+usageexample="killvapp wp
+killvapp wp.inkisaverb.com
+killvapp pdtnews.inkisaverb.com"
 hierarchy=( primary )
 vsetnames=( "Vapp name" )
 vsettypes=( isazAZ09lines )
@@ -37,11 +39,32 @@ appName=$1
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/vapps/vapp.${appName}
 
+# Stop a Go vapp systemd unit if this install recorded one
+if [ -n "${appService}" ] && [ -f "/etc/systemd/system/${appService}.service" ]; then
+  /usr/bin/systemctl disable --now "${appService}.service" >/dev/null 2>&1 || true
+  /bin/rm -f "/etc/systemd/system/${appService}.service"
+  /usr/bin/systemctl daemon-reload
+fi
+
+if [ -n "${appConfig}" ]; then
+  /bin/rm -f "${appConfig}"
+fi
+if [ -n "${appEtcLink}" ]; then
+  /bin/rm -f "${appEtcLink}"
+fi
+
 # Kill the database and user
-/usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
+if [ "${appEngine}" = "postgres" ]; then
+  /usr/bin/sudo -u postgres psql -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='${appDBase}';" >/dev/null 2>&1 || true
+  /usr/bin/sudo -u postgres psql -c "DROP DATABASE IF EXISTS ${appDBase};"
+  /usr/bin/sudo -u postgres psql -c "DROP USER IF EXISTS ${appDDBUsr};"
+  /bin/rm -f /opt/verb/conf/sql/pgsqldb.${appDBase} /opt/verb/conf/sql/pgsqldb.${appDBase}.pgpass
+else
+  /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
 DROP DATABASE ${appDBase};
 DROP USER ${appDDBUsr}@localhost;
 FLUSH PRIVILEGES;"
+fi
 
 # Kill the config
 /bin/rm -f /opt/verb/conf/vapps/vapp.${appName}
@@ -57,7 +80,6 @@ FLUSH PRIVILEGES;"
 
 ${appName} is now dead.
 "
-
 
 
 

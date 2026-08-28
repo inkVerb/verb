@@ -1,0 +1,58 @@
+#!/bin/bash
+#inkVerb! repo donjon dragon, verb.ink
+
+# This updates the badAd repo package from GitHub (tarball, not git clone)
+## Default ref is the golang branch until it is merged to main
+
+# How to use:
+## ./badad.updaterepo
+
+cVappName=badad
+# Include the config files
+. /opt/verb/conf/serverinkget
+. /opt/verb/conf/inklists/repoverlist
+distVer="${badad}"
+
+if [ $InkGet_Method != "ZJZ" ]; then
+  cd /opt/verb/repo
+elif [ $InkGet_Method = "ZJZ" ] ; then
+  cd /srv/www/vapps
+fi
+
+# Announce
+/usr/bin/echo "Retrieving badAd ${distVer}..."
+
+/usr/bin/wget -O ${cVappName}.tgz "https://github.com/badAd/badad/archive/refs/heads/${distVer}.tar.gz"
+if [ ! -f "${cVappName}.tgz" ]; then
+/bin/echo "Failed download."; touch "${cVappName}.failed"
+exit 4; else
+/bin/rm -f ${cVappName}.failed; fi
+
+if [ -n "${badadsha}" ] && [ "${badadsha}" != "SKIP" ]; then
+  checksha=$(/usr/bin/sha256sum ${cVappName}.tgz)
+  if [ "${checksha}" = "${badadsha}  ${cVappName}.tgz" ]; then
+    /usr/bin/echo "Download checks out."
+  else
+    /usr/bin/echo "SHA check failed. The downloaded file ${PWD}/${cVappName}.tgz is not what was expected."
+    exit 4
+  fi
+fi
+
+if [ $InkGet_Method != "ZJZ" ]; then
+  /bin/rm -f ${cVappName}.legacy.txz
+  /usr/bin/touch ${cVappName}.txz
+  /bin/mv ${cVappName}.txz ${cVappName}.legacy.txz
+fi
+/usr/bin/echo "Extracting from vendor..."
+extracted="$(/usr/bin/tar tzf ${cVappName}.tgz | /usr/bin/head -1 | /usr/bin/cut -d/ -f1)"
+/usr/bin/tar xf ${cVappName}.tgz
+/bin/rm ${cVappName}.tgz
+/bin/mv "${extracted}" ${cVappName}
+if [ $InkGet_Method != "ZJZ" ]; then
+  /opt/verb/serfs/vtxzin ${cVappName}; wait
+  /bin/rm -rf ${cVappName}
+  /bin/echo "${distVer}" > ${cVappName}.ver.${distVer}
+fi
+
+# Finish
+/bin/echo "Downloaded badAd ${distVer}."

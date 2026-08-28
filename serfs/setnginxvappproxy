@@ -1,0 +1,118 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This points an already-hosted domain's Nginx vhost at a local reverse-proxy port
+## Used by Go vapps (pdt-news, badAd) so the domain keeps inkCert while the app binds 127.0.0.1:PORT
+## Replaces the PHP/static location / with a proxy_pass, preserving inkCert markers and cert paths
+
+# How to use:
+## ./setnginxvappproxy [ domain.tld ] [ 127.0.0.1:9001 ]
+
+usagenotes="This points a hosted domain Nginx vhost at a local reverse-proxy port for a Go vapp"
+usageformat="setnginxvappproxy [ domain.tld ] [ 127.0.0.1:port ]"
+usageexample="setnginxvappproxy inkisaverb.com 127.0.0.1:9001"
+hierarchy=( tertiary installpdtnews )
+vsetnames=( "Domain" "Proxy pass" )
+vsettypes=( isDomain isazAZ09lines )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( adddomain )
+usedby=( installpdtnews installbadad )
+useserfs=(  )
+useconfigs=( servertype )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setnginxvappproxy.replace" ]; then . /opt/verb/mods/setnginxvappproxy.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setnginxvappproxy.before" ]; then . /opt/verb/mods/setnginxvappproxy.before; fi # Precedes this script
+
+
+. /opt/verb/conf/servertype
+
+domain="$1"
+proxypass="$2"
+if [ -z "${domain}" ] || [ -z "${proxypass}" ]; then
+  /usr/bin/echo "Domain and 127.0.0.1:port required."; exit 5
+fi
+
+if [ ${ServerType} = "lamp" ]; then
+  /usr/bin/echo "Go vapps need Nginx (LEMP or LAEMP) for the reverse proxy. LAMP/Apache is not wired here."
+  exit 8
+fi
+
+nconf="/opt/verb/conf/webserver/sites-available/nginx/${domain}.conf"
+if [ ! -f "${nconf}" ]; then
+  /usr/bin/echo "Nginx site config missing for ${domain}"; exit 8
+fi
+
+# Preserve inkCert status + any live cert paths already written by inkcertadd*
+inkcertline="$(/usr/bin/grep -m1 '#INKVERB-INKCERT=' "${nconf}" || true)"
+[ -z "${inkcertline}" ] && inkcertline="#INKVERB-INKCERT=INK_NO"
+sslcert="$(/usr/bin/grep -m1 '^[[:space:]]*ssl_certificate[[:space:]]' "${nconf}" || true)"
+sslkey="$(/usr/bin/grep -m1 '^[[:space:]]*ssl_certificate_key' "${nconf}" || true)"
+if [ -z "${sslcert}" ]; then
+  sslcert="  ssl_certificate /etc/ssl/server/server.crt;"
+  sslkey="  ssl_certificate_key /etc/ssl/server/server.key;"
+fi
+
+wwwblock=""
+if /usr/bin/grep -q '##INKWWWFIX=fixed' "${nconf}"; then
+  wwwblock="$(/usr/bin/awk '/##INKWWWFIX=fixed/,/##verbFIXwww/' "${nconf}")"
+fi
+
+/usr/bin/cat > "${nconf}" <<EOF
+server {
+  listen 443 ssl;
+  listen [::]:443 ssl;
+  http2 on;
+  server_name ${domain};
+
+  #INKVERB-VAPP-PROXY-start
+  location / {
+    proxy_http_version 1.1;
+    proxy_set_header Host \$host;
+    proxy_set_header X-Real-IP \$remote_addr;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+    proxy_hide_header Upgrade;
+    proxy_pass http://${proxypass};
+  }
+  #INKVERB-VAPP-PROXY-stop
+
+${sslcert}
+${sslkey}
+  ${inkcertline}
+
+  location ~ /.well-known {
+    allow all;
+    root /srv/www/html/${domain};
+  }
+
+  error_log /var/log/nginx/${domain}-error_log warn;
+}
+
+##inkHTTPremoved
+##INKHTTPSFIX=fixed
+server {
+  listen 80;
+  listen [::]:80;
+  server_name ${domain};
+  location ~ /.well-known {
+    allow all;
+    root /srv/www/html/${domain};
+  }
+  return 301 https://\$host\$request_uri;
+}
+##verbFIXhttps
+${wwwblock}
+EOF
+
+if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
+  /usr/bin/systemctl reload nginx || /usr/bin/systemctl restart nginx
+fi
+
+/usr/bin/echo "${domain} now proxies to ${proxypass}"
+
+
+if [ -e "/opt/verb/mods/setnginxvappproxy.after" ]; then . /opt/verb/mods/setnginxvappproxy.after; fi # Follows this script

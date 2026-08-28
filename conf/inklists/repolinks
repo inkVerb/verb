@@ -2,6 +2,7 @@
 # inkVerb repo donjon download info list
 
 ampache="https://github.com/ampache/ampache/releases NOTE: still using md5 & zip; hash before, not squashed"
+badad="https://github.com/badAd/badad NOTE: golang branch tarball until merged to main; sha SKIP until a tagged release"
 fossil="https://www.fossil-scm.org/fossil/uv/download.html NOTE: download it and get the SHA256 with \"sha256sum FILE.tar.gz\""
 iwpadmin="https://infinitewp.com/installing-download/ NOTE: No SHA. Must include email with the donjon knight."
 maddy="https://github.com/foxcpp/maddy/releases NOTE: download it and get your own SHA256 with \"sha256sum maddy.tar.zst\""
@@ -11,10 +12,11 @@ nextcloud="https://nextcloud.com/install/#instructions-server NOTE: using latest
 orangehrm="https://sourceforge.net/projects/orangehrm/files/stable/"
 owa="https://github.com/padams/Open-Web-Analytics/tags NOTE: download it and get the SHA256 with \"sha256sum FILE.tar.gz\""
 owncloud="https://download.owncloud.com/ocis/ocis/stable/ NOTE: Just the numbers, SHA256 configured in repoupdate"
+pdtnews="https://github.com/PacificDailyTimes/pdt-news NOTE: main-branch tarball; sha SKIP until a tagged release"
 phpmyadmin="https://www.phpmyadmin.net/ NOTE: use SHA256 from the Download button popup"
 postfixadmin="https://github.com/postfixadmin/postfixadmin/releases NOTE: use tar.gz"
 postfixadmintags="https://github.com/postfixadmin/postfixadmin/tags NOTE: download it and get the SHA256 with \"sha256sum FILE.tar.gz\""
 postfixadminold="https://sourceforge.net/projects/postfixadmin/files/postfixadmin/ NOTE: legacy for reference"
+pw99="https://github.com/PinkWrite/99 NOTE: master-branch tarball; sha SKIP until a tagged release"
 roundcube="https://roundcube.net/download/"
 suitecrm="https://sourceforge.net/projects/suitecrm/files/ NOTE: using zip and still sha1"
-

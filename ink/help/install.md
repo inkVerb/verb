@@ -8,7 +8,10 @@
     - These are done to include server-wide settings, not individual Linux packages
       - It is not recommended to install a service manually, but use this so the server handles the Linux package and its settings
   - Downloads and sets up databases with domains for web apps ('vapps'), such as:
-    - WordPress
+    - WordPress (`ink install wp`)
+    - pdt-news (`ink install pdtnews`)
+    - badAd (`ink install badad`)
+    - PinkWrite 99 (`ink install pw99`)
     - OrangeHRM
     - SuiteCRM
     - Ampache

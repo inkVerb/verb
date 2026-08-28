@@ -1,0 +1,59 @@
+#!/bin/bash
+#inkVerb! repo donjon dragon, verb.ink
+
+# This updates the pdt-news repo package from GitHub (tarball, not git clone)
+
+# How to use:
+## ./pdtnews.updaterepo
+
+cVappName=pdtnews
+# Include the config files
+. /opt/verb/conf/serverinkget
+. /opt/verb/conf/inklists/repoverlist
+distVer="${pdtnews}"
+
+if [ $InkGet_Method != "ZJZ" ]; then
+  cd /opt/verb/repo
+elif [ $InkGet_Method = "ZJZ" ] ; then
+  cd /srv/www/vapps
+fi
+
+# Announce
+/usr/bin/echo "Retrieving pdt-news ${distVer}..."
+
+# Get the package (GitHub auto-archive; same wget family as postfixadmin/maddy)
+/usr/bin/wget -O ${cVappName}.tgz "https://github.com/PacificDailyTimes/pdt-news/archive/refs/heads/${distVer}.tar.gz"
+if [ ! -f "${cVappName}.tgz" ]; then
+/bin/echo "Failed download."; touch "${cVappName}.failed"
+exit 4; else
+/bin/rm -f ${cVappName}.failed; fi
+
+## Check the hash unless SKIP (rolling branch until a tagged release is pinned)
+if [ -n "${pdtnewssha}" ] && [ "${pdtnewssha}" != "SKIP" ]; then
+  checksha=$(/usr/bin/sha256sum ${cVappName}.tgz)
+  if [ "${checksha}" = "${pdtnewssha}  ${cVappName}.tgz" ]; then
+    /usr/bin/echo "Download checks out."
+  else
+    /usr/bin/echo "SHA check failed. The downloaded file ${PWD}/${cVappName}.tgz is not what was expected."
+    exit 4
+  fi
+fi
+
+if [ $InkGet_Method != "ZJZ" ]; then
+  /bin/rm -f ${cVappName}.legacy.txz
+  /usr/bin/touch ${cVappName}.txz
+  /bin/mv ${cVappName}.txz ${cVappName}.legacy.txz
+fi
+/usr/bin/echo "Extracting from vendor..."
+extracted="$(/usr/bin/tar tzf ${cVappName}.tgz | /usr/bin/head -1 | /usr/bin/cut -d/ -f1)"
+/usr/bin/tar xf ${cVappName}.tgz
+/bin/rm ${cVappName}.tgz
+/bin/mv "${extracted}" ${cVappName}
+if [ $InkGet_Method != "ZJZ" ]; then
+  /opt/verb/serfs/vtxzin ${cVappName}; wait
+  /bin/rm -rf ${cVappName}
+  /bin/echo "${distVer}" > ${cVappName}.ver.${distVer}
+fi
+
+# Finish
+/bin/echo "Downloaded pdt-news ${distVer}."
