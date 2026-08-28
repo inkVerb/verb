@@ -14,6 +14,15 @@ How to install:
 - On Verber use `inkdnsinstall` (serf)
 - On Inker use `inkdnsinkinstall` (knight)
 
+## Wildcard SSL (DNS-01)
+
+See `docs/inkCert-wildcard.md`. Short version:
+
+- TSIG key lives in `conf/inkcert/inkcertbot.key` (generated once by `inkcertsetdnskey`)
+- `inkdnsrefreshbind` includes that key and grants `_acme-challenge` TXT updates; it must not regenerate the secret
+- `inkcertreqcb` nsupdates the master, then `inkdnsslaveacme` SSHs to ns1/ns2 (`rndc retransfer`) the same way `rinkadddomain` pushes zone configs
+- `conf/inkdns/` remains zone files only
+
 ## Verber
 
 ### Install:

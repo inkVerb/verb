@@ -1,0 +1,13 @@
+# inkCert Certbot RFC2136 credentials
+# Live copies are written by serfs/inkcertsetdnskey:
+#   /opt/verb/conf/inkcert/rfc2136.ini
+#   /etc/letsencrypt/rfc2136.ini
+# Do not put the live secret in git. conf/inkdns/ stays zone records only.
+#
+# nsupdate talks to BIND on this Verber (the master). Slaves (ns1/ns2)
+# pick up _acme-challenge TXT via notify + AXFR, same SSH path as rinkadddomain.
+dns_rfc2136_server = 127.0.0.1
+dns_rfc2136_port = 53
+dns_rfc2136_name = inkCertbotKey
+dns_rfc2136_secret = CHANGE_ME
+dns_rfc2136_algorithm = HMAC-SHA512

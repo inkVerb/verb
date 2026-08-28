@@ -11,7 +11,8 @@
       - You can add more later with `ink add subdomain`, then run `ink cert do ...` again to update, but not too often
     - `-s` : "single" domain per cert
     - `-w` : "wildcard" domain cert
-      - This requires the server to be set as "self-parking" (via `ink dns self`)
+      - DNS-01 via inkDNS Bind on this Verber, then AXFR to ns1/ns2 (see `docs/inkCert-wildcard.md`)
+      - Does **not** require `ink dns self`
   - Choose which domain
     - `-d domain.tld`
     - `-a` : Apply this to all verb.* domains hosted on the server

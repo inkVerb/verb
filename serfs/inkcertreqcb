@@ -5,10 +5,7 @@
 ## This requests a wildcard certificate, good for the domain and a wildcard for all subdomains
 ## Prerequesite: inkcertinstall, domains added via newdomain/newdomaincgi or an existing and active verb domain on the server
 ## This is intended as a subscript of inkcertdocb
-### BUT...
-###
-### DEV: Currently, this script is INTERACTIVE because it requires making an entry in the DNS records!!
-###
+## DNS-01: nsupdate TSIG on this master, then SSH ns1/ns2 rndc retransfer (see docs/inkCert-wildcard.md)
 
 # How to use:
 ## ./inkcertreqcb [ domain.tld NO SUBDOMAINS ] [ r (optional) ]
@@ -31,9 +28,9 @@ vopttypes=(  )
 voptflags=( r )
 voptflagpurpose=( "Refresh if already done (required for domains with certs already installed)" )
 dependencyinstall=( inkcertinstall )
-prerequesite=( inkcertinstall adddomain 'Certbot DNS Keys installed or CLI interaction' )
+prerequesite=( inkcertinstall adddomain inkcertsetdnskey )
 usedby=( inkcertdocb )
-useserfs=(  )
+useserfs=( inkcertsetdnskey )
 useconfigs=( servernameip siteurilist servertype inkcertstatus )	# List config files of any kind used in this serf, please preserve order of appearance
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/inkcertreqcb.replace" ]; then . /opt/verb/mods/inkcertreqcb.replace; return 0; fi # Replaces this script
@@ -178,70 +175,46 @@ if [ "${domain}" = "${redURI}" ]; then
  fi
 fi
 
-# Stop Apache
-/bin/systemctl stop httpd; wait
+# DNS-01 wildcard (no need to stop nginx/httpd). RSA 2048 matches cli-ini rsa-key-size.
+if [ ! -f "/opt/verb/conf/inkcert/inkcertbot.key" ]; then
+  /opt/verb/serfs/inkcertsetdnskey
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
+fi
+if [ -z "${InkCertEmail}" ]; then
+  /bin/echo "InkCertEmail is not set in inkcertstatus."; exit 8
+fi
 
-# Get the certs
-##NOTE make the system wait before and after Certbot because sometimes CB can stumble over it's own feet.
 sleep 1
-#DEV: This currently does only the domain interactively, not according to cli.ini files; this needs to be automated to modify inkDNS zone files with --preferred-challenges=dns
-#/usr/bin/certbot certonly --dns-rfc2136 --dns-rfc2136-credentials /etc/letsencrypt/rfc2136.ini --email ${InkCertEmail} --server https://acme-v02.api.letsencrypt.org/directory --agree-tos --no-eff-email --force-renewal -d "${domain}" -d *.${domain}
-#DEV: The above shell command should work, once the non-server Named zones are synced with other nameservers, such as ns1.inkisaverb.com
-# For wildcard certs, we need  acme.sh https://github.com/acmesh-official/acme.sh/blob/master/README.md#11-issue-wildcard-certificates
-if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
-  #DEV avoid trouble with nginx: `[emerg] bind() to [::]:80 failed (98: Address already in use)` also: 0.0.0.0:80, 0.0.0.0:443, [::]:443
-  /usr/bin/systemctl is-active --quiet nginx
-  if [ "$?" != "0" ]; then
-    /usr/bin/systemctl stop nginx
-    if [ ${ServerType} = "laemp" ]; then
-      /usr/bin/systemctl stop httpd
-    fi
-    /usr/bin/fuser -k 443/tcp # Thank you https://stackoverflow.com/a/49548253/10343144
-    /usr/bin/systemctl start nginx
-    if [ ${ServerType} = "laemp" ]; then
-      /usr/bin/systemctl start httpd
-    fi
-    ### Make sure Nginx is running
-    count=0
-    while [ "$(/usr/bin/systemctl is-active --quiet nginx)" != "active" ]; do
-      if [ "${count}" -gt "40" ]; then
-        /usr/bin/echo "Nginx has a problem; can't get LE certs!"
-        exit 4
-      fi
-      /usr/bin/sleep 3
-      count=$((count + 1))
-    done
-  fi
-  
-  /usr/bin/certbot --nginx certonly --preferred-challenges=dns --email ${InkCertEmail} --server https://acme-v02.api.letsencrypt.org/directory --agree-tos --no-eff-email --renew-by-default -d "${domain}" -d *.${domain}
+cbforce="--keep-until-expiring"
+if [ -n "$2" ] && [ "$2" = "r" ]; then
+  cbforce="--force-renewal"
+fi
 
-  if [ "$?" != "0" ]; then
-    errcode="$?"
-    /bin/echo "inkCert certbot non-zero exit status for ${domain}: $errcode"
-    exit $errcode
-  elif [ ! -e "/etc/inkcert/le/live/${domain}/fullchain.pem" ] || [ ! -d "/etc/inkcert/le/archive/${domain}" ]; then
-    /usr/bin/echo "inkCert certs do not exist"
-    exit 4
-  fi
-  /bin/systemctl restart nginx; wait
-elif [ ${ServerType} = "lamp" ]; then
-  /usr/bin/certbot --apache certonly --preferred-challenges=dns --email ${InkCertEmail} --server https://acme-v02.api.letsencrypt.org/directory --agree-tos --no-eff-email --renew-by-default -d "${domain}" -d *.${domain}
-  if [ "$?" != "0" ]; then
-    errcode="$?"
-    /bin/echo "inkCert certbot non-zero exit status for ${domain}: $errcode"
-    exit $errcode
-  elif [ ! -e "/etc/inkcert/le/live/${domain}/fullchain.pem" ] || [ ! -d "/etc/inkcert/le/archive/${domain}" ]; then
-    /usr/bin/echo "inkCert certs do not exist"
-    exit 4
-  fi
-  /bin/systemctl start httpd; wait
+/usr/bin/certbot certonly \
+  --manual \
+  --preferred-challenges=dns \
+  --manual-auth-hook /opt/verb/donjon/inkcert-dns01-auth.sh \
+  --manual-cleanup-hook /opt/verb/donjon/inkcert-dns01-cleanup.sh \
+  --manual-public-ip-logging-ok \
+  --agree-tos --no-eff-email \
+  --email "${InkCertEmail}" \
+  --server https://acme-v02.api.letsencrypt.org/directory \
+  --key-type rsa --rsa-key-size 2048 \
+  --non-interactive \
+  --cert-name "${domain}" \
+  ${cbforce} \
+  -d "${domain}" -d "*.${domain}"
+
+if [ "$?" != "0" ]; then
+  errcode="$?"
+  /bin/echo "inkCert certbot non-zero exit status for ${domain}: $errcode"
+  exit $errcode
+elif [ ! -e "/etc/inkcert/le/live/${domain}/fullchain.pem" ] || [ ! -d "/etc/inkcert/le/archive/${domain}" ]; then
+  /usr/bin/echo "inkCert certs do not exist"
+  exit 4
 fi
 wait
 sleep 1
-# the --quiet / -q option doesn't seem to work
-# Additional options if not doing certonly: --no-redirect --no-hsts --no-uir
-# https://certbot.eff.org/docs/using.html#command-line
-# https://certbot.eff.org/#ubuntuxenial-apache
 
 # Finish
 if [ -e "/etc/inkcert/le/live/${domain}/cert.pem" ] && [ -e "/etc/inkcert/le/live/${domain}/chain.pem" ] && [ -e "/etc/inkcert/le/live/${domain}/fullchain.pem" ] && [ -e "/etc/inkcert/le/live/${domain}/privkey.pem" ]; then

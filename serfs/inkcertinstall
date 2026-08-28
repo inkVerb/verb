@@ -21,7 +21,7 @@ voptflagpurpose=(  )
 dependencyinstall=(  )
 prerequesite=(  )
 usedby=(  )
-useserfs=(  )
+useserfs=( inkcertsetdnskey )
 useconfigs=( servernameip servertype inkcertstatus )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/inkcertinstall.replace" ]; then . /opt/verb/mods/inkcertinstall.replace; return 0; fi # Replaces this script
@@ -67,14 +67,8 @@ cd /etc/inkcert || exit 6
 /bin/ln -sfn /etc/letsencrypt /etc/inkcert/le
 /bin/ln -sfn /etc/inkcert/req /opt/verb/
 /bin/ln -sfn /etc/inkcert/req /srv/www/vip/
-## Named Letsencrypt/Certbot DNS challenge key config
-inkCertbotKeyOnly="$(/usr/bin/grep -F 'key "inkCertbotKey" { algorithm hmac-sha512; secret "' /etc/named.conf | /usr/bin/sed 's?key "inkCertbotKey" { algorithm hmac-sha512; secret "??' | /usr/bin/sed 's?"; };??')"
-/bin/echo "dns_rfc2136_server = ${ServerIPv4}
-dns_rfc2136_name = inkCertbotKey
-dns_rfc2136_secret = ${inkCertbotKeyOnly}
-dns_rfc2136_algorithm = HMAC-SHA512" > /etc/letsencrypt/rfc2136.ini
-/usr/bin/chown root:named /etc/letsencrypt/rfc2136.ini
-/usr/bin/chmod 640 /etc/letsencrypt/rfc2136.ini
+## Named Letsencrypt/Certbot DNS-01 TSIG (stable key in conf/inkcert/, rfc2136.ini for plugin)
+/opt/verb/serfs/inkcertsetdnskey
 
 # Set configs
 /bin/sed -i "s/InkCertInstalled=\"NOT_YET\"/InkCertInstalled=\"DONE\"/g" /opt/verb/conf/inkcertstatus

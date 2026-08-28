@@ -21,8 +21,8 @@ voptflagpurpose=(  )
 dependencyinstall=( inkdnsinstall )
 prerequesite=(  )
 usedby=(  )
-useserfs=(  )
-useconfigs=( servernameip servertype inkcertstatus )
+useserfs=( inkcertsetdnskey inkdnsserial inkdnsrefreshbind showdns )
+useconfigs=( servernameip servertype inkcertstatus inkdnsconf siteurilist )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/inkdnsinstall.replace" ]; then . /opt/verb/mods/inkdnsinstall.replace; return 0; fi # Replaces this script
 if [ -e "/opt/verb/mods/inkdnsinstall.before" ]; then . /opt/verb/mods/inkdnsinstall.before; fi # Precedes this script
@@ -61,8 +61,8 @@ fi
 ## Make sure our included files exist
 /usr/bin/touch /var/named/named.conf.rdns
 /usr/bin/touch /var/named/named.conf.verb
-## Add the Certbot key to the named config
-/usr/bin/echo $(tsig-keygen -a HMAC-SHA512 inkCertbotKey) >> /etc/named.conf
+## Add the Certbot DNS-01 TSIG key (once) into conf/inkcert/, then include it from named.conf
+/opt/verb/serfs/inkcertsetdnskey
 ## Logging (permissions are finicky, so create and own)
 /usr/bin/touch /var/log/named.log
 /usr/bin/chown named:named /var/log/named.log

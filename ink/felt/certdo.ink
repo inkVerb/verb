@@ -26,7 +26,7 @@ optDesc[m]="Obtain certs with multiple subdomains in the cert for the parent dom
 optName[s]="Single"
 optDesc[s]="Obtain a single cert, subdomains and parent domains use this flag each to obtain their own cert"
 optName[w]="Wildcard"
-optDesc[w]="Obtain a wildcard subdomain cert, useful for the parent domain and all subdomains; requires verber set as self-parking nameserver"
+optDesc[w]="Obtain a wildcard subdomain cert for the parent domain and all subdomains via DNS-01 (inkDNS + ns1/ns2 AXFR)"
 
 # Check the variables
 while getopts "${optSerf}" Flag; do

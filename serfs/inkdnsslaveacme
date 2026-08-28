@@ -1,0 +1,63 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This SSHs to both rink NS slaves and forces an AXFR of one zone so Letsencrypt DNS-01 TXT is visible
+## Same Host ns1 / ns2 path as rinkadddomain (keys from rinkupdatekeys / rinklocalsetup)
+## Slaves are type slave; they do not get the TSIG secret. They only retransfer from this master.
+## Called from donjon/inkcert-dns01-auth.sh and inkcert-dns01-cleanup.sh
+
+# How to use:
+## ./inkdnsslaveacme [ domain.tld ]
+
+usagenotes="This SSHs to both rink NS slaves and forces an AXFR of one zone so Letsencrypt DNS-01 TXT is visible"
+usageformat="inkdnsslaveacme [ domain.tld ]"
+usageexample="inkdnsslaveacme inkisaverb.com"
+hierarchy=( tertiary inkcertreqcb )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdnsslaveacme.replace" ]; then . /opt/verb/mods/inkdnsslaveacme.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdnsslaveacme.before" ]; then . /opt/verb/mods/inkdnsslaveacme.before; fi # Precedes this script
+
+
+. /opt/verb/conf/servernameip
+
+domain="$1"
+if [ -z "${domain}" ]; then
+  /usr/bin/echo "Domain required."; exit 5
+fi
+
+if [ "${RinkConfigured}" != "true" ] && [ "${RinkConfigured}" != "rink" ]; then
+  /usr/bin/echo "Rink NS SSH not configured; Bind notify only. Run rinklocalsetup if this is a custom verber."
+  exit 0
+fi
+
+# rndc retransfer forces the slave to AXFR now instead of waiting on SOA refresh
+/usr/bin/ssh -T ns1 <<EOS
+/usr/bin/rndc retransfer ${domain} || /usr/bin/rndc refresh ${domain} || true
+EOS
+e="$?"
+if [ "$e" != "0" ]; then
+  /usr/bin/echo "NS1 retransfer ssh failed ($e) for ${domain}"
+fi
+/usr/bin/ssh -T ns2 <<EOS
+/usr/bin/rndc retransfer ${domain} || /usr/bin/rndc refresh ${domain} || true
+EOS
+e="$?"
+if [ "$e" != "0" ]; then
+  /usr/bin/echo "NS2 retransfer ssh failed ($e) for ${domain}"
+fi
+
+/usr/bin/echo "Asked ns1 and ns2 to retransfer ${domain}"
+
+
+if [ -e "/opt/verb/mods/inkdnsslaveacme.after" ]; then . /opt/verb/mods/inkdnsslaveacme.after; fi # Follows this script

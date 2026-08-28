@@ -1,0 +1,98 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This creates (once) the HMAC-SHA512 TSIG key Certbot/nsupdate use for DNS-01 wildcard certs
+## Key lives in conf/inkcert/ (same family as cli-ini). conf/inkdns/ stays zone entries only.
+## Idempotent: reuse the stored key, else lift inkCertbotKey from /etc/named.conf, else generate.
+## Writes rfc2136.ini for the certbot-dns-rfc2136 plugin (optional); hooks use nsupdate -k the key file.
+
+# How to use:
+## ./inkcertsetdnskey
+
+usagenotes="This creates (once) the HMAC-SHA512 TSIG key Certbot/nsupdate use for DNS-01 wildcard certs"
+usageformat="inkcertsetdnskey"
+usageexample="inkcertsetdnskey"
+hierarchy=( secondary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( inkdnsinstall inkcertinstall inkcertreqcb )
+useserfs=(  )
+useconfigs=( servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkcertsetdnskey.replace" ]; then . /opt/verb/mods/inkcertsetdnskey.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkcertsetdnskey.before" ]; then . /opt/verb/mods/inkcertsetdnskey.before; fi # Precedes this script
+
+
+. /opt/verb/conf/servernameip
+
+keyfile="/opt/verb/conf/inkcert/inkcertbot.key"
+inifile="/opt/verb/conf/inkcert/rfc2136.ini"
+leini="/etc/letsencrypt/rfc2136.ini"
+
+/usr/bin/mkdir -p /opt/verb/conf/inkcert /etc/letsencrypt
+
+# Already have a usable key file?
+if [ -f "${keyfile}" ] && /usr/bin/grep -q 'secret "' "${keyfile}"; then
+  /usr/bin/echo "Using existing ${keyfile}"
+else
+  extracted=""
+  # One-liner from the old inkdnsinstall: echo $(tsig-keygen ...) >> /etc/named.conf
+  if [ -f "/etc/named.conf" ] && /usr/bin/grep -q 'key "inkCertbotKey"' /etc/named.conf; then
+    extracted="$(/usr/bin/grep 'key "inkCertbotKey"' /etc/named.conf | /usr/bin/head -1)"
+  fi
+  if [ -n "${extracted}" ] && /usr/bin/echo "${extracted}" | /usr/bin/grep -q 'secret "'; then
+    /usr/bin/echo "${extracted}" > "${keyfile}"
+    /usr/bin/echo "Lifted inkCertbotKey from /etc/named.conf into ${keyfile}"
+  else
+    /usr/bin/tsig-keygen -a HMAC-SHA512 inkCertbotKey > "${keyfile}"
+    /usr/bin/echo "Generated new ${keyfile}"
+  fi
+fi
+
+/usr/bin/chown root:named "${keyfile}"
+/usr/bin/chmod 640 "${keyfile}"
+
+# Secret for rfc2136.ini (plugin path; hooks use the key file directly)
+inkCertbotKeyOnly="$(/usr/bin/grep -o 'secret "[^"]*"' "${keyfile}" | /usr/bin/head -1 | /usr/bin/sed 's/secret "//;s/"$//')"
+if [ -z "${inkCertbotKeyOnly}" ]; then
+  /usr/bin/echo "Could not read TSIG secret from ${keyfile}"; exit 6
+fi
+
+# nsupdate/certbot talk to Bind on this machine (the master)
+/usr/bin/cat <<EOF > "${inifile}"
+dns_rfc2136_server = 127.0.0.1
+dns_rfc2136_port = 53
+dns_rfc2136_name = inkCertbotKey
+dns_rfc2136_secret = ${inkCertbotKeyOnly}
+dns_rfc2136_algorithm = HMAC-SHA512
+EOF
+/usr/bin/chown root:named "${inifile}"
+/usr/bin/chmod 640 "${inifile}"
+/usr/bin/cp -f "${inifile}" "${leini}"
+/usr/bin/chown root:named "${leini}"
+/usr/bin/chmod 640 "${leini}"
+
+# named.conf must include the key file once, before named.conf.verb grants it
+if [ -f "/etc/named.conf" ]; then
+  /usr/bin/sed -i '/key "inkCertbotKey"/d' /etc/named.conf
+  if ! /usr/bin/grep -q '/opt/verb/conf/inkcert/inkcertbot.key' /etc/named.conf; then
+    if /usr/bin/grep -q 'include "/var/named/named.conf.verb"' /etc/named.conf; then
+      /usr/bin/sed -i 's#include "/var/named/named.conf.verb"#include "/opt/verb/conf/inkcert/inkcertbot.key";\ninclude "/var/named/named.conf.verb"#' /etc/named.conf
+    else
+      /usr/bin/echo 'include "/opt/verb/conf/inkcert/inkcertbot.key";' >> /etc/named.conf
+    fi
+  fi
+fi
+
+/usr/bin/echo "inkCert DNS-01 TSIG key ready (${keyfile}).
+Wildcard certs: inkcertdocb domain.tld   or   ink cert do -w -d domain.tld
+"
+
+
+if [ -e "/opt/verb/mods/inkcertsetdnskey.after" ]; then . /opt/verb/mods/inkcertsetdnskey.after; fi # Follows this script

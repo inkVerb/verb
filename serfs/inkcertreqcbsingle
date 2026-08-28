@@ -5,10 +5,7 @@
 ## This only applies to the requested domain, no others
 ## Prerequesite: inkcertinstall, domains added via newdomain/newdomaincgi or an existing and active verb domain on the server
 ## This is intended as a subscript of inkcertdocbsingle
-### BUT...
-###
-### DEV: Currently, this script is INTERACTIVE because it requires making an entry in the DNS records!!
-###
+## Single-name certs use HTTP-01. Wildcard certs use inkcertreqcb (DNS-01).
 
 # How to use:
 ## ./inkcertreqcbsingle [domain.tld NO SUBDOMAINS] [ r (optional) ]
