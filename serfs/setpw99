@@ -1,0 +1,99 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This modifies settings for an installed PinkWrite 99 vapp
+## Writes pw99-config.php (PHP array) and matching keys in vapp.pw99.DOMAIN
+
+# How to use:
+## ./setpw99 [domain.tld] [key=value] [key=value] ...
+## ./setpw99 inkisaverb.com host=inkisaverb.com
+## ./setpw99 inkisaverb.com allow_create_super=false
+## Keys: host, site_title, allow_create_super, db_name, db_user, db_pass, db_host, mail_from
+
+usagenotes="This modifies settings for an installed PinkWrite 99 vapp"
+usageformat="setpw99 [ domain.tld ] [ key=value ] [ key=value ] ..."
+usageexample="setpw99 inkisaverb.com host=inkisaverb.com
+setpw99 inkisaverb.com allow_create_super=false
+setpw99 inkisaverb.com db_name=newdb db_user=newuser db_pass=secret"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=( "Database" "Database user" "Database password" "Config key" "Setting value" )
+vopttypes=( isSQLDatabasename isSQLDatabasename isSQLDatabasename isazAZ09lines isazAZ09lines )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( installpw99 )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setpw99.replace" ]; then . /opt/verb/mods/setpw99.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setpw99.before" ]; then . /opt/verb/mods/setpw99.before; fi # Precedes this script
+
+
+domain=$1
+shift
+cVappName=pw99
+vcfg="/opt/verb/conf/vapps/vapp.${cVappName}.${domain}"
+php="/srv/www/vapps/${cVappName}.${domain}/pw99-config.php"
+if [ -z "${domain}" ] || [ ! -f "${vcfg}" ]; then
+  /usr/bin/echo "PinkWrite 99 is not installed on ${domain}."
+  exit 8
+fi
+. "${vcfg}"
+if [ ! -f "${php}" ]; then
+  /usr/bin/echo "Config missing: ${php}"
+  exit 8
+fi
+
+if [ -z "$1" ]; then
+  /usr/bin/echo "No settings given. Use key=value pairs."
+  exit 5
+fi
+
+pairs=""
+for pair in "$@"; do
+  [ -z "${pair}" ] && continue
+  key="${pair%%=*}"
+  val="${pair#*=}"
+  if [ "${key}" = "${pair}" ]; then
+    /usr/bin/echo "Skip (not key=value): ${pair}"
+    continue
+  fi
+  pairs="${pairs}${key}=${val}"$'\n'
+  case "${key}" in
+    db_name) /bin/sed -i "s|^appDBase=.*|appDBase=${val}|" "${vcfg}";;
+    db_user) /bin/sed -i "s|^appDDBUsr=.*|appDDBUsr=${val}|" "${vcfg}";;
+    db_pass) /bin/sed -i "s|^appDDBPass=.*|appDDBPass=${val}|" "${vcfg}";;
+  esac
+  /usr/bin/echo "Set ${key}"
+done
+
+export PW99_CFG="${php}"
+export PW99_PAIRS="${pairs}"
+/usr/bin/php -r '
+$cfgFile = getenv("PW99_CFG");
+$pairs = getenv("PW99_PAIRS");
+$c = require $cfgFile;
+foreach (explode("\n", $pairs) as $line) {
+  if ($line === "" || strpos($line, "=") === false) continue;
+  [$k, $v] = explode("=", $line, 2);
+  if ($k === "host") $c["host"] = $v;
+  elseif ($k === "site_title") $c["site_title"] = $v;
+  elseif ($k === "allow_create_super") $c["allow_create_super"] = in_array($v, ["1","true","yes"], true);
+  elseif ($k === "db_name") $c["db"]["name"] = $v;
+  elseif ($k === "db_user") $c["db"]["user"] = $v;
+  elseif ($k === "db_pass") $c["db"]["pass"] = $v;
+  elseif ($k === "db_host") $c["db"]["host"] = $v;
+  elseif ($k === "mail_from") $c["mail"]["from"] = $v;
+  elseif ($k === "mail_transport") $c["mail"]["transport"] = $v;
+}
+$out = "<?php\nreturn " . var_export($c, true) . ";\n";
+file_put_contents($cfgFile, $out);
+'
+
+/usr/bin/echo "Updated ${php}"
+
+
+if [ -e "/opt/verb/mods/setpw99.after" ]; then . /opt/verb/mods/setpw99.after; fi # Follows this script

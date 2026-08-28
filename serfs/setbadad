@@ -1,0 +1,87 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This modifies settings for an installed badAd vapp
+## Writes verb/conf/vapps/badad.DOMAIN.config and matching keys in vapp.badad.DOMAIN
+## Restarts the systemd unit
+
+# How to use:
+## ./setbadad [domain.tld] [key=value] [key=value] ...
+## ./setbadad inkisaverb.com web_url=https://inkisaverb.com
+## ./setbadad inkisaverb.com db_name=newdb db_user=newuser db_pass=newpass
+
+usagenotes="This modifies settings for an installed badAd vapp"
+usageformat="setbadad [ domain.tld ] [ key=value ] [ key=value ] ..."
+usageexample="setbadad inkisaverb.com web_url=https://inkisaverb.com
+setbadad inkisaverb.com db_name=newdb db_user=newuser db_pass=secret"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=( "Database" "Database user" "Database password" "Config key" "Setting value" )
+vopttypes=( isSQLDatabasename isSQLDatabasename isSQLDatabasename isazAZ09lines isazAZ09lines )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( installbadad )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setbadad.replace" ]; then . /opt/verb/mods/setbadad.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setbadad.before" ]; then . /opt/verb/mods/setbadad.before; fi # Precedes this script
+
+
+domain=$1
+shift
+cVappName=badad
+vcfg="/opt/verb/conf/vapps/vapp.${cVappName}.${domain}"
+if [ -z "${domain}" ] || [ ! -f "${vcfg}" ]; then
+  /usr/bin/echo "badAd is not installed on ${domain}."
+  exit 8
+fi
+. "${vcfg}"
+cfg="${appConfig}"
+if [ ! -f "${cfg}" ]; then
+  /usr/bin/echo "Config missing: ${cfg}"
+  exit 8
+fi
+
+setkv() {
+  local k="$1"
+  local v="$2"
+  if /bin/grep -q "^${k}=" "${cfg}"; then
+    /bin/sed -i "s|^${k}=.*|${k}=${v}|" "${cfg}"
+  else
+    /bin/echo "${k}=${v}" >> "${cfg}"
+  fi
+  case "${k}" in
+    db_name) /bin/sed -i "s|^appDBase=.*|appDBase=${v}|" "${vcfg}";;
+    db_user) /bin/sed -i "s|^appDDBUsr=.*|appDDBUsr=${v}|" "${vcfg}";;
+    db_pass) /bin/sed -i "s|^appDDBPass=.*|appDDBPass=${v}|" "${vcfg}";;
+  esac
+}
+
+if [ -z "$1" ]; then
+  /usr/bin/echo "No settings given. Use key=value pairs."
+  exit 5
+fi
+for pair in "$@"; do
+  [ -z "${pair}" ] && continue
+  key="${pair%%=*}"
+  val="${pair#*=}"
+  if [ "${key}" = "${pair}" ]; then
+    /usr/bin/echo "Skip (not key=value): ${pair}"
+    continue
+  fi
+  setkv "${key}" "${val}"
+  /usr/bin/echo "Set ${key}"
+done
+
+if [ -n "${appService}" ]; then
+  /usr/bin/systemctl restart "${appService}.service" 2>/dev/null || true
+fi
+
+/usr/bin/echo "Updated ${cfg}"
+
+
+if [ -e "/opt/verb/mods/setbadad.after" ]; then . /opt/verb/mods/setbadad.after; fi # Follows this script
