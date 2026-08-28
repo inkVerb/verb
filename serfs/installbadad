@@ -166,6 +166,8 @@ appConfig=${cfg}
 appService=${svcName}
 appEtcLink=/etc/badad/${domain}" > /opt/verb/conf/vapps/vapp.${cVappName}.${domain}
 
+/opt/verb/serfs/setvappconfig "vapp.${cVappName}.${domain}" "${cfg}"
+
 /usr/bin/cat > /etc/systemd/system/${svcName}.service <<EOF
 [Unit]
 Description=badAd (${domain})

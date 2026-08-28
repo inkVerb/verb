@@ -59,6 +59,7 @@ appDDBPass=${dBPassword}" > /opt/verb/conf/vapps/vapp.${cVappName}
 /bin/cp /srv/www/vapps/${cVappName}/config.sample.inc.php /srv/www/vapps/${cVappName}/config.inc.php
 blowfish=$(/usr/bin/pwgen -c -1 32)
 /bin/sed -i "s/cfg\['blowfish_secret'\] = '';/cfg\['blowfish_secret'\] = '$blowfish';/" /srv/www/vapps/${cVappName}/config.inc.php
+/opt/verb/serfs/setvappconfig "vapp.${cVappName}" "/srv/www/vapps/${cVappName}/config.inc.php"
 /bin/ln -sfn /srv/www/vapps/${cVappName} /srv/www/verb/${itsqlTLD}.sql/${directry}; wait
 /bin/chown -R www:www /srv/www/verb/${itsqlTLD}.sql; wait
 /bin/chown -R www:www /srv/www/vapps/${cVappName}; wait

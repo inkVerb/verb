@@ -91,6 +91,7 @@ FLUSH PRIVILEGES;"
 appDBase=${dBase}
 appDDBUsr=${dBaseUser}
 appDDBPass=${dBPassword}" > /opt/verb/conf/vapps/vapp.${cVappName}
+/opt/verb/serfs/setvappconfig "vapp.${cVappName}" "/srv/www/vapps/${cVappName}/config.php"
 
 # Webserver setup
 if [ ${ServerType} = "laemp" ]; then

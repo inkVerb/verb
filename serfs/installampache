@@ -142,6 +142,7 @@ fi
 appDBase=${dBase}
 appDDBUsr=${dBaseUser}
 appDDBPass=${dBPassword}" > /opt/verb/conf/vapps/vapp.${cVappName}
+/opt/verb/serfs/setvappconfig "vapp.${cVappName}" "/srv/www/vapps/${cVappName}/config/ampache.cfg.php"
 
 /bin/echo "These are setup:
 

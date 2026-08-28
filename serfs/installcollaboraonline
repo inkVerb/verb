@@ -59,6 +59,11 @@ fi
 COVAPPSTATUS=\"INSTALLED\"
 COport=${port}
 COHOST=\"b.${blueURI}\"" > /opt/verb/conf/vapps/vapp.${cVappName}
+if [ -f /etc/coolwsd/coolwsd.xml ]; then
+  /opt/verb/serfs/setvappconfig "vapp.${cVappName}" "/etc/coolwsd/coolwsd.xml"
+elif [ -f /etc/loolwsd/loolwsd.xml ]; then
+  /opt/verb/serfs/setvappconfig "vapp.${cVappName}" "/etc/loolwsd/loolwsd.xml"
+fi
 
 /bin/echo "Collabora Online is now installed...
 

@@ -36,6 +36,8 @@ func main() {
 	mux.HandleFunc("/", s.home)
 	mux.HandleFunc("/serf", s.serf)
 	mux.HandleFunc("/inkmail", s.inkmail)
+	mux.HandleFunc("/vapps", s.vapps)
+	mux.HandleFunc("/vapp", s.vapp)
 	addr := c["listen"]
 	if addr == "" {
 		addr = "127.0.0.1:8098"
@@ -50,10 +52,11 @@ type srv struct {
 	sess map[string]*session
 }
 type session struct {
-	User     string
-	Type     string // admin | supervisor
-	Stage    string // password|changepw|email|2fa|ok
-	Until    time.Time
+	User       string
+	Type       string // admin | supervisor
+	Stage      string // password|changepw|email|2fa|ok
+	Until      time.Time
+	ConfigAuth map[string]time.Time // vapp file basename -> double-auth until
 }
 
 func load(path string) map[string]string {
@@ -190,7 +193,7 @@ func (s *srv) login(w http.ResponseWriter, r *http.Request) {
 				if st == "" || st != t {
 					msg = `<p class="flash">SQL account type does not match PAM groups. Denied.</p>`
 				} else {
-					ss := &session{User: u, Type: t, Stage: "ok"}
+					ss := &session{User: u, Type: t, Stage: "ok", ConfigAuth: map[string]time.Time{}}
 					if !pwCh {
 						ss.Stage = "changepw"
 					} else if !emOK {
@@ -355,6 +358,7 @@ func (s *srv) home(w http.ResponseWriter, r *http.Request) {
 <form method="post" action="/serf"><label>Serf name</label><input name="serf" required placeholder="showdns">
 <label>Arguments</label><input name="args">
 <p><button>Run</button></p></form>
+<p><a href="/vapps">Vapp configs</a></p>
 <p><a href="/inkmail">Open inkMail (SSO)</a></p>
 </div>`))
 }
@@ -420,6 +424,232 @@ func (s *srv) inkmail(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, strings.TrimRight(url, "/")+"/sso?t="+tok, http.StatusSeeOther)
 }
 
+func mailSkip(name string) bool {
+	n := strings.ToLower(name)
+	for _, p := range []string{"roundcube", "inkmail", "postfixadmin", "pfa", "maddy", "inkemail"} {
+		if strings.Contains(n, p) {
+			return true
+		}
+	}
+	return false
+}
+
+func parseAppConfig(vfile string) string {
+	b, err := os.ReadFile(vfile)
+	if err != nil {
+		return ""
+	}
+	for _, line := range strings.Split(string(b), "\n") {
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, "appConfig=") {
+			return strings.Trim(strings.TrimSpace(strings.TrimPrefix(line, "appConfig=")), `"'`)
+		}
+	}
+	return ""
+}
+
+func allowedConfig(p string) bool {
+	if p == "" || !strings.HasPrefix(p, "/") || strings.Contains(p, "..") {
+		return false
+	}
+	for _, prefix := range []string{
+		"/srv/www/vapps/",
+		"/opt/verb/conf/vapps/",
+		"/etc/pdt/",
+		"/etc/badad/",
+		"/srv/cloud/",
+		"/srv/ghost/",
+		"/etc/coolwsd/",
+		"/etc/loolwsd/",
+		"/srv/www/html/",
+	} {
+		if strings.HasPrefix(p, prefix) {
+			if strings.Contains(p, "/orig/") {
+				return false
+			}
+			return true
+		}
+	}
+	return false
+}
+
+func (s *srv) cfgOK(ss *session, name string) bool {
+	if ss.ConfigAuth == nil {
+		return false
+	}
+	t, ok := ss.ConfigAuth[name]
+	return ok && time.Now().Before(t)
+}
+
+func (s *srv) vapps(w http.ResponseWriter, r *http.Request) {
+	ss := s.ready(w, r)
+	if ss == nil {
+		return
+	}
+	ents, _ := os.ReadDir("/opt/verb/conf/vapps")
+	var b strings.Builder
+	b.WriteString(`<div class="card"><h1>Vapp configs</h1>
+<p class="muted">Only the essential config for each installed vapp. No filesystem browser. Mail panels (Roundcube, inkMail, PFA) are not listed.</p>
+<p class="muted">Opening a config requires your password and a second factor again. An email warning is sent on each access. Reset restores the copy the install serf saved.</p><ul>`)
+	n := 0
+	for _, e := range ents {
+		name := e.Name()
+		if !strings.HasPrefix(name, "vapp.") || mailSkip(name) {
+			continue
+		}
+		cfg := parseAppConfig("/opt/verb/conf/vapps/" + name)
+		if cfg == "" {
+			continue
+		}
+		n++
+		fmt.Fprintf(&b, `<li><a href="/vapp?name=%s">%s</a> <span class="muted"><code>%s</code></span></li>`, html.EscapeString(name), html.EscapeString(name), html.EscapeString(cfg))
+	}
+	if n == 0 {
+		b.WriteString(`<li class="muted">No vapps with an appConfig= line yet. Re-run the install serf or <code>updateverber</code>.</li>`)
+	}
+	b.WriteString(`</ul></div>`)
+	fmt.Fprint(w, page("Verb admin", ss.User, b.String()))
+}
+
+func (s *srv) vapp(w http.ResponseWriter, r *http.Request) {
+	ss := s.ready(w, r)
+	if ss == nil {
+		return
+	}
+	name := strings.TrimSpace(r.URL.Query().Get("name"))
+	if name == "" {
+		name = strings.TrimSpace(r.FormValue("name"))
+	}
+	if name == "" || strings.ContainsAny(name, "/\\") || mailSkip(name) || !strings.HasPrefix(name, "vapp.") {
+		http.Error(w, "bad vapp", 400)
+		return
+	}
+	vfile := "/opt/verb/conf/vapps/" + name
+	cfg := parseAppConfig(vfile)
+	if !allowedConfig(cfg) {
+		fmt.Fprint(w, page("Verb admin", ss.User, `<div class="card"><p class="flash">No editable config path on this vapp.</p></div>`))
+		return
+	}
+	if r.Method == "POST" && r.FormValue("act") == "unlock" {
+		pw := r.FormValue("password")
+		code := strings.TrimSpace(r.FormValue("code"))
+		if !pamOK(ss.User, pw) {
+			fmt.Fprint(w, page("Verb admin", ss.User, s.unlockForm(name, cfg, "Password failed.")))
+			return
+		}
+		db := s.c["db"]
+		_, _, _, _, totpOn, _, secret := sqlUser(db, ss.User)
+		if !totpOn {
+			fmt.Fprint(w, page("Verb admin", ss.User, s.unlockForm(name, cfg, "Enroll Authenticator before editing configs.")))
+			return
+		}
+		if !totpOK(secret, code) {
+			fmt.Fprint(w, page("Verb admin", ss.User, s.unlockForm(name, cfg, "Authenticator code failed.")))
+			return
+		}
+		if ss.ConfigAuth == nil {
+			ss.ConfigAuth = map[string]time.Time{}
+		}
+		ss.ConfigAuth[name] = time.Now().Add(10 * time.Minute)
+		s.warnConfigMail(ss, name, cfg)
+		orig := "/opt/verb/conf/vapps/orig/" + name
+		if _, err := os.Stat(orig); err != nil {
+			if b, err := os.ReadFile(cfg); err == nil {
+				_ = os.MkdirAll("/opt/verb/conf/vapps/orig", 0750)
+				_ = os.WriteFile(orig, b, 0640)
+			}
+		}
+		http.Redirect(w, r, "/vapp?name="+name, http.StatusSeeOther)
+		return
+	}
+	if !s.cfgOK(ss, name) {
+		fmt.Fprint(w, page("Verb admin", ss.User, s.unlockForm(name, cfg, "")))
+		return
+	}
+	if r.Method == "POST" && r.FormValue("act") == "save" {
+		body := r.FormValue("body")
+		if len(body) > 1<<20 {
+			fmt.Fprint(w, page("Verb admin", ss.User, `<div class="card"><p class="flash">Config too large.</p></div>`))
+			return
+		}
+		st, err := os.Stat(cfg)
+		mode := os.FileMode(0640)
+		if err == nil {
+			mode = st.Mode()
+		}
+		if err := os.WriteFile(cfg, []byte(body), mode); err != nil {
+			fmt.Fprint(w, page("Verb admin", ss.User, `<div class="card"><p class="flash">`+html.EscapeString(err.Error())+`</p></div>`))
+			return
+		}
+		http.Redirect(w, r, "/vapp?name="+name, http.StatusSeeOther)
+		return
+	}
+	if r.Method == "POST" && r.FormValue("act") == "reset" {
+		orig := "/opt/verb/conf/vapps/orig/" + name
+		b, err := os.ReadFile(orig)
+		if err != nil {
+			fmt.Fprint(w, page("Verb admin", ss.User, `<div class="card"><p class="flash">No install-time backup yet.</p></div>`))
+			return
+		}
+		st, _ := os.Stat(cfg)
+		mode := os.FileMode(0640)
+		if st != nil {
+			mode = st.Mode()
+		}
+		if err := os.WriteFile(cfg, b, mode); err != nil {
+			fmt.Fprint(w, page("Verb admin", ss.User, `<div class="card"><p class="flash">`+html.EscapeString(err.Error())+`</p></div>`))
+			return
+		}
+		http.Redirect(w, r, "/vapp?name="+name, http.StatusSeeOther)
+		return
+	}
+	raw, err := os.ReadFile(cfg)
+	if err != nil {
+		raw = []byte("/* file not created yet — save will create it */\n")
+	}
+	hasOrig := "no install-time copy yet"
+	if _, err := os.Stat("/opt/verb/conf/vapps/orig/" + name); err == nil {
+		hasOrig = "install-time copy available"
+	}
+	fmt.Fprint(w, page("Verb admin", ss.User, `<div class="card"><h1>`+html.EscapeString(name)+`</h1>
+<p class="muted"><code>`+html.EscapeString(cfg)+`</code> — `+hasOrig+`. Access expires in a few minutes.</p>
+<form method="post" action="/vapp?name=`+html.EscapeString(name)+`"><input type="hidden" name="act" value="save">
+<textarea name="body" rows="28" style="width:100%;font-family:monospace">`+html.EscapeString(string(raw))+`</textarea>
+<p><button>Save</button></p></form>
+<form method="post" action="/vapp?name=`+html.EscapeString(name)+`" onsubmit="return confirm('Reset to the copy verb installed?')">
+<input type="hidden" name="act" value="reset"><button type="submit">Reset to installed</button>
+</form>
+<p><a href="/vapps">Back</a></p></div>`))
+}
+
+func (s *srv) unlockForm(name, cfg, flash string) string {
+	msg := ""
+	if flash != "" {
+		msg = `<p class="flash">` + html.EscapeString(flash) + `</p>`
+	}
+	return msg + `<div class="card"><h1>Confirm access</h1>
+<p>Viewing <code>` + html.EscapeString(name) + `</code> (<code>` + html.EscapeString(cfg) + `</code>) requires your password and Authenticator code again.</p>
+<p class="muted">An email warning is sent when this succeeds.</p>
+<form method="post" action="/vapp?name=` + html.EscapeString(name) + `"><input type="hidden" name="act" value="unlock">
+<label>Password</label><input type="password" name="password" required>
+<label>Authenticator code</label><input name="code" inputmode="numeric" required>
+<p><button>Unlock config</button></p></form>
+<p><a href="/vapps">Back</a></p></div>`
+}
+
+func (s *srv) warnConfigMail(ss *session, name, cfg string) {
+	db := s.c["db"]
+	email, _, _, _, _, _, _ := sqlUser(db, ss.User)
+	if email == "" {
+		return
+	}
+	body := fmt.Sprintf("Warning: %s opened vapp config %s (%s) at %s.\nIf this was not you, change that password and review the file.\n",
+		ss.User, name, cfg, time.Now().Format(time.RFC3339))
+	cmd := exec.Command("/usr/bin/mail", "-s", "Vapp config access: "+name, email)
+	cmd.Stdin = strings.NewReader(body)
+	_ = cmd.Run()
+}
+
 func (s *srv) oauth(w http.ResponseWriter, r *http.Request) {
 	ss := s.get(r)
 	if ss == nil {
@@ -432,7 +662,7 @@ func (s *srv) oauth(w http.ResponseWriter, r *http.Request) {
 }
 
 func page(title, who, body string) string {
-	nav := `<a href="/">Home</a><a href="/inkmail">inkMail</a><a href="/logout">Logout</a>`
+	nav := `<a href="/">Home</a><a href="/vapps">Vapps</a><a href="/inkmail">inkMail</a><a href="/logout">Logout</a>`
 	if who != "" {
 		nav = `<span class="muted">` + html.EscapeString(who) + `</span> ` + nav
 	}
@@ -451,7 +681,7 @@ header nav a{margin-right:1rem;color:var(--paper)}
 main{max-width:920px;margin:2rem auto;padding:0 1rem 3rem}
 .card{background:var(--card);backdrop-filter:blur(8px);border:1px solid #ffffff14;border-radius:12px;padding:1.25rem 1.4rem;margin:1rem 0}
 label{display:block;margin:.6rem 0 .2rem;color:var(--muted);font-size:.85rem}
-input,button{font:inherit;padding:.45rem .6rem;border-radius:6px;border:1px solid #ffffff22;background:#0e1218;color:var(--paper)}
+input,button,textarea{font:inherit;padding:.45rem .6rem;border-radius:6px;border:1px solid #ffffff22;background:#0e1218;color:var(--paper)}
 button{background:var(--accent);color:var(--ink);border:0;cursor:pointer;font-weight:650}
 .muted{color:var(--muted)}.flash{background:#c4a35a22;border:1px solid var(--accent);padding:.7rem 1rem;border-radius:8px}
 pre{white-space:pre-wrap}.login{max-width:400px;margin:10vh auto}

@@ -68,6 +68,7 @@ fi
 
 # Kill the config
 /bin/rm -f /opt/verb/conf/vapps/vapp.${appName}
+/bin/rm -f /opt/verb/conf/vapps/orig/vapp.${appName}
 
 # Kill the directories
 /bin/rm -rf /srv/www/vapps/${appName}

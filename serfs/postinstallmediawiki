@@ -16,6 +16,8 @@
 # Move from vip/MediaWiki to the settings file
 /bin/mv /srv/www/vip/LocalSettings.php /srv/www/vapps/mediawiki/
 /bin/rm -rf /srv/www/vapps/mediawiki/mw-config
+/opt/verb/serfs/setvappconfig "vapp.mediawiki" "/srv/www/vapps/mediawiki/LocalSettings.php"
+
 
 /bin/echo "
 Post install finished."

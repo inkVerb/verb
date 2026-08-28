@@ -105,6 +105,7 @@ FLUSH PRIVILEGES;"
 appDDBUsr=${dBaseUser}
 appDDBPass=${dBPassword}" > /opt/verb/conf/vapps/vapp.${cVappName}.${domain}
 
+
 # Put the settings in the WordPress config file
 cd wp.${domain} || exit 6
 /bin/cp wp-config-sample.php wp-config.php
@@ -126,6 +127,8 @@ if /bin/grep -q '##INKHTTPSFIX=fixed' /opt/verb/conf/webserver/sites-available/h
 /bin/echo "define( 'WP_SITEURL', 'https://${domain}' );
 define( 'WP_HOME', 'https://${domain}' );" >> /srv/www/vapps/wp.${domain}/wp-config.php
 fi
+
+/opt/verb/serfs/setvappconfig "vapp.${cVappName}.${domain}" "/srv/www/vapps/${cVappName}.${domain}/wp-config.php"
 
 # Reset all permissions and restart webserver
 /bin/chown -R www:www /srv/www/vapps/${cVappName}.${domain}

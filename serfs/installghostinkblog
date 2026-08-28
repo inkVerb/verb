@@ -23,7 +23,7 @@ voptflagpurpose=(  )
 dependencyinstall=(  )
 prerequesite=(  )
 usedby=(  )
-useserfs=( inkvmailbox inkcertaddle inkcertaddcb inkcertaddcbsingle inkcertaddsc )
+useserfs=( inkvmailbox inkcertaddle inkcertaddcb inkcertaddcbsingle inkcertaddsc setvappconfig )
 useconfigs=( servernameip servertype siteurilist )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/installghostinkblog.replace" ]; then . /opt/verb/mods/installghostinkblog.replace; return 0; fi # Replaces this script
@@ -194,6 +194,7 @@ fi
 if [ "$?" != "0" ]; then /usr/bin/echo 'Ghost install failed: !!'; exit 4; fi
 ## Now ghost owns the installation so the .service can run it
 /usr/bin/chown -R ghost:ghost /srv/ghost/${domain}
+/opt/verb/serfs/setvappconfig "vapp.${cVappName}" "/srv/ghost/${domain}/config.production.json"
 
 # Service
 /usr/bin/cat <<EOF > "/lib/systemd/system/ghost_${cleanDomain}.service"

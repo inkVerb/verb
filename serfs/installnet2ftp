@@ -42,6 +42,8 @@ cd net2ftp || exit 6
 /bin/sed -i "s/\$net2ftp_settings\[\"allowed_ftpserverport\"\] = \"ALL\";/\/\/\$net2ftp_settings\[\"allowed_ftpserverport\"\] = "ALL";/g" settings_authorizations.inc.php
 /bin/sed -i "s/\/\/\$net2ftp_settings\[\"allowed_ftpserverport\"\] = \"21\";/\$net2ftp_settings\[\"allowed_ftpserverport\"\] = "2121";/g" settings_authorizations.inc.php
 
+/opt/verb/serfs/setvappconfig "vapp.${cVappName}" "/srv/www/vapps/${cVappName}/settings.inc.php"
+
 # Finish
 /bin/echo "net2ftp is enabled and clipping along!
 

@@ -215,6 +215,7 @@ EOF
 /usr/bin/echo "no" | /usr/bin/sudo -u ocis OCIS_BASE_DATA_PATH=/srv/cloud/ocis ocis init
 ## Make sure our config folder exists for our notifications.yaml file for email settings; it should exist after running ocis init
 /usr/bin/mkdir -p /srv/cloud/ocis/config
+/opt/verb/serfs/setvappconfig "vapp.${cVappName}" "/srv/cloud/ocis/config/ocis.yaml"
 /usr/bin/systemctl daemon-reload
 /usr/bin/systemctl enable --now ocis # enable and start in one command
 

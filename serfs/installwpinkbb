@@ -97,6 +97,7 @@ fi
 # Reset all permissions
 /bin/chmod -R 440 wp-config.php
 /bin/chown -R www:www /srv/www/vapps/${cVappName}
+/opt/verb/serfs/setvappconfig "vapp.${cVappName}" "/srv/www/vapps/${cVappName}/wp-config.php"
 
 # Set the site-wide inkblog config
 /bin/sed -i "s/INKblog=.*/INKblog=\"WordPress\"/g" /opt/verb/conf/inkinksiteinstallstatus

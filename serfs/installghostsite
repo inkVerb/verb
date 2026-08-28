@@ -203,6 +203,7 @@ fi
 if [ "$?" != "0" ]; then /usr/bin/echo 'Ghost install failed: !!'; exit 4; fi
 ## Now ghost owns the installation so the .service can run it
 /usr/bin/chown -R ghost:ghost /srv/ghost/${domain}
+/opt/verb/serfs/setvappconfig "vapp.${cVappName}.${domain}" "/srv/ghost/${domain}/config.production.json"
 
 # Service
 /usr/bin/cat <<EOF > "/lib/systemd/system/ghost_${cleanDomain}.service"

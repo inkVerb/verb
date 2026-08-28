@@ -72,6 +72,7 @@ appDBase=${dBase}
 appDDBUsr=${dBaseUser}
 appDDBPass=${dBPassword}
 IWPADMIN_directory=\"${directory}\"" > /opt/verb/conf/vapps/vapp.${cVappName}.${domain}
+/opt/verb/serfs/setvappconfig "vapp.${cVappName}.${domain}" "/srv/www/html/${domain}/${directory}/iwp-config.php"
 
 # Reset all permissions
 /bin/chown -R www:www /srv/www/html/${domain}/${directory}; wait

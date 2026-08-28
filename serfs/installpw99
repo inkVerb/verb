@@ -133,6 +133,7 @@ return [
 EOF
 /bin/chown www:www /srv/www/vapps/${cVappName}.${domain}/config.php
 /bin/chmod 640 /srv/www/vapps/${cVappName}.${domain}/config.php
+/opt/verb/serfs/setvappconfig "vapp.${cVappName}.${domain}" "/srv/www/vapps/${cVappName}.${domain}/config.php"
 
 /bin/chown -R www:www /srv/www/vapps/${cVappName}.${domain}
 . /opt/verb/conf/servertype

@@ -1,0 +1,85 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This records the live config path on a vapp.* file as the third assignment line (appConfig=)
+## and snapshots the installed original to verb/conf/vapps/orig/vapp.NAME so the verb web UI can reset it.
+## The web UI reads appConfig=; it does not browse the filesystem.
+
+# How to use:
+## ./setvappconfig [ vapp.NAME | NAME ] [ /absolute/path/to/config ]
+
+usagenotes="This sets appConfig= on a vapp.* file (third line) and snapshots the original config for reset"
+usageformat="setvappconfig [ vapp.NAME ] [ config path ]"
+usageexample="setvappconfig vapp.wp.inkisaverb.com /srv/www/vapps/wp.inkisaverb.com/wp-config.php
+setvappconfig nextcloud /srv/www/vapps/nextcloud/config/config.php"
+hierarchy=( tertiary )
+vsetnames=( "Vapp file" "Config path" )
+vsettypes=( isazAZ09lines isazAZ09lines )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( installwp installpdt installpw99 installbadad installsuitecrm installorangehrm installnextcloud installowncloud installampache installmediawiki postinstallmediawiki installphpmyadmin installwpinkbb installwpinkblog wpdup installghostsite installghostinkblog installcollaboraonline installiwpadmin installnet2ftp )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setvappconfig.replace" ]; then . /opt/verb/mods/setvappconfig.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setvappconfig.before" ]; then . /opt/verb/mods/setvappconfig.before; fi # Precedes this script
+
+
+name="$1"
+cfgpath="$2"
+
+if [ -z "${name}" ] || [ -z "${cfgpath}" ]; then
+  /usr/bin/echo "Vapp name and config path required."
+  exit 5
+fi
+if [[ "${cfgpath}" != /* ]]; then
+  /usr/bin/echo "Config path must be absolute."
+  exit 5
+fi
+if [[ "${cfgpath}" == *..* ]] || [[ "${cfgpath}" == */orig/* ]]; then
+  /usr/bin/echo "Config path rejected."
+  exit 5
+fi
+
+base="$(/usr/bin/basename "${name}")"
+if [[ "${base}" != vapp.* ]]; then
+  base="vapp.${base}"
+fi
+# Never treat mail panels as vapps
+case "${base}" in
+  vapp.roundcube*|vapp.inkmail*|vapp.postfixadmin*|vapp.pfa*|vapp.maddy*|vapp.inkemail*)
+    /usr/bin/echo "Mail panels are not vapps."
+    exit 8
+    ;;
+esac
+
+/usr/bin/mkdir -p /opt/verb/conf/vapps/orig
+vfile="/opt/verb/conf/vapps/${base}"
+if [ ! -f "${vfile}" ]; then
+  /usr/bin/printf 'appDBase=\nappDDBUsr=\nappConfig=%s\n' "${cfgpath}" > "${vfile}"
+else
+  /usr/bin/sed -i '/^appConfig=/d' "${vfile}"
+  if /usr/bin/grep -q '^appDDBUsr=' "${vfile}"; then
+    /usr/bin/sed -i "/^appDDBUsr=/a appConfig=${cfgpath}" "${vfile}"
+  elif /usr/bin/grep -q '^appDBase=' "${vfile}"; then
+    /usr/bin/sed -i "/^appDBase=/a appConfig=${cfgpath}" "${vfile}"
+  else
+    /usr/bin/sed -i "1a appConfig=${cfgpath}" "${vfile}"
+  fi
+fi
+
+orig="/opt/verb/conf/vapps/orig/${base}"
+if [ -f "${cfgpath}" ] && [ ! -f "${orig}" ]; then
+  /usr/bin/cp -a "${cfgpath}" "${orig}"
+  /usr/bin/chmod 640 "${orig}"
+fi
+
+/usr/bin/echo "appConfig=${cfgpath} on ${base}"
+
+
+
+if [ -e "/opt/verb/mods/setvappconfig.after" ]; then . /opt/verb/mods/setvappconfig.after; fi # Follows this script
