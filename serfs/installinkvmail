@@ -1,9 +1,10 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
 
-# This runs installpostfixvmail, installrc, and installpfa as one job
+# This runs installpostfixvmail, installrc, and one mail admin (installpfa default, or installinkmailadmin) as one job
 ## Prerequisite: setup of course, and verbemail if you wish an email tld other than .email
 ## Check prerequisites for those
+## Third argument pfa|ima selects the po.emailURI controller. Default pfa. inkMail is also a primary: installinkmailadmin
 
 # OPTIONAL Prerequesite:
 ## If restoring from a backupinkvmail backup, the .vbak file must be in vip
@@ -19,36 +20,34 @@
 ##### Learn about IMAP folders described in this answer to the above SF question: https://serverfault.com/a/774857/487033
 
 # How to use:
-## ./installinkvmail [ RoundCube webmail path - optional: '-n' to skip ] [ PostfixAdmin email pfa path - optional: if no other arguments and same as RoundCube - '-n' to skip ] [ PostfixAdmin setup password - optional: '-n' to skip ] [ backup filename IF restoring from backupinkvmail backup, optional ]
+## ./installinkvmail [ RoundCube webmail path - optional: '-n' to skip ] [ po. path - optional: '-n' to skip ] [ pfa | ima - optional, default pfa ] [ PostfixAdmin setup password - optional: '-n' to skip ] [ backup filename IF restoring from backupinkvmail backup, optional ]
 
 # Eg:
-## ./installinkvmail # Auto-generated secure paths (different for PFA and BOX), no setup password nor backup
-## ./installinkvmail roundcubesecretpath postfixadminsecretpath setup-password  # Setup password given, but no backup
-## ./installinkvmail rcbase pfabase setup-password myemailfile.vbak # Backup and setup password
-## ./installinkvmail rcbase pfabase -n myemailfile.vbak  # Backup, not setup password
-## ./installinkvmail rciscool pfarocks # No setup password, no backup
-## ./installinkvmail inkvmailpath # Same path for BOX and PFA, no setup password, no backup
-## ./installinkvmail -n -n -n myemailfile.vbak  # Backup, no other settings
+## ./installinkvmail # Auto-generated secure paths, PFA default, no setup password nor backup
+## ./installinkvmail roundcubesecretpath postfixadminsecretpath  # PFA default, no setup password, no backup
+## ./installinkvmail rcbase pfabase pfa setup-password myemailfile.vbak # PFA, backup and setup password
+## ./installinkvmail rcbase imapath ima # inkMail admin on po.emailURI instead of PFA
+## ./installinkvmail rcbase pfabase pfa -n myemailfile.vbak  # PFA, backup, autogen setup password
+## ./installinkvmail -n -n ima  # inkMail, autogen paths
 
-usagenotes="This runs installpostfixvmail, installrc, and installpfa as one job"
-usageformat="installinkvmail [ RoundCube webmail path ] [ PostfixAdmin email pfa path - optional: if no other arguments and same as RoundCube ] [ PostfixAdmin setup password - optional: 'no' to skip ] [ backup filename IF restoring from backupinkvmail backup, optional ]"
-usageexample="installinkvmail roundcubesecretpath postfixadminsecretpath setup-password  # Setup password given, but no backup
-installinkvmail rcbase pfabase setup-password myemailfile.vbak # Backup and setup password
-installinkvmail rcbase pfabase -n myemailfile.vbak  # Backup, not setup password
-installinkvmail rciscool pfarocks # No setup password, no backup
-installinkvmail inkvmailpath # Same path for BOX and PFA, no setup password, no backup
-installinkvmail -n -n -n myemailfile.vbak  # Backup, no other settings"
+usagenotes="This runs installpostfixvmail, installrc, and installpfa (default) or installinkmailadmin as one job"
+usageformat="installinkvmail [ RoundCube webmail path ] [ po. path ] [ pfa | ima - optional, default pfa ] [ PostfixAdmin setup password - optional: -n to skip ] [ backup filename, optional ]"
+usageexample="installinkvmail roundcubesecretpath postfixadminsecretpath  # PFA default
+installinkvmail rcbase pfabase pfa setup-password myemailfile.vbak
+installinkvmail rcbase imapath ima
+installinkvmail rcbase pfabase pfa -n myemailfile.vbak
+installinkvmail -n -n ima"
 hierarchy=( oversight )
 vsetnames=(  )
 vsettypes=(  )
-voptnames=( "RoundCube web path" "PostfixAdmin web path" "PostfixAdmin setup password, optional -n flag" "Vmail backup file" )
-vopttypes=( 'isazAZ09lines || string_match' 'isazAZ09lines || string_match' 'isazAZ09 || string_match' "www/vip/verb.vmail.*.vbak backup file name and location" )
+voptnames=( "RoundCube web path" "po. web path (PFA or inkMail)" "Mail admin pfa or ima, default pfa" "PostfixAdmin setup password, optional -n flag" "Vmail backup file" )
+vopttypes=( 'isazAZ09lines || string_match' 'isazAZ09lines || string_match' 'string_match' 'isazAZ09 || string_match' "www/vip/verb.vmail.*.vbak backup file name and location" )
 voptflags=( n )
-voptflagpurpose=( "No Roundcube Box or PostfixAdmin or PFA setup password, but using backup email file" )
+voptflagpurpose=( "No Roundcube Box or admin path or PFA setup password, but using backup email file" )
 dependencyinstall=(  )
 prerequesite=( "inkCert certs should be installled for at least the emailTLDURI and nameURI for this verber" )
 usedby=(  )
-useserfs=( installpostfixvmail installpfa installrc )
+useserfs=( installpostfixvmail installpfa installrc installinkmailadmin )
 useconfigs=( siteurilist )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/installinkvmail.replace" ]; then . /opt/verb/mods/installinkvmail.replace; return 0; fi # Replaces this script
@@ -65,18 +64,31 @@ else
   boxfolder="$(/usr/bin/pwgen -0 5 1)"
 fi
 
-# PFA folder
+# po. folder (PFA or inkMail, depending on adminkind)
 if [ -n "$2" ] && [ "$2" != "-n" ]; then
-  pfafolder="$2"
+  pofolder="$2"
 elif [ -n "$1" ] && [ "$1" != "-n" ]; then
-  pfafolder="$1"
+  pofolder="$1"
 else
-  pfafolder="$(/usr/bin/pwgen -0 5 1)"
+  pofolder="$(/usr/bin/pwgen -0 5 1)"
 fi
 
-# PFA install password
-if [ -n "$3" ] && [ "$3" != "-n" ]; then
-  pfapass="$3"
+# Mail admin: pfa (default) or ima
+adminkind="${3:-pfa}"
+if [ "${adminkind}" = "-n" ] || [ "${adminkind}" = "" ]; then
+  adminkind="pfa"
+fi
+case "${adminkind}" in
+  pfa|ima) ;;
+  *)
+    /usr/bin/echo "Third argument must be pfa or ima (default pfa)."
+    exit 5
+    ;;
+esac
+
+# PFA install password (ignored for ima)
+if [ -n "$4" ] && [ "$4" != "-n" ]; then
+  pfapass="$4"
 else
   pfapass="$(pwgen -1Bcn 10)"
 fi
@@ -85,24 +97,25 @@ fi
 /opt/verb/serfs/installpostfixvmail
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
-# PostfixAdmin
-/opt/verb/serfs/installpfa ${pfafolder} ${pfapass}
-e="$?"; [[ "$e" = "0" ]] || exit "$e"
+# One mail admin on po.emailURI
+if [ "${adminkind}" = "ima" ]; then
+  /opt/verb/serfs/installinkmailadmin ${pofolder}
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
+else
+  /opt/verb/serfs/installpfa ${pofolder} ${pfapass}
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
+fi
 
 # Roundcube
 /opt/verb/serfs/installrc ${boxfolder}
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 # Backup
-if [ -n "$4" ]; then
-  backupRestore=$4
+if [ -n "$5" ]; then
+  backupRestore=$5
   /opt/verb/serfs/backupinkvmailrestore ${backupRestore}
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
-
-# inkMail (agnostic panel at po.emailURI). PFA remains for Postfix; Roundcube is webmail.
-/opt/verb/serfs/installinkmail ${pfafolder}
-e="$?"; [[ "$e" = "0" ]] || true
 
 # inkCert check and FYI
 if /bin/grep -Fq "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${emailTLDURI}; then
@@ -112,17 +125,29 @@ You may ignore these warnings if you choose. If you want proper SSL certs, you s
 fi
 
 # Finished
-/bin/echo "
+if [ "${adminkind}" = "ima" ]; then
+  /bin/echo "
+You must restart the server in order for email boxes to send and receive.
+
+inkMail:
+- https://po.${emailTLDURI}/${pofolder}/
+
+Roundcube:
+- https://box.${emailTLDURI}/${boxfolder}
+"
+else
+  /bin/echo "
 You must restart the server in order for email boxes to send and receive.
 
 Postfix Admin:
-- https://po.${emailTLDURI}/${pfafolder}/setup.php
+- https://po.${emailTLDURI}/${pofolder}/setup.php
 - Use the install password '${pfapass}'
 - Then run serfs/postinstallpfa
 
 Roundcube:
 - https://box.${emailTLDURI}/${boxfolder}
 "
+fi
 
 
 

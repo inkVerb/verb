@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the serf name
-surfname="installinkmail"
+surfname="installinkmailadmin"
 
 # Include the settings & functions
 . ${InkSet}

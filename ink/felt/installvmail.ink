@@ -9,20 +9,22 @@ surfname="installinkvmail"
 
 # About message
 aboutMsg="$(cat <<EOU
-This creates a new MySQL/MariaDB admin user.
+This installs Postfix vmail, Roundcube, and one po.emailURI mail admin (PFA default, or inkMail).
 EOU
 )"
 
 # Available flags
-optSerf="r:p:s:b:hrcv"
+optSerf="r:p:a:s:b:hcv"
 declare -A optName
 declare -A optDesc
 optName[r]="Roundcube path"
 optDesc[r]="The web path to access RoundCube"
-optName[p]="PostfixAdmin path"
-optDesc[p]="The web path to access PostfixAdmin"
+optName[p]="po. path"
+optDesc[p]="The web path on po.emailURI for PFA or inkMail"
+optName[a]="Mail admin"
+optDesc[a]="pfa (default, PostfixAdmin) or ima (inkMail)"
 optName[s]="PostfixAdmin Setup password"
-optDesc[s]="The password to setup PostfixAdmin"
+optDesc[s]="The password to setup PostfixAdmin (ignored for ima)"
 optName[b]="Backup file to restore"
 optDesc[b]="The name of the vmail backup file to restore from: www/vip/verb.vmail.*.vbak"
 
@@ -37,12 +39,15 @@ while getopts "${optSerf}" Flag; do
      isazAZ09lines "${OPTARG}" "${optName[p]}" "n"
      SOp="${OPTARG}"
    ;;
+   a)
+     SOa="${OPTARG}"
+   ;;
    s)
      isazAZ09 "${OPTARG}" "${optName[s]}" "n"
      SOs="${OPTARG}"
    ;;
    b)
-     isBackupFile "${OPTARG}" "${optName[s]}" "n"
+     isBackupFile "${OPTARG}" "${optName[b]}" "n"
      SOb="${OPTARG}"
    ;;
    # Standard flags
@@ -54,9 +59,6 @@ while getopts "${optSerf}" Flag; do
    ;;
    h)
      SOh="true"
-   ;;
-   r)
-     richtext="true"
    ;;
    *)
      inkFail
@@ -72,6 +74,7 @@ ${aboutMsg}"
   /bin/echo "
 Available flags:
 -h This help message
+-a ${optName[a]}: ${optDesc[a]}
 -b ${optName[b]}: ${optDesc[b]}
 -p ${optName[p]}: ${optDesc[p]}
 -r ${optName[r]}: ${optDesc[r]}
@@ -82,21 +85,36 @@ fi
 
 ## Required flags & defaults
 if [ -z "${SOr}" ]; then
-  SOr="$(/usr/bin/pwgen -0 5 1)" # Set this in the ink file for the output message, uncomment for default
-  #/bin/echo "${optName[r]} option must be set."; inkFail # Uncomment if required
+  SOr="$(/usr/bin/pwgen -0 5 1)"
 fi
 if [ -z "${SOp}" ]; then
-  SOp="$(/usr/bin/pwgen -0 5 1)" # Set this in the ink file for the output message, uncomment for default
-  #/bin/echo "${optName[p]} option must be set."; inkFail # Uncomment if required
+  SOp="$(/usr/bin/pwgen -0 5 1)"
 fi
+if [ -z "${SOa}" ]; then
+  SOa="pfa"
+fi
+case "${SOa}" in
+  pfa|ima) ;;
+  *)
+    /bin/echo "${optName[a]} must be pfa or ima."
+    inkFail
+    ;;
+esac
 if [ -z "${SOs}" ]; then
-  SOs="$(pwgen -1Bcn 10)" # Set this in the ink file for the output message, uncomment for default
-  #/bin/echo "${optName[s]} option must be set."; inkFail # Uncomment if required
+  SOs="$(pwgen -1Bcn 10)"
 fi
 
 # Message prep
-# Success message
 . /opt/verb/conf/siteurilist
+if [ "${SOa}" = "ima" ]; then
+success_message=$(
+cat <<EOF
+Inkvmail successfully installed!
+RoundCube address: https://box.${emailTLDURI}/${SOr}
+inkMail address: https://po.${emailTLDURI}/${SOp}/
+EOF
+)
+else
 success_message=$(
 cat <<EOF
 Inkvmail successfully installed!
@@ -106,13 +124,14 @@ PostfixAdmin setup password: ${SOs}
 PostfixAdmin setup address: https://po.${emailTLDURI}/${SOp}/setup.php
 EOF
 )
+fi
 
 # Fail message
 fail_message="Inkvmail failed to be installed."
 
 
 # Prepare command
-serfcommand="${Serfs}/${surfname} ${SOr} ${SOp} ${SOs} ${SOb}"
+serfcommand="${Serfs}/${surfname} ${SOr} ${SOp} ${SOa} ${SOs} ${SOb}"
 
 # Run the ink
 . $InkRun

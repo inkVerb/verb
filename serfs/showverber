@@ -31,7 +31,8 @@ IT/SQL URL: ${itsqlTLD}
 Email main domain URI: ${emailURI}
 Email server URI: ${emailTLDURI}
 Email Status: ${ServerMailStatus}
-PFA path: ${ServerPFAPath}"
+PFA path: ${ServerPFAPath}
+inkMail path: ${ServerPOPath}"
 
 
 

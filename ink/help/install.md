@@ -12,7 +12,7 @@
     - pdt-news (`ink install pdt`)
     - badAd (`ink install badad`)
     - PinkWrite 99 (`ink install pw99`)
-    - inkMail (`ink install inkmail`) — agnostic mail panel at po.emailURI
+    - inkMail (`ink install inkmailadmin`) — agnostic mail panel at po.emailURI
     - Verb web UI (`ink install verbadmin`) — vipURI, only if VERBvip=true before setup
     - OrangeHRM
     - SuiteCRM

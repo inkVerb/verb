@@ -2,7 +2,7 @@
 #inkVerbSerf! verb.ink
 
 # This writes a BIMI SVG to www/html/domain.tld/bimi.svg and ensures the DNS TXT
-## Used by inkemailadmin when PHP cannot write the html tree
+## Used by inkMail / setbimi when the panel cannot write the html tree
 
 # How to use:
 ## ./inkemailsetbimi [ domain.tld ] [ /path/to.svg ]

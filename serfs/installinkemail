@@ -1,39 +1,42 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
 
-# This runs installmaddymail and installrc as one job
+# This runs installmaddymail, installrc, and installinkmailadmin as one job
 ## Prerequisite: setup of course, and verbemail if you wish an email tld other than .email
 ## Check prerequisites for those
+## PFA cannot talk to Maddy, so this always installs inkMail as the po.emailURI controller.
 
 # OPTIONAL Prerequesite:
 ## If restoring from a backupinkvmail backup, the .vbak file must be in vip
 
 # How to use:
-## ./installinkemail [ RoundCube webmail path - optional: '-n' to skip ] [ backup filename IF restoring from backupinkvmail backup, optional ]
+## ./installinkemail [ RoundCube webmail path - optional: '-n' to skip ] [ inkMail po. path - optional: '-n' to skip ] [ backup filename IF restoring from backupinkvmail backup, optional ]
 
 # Eg:
-## ./installinkemail # Auto-generated secure paths (different for RC BOX), no backup
-## ./installinkemail roundcubesecretpath # RC BOX path
-## ./installinkemail rcbase myemailfile.vbak # RC BOX path and backup source file
-## ./installinkemail -n myemailfile.vbak  # Backup, no other settings
+## ./installinkemail # Auto-generated secure paths (different for RC BOX and inkMail), no backup
+## ./installinkemail roundcubesecretpath # RC BOX path, autogen inkMail path
+## ./installinkemail rcbase imapath # RC and inkMail paths
+## ./installinkemail rcbase imapath myemailfile.vbak
+## ./installinkemail -n -n myemailfile.vbak  # Backup, no other settings
 
-usagenotes="This runs installmaddymail and installrc as one job"
-usageformat="installinkemail [ RoundCube webmail path ] [ PostfixAdmin email pfa path - optional: if no other arguments and same as RoundCube ] [ PostfixAdmin setup password - optional: 'no' to skip ] [ backup filename IF restoring from backupinkvmail backup, optional ]"
-usageexample="installinkemail # Auto-generated secure paths (different for RC BOX), no backup
+usagenotes="This runs installmaddymail, installrc, and installinkmailadmin as one job"
+usageformat="installinkemail [ RoundCube webmail path - optional: '-n' to skip ] [ inkMail po. path - optional: '-n' to skip ] [ backup filename, optional ]"
+usageexample="installinkemail # Auto-generated secure paths, no backup
 installinkemail roundcubesecretpath # RC BOX path
-installinkemail rcbase myemailfile.vbak # RC BOX path and backup source file
-installinkemail -n myemailfile.vbak  # Backup, no other settings"
+installinkemail rcbase imapath
+installinkemail rcbase imapath myemailfile.vbak
+installinkemail -n -n myemailfile.vbak"
 hierarchy=( oversight )
 vsetnames=(  )
 vsettypes=(  )
-voptnames=( "RoundCube web path" "Email backup file" )
-vopttypes=( 'isazAZ09lines || string_match' "www/vip/verb.vmail.*.vbak backup file name and location" )
+voptnames=( "RoundCube web path" "inkMail po. path" "Email backup file" )
+vopttypes=( 'isazAZ09lines || string_match' 'isazAZ09lines || string_match' "www/vip/verb.vmail.*.vbak backup file name and location" )
 voptflags=( n )
-voptflagpurpose=( "No Roudcube Box setup password, but using backup email file" )
+voptflagpurpose=( "No Roundcube Box or inkMail path, but using backup email file" )
 dependencyinstall=(  )
 prerequesite=( "inkCert certs should be installled for at least the emailTLDURI and nameURI for this verber" )
 usedby=(  )
-useserfs=( installmaddymail installrc )
+useserfs=( installmaddymail installrc installinkmailadmin )
 useconfigs=( siteurilist )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/installinkemail.replace" ]; then . /opt/verb/mods/installinkemail.replace; return 0; fi # Replaces this script
@@ -50,6 +53,23 @@ else
   boxfolder="$(/usr/bin/pwgen -0 5 1)"
 fi
 
+# inkMail po. folder ($2). A lone *.vbak in $2 is still a backup (old two-arg form).
+pofolder=""
+backupRestore=""
+if [ -n "$2" ] && [ "$2" != "-n" ]; then
+  if [[ "$2" == *.vbak ]]; then
+    backupRestore="$2"
+  else
+    pofolder="$2"
+  fi
+fi
+if [ -z "${pofolder}" ]; then
+  pofolder="$(/usr/bin/pwgen -0 5 1)"
+fi
+if [ -n "$3" ]; then
+  backupRestore="$3"
+fi
+
 # Maddy email
 /opt/verb/serfs/installmaddymail
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
@@ -59,11 +79,14 @@ e="$?"; [[ "$e" = "0" ]] || exit "$e"
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 # Backup
-if [ -n "$2" ]; then
-  backupRestore=$2
+if [ -n "${backupRestore}" ]; then
   /opt/verb/serfs/backupinkvmailrestore ${backupRestore}
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
+
+# inkMail admin at po.emailURI (PFA cannot talk to Maddy)
+/opt/verb/serfs/installinkmailadmin ${pofolder}
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 # inkCert check and FYI
 if /bin/grep -Fq "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${emailTLDURI}; then
@@ -75,6 +98,9 @@ fi
 # Finished
 /bin/echo "
 You must restart the server in order for email boxes to send and receive.
+
+inkMail:
+- https://po.${emailTLDURI}/${pofolder}/
 
 Roundcube:
 - https://box.${emailTLDURI}/${boxfolder}

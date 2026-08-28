@@ -7,12 +7,12 @@
 ## BIMI uploads land in /srv/vip/files/DOMAIN.bimi.svg, then `ink set bimi -p vip -d DOMAIN`
 
 # How to use:
-## ./installinkmail [ path folder ]
+## ./installinkmailadmin [ path folder ]
 
 usagenotes="This installs the Go inkMail control panel on po.emailURI"
-usageformat="installinkmail [ path folder - optional ]"
-usageexample="installinkmail
-installinkmail wink822"
+usageformat="installinkmailadmin [ path folder - optional ]"
+usageexample="installinkmailadmin
+installinkmailadmin wink822"
 hierarchy=( primary )
 vsetnames=(  )
 vsettypes=(  )
@@ -22,12 +22,12 @@ voptflags=(  )
 voptflagpurpose=(  )
 dependencyinstall=(  )
 prerequesite=(  )
-usedby=( installmaddymail installinkvmail )
+usedby=( installinkvmail installinkemail )
 useserfs=(  )
 useconfigs=( servertype servernameip siteurilist servermailpath )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
-if [ -e "/opt/verb/mods/installinkmail.replace" ]; then . /opt/verb/mods/installinkmail.replace; return 0; fi # Replaces this script
-if [ -e "/opt/verb/mods/installinkmail.before" ]; then . /opt/verb/mods/installinkmail.before; fi # Precedes this script
+if [ -e "/opt/verb/mods/installinkmailadmin.replace" ]; then . /opt/verb/mods/installinkmailadmin.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installinkmailadmin.before" ]; then . /opt/verb/mods/installinkmailadmin.before; fi # Precedes this script
 
 
 . /opt/verb/conf/servertype
@@ -47,9 +47,18 @@ if [ "${ServerType}" = "lamp" ]; then
 fi
 
 if [ -n "$1" ]; then
-  ieaFolder=$1
+  poFolder=$1
 else
-  ieaFolder="$(/usr/bin/pwgen -0 5 1)"
+  poFolder="$(/usr/bin/pwgen -0 5 1)"
+fi
+
+if [ "${ServerPOPath}" != "PO_NOT_INSTALLED" ]; then
+  /usr/bin/echo "inkMail is already installed at ${ServerPOPath}."
+  exit 0
+fi
+if [ "${ServerPFAPath}" != "PFA_NOT_INSTALLED" ] && [ "${ServerPFAPath}" != "PFA_NOT_ALLOWED" ] && [ "${ServerPFAPath}" = "${poFolder}" ]; then
+  /usr/bin/echo "Path ${poFolder} is already used by PostfixAdmin (ServerPFAPath). Choose a different path."
+  exit 7
 fi
 
 src="/opt/verb/conf/lib/cloud/webmail"
@@ -76,7 +85,7 @@ port=8099
 cfg="/opt/verb/conf/inkmail.conf"
 /usr/bin/cat > "${cfg}" <<EOF
 listen=127.0.0.1:${port}
-path=/${ieaFolder}/
+path=/${poFolder}/
 sso_secret=$(/usr/bin/pwgen -s -1 32)
 domain_lock=
 vip_drop=/srv/vip/files
@@ -136,7 +145,7 @@ if [ -f "${nconf}" ]; then
   if ! /usr/bin/grep -q "INKMAIL-PROXY" "${nconf}"; then
     /usr/bin/sed -i "/location \/ {/i\\
   #INKMAIL-PROXY-start\\
-  location /${ieaFolder}/ {\\
+  location /${poFolder}/ {\\
     proxy_http_version 1.1;\\
     proxy_set_header Host \$host;\\
     proxy_set_header X-Real-IP \$remote_addr;\\
@@ -153,20 +162,15 @@ fi
 /usr/bin/systemctl daemon-reload
 /usr/bin/systemctl enable --now inkmail.service
 
-if ! /usr/bin/grep -q '^ServerIEAPath=' /opt/verb/conf/servermailpath; then
-  /usr/bin/echo "ServerIEAPath=\"${ieaFolder}\"" >> /opt/verb/conf/servermailpath
-else
-  /usr/bin/sed -i "s/ServerIEAPath=.*/ServerIEAPath=\"${ieaFolder}\"/" /opt/verb/conf/servermailpath
-fi
-/usr/bin/sed -i "s/ServerPOPath=.*/ServerPOPath=\"${ieaFolder}\"/" /opt/verb/conf/servermailpath
+/usr/bin/sed -i "s/ServerPOPath=.*/ServerPOPath=\"${poFolder}\"/" /opt/verb/conf/servermailpath
 
 /usr/bin/echo "
 inkMail (postfix-maddy agnostic) is at:
-  https://po.${emailTLDURI}/${ieaFolder}/
+  https://po.${emailTLDURI}/${poFolder}/
 SSO from the verb web UI once that admin is enrolled.
 "
 
 
 
 
-if [ -e "/opt/verb/mods/installinkmail.after" ]; then . /opt/verb/mods/installinkmail.after; fi # Follows this script
+if [ -e "/opt/verb/mods/installinkmailadmin.after" ]; then . /opt/verb/mods/installinkmailadmin.after; fi # Follows this script

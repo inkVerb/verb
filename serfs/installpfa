@@ -78,6 +78,11 @@ else
   pfaPass="$(pwgen -1Bcn 10)" # We need this variable in our Finish echo statement when running via installinkvmail
 fi
 
+if [ "${ServerPOPath}" != "PO_NOT_INSTALLED" ] && [ "${ServerPOPath}" = "${pfaFolder}" ]; then
+  /usr/bin/echo "Path ${pfaFolder} is already used by inkMail (ServerPOPath). Choose a different path."
+  exit 7
+fi
+
 # Download from repo
 /opt/verb/serfs/inkget ${cVappName} check
 e="$?"; [[ "$e" = "0" ]] || exit "$e"

@@ -103,8 +103,7 @@ if [ ! -x "${bin}" ]; then
 fi
 
 "${bin}" "$@"
-e="$?"
-exit "$e"
+e="$?"; exit "$e"
 
 
 
