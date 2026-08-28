@@ -100,6 +100,10 @@ if [ -n "$4" ]; then
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 
+# inkMail (agnostic panel at po.emailURI). PFA remains for Postfix; Roundcube is webmail.
+/opt/verb/serfs/installinkmail ${pfafolder}
+e="$?"; [[ "$e" = "0" ]] || true
+
 # inkCert check and FYI
 if /bin/grep -Fq "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${emailTLDURI}; then
   /bin/echo "Note: ${emailTLDURI} still doesn't have proper SSL certs. You can install, but will get SSL warnings due to \"self-signed\" or \"snakeoil\" certs.

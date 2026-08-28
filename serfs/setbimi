@@ -1,0 +1,77 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This installs a BIMI SVG for a hosted domain from the VIP drop or an FTP drop
+## VIP:  /srv/vip/files/domain.tld.bimi.svg  →  /srv/www/html/domain.tld/bimi.svg
+## FTP:  /srv/ftp/domain.tld.bimi.svg        →  /srv/www/html/domain.tld/bimi.svg
+## Then adds the default._bimi TXT (inkdnsaddbimi)
+## inkMail uploads to the VIP path, then runs: ink set bimi -p vip -d domain.tld
+
+# How to use:
+## ./setbimi [ domain.tld ] [ ftp | vip ]
+
+usagenotes="This moves a dropped BIMI SVG into www/html/domain.tld/bimi.svg and adds the DNS TXT"
+usageformat="setbimi [ domain.tld ] [ ftp | vip ]"
+usageexample="setbimi inkisaverb.com vip
+setbimi inkisaverb.com ftp"
+hierarchy=( primary )
+vsetnames=( "Domain" "Drop path" )
+vsettypes=( isDomain isChoice )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( inkMail )
+useserfs=( inkdnsaddbimi )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setbimi.replace" ]; then . /opt/verb/mods/setbimi.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setbimi.before" ]; then . /opt/verb/mods/setbimi.before; fi # Precedes this script
+
+
+domain="$1"
+drop="$2"
+
+if [ -z "${domain}" ] || [ -z "${drop}" ]; then
+  /usr/bin/echo "Domain and drop path (ftp|vip) required."
+  exit 5
+fi
+
+case "${drop}" in
+  vip)
+    src="/srv/vip/files/${domain}.bimi.svg"
+    ;;
+  ftp)
+    src="/srv/ftp/${domain}.bimi.svg"
+    ;;
+  *)
+    /usr/bin/echo "Drop path must be ftp or vip."
+    exit 5
+    ;;
+esac
+
+if [ ! -f "${src}" ]; then
+  /usr/bin/echo "No BIMI SVG at ${src}"
+  exit 8
+fi
+if ! /usr/bin/grep -qi '<svg' "${src}"; then
+  /usr/bin/echo "Not an SVG: ${src}"
+  exit 8
+fi
+
+dest="/srv/www/html/${domain}/bimi.svg"
+/usr/bin/mkdir -p "/srv/www/html/${domain}"
+/usr/bin/cp "${src}" "${dest}"
+/usr/bin/chown www:www "${dest}"
+/usr/bin/chmod 644 "${dest}"
+
+# Leave the drop in place so the operator can see it succeeded; shred is their call
+/opt/verb/serfs/inkdnsaddbimi "${domain}" || true
+
+/usr/bin/echo "BIMI logo at https://${domain}/bimi.svg (from ${drop})"
+
+
+
+if [ -e "/opt/verb/mods/setbimi.after" ]; then . /opt/verb/mods/setbimi.after; fi # Follows this script

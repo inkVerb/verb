@@ -66,6 +66,38 @@ if [ ! -d "/srv/www/domains/api.${domain}" ]; then
 wait
 fi
 
+# api.DOMAIN must be an active Nginx vhost, with cert coverage:
+# DONE_CB (wildcard already applied by addsubdomain) OR DONE_LE with api.DOMAIN listed in cli-ini
+apicert="/opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}"
+apini="/opt/verb/conf/inkcert/cli-ini/cli.${domain}.ini"
+ngenabled=""
+for p in \
+  "/etc/nginx/sites-enabled/api.${domain}.conf" \
+  "/opt/verb/conf/webserver/sites-enabled/nginx/api.${domain}.conf" \
+  "/opt/verb/conf/webserver/sites-available/nginx/api.${domain}.conf"
+do
+  if [ -f "$p" ] || [ -L "$p" ]; then ngenabled="$p"; break; fi
+done
+if [ -z "${ngenabled}" ]; then
+  /usr/bin/echo "api.${domain} is not an active Nginx site. Add the subdomain and enable it first."
+  exit 8
+fi
+if [ -f "${apicert}" ]; then
+  if /usr/bin/grep -Fq "InkCerted=DONE_CB" "${apicert}"; then
+    /usr/bin/echo "api.${domain}: covered by Certbot wildcard (DONE_CB)."
+  elif /usr/bin/grep -Fq "InkCerted=DONE_LE" "${apicert}"; then
+    if [ -f "${apini}" ] && /usr/bin/grep -Fq "api.${domain}" "${apini}"; then
+      /usr/bin/echo "api.${domain}: listed on the Letsencrypt cert (DONE_LE). Refresh with inkcertdole if the live cert does not yet include it."
+    else
+      /usr/bin/echo "api.${domain} is not listed in ${apini}. Add it (addsubdomain does this) then inkcertdole ${domain}."
+      exit 8
+    fi
+  else
+    /usr/bin/echo "FYI: ${domain} does not have DONE_CB or DONE_LE yet. api.${domain} is served; obtain certs before production."
+  fi
+fi
+
+
 cd /srv/www/vapps || exit 6
 /opt/verb/serfs/inkget ${cVappName} check
 e="$?"; [[ "$e" = "0" ]] || exit "$e"

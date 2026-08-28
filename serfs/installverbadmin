@@ -1,0 +1,124 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This installs the Go verb web UI at vipURI
+## Refuses unless VERBvip=true was set before inst/setup
+## PAM users (verb + admin|supervisor) are created separately by newverbadmin / rink admin verb
+
+# How to use:
+## ./installverbadmin
+
+usagenotes="This installs the verb web UI on vipURI (VERBvip must already be true)"
+usageformat="installverbadmin"
+usageexample="installverbadmin"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( setnginxvappproxy )
+useconfigs=( servertldstatus siteurilist servertype )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/installverbadmin.replace" ]; then . /opt/verb/mods/installverbadmin.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installverbadmin.before" ]; then . /opt/verb/mods/installverbadmin.before; fi # Precedes this script
+
+
+. /opt/verb/conf/servertldstatus
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/servertype
+
+if [ "${VERBvip}" != "true" ]; then
+  /usr/bin/echo "VERBvip is not true. Verb web UI is not allowed. This is set before inst/setup."
+  exit 8
+fi
+if [ "${ServerType}" = "lamp" ]; then
+  /usr/bin/echo "Verb web UI needs Nginx (LEMP or LAEMP)."
+  exit 8
+fi
+if [ -z "${vipURI}" ]; then
+  /usr/bin/echo "vipURI is empty."; exit 8
+fi
+
+src="/opt/verb/conf/lib/cloud/verbadmin"
+if [ ! -f "${src}/cmd/verbadmin/main.go" ]; then
+  /usr/bin/echo "verbadmin sources missing at ${src}"
+  exit 8
+fi
+if ! /usr/bin/command -v go >/dev/null 2>&1; then
+  /usr/bin/pacman -S --noconfirm --needed go sqlite
+fi
+/usr/bin/pacman -S --noconfirm --needed sqlite python-pam 2>/dev/null || true
+
+dst="/srv/www/vapps/verbadmin"
+/usr/bin/rm -rf "${dst}"
+/usr/bin/mkdir -p "${dst}"
+/usr/bin/cp -a "${src}/." "${dst}/"
+/usr/bin/cp -f /opt/verb/conf/lib/logo/pen-logo.svg "${dst}/web/static/pen-logo.svg" 2>/dev/null || true
+cd "${dst}" || exit 6
+/usr/bin/mkdir -p bin
+/usr/bin/go build -o bin/verbadmin ./cmd/verbadmin
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+
+# PAM service used only for authentication confirmation
+/usr/bin/cat > /etc/pam.d/inkadmin <<'EOF'
+auth     required  pam_unix.so
+account  required  pam_unix.so
+EOF
+
+port=8098
+sso="$(/usr/bin/pwgen -s -1 32)"
+cfg="/opt/verb/conf/verbadmin.conf"
+/usr/bin/cat > "${cfg}" <<EOF
+listen=127.0.0.1:${port}
+product=verb
+db=/opt/verb/conf/webadmin/users.db
+sso_secret=${sso}
+inkmail_url=
+EOF
+/usr/bin/chmod 640 "${cfg}"
+if [ -f /opt/verb/conf/inkmail.conf ]; then
+  /usr/bin/sed -i "s|^sso_secret=.*|sso_secret=${sso}|" /opt/verb/conf/inkmail.conf
+  /usr/bin/sed -i "s|^inkmail_url=.*|inkmail_url=|" "${cfg}"
+fi
+
+/usr/bin/mkdir -p /opt/verb/conf/webadmin
+/usr/bin/cat > /etc/systemd/system/verbadmin.service <<EOF
+[Unit]
+Description=Verb web UI admin
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=${dst}
+ExecStart=${dst}/bin/verbadmin -config ${cfg}
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+/usr/bin/systemctl daemon-reload
+/usr/bin/systemctl enable --now verbadmin.service
+
+if [ -d "/srv/www/domains/${vipURI}" ]; then
+  /opt/verb/serfs/setnginxvappproxy "${vipURI}" "127.0.0.1:${port}"
+fi
+
+/usr/bin/echo "
+Verb web UI is at https://${vipURI}/
+Create users with: ink new verbadmin -u NAME -t admin -e you@domain.tld
+  or from the rink: rink admin verb ...
+No UI can create other admins.
+"
+
+
+
+
+if [ -e "/opt/verb/mods/installverbadmin.after" ]; then . /opt/verb/mods/installverbadmin.after; fi # Follows this script

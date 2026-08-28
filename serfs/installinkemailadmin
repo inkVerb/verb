@@ -1,108 +1,36 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
 
-# This installs the Maddy inkEmail Admin (PFA-shaped control plane, 701bio-style login)
-## Roundcube stays webmail. This is not a PFA replacement of RC.
-## Lives at po.EMAILTLDURI/FOLDER like PFA used to.
-## www may sudo only listed inkemail* / inkdns*bimi serfs.
+# Backward-compatible name: installs Go inkMail (agnostic) at po.emailURI
+## Roundcube stays webmail. This is not PFA and not RC.
 
 # How to use:
 ## ./installinkemailadmin [ path folder ]
-## ./installinkemailadmin mysecretpath
 
-usagenotes="This installs the Maddy inkEmail Admin control plane"
+usagenotes="This installs the Go inkMail control panel (formerly the PHP Maddy admin)"
 usageformat="installinkemailadmin [ path folder - optional ]"
 usageexample="installinkemailadmin
 installinkemailadmin wink822"
 hierarchy=( primary )
 vsetnames=(  )
 vsettypes=(  )
-voptnames=( "inkEmail Admin web path" )
+voptnames=( "inkMail web path" )
 vopttypes=( isazAZ09lines )
 voptflags=(  )
 voptflagpurpose=(  )
-dependencyinstall=( installmaddymail )
-prerequesite=( installmaddymail )
+dependencyinstall=(  )
+prerequesite=(  )
 usedby=( installmaddymail )
-useserfs=(  )
-useconfigs=( servertype servernameip siteurilist servermailpath )
+useserfs=( installinkmail )
+useconfigs=(  )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/installinkemailadmin.replace" ]; then . /opt/verb/mods/installinkemailadmin.replace; return 0; fi # Replaces this script
 if [ -e "/opt/verb/mods/installinkemailadmin.before" ]; then . /opt/verb/mods/installinkemailadmin.before; fi # Precedes this script
 
 
-. /opt/verb/conf/servertype
-. /opt/verb/conf/siteurilist
-. /opt/verb/conf/servermailpath
-
-if [ "${ServerMailStatus}" != "MADDY_EMAIL_SERVER" ] && [ "${ServerMailStatus}" != "MADDY_EMAIL_READY" ]; then
-  /usr/bin/echo "Maddy email must be installed first."
-  exit 8
-fi
-if [ "${ServerType}" = "lamp" ]; then
-  /usr/bin/echo "inkEmail Admin needs Nginx (LEMP or LAEMP)."
-  exit 8
-fi
-
-if [ -n "$1" ]; then
-  ieaFolder=$1
-else
-  ieaFolder="$(/usr/bin/pwgen -0 5 1)"
-fi
-ieaPass="$(/usr/bin/pwgen -s -1 16)"
-ieaHash="$(/usr/bin/php -r "echo password_hash('${ieaPass}', PASSWORD_DEFAULT);")"
-
-/usr/bin/mkdir -p /srv/www/email/inkemailadmin
-/usr/bin/cp -a /opt/verb/conf/lib/inkemailadmin/. /srv/www/email/inkemailadmin/
-/usr/bin/chown -R www:www /srv/www/email/inkemailadmin
-
-/usr/bin/mkdir -p /srv/www/verb/${ServerEmailTLD}.po
-/usr/bin/ln -sfn /srv/www/email/inkemailadmin /srv/www/verb/${ServerEmailTLD}.po/${ieaFolder}
-/usr/bin/chown -R www:www /srv/www/verb/${ServerEmailTLD}.po
-
-/usr/bin/echo "${ieaHash}" > /opt/verb/conf/inkemailadmin.pass
-/usr/bin/chmod 640 /opt/verb/conf/inkemailadmin.pass
-/usr/bin/chown root:www /opt/verb/conf/inkemailadmin.pass
-
-/usr/bin/cat > /opt/verb/conf/inkemailadmin.conf <<EOF
-passfile=/opt/verb/conf/inkemailadmin.pass
-path=${ieaFolder}
-EOF
-/usr/bin/chmod 640 /opt/verb/conf/inkemailadmin.conf
-/usr/bin/chown root:www /opt/verb/conf/inkemailadmin.conf
-
-# www may run only these serfs, never a wildcard
-/usr/bin/cat > /etc/sudoers.d/inkemailadmin <<'EOF'
-www ALL=(root) NOPASSWD: /opt/verb/serfs/inkemaildomain
-www ALL=(root) NOPASSWD: /opt/verb/serfs/inkemaildeldomain
-www ALL=(root) NOPASSWD: /opt/verb/serfs/inkemailbox
-www ALL=(root) NOPASSWD: /opt/verb/serfs/inkemaildelbox
-www ALL=(root) NOPASSWD: /opt/verb/serfs/inkemailalias
-www ALL=(root) NOPASSWD: /opt/verb/serfs/inkemaildelalias
-www ALL=(root) NOPASSWD: /opt/verb/serfs/inkemailshowdomains
-www ALL=(root) NOPASSWD: /opt/verb/serfs/inkemailshowboxes
-www ALL=(root) NOPASSWD: /opt/verb/serfs/inkemailunsubscribelist
-www ALL=(root) NOPASSWD: /opt/verb/serfs/inkemailunsubscriberemove
-www ALL=(root) NOPASSWD: /opt/verb/serfs/inkemailaddscriptfilter
-www ALL=(root) NOPASSWD: /opt/verb/serfs/inkdnsaddbimi
-www ALL=(root) NOPASSWD: /opt/verb/serfs/inkemailsetbimi
-EOF
-/usr/bin/chmod 440 /etc/sudoers.d/inkemailadmin
-
-if ! /usr/bin/grep -q '^ServerIEAPath=' /opt/verb/conf/servermailpath; then
-  /usr/bin/echo "ServerIEAPath=\"${ieaFolder}\"" >> /opt/verb/conf/servermailpath
-else
-  /usr/bin/sed -i "s/ServerIEAPath=.*/ServerIEAPath=\"${ieaFolder}\"/" /opt/verb/conf/servermailpath
-fi
-/usr/bin/sed -i "s/ServerPOPath=.*/ServerPOPath=\"${ieaFolder}\"/" /opt/verb/conf/servermailpath
-
-/usr/bin/echo "
-inkEmail Admin (Maddy, not Roundcube, not PFA) is at:
-  https://po.${emailTLDURI}/${ieaFolder}/
-Login password: ${ieaPass}
-Save it; it is not stored in plaintext.
-"
-
+/opt/verb/serfs/installinkmail "$1"
+e="$?"
+exit "$e"
 
 
 

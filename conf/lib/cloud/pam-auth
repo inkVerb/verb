@@ -1,0 +1,21 @@
+#!/usr/bin/python3
+"""Authenticate a nologin PAM user. Username then password on stdin (two lines).
+Exit 0 on success. Used only by the verb/rink web UIs. PAM users have no shell."""
+import sys
+
+def main():
+    user = sys.stdin.readline().rstrip("\n")
+    pw = sys.stdin.readline().rstrip("\n")
+    if not user or pw == "":
+        sys.exit(1)
+    try:
+        import pam
+        p = pam.pam()
+        ok = p.authenticate(user, pw, service="inkadmin")
+        sys.exit(0 if ok else 1)
+    except Exception:
+        # Fallback: python-pam missing — refuse rather than fake success
+        sys.exit(2)
+
+if __name__ == "__main__":
+    main()

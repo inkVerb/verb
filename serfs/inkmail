@@ -1,0 +1,111 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# Agnostic mail dispatcher: inkemail (Maddy) or inkvmail (Postfix) based on ServerMailStatus
+## Used by `ink mail …` felt tools and by the Go inkMail panel
+## Does not itself mutate mail; it picks the matching serf and execs it
+
+# How to use:
+## ./inkmail [ domain | deldomain | box | delbox | alias | delalias | showdomains | showboxes | unsublist | unsubrm | purgebox | purgedomain | addscriptfilter | killscriptfilter | passhash | baseaddrs | sysmailboxmsmtp | which ] [ serf args... ]
+
+usagenotes="This dispatches a mail operation to inkemail* or inkvmail* based on the installed mail stack"
+usageformat="inkmail [ operation ] [ args... ]"
+usageexample="inkmail which
+inkmail domain inkisaverb.com
+inkmail box james inkisaverb.com
+inkmail showdomains"
+hierarchy=( primary )
+vsetnames=( "Operation" )
+vsettypes=( isazAZ09lines )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( inkMail )
+useserfs=(  )
+useconfigs=( servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkmail.replace" ]; then . /opt/verb/mods/inkmail.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkmail.before" ]; then . /opt/verb/mods/inkmail.before; fi # Precedes this script
+
+
+. /opt/verb/conf/servermailpath
+
+op="$1"
+shift || true
+
+prefix=""
+case "${ServerMailStatus}" in
+  MADDY_EMAIL_SERVER|MADDY_EMAIL_READY)
+    prefix="inkemail"
+    ;;
+  VMAIL_SERVER|VMAIL_READY)
+    prefix="inkvmail"
+    ;;
+  *)
+    /usr/bin/echo "No mail stack installed (ServerMailStatus=${ServerMailStatus}). Install inkemail or inkvmail first."
+    exit 8
+    ;;
+esac
+
+if [ -z "${op}" ] || [ "${op}" = "which" ]; then
+  /usr/bin/echo "${prefix} (${ServerMailStatus})"
+  exit 0
+fi
+
+# Map the agnostic operation onto the existing serf name
+serf=""
+case "${op}" in
+  domain)           serf="${prefix}domain" ;;
+  deldomain)        serf="${prefix}deldomain" ;;
+  box)              serf="${prefix}box" ;;
+  delbox)           serf="${prefix}delbox" ;;
+  alias)            serf="${prefix}alias" ;;
+  delalias)         serf="${prefix}delalias" ;;
+  showdomains)      serf="${prefix}showdomains" ;;
+  showboxes)        serf="${prefix}showboxes" ;;
+  unsublist|unsubscribelist) serf="${prefix}unsubscribelist" ;;
+  unsubrm|unsubscriberemove) serf="${prefix}unsubscriberemove" ;;
+  purgebox)         serf="${prefix}purgebox" ;;
+  purgedomain)      serf="${prefix}purgedomain" ;;
+  addscriptfilter)  serf="${prefix}addscriptfilter" ;;
+  killscriptfilter) serf="${prefix}killscriptfilter" ;;
+  baseaddrs)        serf="${prefix}baseaddrs" ;;
+  sysmailboxmsmtp)  serf="${prefix}sysmailboxmsmtp" ;;
+  passhash)
+    if [ "${prefix}" = "inkemail" ]; then
+      serf="inkemailpasshash"
+    else
+      /usr/bin/echo "passhash is Maddy-only (use PFA for Postfix)."
+      exit 8
+    fi
+    ;;
+  onbox|offbox|onalias|offalias|ondomain|offdomain)
+    if [ "${prefix}" = "inkvmail" ]; then
+      serf="inkvmail${op}"
+    else
+      /usr/bin/echo "${op} is Postfix-vmail only."
+      exit 8
+    fi
+    ;;
+  *)
+    /usr/bin/echo "Unknown mail operation: ${op}"
+    exit 5
+    ;;
+esac
+
+bin="/opt/verb/serfs/${serf}"
+if [ ! -x "${bin}" ]; then
+  /usr/bin/echo "Serf not found: ${serf}"
+  exit 8
+fi
+
+"${bin}" "$@"
+e="$?"
+exit "$e"
+
+
+
+if [ -e "/opt/verb/mods/inkmail.after" ]; then . /opt/verb/mods/inkmail.after; fi # Follows this script

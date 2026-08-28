@@ -24,7 +24,7 @@ function serf(string $name, array $args = []): array {
         'inkemaildomain','inkemaildeldomain','inkemailbox','inkemaildelbox',
         'inkemailalias','inkemaildelalias','inkemailshowdomains','inkemailshowboxes',
         'inkemailunsubscribelist','inkemailunsubscriberemove','inkemailaddscriptfilter',
-        'inkdnsaddbimi','inkemailsetbimi',
+        'inkdnsaddbimi','inkemailsetbimi','setbimi','inkmail',
     ];
     if (!in_array($name, $allow, true)) {
         return [1, 'unknown serf'];
@@ -127,7 +127,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         if ($act === 'bimi') {
             $d = strtolower(trim((string)($_POST['domain'] ?? '')));
-            $dest = '/srv/www/html/' . $d . '/bimi.svg';
             if (!is_uploaded_file($_FILES['svg']['tmp_name'] ?? '')) {
                 flash('No SVG uploaded.');
             } else {
@@ -135,15 +134,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (stripos($raw, '<svg') === false) {
                     flash('Not an SVG.');
                 } else {
-                    $dir = dirname($dest);
-                    if (!is_dir($dir)) { @mkdir($dir, 0750, true); }
-                    if (@file_put_contents($dest, $raw) === false) {
-                        [, $o] = serf('inkemailsetbimi', [$d, $_FILES['svg']['tmp_name']]);
-                        flash($o ?: 'BIMI write via serf.');
+                    $vip = '/srv/vip/files/' . $d . '.bimi.svg';
+                    @mkdir('/srv/vip/files', 0750, true);
+                    if (@file_put_contents($vip, $raw) === false) {
+                        flash('Could not write VIP drop.');
                     } else {
-                        @chmod($dest, 0644);
-                        serf('inkdnsaddbimi', [$d]);
-                        flash("Wrote https://$d/bimi.svg");
+                        [, $o] = serf('setbimi', [$d, 'vip']);
+                        flash($o ?: "Wrote https://$d/bimi.svg via ink set bimi -p vip");
                     }
                 }
             }

@@ -4,6 +4,7 @@
 - pdt-news (`ink set pdt`)
 - badAd (`ink set badad`)
 - PinkWrite 99 (`ink set pw99`)
+- BIMI logo (`ink set bimi`) — VIP or FTP drop into `www/html/domain.tld/bimi.svg`
 - Database credentials are rewritten in `verb/conf/vapps/vapp.APP.DOMAIN`
 - App config is rewritten in the live config file
 - This does not migrate data; it only changes what the app will use next

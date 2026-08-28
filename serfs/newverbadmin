@@ -1,0 +1,121 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This creates a verb web-UI PAM user (nologin, no home, no sudo)
+## Product group: verb
+## Type group:    admin | supervisor  (set here, checked again at login)
+## SQL meta at /opt/verb/conf/webadmin/users.db is a redundant cross-check, not the permission source
+## Only rink (cli/web) or this serf / ink new verbadmin may create these users
+## The web UI cannot create other admins
+
+# How to use:
+## ./newverbadmin [ username ] [ admin | supervisor ] [ email ]
+
+usagenotes="This creates a nologin PAM user for the verb web UI (groups verb + admin|supervisor, SQL meta row, one-time password)"
+usageformat="newverbadmin [ username ] [ admin | supervisor ] [ email ]"
+usageexample="newverbadmin jesse admin jesse@inkisaverb.com
+newverbadmin pat supervisor pat@inkisaverb.com"
+hierarchy=( primary )
+vsetnames=( "Username" "Account type" "Email" )
+vsettypes=( isUsername isChoice isEmail )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( rink::adminverb )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/newverbadmin.replace" ]; then . /opt/verb/mods/newverbadmin.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/newverbadmin.before" ]; then . /opt/verb/mods/newverbadmin.before; fi # Precedes this script
+
+
+username="$1"
+atype="$2"
+email="$3"
+
+if [ -z "${username}" ] || [ -z "${atype}" ] || [ -z "${email}" ]; then
+  /usr/bin/echo "Username, account type (admin|supervisor), and email required."
+  exit 5
+fi
+case "${atype}" in
+  admin|supervisor) ;;
+  *) /usr/bin/echo "Account type must be admin or supervisor."; exit 5 ;;
+esac
+
+/usr/bin/getent group verb >/dev/null || /usr/sbin/groupadd --system verb
+/usr/bin/getent group admin >/dev/null || /usr/sbin/groupadd --system admin
+/usr/bin/getent group supervisor >/dev/null || /usr/sbin/groupadd --system supervisor
+
+if /usr/bin/id -u "${username}" >/dev/null 2>&1; then
+  /usr/bin/echo "Linux user ${username} already exists."
+  exit 7
+fi
+
+# nologin, no home, no user-private group; product + type groups only
+/usr/sbin/useradd -M -N -r -s /usr/sbin/nologin -g verb -G "${atype}" "${username}"
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+
+# No sudo, no extra files
+/usr/bin/passwd -l "${username}" >/dev/null 2>&1 || true
+
+otpass="$(/usr/bin/pwgen -s -1 20)"
+# Unlock just long enough to set the one-time password, stay nologin
+echo "${username}:${otpass}" | /usr/sbin/chpasswd
+
+/usr/bin/mkdir -p /opt/verb/conf/webadmin
+db="/opt/verb/conf/webadmin/users.db"
+/usr/bin/sqlite3 "${db}" <<SQL
+CREATE TABLE IF NOT EXISTS users (
+  username TEXT PRIMARY KEY,
+  email TEXT NOT NULL,
+  account_type TEXT NOT NULL,
+  password_changed INTEGER NOT NULL DEFAULT 0,
+  email_confirmed INTEGER NOT NULL DEFAULT 0,
+  totp_secret TEXT,
+  totp_confirmed INTEGER NOT NULL DEFAULT 0,
+  email_2fa INTEGER NOT NULL DEFAULT 0,
+  passkey_confirmed INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS passkeys (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username TEXT NOT NULL,
+  cred_id TEXT NOT NULL,
+  public_key TEXT NOT NULL,
+  name TEXT,
+  created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS oauth (
+  username TEXT NOT NULL,
+  provider TEXT NOT NULL,
+  subject TEXT NOT NULL,
+  PRIMARY KEY (username, provider)
+);
+CREATE TABLE IF NOT EXISTS email_codes (
+  username TEXT NOT NULL,
+  code TEXT NOT NULL,
+  purpose TEXT NOT NULL,
+  expires_at INTEGER NOT NULL
+);
+INSERT OR REPLACE INTO users (username, email, account_type, password_changed, email_confirmed, created_at)
+VALUES ('${username}', '${email}', '${atype}', 0, 0, datetime('now'));
+SQL
+/usr/bin/chmod 640 "${db}"
+/usr/bin/chown root:root "${db}"
+
+# One-time login token (password-reset style) — consumed by the verb web UI
+/usr/bin/mkdir -p /opt/verb/conf/webadmin/ot
+/usr/bin/echo "${otpass}" > "/opt/verb/conf/webadmin/ot/${username}"
+/usr/bin/chmod 600 "/opt/verb/conf/webadmin/ot/${username}"
+
+/usr/bin/echo "Created verb web UI user ${username} (${atype}).
+One-time password (first login must change it, then confirm email + Authenticator or Passkey):
+${otpass}
+This password is also at /opt/verb/conf/webadmin/ot/${username} until first login."
+
+
+
+if [ -e "/opt/verb/mods/newverbadmin.after" ]; then . /opt/verb/mods/newverbadmin.after; fi # Follows this script

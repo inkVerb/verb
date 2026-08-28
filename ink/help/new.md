@@ -6,6 +6,7 @@
   - `new` usually creates higher-level frameworks
   - `add` usually makes lower-level changes based on frameworks created with `new`
   - Both often use `kill` to remove
+- Verb web UI PAM user: `ink new verbadmin`
 
 ## Schemas
 Find available schemas with:

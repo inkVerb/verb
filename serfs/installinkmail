@@ -1,0 +1,171 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This installs the Go inkMail control panel at po.emailURI
+## Agnostic: Maddy (inkemail) or Postfix (inkvmail) via serfs/inkmail
+## Roundcube stays webmail. PFA stays for Postfix if installed. This is the unified panel.
+## BIMI uploads land in /srv/vip/files/DOMAIN.bimi.svg, then `ink set bimi -p vip -d DOMAIN`
+
+# How to use:
+## ./installinkmail [ path folder ]
+
+usagenotes="This installs the Go inkMail control panel on po.emailURI"
+usageformat="installinkmail [ path folder - optional ]"
+usageexample="installinkmail
+installinkmail wink822"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=( "inkMail web path" )
+vopttypes=( isazAZ09lines )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( installmaddymail installinkvmail )
+useserfs=(  )
+useconfigs=( servertype servernameip siteurilist servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/installinkmail.replace" ]; then . /opt/verb/mods/installinkmail.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installinkmail.before" ]; then . /opt/verb/mods/installinkmail.before; fi # Precedes this script
+
+
+. /opt/verb/conf/servertype
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/servermailpath
+
+case "${ServerMailStatus}" in
+  MADDY_EMAIL_SERVER|MADDY_EMAIL_READY|VMAIL_SERVER|VMAIL_READY) ;;
+  *)
+    /usr/bin/echo "Install inkemail (Maddy) or inkvmail (Postfix) first."
+    exit 8
+    ;;
+esac
+if [ "${ServerType}" = "lamp" ]; then
+  /usr/bin/echo "inkMail needs Nginx (LEMP or LAEMP)."
+  exit 8
+fi
+
+if [ -n "$1" ]; then
+  ieaFolder=$1
+else
+  ieaFolder="$(/usr/bin/pwgen -0 5 1)"
+fi
+
+src="/opt/verb/conf/lib/cloud/webmail"
+if [ ! -f "${src}/cmd/inkmail/main.go" ]; then
+  /usr/bin/echo "inkMail sources missing at ${src}"
+  exit 8
+fi
+
+if ! /usr/bin/command -v go >/dev/null 2>&1; then
+  /usr/bin/pacman -S --noconfirm --needed go
+fi
+
+dst="/srv/www/vapps/inkmail"
+/usr/bin/rm -rf "${dst}"
+/usr/bin/mkdir -p "${dst}"
+/usr/bin/cp -a "${src}/." "${dst}/"
+cd "${dst}" || exit 6
+/usr/bin/mkdir -p bin
+/usr/bin/go build -o bin/inkmail ./cmd/inkmail
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+
+port=8099
+cfg="/opt/verb/conf/inkmail.conf"
+/usr/bin/cat > "${cfg}" <<EOF
+listen=127.0.0.1:${port}
+path=/${ieaFolder}/
+sso_secret=$(/usr/bin/pwgen -s -1 32)
+domain_lock=
+vip_drop=/srv/vip/files
+EOF
+/usr/bin/chmod 640 "${cfg}"
+
+/usr/bin/cat > /etc/systemd/system/inkmail.service <<EOF
+[Unit]
+Description=inkMail control panel
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=${dst}
+ExecStart=${dst}/bin/inkmail -config ${cfg}
+Restart=on-failure
+Environment=INKMAIL_CONFIG=${cfg}
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# www may run only these serfs (Go process is root; this list is for any PHP fallback)
+/usr/bin/cat > /etc/sudoers.d/inkmail <<'EOF'
+www ALL=(root) NOPASSWD: /opt/verb/serfs/inkmail
+www ALL=(root) NOPASSWD: /opt/verb/serfs/setbimi
+www ALL=(root) NOPASSWD: /opt/verb/serfs/inkdnsaddbimi
+www ALL=(root) NOPASSWD: /opt/verb/serfs/inkemailsetbimi
+www ALL=(root) NOPASSWD: /opt/verb/serfs/inkemaildomain
+www ALL=(root) NOPASSWD: /opt/verb/serfs/inkemaildeldomain
+www ALL=(root) NOPASSWD: /opt/verb/serfs/inkemailbox
+www ALL=(root) NOPASSWD: /opt/verb/serfs/inkemaildelbox
+www ALL=(root) NOPASSWD: /opt/verb/serfs/inkemailalias
+www ALL=(root) NOPASSWD: /opt/verb/serfs/inkemaildelalias
+www ALL=(root) NOPASSWD: /opt/verb/serfs/inkemailshowdomains
+www ALL=(root) NOPASSWD: /opt/verb/serfs/inkemailshowboxes
+www ALL=(root) NOPASSWD: /opt/verb/serfs/inkemailunsubscribelist
+www ALL=(root) NOPASSWD: /opt/verb/serfs/inkemailunsubscriberemove
+www ALL=(root) NOPASSWD: /opt/verb/serfs/inkvmaildomain
+www ALL=(root) NOPASSWD: /opt/verb/serfs/inkvmaildeldomain
+www ALL=(root) NOPASSWD: /opt/verb/serfs/inkvmailbox
+www ALL=(root) NOPASSWD: /opt/verb/serfs/inkvmaildelbox
+www ALL=(root) NOPASSWD: /opt/verb/serfs/inkvmailalias
+www ALL=(root) NOPASSWD: /opt/verb/serfs/inkvmaildelalias
+www ALL=(root) NOPASSWD: /opt/verb/serfs/inkvmailshowdomains
+www ALL=(root) NOPASSWD: /opt/verb/serfs/inkvmailshowboxes
+www ALL=(root) NOPASSWD: /opt/verb/serfs/inkvmailunsubscribelist
+www ALL=(root) NOPASSWD: /opt/verb/serfs/inkvmailunsubscriberemove
+EOF
+/usr/bin/chmod 440 /etc/sudoers.d/inkmail
+
+# Nginx location on po.emailTLDURI
+nconf="/opt/verb/conf/webserver/sites-available/nginx/po.${emailTLDURI}.conf"
+if [ -f "${nconf}" ]; then
+  if ! /usr/bin/grep -q "INKMAIL-PROXY" "${nconf}"; then
+    /usr/bin/sed -i "/location \/ {/i\\
+  #INKMAIL-PROXY-start\\
+  location /${ieaFolder}/ {\\
+    proxy_http_version 1.1;\\
+    proxy_set_header Host \$host;\\
+    proxy_set_header X-Real-IP \$remote_addr;\\
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;\\
+    proxy_set_header X-Forwarded-Proto \$scheme;\\
+    proxy_pass http://127.0.0.1:${port}/;\\
+  }\\
+  #INKMAIL-PROXY-end
+" "${nconf}"
+    /usr/bin/systemctl reload nginx 2>/dev/null || true
+  fi
+fi
+
+/usr/bin/systemctl daemon-reload
+/usr/bin/systemctl enable --now inkmail.service
+
+if ! /usr/bin/grep -q '^ServerIEAPath=' /opt/verb/conf/servermailpath; then
+  /usr/bin/echo "ServerIEAPath=\"${ieaFolder}\"" >> /opt/verb/conf/servermailpath
+else
+  /usr/bin/sed -i "s/ServerIEAPath=.*/ServerIEAPath=\"${ieaFolder}\"/" /opt/verb/conf/servermailpath
+fi
+/usr/bin/sed -i "s/ServerPOPath=.*/ServerPOPath=\"${ieaFolder}\"/" /opt/verb/conf/servermailpath
+
+/usr/bin/echo "
+inkMail (postfix-maddy agnostic) is at:
+  https://po.${emailTLDURI}/${ieaFolder}/
+SSO from the verb web UI once that admin is enrolled.
+"
+
+
+
+
+if [ -e "/opt/verb/mods/installinkmail.after" ]; then . /opt/verb/mods/installinkmail.after; fi # Follows this script
