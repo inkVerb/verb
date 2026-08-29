@@ -46,8 +46,42 @@ if [ -f /opt/verb/conf/vapps/vapp.${cVappName} ]; then
 exit 0; fi
 ## Directory
 if [ -d /srv/email/${cVappName} ]; then
-/usr/bin/echo "Maddy already exists in the system. If it isn't working, look deeper on the server. For now, doing nothing."
-exit 8; fi
+  if /usr/bin/systemctl is-active --quiet maddy; then
+    /usr/bin/echo "Maddy is already installed and running."
+    exit 0
+  fi
+  /usr/bin/echo "Maddy files exist but maddy.service is not running. Repairing /etc/maddy permissions and starting..."
+  if [ -d /etc/maddy ]; then
+    /usr/bin/chown root:maddy /etc/maddy
+    /usr/bin/chown -R root:maddy /etc/maddy/conf.d /etc/maddy/*.conf 2>/dev/null || true
+    /usr/bin/find /etc/maddy/conf.d -type d -exec /usr/bin/chmod 0750 {} +
+    /usr/bin/find /etc/maddy/conf.d -type f -exec /usr/bin/chmod 0640 {} +
+    /usr/bin/chmod 0750 /etc/maddy
+    /usr/bin/chmod 0640 /etc/maddy/*.conf 2>/dev/null || true
+  fi
+  /usr/bin/systemctl daemon-reload
+  /usr/bin/systemctl enable rspamd 2>/dev/null || true
+  /usr/bin/systemctl start rspamd || true
+  /usr/bin/systemctl enable maddy
+  /usr/bin/systemctl start maddy
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
+  if ! /usr/bin/systemctl is-active --quiet maddy; then
+    /usr/bin/echo "maddy.service still failed. See: systemctl status maddy.service"
+    exit 8
+  fi
+  dkimwait=0
+  while [ "${dkimwait}" -lt 30 ]; do
+    if [ -f "/srv/email/maddy/dkim_keys/${nameURI}_default.dns" ] && [ -f "/srv/email/maddy/dkim_keys/${emailTLDURI}_default.dns" ]; then
+      break
+    fi
+    /usr/bin/sleep 1
+    dkimwait=$((dkimwait + 1))
+  done
+  /opt/verb/serfs/inkdnsaddinkdkim ${nameURI} verber || true
+  /opt/verb/serfs/inkdnsaddinkdkim ${emailTLDURI} verber || true
+  /usr/bin/echo "Maddy started after permission repair."
+  exit 0
+fi
 ## Web server
 if [ ${ServerType} = "lamp" ]; then
 /usr/bin/echo "Only allowed with Nginx servers, LEMP or LAEMP; LAMP servers with Apache not allowed."
@@ -152,10 +186,8 @@ if ! /usr/bin/pg_isready --quiet; then /usr/bin/echo "Waiting for PostgreSQL..."
 /usr/bin/setfacl -m u:maddy:rx /srv/vip/email/nativescripts/
 /usr/bin/setfacl -m u:maddy:rx /srv/vip/email/unsubscribe/
 
-# Config
+# Config — conf.d must be root:maddy 0750 (not root:root). Maddy runs as User=maddy.
 /usr/bin/mkdir -p /etc/maddy/conf.d/unsubscribe /etc/maddy/conf.d/customscripts
-/usr/bin/chown root:maddy /etc/maddy/
-/usr/bin/chmod 0750 /etc/maddy /etc/maddy/conf.d /etc/maddy/conf.d/unsubscribe /etc/maddy/conf.d/customscripts
 /usr/bin/cp /opt/verb/conf/lib/cloud/maddy/maddy.conf /etc/maddy/
 
 ## Settings
@@ -174,9 +206,14 @@ if ! /usr/bin/pg_isready --quiet; then /usr/bin/echo "Waiting for PostgreSQL..."
 ## Custom scripts framework
 /usr/bin/echo "# This file is maintained automatically by inkemailaddscriptfilter, edits could break the file and other structure
 ## No tab syntax, each entry on one line for single-line entry and deletion" > /etc/maddy/conf.d/customscripts.conf
-## Ownership
-/usr/bin/chown root:maddy /etc/maddy/*.conf /etc/maddy/conf.d/*.conf
-/usr/bin/chmod 0644 /etc/maddy/*.conf /etc/maddy/conf.d/*.conf
+## Ownership — recursive on conf.d only (certs is a symlink into letsencrypt; do not chown -R /etc/maddy).
+/usr/bin/chown root:maddy /etc/maddy
+/usr/bin/chown -R root:maddy /etc/maddy/conf.d
+/usr/bin/chown root:maddy /etc/maddy/*.conf
+/usr/bin/chmod 0750 /etc/maddy
+/usr/bin/find /etc/maddy/conf.d -type d -exec /usr/bin/chmod 0750 {} +
+/usr/bin/find /etc/maddy/conf.d -type f -exec /usr/bin/chmod 0640 {} +
+/usr/bin/chmod 0640 /etc/maddy/*.conf
 
 # Mail Domain DNS & SSL
 ## Directory
@@ -203,6 +240,8 @@ else
 fi
 ## Maddy wants at least one extra domain in /etc/maddy/conf.d/domains.conf BEFORE it can start (so we won't use inkemaildomain)
 /usr/bin/sed -i "/^\$(extra_domains) =/ s/$/ ${emailTLDURI}/" /etc/maddy/conf.d/domains.conf # Rather than using serfs/inkemaildomain
+/usr/bin/chown root:maddy /etc/maddy/conf.d/domains.conf
+/usr/bin/chmod 0640 /etc/maddy/conf.d/domains.conf
 
 # UFW (services and ports below them if known)
 /usr/bin/ufw allow smtp
@@ -247,11 +286,12 @@ Group=maddy
 WorkingDirectory=/srv/email/maddy
 BindPaths=/srv/email/maddy
 ExecStart=
+ExecStartPre=+/usr/bin/chown root:maddy /etc/maddy
+ExecStartPre=+/usr/bin/chown -R root:maddy /etc/maddy/conf.d
 ExecStart=/usr/local/bin/maddy run
 ExecReload=/bin/kill -HUP \$MAINPID
 KillMode=mixed
 Restart=on-failure
-PermissionsStartOnly=true
 
 # Security and Sandboxing
 CapabilityBoundingSet=CAP_NET_BIND_SERVICE
@@ -262,11 +302,11 @@ NoNewPrivileges=true
 RuntimeDirectory=maddy
 RuntimeDirectoryMode=0755
 ConfigurationDirectory=maddy
-ConfigurationDirectoryMode=0755
+ConfigurationDirectoryMode=0750
 
 # File system & database
 ReadWritePaths=/srv/email/maddy
-ReadOnlyPaths=/etc/maddy/certs/ /etc/letsencrypt/archive/ /etc/letsencrypt/live/ /run/postgresql/
+ReadOnlyPaths=/etc/maddy /etc/maddy/certs/ /etc/letsencrypt/archive/ /etc/letsencrypt/live/ /run/postgresql/
 
 # Restrict access to system directories
 ProtectSystem=full
@@ -362,14 +402,23 @@ EOF
 /usr/bin/echo '*/5 * * * * root /opt/verb/donjon/sync-blacklist.sh' > /etc/cron.d/maddy-rspam-blacklist-sync
 /usr/bin/chmod 0644 /etc/cron.d/maddy-rspam-blacklist-sync
 
-## First unsubscribe entry
+# Start the services before filters/aliases (those serfs restart maddy)
+/usr/bin/systemctl daemon-reload
+/usr/bin/systemctl enable rspamd 2>/dev/null || true
+/usr/bin/systemctl start rspamd || true
+/usr/bin/systemctl enable --now maddy
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+if ! /usr/bin/systemctl is-active --quiet maddy; then
+  /usr/bin/echo "maddy.service failed to start. See: systemctl status maddy.service"
+  exit 8
+fi
+
+## First unsubscribe entry (maddy is up; inkemailaddscriptfilter restarts it)
 /opt/verb/serfs/inkemailaddscriptfilter unsubscribe ${nameURI}
 /opt/verb/serfs/inkemailaddscriptfilter unsubscribe ${emailTLDURI}
-
-# Start the services
-/usr/bin/systemctl daemon-reload; wait
-/usr/bin/systemctl enable --now rspamd; wait # get our rspamd service for maddy to use
-/usr/bin/systemctl enable --now maddy; wait # enable and start in one command
+/usr/bin/chown -R root:maddy /etc/maddy/conf.d
+/usr/bin/find /etc/maddy/conf.d -type d -exec /usr/bin/chmod 0750 {} +
+/usr/bin/find /etc/maddy/conf.d -type f -exec /usr/bin/chmod 0640 {} +
 
 # Run the Blacklist script now (ensuring all folders exist)
 /opt/verb/donjon/sync-blacklist.sh
@@ -408,7 +457,15 @@ fi
 ## Setup system mail
 /opt/verb/serfs/inkemailsysmailboxmsmtp
 
-# DKIM keys & TXT records
+# DKIM keys & TXT records (Maddy writes dkim_keys/ on first start)
+dkimwait=0
+while [ "${dkimwait}" -lt 30 ]; do
+  if [ -f "/srv/email/maddy/dkim_keys/${nameURI}_default.dns" ] && [ -f "/srv/email/maddy/dkim_keys/${emailTLDURI}_default.dns" ]; then
+    break
+  fi
+  /usr/bin/sleep 1
+  dkimwait=$((dkimwait + 1))
+done
 # /opt/verb/serfs/newinkdkim ${nameURI}; wait # Handled by Maddy
 #NOTE Maddy or Postfix must be installed for this to work:
 /opt/verb/serfs/inkdnsaddmail ${nameURI} verber ; wait

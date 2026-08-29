@@ -71,8 +71,10 @@ if /usr/bin/grep -q "^${forward_entry}" /etc/maddy/conf.d/aliases.conf; then
 # Make the entry
 /usr/bin/echo "${forward_entry}" >> /etc/maddy/conf.d/aliases.conf
 
-# Restart Maddy
-/usr/bin/systemctl restart maddy.service
+# Restart Maddy if it is already running
+if /usr/bin/systemctl is-active --quiet maddy.service; then
+  /usr/bin/systemctl restart maddy.service
+fi
 
 # Finish
 /usr/bin/echo "Updated email forwarding.

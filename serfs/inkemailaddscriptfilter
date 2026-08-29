@@ -95,8 +95,10 @@ EOF
   /usr/bin/chmod 0755 "${scriptpath}" # Ensure proper permissions for the pre-existing script
 fi
 
-# Restart Maddy
-/usr/bin/systemctl restart maddy.service
+# Restart Maddy if it is already running (install writes filters before first start)
+if /usr/bin/systemctl is-active --quiet maddy.service; then
+  /usr/bin/systemctl restart maddy.service
+fi
 
 # Finish
 /bin/echo "Mail filter for ${emailaddress} entered."
