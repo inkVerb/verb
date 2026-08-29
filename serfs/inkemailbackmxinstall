@@ -14,6 +14,26 @@
 # Eg:
 ## ./inkemailbackmxinstall
 
+usagenotes="This runs installmaddymail and some extra scripts to setup a backup email server on the server"
+usageformat="inkemailbackmxinstall"
+usageexample="inkemailbackmxinstall"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( installmaddymail )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkemailbackmxinstall.replace" ]; then . /opt/verb/mods/inkemailbackmxinstall.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkemailbackmxinstall.before" ]; then . /opt/verb/mods/inkemailbackmxinstall.before; fi # Precedes this script
+
+
 server=$1
 
 /opt/verb/serfs/installmaddymail
@@ -33,3 +53,7 @@ All set. This is now a backup email server for $server.
 
 
 if [ -e "/opt/verb/mods/installinkemailbackmx.after" ]; then . /opt/verb/mods/installinkemailbackmx.after; fi # Follows this script
+
+
+
+if [ -e "/opt/verb/mods/inkemailbackmxinstall.after" ]; then . /opt/verb/mods/inkemailbackmxinstall.after; fi # Follows this script

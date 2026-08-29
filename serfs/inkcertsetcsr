@@ -4,13 +4,34 @@
 # This sets inkCert csr information in a named file
 
 # How to use:
-## ./inkcertsetcsr [name of info profile] [country code] [state name] [locality/city] [organization] [unit/department] [email] [legal corp. name - optional]
+## ./inkcertsetcsr [ name of info profile ] [ country code ] [ state name ] [ locality/city ] [ organization ] [ unit/department ] [ email ] [ legal corp. name - optional ]
 
 # NOTE: Use "quotes" around anything with a space.
 
 # Eg:
 ## ./inkcertsetcsr Acme US "New York" "Acme Ville" "Acme & Company" "Info Systems" "itsys@acme.verb.ink" "Acme & Verbs, Inc."
 ## ./inkcertsetcsr inkVerbProfile US Kansas Smallville inkVerb InfoSys it@verb.ink
+
+
+usagenotes="This sets inkCert csr information in a named file"
+usageformat="inkcertsetcsr [ name of info profile ] [ country code ] [ state name ] [ locality/city ] [ organization ] [ unit/department ] [ email ] [ legal corp. name - optional ]"
+usageexample="inkcertsetcsr Acme US "New York" "Acme Ville" "Acme & Company" "Info Systems" "itsys@acme.verb.ink" "Acme & Verbs, Inc."
+inkcertsetcsr inkVerbProfile US Kansas Smallville inkVerb InfoSys it@verb.ink"
+hierarchy=( primary )
+vsetnames=( "File" "Country code" "State name" "Locality/city" "Organization" "Unit/department" "Email" )
+vsettypes=( isFilename isazAZ09lines isazAZ09lines isazAZ09lines isazAZ09lines isazAZ09lines isEmail )
+voptnames=( "Legal corp. name" )
+vopttypes=( isazAZ09lines )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkcertsetcsr.replace" ]; then . /opt/verb/mods/inkcertsetcsr.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkcertsetcsr.before" ]; then . /opt/verb/mods/inkcertsetcsr.before; fi # Precedes this script
 
 
 INFPROFILE=$1

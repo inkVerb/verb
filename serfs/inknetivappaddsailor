@@ -5,7 +5,28 @@
 
 
 # How to use:
-## ./inknetivappaddsailor [user]
+## ./inknetivappaddsailor [ user ]
+
+
+usagenotes="This adds an IVapp user with settings for an inkNet Sailor"
+usageformat="inknetivappaddsailor [ user ]"
+usageexample="inknetivappaddsailor
+inknetivappaddsailor [ user ]"
+hierarchy=( tertiary inknetivappnewclientsailor )
+vsetnames=( "Username" )
+vsettypes=( isUsername )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( inknetivappnewclientsailor )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inknetivappaddsailor.replace" ]; then . /opt/verb/mods/inknetivappaddsailor.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inknetivappaddsailor.before" ]; then . /opt/verb/mods/inknetivappaddsailor.before; fi # Precedes this script
 
 
 addInivSailor=$1

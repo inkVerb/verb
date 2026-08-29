@@ -4,12 +4,34 @@
 # This backs up the entire email server, including folders and database
 
 # How to use:
-## ./backupinkvmail [securename 0-9, a-z, and A-Z only, optional] [-nl for no link, optional dep]
+## ./backupinkvmail [ securename 0-9, a-z, and A-Z only, optional ] [ -nl for no link, optional dep ]
 
 # Eg:
 ## ./backupinkvmail VERB-NAMESPACE
 ## ./backupinkvmail 583-NAME
 ## ./backupinkvmail aF9 -nl
+
+usagenotes="This backs up the entire email server, including folders and database"
+usageformat="backupvmail backupinkvmail [ securename 0-9, a-z, and A-Z only, optional ] [ -nl for no link, optional dep ]"
+usageexample="backupinkvmail VERB-NAMESPACE
+backupinkvmail 583-NAME
+backupinkvmail aF9 -nl"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=( "Securename 0-9, a-z, and A-Z only, optional" "-nl for no link, optional dep" )
+vopttypes=( isazAZ09lines isazAZ09lines )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( mysqlex vtxzin )
+useconfigs=( servernameip siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/backupvmail.replace" ]; then . /opt/verb/mods/backupvmail.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/backupvmail.before" ]; then . /opt/verb/mods/backupvmail.before; fi # Precedes this script
+
 
 if [ -z "$1" ]; then
 secName=$(/usr/bin/pwgen -s -1 12)
@@ -57,3 +79,7 @@ Note that the email server remains live.
 
 
 if [ -e "/opt/verb/mods/backupinkvmail.after" ]; then . /opt/verb/mods/backupinkvmail.after; fi # Follows this script
+
+
+
+if [ -e "/opt/verb/mods/backupvmail.after" ]; then . /opt/verb/mods/backupvmail.after; fi # Follows this script

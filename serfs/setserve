@@ -15,6 +15,28 @@
 ## ./setserve ink
 
 
+usagenotes="This creates and sets the serve.NAME.verb.TLD webspace to serve files needed for download"
+usageformat="setserve [ TLD - optional ]"
+usageexample="setserve  # Do this if you only want to change the download directory's name, a good idea for security.
+setserve email
+setserve ink"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=( "TLD" )
+vopttypes=( isazAZ09lines )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( ensitenginx ensiteapache inkdnsserial )
+useconfigs=( servernameip siteurilist servertldstatus servertype )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setserve.replace" ]; then . /opt/verb/mods/setserve.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setserve.before" ]; then . /opt/verb/mods/setserve.before; fi # Precedes this script
+
+
 # Set the variables
 . /opt/verb/conf/servernameip
 if [ -z "${1}" ]; then

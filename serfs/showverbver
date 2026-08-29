@@ -6,6 +6,26 @@
 # How to use:
 ## ./showverbver
 
+usagenotes="This displays the current Verber version number"
+usageformat="showverbver"
+usageexample="showverbver"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( inklists/verberverno servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/showverbver.replace" ]; then . /opt/verb/mods/showverbver.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/showverbver.before" ]; then . /opt/verb/mods/showverbver.before; fi # Precedes this script
+
+
 . /opt/verb/conf/inklists/verberverno
 . /opt/verb/conf/servernameip
 /bin/echo "${ServerUpdateRepo} ${Verno}"

@@ -4,7 +4,28 @@
 # This adds/updates the Ryuki child theme of Ryu to an existing WordPress installation
 
 # How to use:
-## ./wpthemeryuki [domain.tld or folder]
+## ./wpthemeryuki [ domain.tld or folder ]
+
+
+usagenotes="This adds/updates the Ryuki child theme of Ryu to an existing WordPress installation"
+usageformat="wpthemeryuki [ domain.tld or folder ]"
+usageexample="wpthemeryuki
+wpthemeryuki [ domain.tld or folder ]"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/wpthemeryuki.replace" ]; then . /opt/verb/mods/wpthemeryuki.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/wpthemeryuki.before" ]; then . /opt/verb/mods/wpthemeryuki.before; fi # Precedes this script
 
 
 domain=$1

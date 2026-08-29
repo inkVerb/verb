@@ -5,8 +5,28 @@
 ## This could conflict with fixalias, due to wildcard cert limits of Letsencrypt.
 
 # How to use:
-## ./webhttps on [domain.tld or subdomain.domain.tld]
-## ./webhttps off [domain.tld or subdomain.domain.tld]
+## ./webhttps on [ domain.tld or subdomain.domain.tld ]
+## ./webhttps off [ domain.tld or subdomain.domain.tld ]
+
+
+usagenotes="This redirects all http traffic to https"
+usageformat="webhttps on [ domain.tld or subdomain.domain.tld ]"
+usageexample="webhttps off [ domain.tld or subdomain.domain.tld ]"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servertype )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/webhttps.replace" ]; then . /opt/verb/mods/webhttps.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/webhttps.before" ]; then . /opt/verb/mods/webhttps.before; fi # Precedes this script
 
 
 domain=$2

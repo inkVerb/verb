@@ -9,11 +9,29 @@
 # Do NOT include the .txz extension in the filename parameter!
 
 # How to use:
-## ./vtxzout .txzfile]
+## ./vtxzout [ .txzfile ]
 
 # Eg:
 ## ./vtxzout mystuff
 
+
+
+usagenotes="This decompresses a .tvxz file and places its contents in same directory, all in the PWD"
+usageformat="vtxzout [ .txzfile ]"
+usageexample="vtxzout mystuff"
+hierarchy=( secondary )
+vsetnames=( ".txz file basename" )
+vsettypes=( isFilename )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( backupnextcloudrestore backuprestore backupvmailrestore inkcertaddkeyset inknetaddca2vpkg inknetaddcavpkg updateverberlegacy )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/vtxzout.replace" ]; then . /opt/verb/mods/vtxzout.replace; return 0; fi # Replaces this script
 if [ -e "/opt/verb/mods/vtxzout.before" ]; then . /opt/verb/mods/vtxzout.before; fi # Precedes this script
 

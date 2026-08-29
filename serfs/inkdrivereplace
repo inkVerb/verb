@@ -34,6 +34,8 @@ usedby=( rink::adddrive rink::replugdrive )
 useserfs=(  )
 useconfigs=( inkdrive/inkdriveinfo )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkdrivereplace.replace" ]; then . /opt/verb/mods/inkdrivereplace.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkdrivereplace.before" ]; then . /opt/verb/mods/inkdrivereplace.before; fi # Precedes this script
 if [ -e "/opt/verb/mods/inkdriveadd.replace" ]; then . /opt/verb/mods/inkdriveadd.replace; return 0; fi # Replaces this script
 if [ -e "/opt/verb/mods/inkdriveadd.before" ]; then . /opt/verb/mods/inkdriveadd.before; fi # Precedes this script
 
@@ -187,3 +189,7 @@ fi
 
 
 if [ -e "/opt/verb/mods/inkdriveadd.after" ]; then . /opt/verb/mods/inkdriveadd.after; fi # Follows this script
+
+
+
+if [ -e "/opt/verb/mods/inkdrivereplace.after" ]; then . /opt/verb/mods/inkdrivereplace.after; fi # Follows this script

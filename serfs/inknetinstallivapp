@@ -7,6 +7,26 @@
 ## ./inknetinstallivapp
 
 
+usagenotes="This installs the IVapp submodule with settings to be used by inkNet"
+usageformat="inknetinstallivapp"
+usageexample="inknetinstallivapp"
+hierarchy=( tertiary inknetinstallca )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( inknetinstallca inknetmakeverberclient )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inknetinstallivapp.replace" ]; then . /opt/verb/mods/inknetinstallivapp.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inknetinstallivapp.before" ]; then . /opt/verb/mods/inknetinstallivapp.before; fi # Precedes this script
+
+
 # Run the installer
 /opt/verb/donjon/ivapp/installivapp /opt/verb/conf/inknet/ivapp-inknet.conf
 wait

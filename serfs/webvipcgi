@@ -8,6 +8,26 @@
 ## ./webvipcgi off
 
 
+usagenotes="This turns on/off the www/cgi folder and links it to v.verb.vip/cgi"
+usageformat="webvipcgi on"
+usageexample="webvipcgi off"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( webcgi )
+useconfigs=( servernameip siteurilist servertype )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/webvipcgi.replace" ]; then . /opt/verb/mods/webvipcgi.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/webvipcgi.before" ]; then . /opt/verb/mods/webvipcgi.before; fi # Precedes this script
+
+
 # Include the configs
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/siteurilist

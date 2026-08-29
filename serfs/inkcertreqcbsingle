@@ -8,7 +8,7 @@
 ## Single-name certs use HTTP-01. Wildcard certs use inkcertreqcb (DNS-01).
 
 # How to use:
-## ./inkcertreqcbsingle [domain.tld NO SUBDOMAINS] [ r (optional) ]
+## ./inkcertreqcbsingle [ domain.tld NO SUBDOMAINS ] [ r (optional) ]
 
 #Eg:
 ## ./inkcertreqcbsingle inkisaverb.com

@@ -5,8 +5,28 @@
 ## inkDNS is the inkVerb method of handling DNS zone records for domains hosted on its server
 
 # How to use:
-## ./showinkdns [domain.tld]
-## ./showinkdns [domain.tld] verber
+## ./showinkdns [ domain.tld ]
+## ./showinkdns [ domain.tld ] verber
+
+
+usagenotes="This displays the inkDNS DNS zone file for a specific domain on the server"
+usageformat="showinkdns [ domain.tld ]"
+usageexample="showinkdns [ domain.tld ] verber"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/showinkdns.replace" ]; then . /opt/verb/mods/showinkdns.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/showinkdns.before" ]; then . /opt/verb/mods/showinkdns.before; fi # Precedes this script
 
 
 domain="$1"

@@ -6,7 +6,7 @@
 ## Prerequisite: inknetinstallca
 
 # How to use:
-## ./inknetaddvrkclient [username on machine] [machine name - AKA 'computer name' - or URI if has one] [vrk ip - if known]
+## ./inknetaddvrkclient [ username on machine ] [ machine name - AKA 'computer name' - or URI if has one ] [ vrk ip - if known ]
 
 # Eg:
 ## ./inknetaddvrkclient jimmy uWorkStudioJimmy
@@ -15,6 +15,31 @@
 ## ./inknetaddvrkclient root work_jimmy_verb_ink 999.99.99.999
 ## ./inknetaddvrkclient root work.ink.inkisaverb.com 999.99.99.999
 ## ./inknetaddvrkclient root work_ink_inkisaverb_com 999.99.99.999
+
+
+usagenotes="This adds a Vrk Client for this inkNet CA Verber to host"
+usageformat="inknetaddvrkclient [ username on machine ] [ machine name - AKA 'computer name' - or URI if has one ] [ vrk ip - if known ]"
+usageexample="inknetaddvrkclient jimmy uWorkStudioJimmy
+inknetaddvrkclient jimmy uWorkStudioJimmy 999.99.99.999
+inknetaddvrkclient root work.jimmy.verb.ink 999.99.99.999
+inknetaddvrkclient root work_jimmy_verb_ink 999.99.99.999
+inknetaddvrkclient root work.ink.inkisaverb.com 999.99.99.999
+inknetaddvrkclient root work_ink_inkisaverb_com 999.99.99.999"
+hierarchy=( primary )
+vsetnames=( "Username" "Machine name - AKA 'computer name' - or URI if has one" "IP" )
+vsettypes=( isUsername isDomain isazAZ09lines )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( inknetivappadduser )
+useconfigs=( inknet/ca.verber.cnf serverport )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inknetaddvrkclient.replace" ]; then . /opt/verb/mods/inknetaddvrkclient.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inknetaddvrkclient.before" ]; then . /opt/verb/mods/inknetaddvrkclient.before; fi # Precedes this script
 
 
 # Prerequesites

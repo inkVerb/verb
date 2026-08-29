@@ -14,7 +14,7 @@
 #### Shred after viewing with: 'shred -uf /srv/email/pass/${emailUser}-${domain}'
 
 # How to use:
-## ./inkemailbox [ emailuser (no domain) ] [ domain ] [ - hyphen or hashed password - optional or placeholder for last arg ] [ - hyphen to indicate update password on existing accounts]
+## ./inkemailbox [ emailuser (no domain) ] [ domain ] [ - hyphen or hashed password - optional or placeholder for last arg ] [ - hyphen to indicate update password on existing accounts ]
 
 # Eg:
 ## ./inkemailbox james inkisaverb.com    # Auto-generated password, saved in file at /srv/email/pass/$emailUser-$domain, file location included in output message
@@ -24,15 +24,15 @@
 ## ./inkemailbox james inkisaverb.com - -  # Password from file, update password for existing account
 
 usagenotes="This adds or updates a mailbox on the Maddy email server"
-usageformat="inkemailbox [ emailuser (no domain) ] [ domain ] [ - hyphen or hashed password - optional or placeholder for last arg ] [ - hyphen to indicate update password on existing accounts]"
-usageexample="inkemailbox james inkisaverb.com    # Auto-generated password, saved in file at /srv/email/pass/$emailUser-$domain, file location included in output message
+usageformat="inkemailbox [ emailuser (no domain) ] [ domain ] [ - hyphen or hashed password - optional or placeholder for last arg ] [ - hyphen to indicate update password on existing accounts ]"
+usageexample="inkemailbox james inkisaverb.com    # Auto-generated password, saved in file at /srv/email/pass/\$emailUser-\$domain, file location included in output message
 inkemailbox james inkisaverb.com My#1Pa55w0rdHA5H  # This hash will be used, you need to remember the password that created it
-inkemailbox james inkisaverb.com -  # Password from file at /srv/email/pass/$emailUser-$domain, then shred the file; if not found, fail
+inkemailbox james inkisaverb.com -  # Password from file at /srv/email/pass/\$emailUser-\$domain, then shred the file; if not found, fail
 inkemailbox james inkisaverb.com My#1Pa55w0rdHA5H -  # This hash will be used, update password for existing account
 inkemailbox james inkisaverb.com - -  # Password from file, update password for existing account"
 hierarchy=( primary )
 vsetnames=( "Email username" "Domain" "Password: hashed or just hyphen for file: -" )
-vsettypes=( isaz09lines isDomian string_match )
+vsettypes=( isaz09lines isDomain string_match )
 voptnames=(  )
 vopttypes=(  )
 voptflags=(  )

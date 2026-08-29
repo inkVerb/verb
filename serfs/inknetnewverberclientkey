@@ -8,6 +8,26 @@
 ## ./inknetnewverberclientkey
 
 
+usagenotes="This creates an Verber Client key to be signed by a CA Verber that will be used to sign into the CA Verber"
+usageformat="inknetnewverberclientkey"
+usageexample="inknetnewverberclientkey"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( showinknetclientinfo showinknetverberclientkey )
+useconfigs=( inknet/rink.client.cnf )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inknetnewverberclientkey.replace" ]; then . /opt/verb/mods/inknetnewverberclientkey.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inknetnewverberclientkey.before" ]; then . /opt/verb/mods/inknetnewverberclientkey.before; fi # Precedes this script
+
+
 # Check the config
 if [ ! -f /opt/verb/conf/inknet/rink.client.cnf ]; then
 /bin/echo "Out of order. This is not a Client yet.

@@ -12,6 +12,26 @@
 ## ./inknetnewcahostkey
 
 
+usagenotes="This creates and signs the host key for this CA Verber"
+usageformat="inknetnewcahostkey"
+usageexample="inknetnewcahostkey"
+hierarchy=( tertiary inknetinstallca )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( inknetinstallca )
+useserfs=(  )
+useconfigs=( inknet/ca.verber.cnf )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inknetnewcahostkey.replace" ]; then . /opt/verb/mods/inknetnewcahostkey.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inknetnewcahostkey.before" ]; then . /opt/verb/mods/inknetnewcahostkey.before; fi # Precedes this script
+
+
 # Check if CA
 if [ ! -f /opt/verb/conf/inknet/ca.verber.cnf ]; then
 /bin/echo "Out of order. This is not a CA Verber yet.

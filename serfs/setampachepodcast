@@ -4,11 +4,32 @@
 # This activates and deactivates the podcast feature in Ampache
 
 # How to use:
-## ./setampachepodcast [on/off]
+## ./setampachepodcast [ on/off ]
 
 # Eg:
 ## ./setampachepodcast on
 ## ./setampachepodcast off
+
+
+usagenotes="This activates and deactivates the podcast feature in Ampache"
+usageformat="setampachepodcast [ on/off ]"
+usageexample="setampachepodcast on
+setampachepodcast off"
+hierarchy=( primary )
+vsetnames=( "On or off" )
+vsettypes=( isChoice )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setampachepodcast.replace" ]; then . /opt/verb/mods/setampachepodcast.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setampachepodcast.before" ]; then . /opt/verb/mods/setampachepodcast.before; fi # Precedes this script
 
 
 if [ "$1" = "-h" ]

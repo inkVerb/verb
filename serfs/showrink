@@ -8,6 +8,26 @@
 ## ./showrink
 
 
+usagenotes="This displays the Inker information that this Verber is connected to."
+usageformat="showrink"
+usageexample="showrink"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( inknet/rink.client.cnf )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/showrink.replace" ]; then . /opt/verb/mods/showrink.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/showrink.before" ]; then . /opt/verb/mods/showrink.before; fi # Precedes this script
+
+
 # Check the config
 if [ ! -f /opt/verb/conf/inknet/rink.client.cnf ]; then
 /bin/echo "This is not yet connected to an Inker via inkNet."

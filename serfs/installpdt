@@ -7,8 +7,8 @@
 ## Domain is added if missing. Does NOT run inkCert.
 
 # How to use:
-## ./installpdt [domain.tld] [single|network - optional] [dbase] [dbuser] [dbpassword]
-## ./installpdt [domain.tld]
+## ./installpdt [ domain.tld ] [ single|network - optional ] [ dbase ] [ dbuser ] [ dbpassword ]
+## ./installpdt [ domain.tld ]
 
 usagenotes="This downloads and installs pdt-news to a specified domain"
 usageformat="installpdt [ domain.tld ] [ single|network - optional ] [ dbase - optional ] [ dbuser - optional ] [ dbpassword - optional ]"

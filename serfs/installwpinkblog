@@ -7,7 +7,28 @@
 # All options are optional, but must are sequential, omit last options first.
 
 # How to use:
-## ./installwpinkblog [dbase] [dbuser] [dbpassword]
+## ./installwpinkblog [ dbase ] [ dbuser ] [ dbpassword ]
+
+
+usagenotes="This downloads and installs WordPress to blog.NAME.verb.ink"
+usageformat="installwpinkblog [ dbase ] [ dbuser ] [ dbpassword ]"
+usageexample="installwpinkblog
+installwpinkblog [ dbase ] [ dbuser ] [ dbpassword ]"
+hierarchy=( primary )
+vsetnames=( "Database" "Database user" "Database password" )
+vsettypes=( isSQLDatabasename isSQLDatabasename isSQLDatabasename )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( inkget setvapplinkon setvappconfig )
+useconfigs=( siteurilist inkinksiteinstallstatus )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/installwpinkblog.replace" ]; then . /opt/verb/mods/installwpinkblog.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installwpinkblog.before" ]; then . /opt/verb/mods/installwpinkblog.before; fi # Precedes this script
 
 
 cVappName=wp.inkblog

@@ -12,10 +12,30 @@
 ## This can be run before or after running installemail or installpostfix, etc.
 
 # How to use:
-## ./backupinkvmailrestore [filename]
+## ./backupinkvmailrestore [ filename ]
 
 # Eg:
 ## ./backupinkvmailrestore verb.inkvmail.hR21.vbak
+
+
+usagenotes="This restores a back up of the entire email server, including folders and database, that was made using backupinkvmail"
+usageformat="backupvmailrestore backupinkvmailrestore [ filename ]"
+usageexample="backupinkvmailrestore verb.inkvmail.hR21.vbak"
+hierarchy=( primary )
+vsetnames=( "File" )
+vsettypes=( isFilename )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( vtxzout mysqlkilldb mysqlkilluser mysqlnewdb mysqlin inkvmailbaseaddrs inkvmailsysmailbox )
+useconfigs=( servernameip siteurilist servermailpath servermailpass )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/backupvmailrestore.replace" ]; then . /opt/verb/mods/backupvmailrestore.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/backupvmailrestore.before" ]; then . /opt/verb/mods/backupvmailrestore.before; fi # Precedes this script
 
 
 filename=$1
@@ -90,3 +110,7 @@ The email server data has been restored from the backup and all its backup files
 
 
 if [ -e "/opt/verb/mods/backupinkvmailrestore.after" ]; then . /opt/verb/mods/backupinkvmailrestore.after; fi # Follows this script
+
+
+
+if [ -e "/opt/verb/mods/backupvmailrestore.after" ]; then . /opt/verb/mods/backupvmailrestore.after; fi # Follows this script

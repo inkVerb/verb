@@ -4,9 +4,30 @@
 # This removes the forwarding for a domain forwarded via pointdomain
 
 # How to use:
-## ./pointdomainrm [forwarded domain]
+## ./pointdomainrm [ forwarded domain ]
 
 ## The forwarded domain can be any domain or subdomain created with adddomain or addsubdomain (and -cgi)
+
+
+usagenotes="This removes the forwarding for a domain forwarded via pointdomain"
+usageformat="pointdomainrm [ forwarded domain ]"
+usageexample="pointdomainrm
+pointdomainrm [ forwarded domain ]"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/pointdomainrm.replace" ]; then . /opt/verb/mods/pointdomainrm.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/pointdomainrm.before" ]; then . /opt/verb/mods/pointdomainrm.before; fi # Precedes this script
 
 
 fwdDom=$1

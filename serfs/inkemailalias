@@ -15,7 +15,7 @@ usageexample="inkemailalias james inkisaverb.com tommy@inkisaverb.com
 inkemailalias james inkisaverb.com tommy@inkisaverb.com alex@inkisaverb.com bill@poetryiscode.com mel@verb.ink"
 hierarchy=( primary )
 vsetnames=( "Email username" "Domain" "Email" )
-vsettypes=( isaz09lines isDomian isEmail )
+vsettypes=( isaz09lines isDomain isEmail )
 voptnames=(  )
 vopttypes=(  )
 voptflags=(  )

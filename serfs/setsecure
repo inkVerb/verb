@@ -7,6 +7,26 @@
 ## ./setsecure
 
 
+usagenotes="This changes ownership of the configs directory"
+usageformat="setsecure"
+usageexample="setsecure"
+hierarchy=( secondary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( inkemailsysmailboxmsmtp inkemailsysnextcloud inkemailsysorangehrm inkemailsysowncloud inkemailsyspydio inkemailsyssuitecrm inkvmailsysmailboxmsmtp inkvmailsysnextcloud inkvmailsysorangehrm inkvmailsysowncloud inkvmailsyspydio inkvmailsyssuitecrm )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setsecure.replace" ]; then . /opt/verb/mods/setsecure.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setsecure.before" ]; then . /opt/verb/mods/setsecure.before; fi # Precedes this script
+
+
 # File permissions for configs
 /usr/bin/chmod 660 -R /opt/verb/conf
 

@@ -6,6 +6,26 @@
 # How to use:
 ## ./setvappmysqlvbakoff
 
+usagenotes="This turns off vapp MySQL vbak cron job"
+usageformat="setvappmysqlvbakoff"
+usageexample="setvappmysqlvbakoff"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setvappmysqlvbakoff.replace" ]; then . /opt/verb/mods/setvappmysqlvbakoff.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setvappmysqlvbakoff.before" ]; then . /opt/verb/mods/setvappmysqlvbakoff.before; fi # Precedes this script
+
+
 /bin/rm rf /etc/cron.d/vappmysql-vbak
 
 

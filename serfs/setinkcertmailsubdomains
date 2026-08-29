@@ -7,6 +7,26 @@
 # How to use:
 ## ./setinkcertmailsubdomains somedomain.tld
 
+usagenotes="This sets up basic mail DNS and inkCert entries"
+usageformat="setinkcertmailsubdomains somedomain.tld"
+usageexample="setinkcertmailsubdomains"
+hierarchy=( secondary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( inkmaildomains setinkcertmail )
+useserfs=(  )
+useconfigs=( siteurilist servertype )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setinkcertmailsubdomains.replace" ]; then . /opt/verb/mods/setinkcertmailsubdomains.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setinkcertmailsubdomains.before" ]; then . /opt/verb/mods/setinkcertmailsubdomains.before; fi # Precedes this script
+
+
 domain="$1"
 
 # Include the config

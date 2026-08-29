@@ -4,11 +4,32 @@
 # This sets up a WordPress vapp .htaccess file to be "normal", NOT for multisite
 
 # How to use:
-## ./wphtaccess [domain.tld]
+## ./wphtaccess [ domain.tld ]
 
 # Eg:
 ## ./wphtaccess inkisaverb.com
 ## ./wphtaccess mysubsite.inkisaverb.com
+
+
+usagenotes="This sets up a WordPress vapp .htaccess file to be \"normal\", NOT for multisite"
+usageformat="wphtaccess [ domain.tld ]"
+usageexample="wphtaccess inkisaverb.com
+wphtaccess mysubsite.inkisaverb.com"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/wphtaccess.replace" ]; then . /opt/verb/mods/wphtaccess.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/wphtaccess.before" ]; then . /opt/verb/mods/wphtaccess.before; fi # Precedes this script
 
 
 wpdomain=$1

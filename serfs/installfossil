@@ -4,10 +4,30 @@
 # This installs fossil to be available at fossil.your-name.verb.vip/...
 
 # How to use:
-## ./installfossil [username] [user-email] [userpassword]
+## ./installfossil [ username ] [ user-email ] [ userpassword ]
 
 # Example:
 ## ./installfossil adam adam@verb.ink Adamp4$$w0RD
+
+
+usagenotes="This installs fossil to be available at fossil.your-name.verb.vip/..."
+usageformat="installfossil [ username ] [ user-email ] [ userpassword ]"
+usageexample="installfossil adam adam@verb.ink Adamp4\$\$w0RD"
+hierarchy=( primary )
+vsetnames=( "Username" "Email" "Password" )
+vsettypes=( isUsername isEmail isPassword )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( inkget setvapplinkon )
+useconfigs=( servernameip siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/installfossil.replace" ]; then . /opt/verb/mods/installfossil.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installfossil.before" ]; then . /opt/verb/mods/installfossil.before; fi # Precedes this script
 
 
 cVappName=fossil

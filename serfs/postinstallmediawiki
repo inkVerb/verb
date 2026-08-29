@@ -7,6 +7,26 @@
 ## ./postinstallmediawiki
 
 
+usagenotes="This finalizes branding changes after the LocalSettings.php file has been uploaded to the mediawiki folder"
+usageformat="postinstallmediawiki"
+usageexample="postinstallmediawiki"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( setvappconfig )
+useconfigs=( servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/postinstallmediawiki.replace" ]; then . /opt/verb/mods/postinstallmediawiki.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/postinstallmediawiki.before" ]; then . /opt/verb/mods/postinstallmediawiki.before; fi # Precedes this script
+
+
 # Include the config file
 . /opt/verb/conf/servernameip
 

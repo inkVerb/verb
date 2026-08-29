@@ -8,6 +8,26 @@
 ## ./setlocale
 
 
+usagenotes="This sets the locale after creating the inkVerb server or restoring the VPS from a saved backup"
+usageformat="setlocale"
+usageexample="setlocale"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setlocale.replace" ]; then . /opt/verb/mods/setlocale.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setlocale.before" ]; then . /opt/verb/mods/setlocale.before; fi # Precedes this script
+
+
 /bin/echo "LANG="en_US.UTF-8"
 LANGUAGE="en_US:en"
 LC_ALL="en_US.UTF-8"

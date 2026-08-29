@@ -5,7 +5,28 @@
 ## It only affects future certificates and does NOT affect renewals
 
 # How to use:
-## ./setinkcertemailaddr [email address]
+## ./setinkcertemailaddr [ email address ]
+
+
+usagenotes="This changes the inkCert email used by SSL and SSH CAs after it has already been set by setup"
+usageformat="setinkcertemailaddr [ email address ]"
+usageexample="setinkcertemailaddr
+setinkcertemailaddr [ email address ]"
+hierarchy=( primary )
+vsetnames=( "Email" )
+vsettypes=( isEmail )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setinkcertemailaddr.replace" ]; then . /opt/verb/mods/setinkcertemailaddr.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setinkcertemailaddr.before" ]; then . /opt/verb/mods/setinkcertemailaddr.before; fi # Precedes this script
 
 
 newEmail=$1

@@ -10,6 +10,26 @@
 ## ./updateverberlegacy
 
 
+usagenotes="This downloads and updates the Verber™ core files, including serfs and inklists"
+usageformat="updateverberlegacy"
+usageexample="updateverberlegacy"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( inkget vtxzout )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/updateverberlegacy.replace" ]; then . /opt/verb/mods/updateverberlegacy.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/updateverberlegacy.before" ]; then . /opt/verb/mods/updateverberlegacy.before; fi # Precedes this script
+
+
 # Download and unpack the latest checked version from the Inkver repo
 cd /opt/verb/ || exit 6
 /opt/verb/serfs/inkget verber.update.legacy; wait

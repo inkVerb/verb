@@ -5,7 +5,28 @@
 ## This does not normally need to be run on fresh WP installations since the same functions and behavior are embedded in the installwp serfs.
 
 # How to use:
-## ./setsecurewp [domain.tld or folder]
+## ./setsecurewp [ domain.tld or folder ]
+
+
+usagenotes="This adds/updates the secure salts to wp-config.php files of a pre-installed (or installing) WordPress site in www/domains"
+usageformat="setsecurewp [ domain.tld or folder ]"
+usageexample="setsecurewp
+setsecurewp [ domain.tld or folder ]"
+hierarchy=( secondary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( installwp )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setsecurewp.replace" ]; then . /opt/verb/mods/setsecurewp.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setsecurewp.before" ]; then . /opt/verb/mods/setsecurewp.before; fi # Precedes this script
 
 
 domain=$1

@@ -72,3 +72,7 @@ if [ ${VERBred} = "true" ]; then
   /opt/verb/serfs/inkdnsdig ${redURI}
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
+
+
+
+if [ -e "/opt/verb/mods/inkdnsdigverbs.after" ]; then . /opt/verb/mods/inkdnsdigverbs.after; fi # Follows this script

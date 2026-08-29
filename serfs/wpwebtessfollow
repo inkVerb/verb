@@ -5,7 +5,28 @@
 ## This only applies to a specific domain
 
 # How to use:
-## ./wpfixtessfollow [wordpress domain] [replaced contend]
+## ./wpfixtessfollow [ wordpress domain ] [ replaced contend ]
+
+
+usagenotes="This changes the Tesseract theme's \"Follow Us On\" social icon Title prefix to what you set. It can be left null for simple social media titles"
+usageformat="wpwebtessfollow wpfixtessfollow [ wordpress domain ] [ replaced contend ]"
+usageexample="wpwebtessfollow
+wpwebtessfollow wpfixtessfollow [ wordpress domain ] [ replaced contend ]"
+hierarchy=( primary )
+vsetnames=( "Domain" "Replaced contend" )
+vsettypes=( isDomain isazAZ09lines )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/wpwebtessfollow.replace" ]; then . /opt/verb/mods/wpwebtessfollow.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/wpwebtessfollow.before" ]; then . /opt/verb/mods/wpwebtessfollow.before; fi # Precedes this script
 
 
 wpSite=$1

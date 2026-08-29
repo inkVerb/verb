@@ -8,10 +8,30 @@
 #. 1048576000 bytes (1.0 GB) copied, 4.0868896 s, 253 MB/s
 
 # How to use:
-## ./setswapsize [swap-size in GB]
+## ./setswapsize [ swap-size in GB ]
 
 # Eg:
 ## ./setswapsize 4
+
+
+usagenotes="This sets or activates swap to a set size"
+usageformat="setswapsize [ swap-size in GB ]"
+usageexample="setswapsize 4"
+hierarchy=( primary )
+vsetnames=( "Swap-size in GB" )
+vsettypes=( isazAZ09lines )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( inkdrive/inkdriveinfo )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setswapsize.replace" ]; then . /opt/verb/mods/setswapsize.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setswapsize.before" ]; then . /opt/verb/mods/setswapsize.before; fi # Precedes this script
 
 
 swapSize=$1

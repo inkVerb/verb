@@ -4,7 +4,28 @@
 # This updates settings from setup to a new IPv6 address on the server
 
 # How to use:
-## ./setipv6update [IPv6 number]
+## ./setipv6update [ IPv6 number ]
+
+
+usagenotes="This updates settings from setup to a new IPv6 address on the server"
+usageformat="setipv6update [ IPv6 number ]"
+usageexample="setipv6update
+setipv6update [ IPv6 number ]"
+hierarchy=( primary )
+vsetnames=( "IPv6" )
+vsettypes=( isIP6 )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( inkdnsrefreshbind )
+useconfigs=( servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setipv6update.replace" ]; then . /opt/verb/mods/setipv6update.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setipv6update.before" ]; then . /opt/verb/mods/setipv6update.before; fi # Precedes this script
 
 
 # Include the config file

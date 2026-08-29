@@ -8,6 +8,26 @@
 ## ./updatepfarmvbak
 
 
+usagenotes="This removes the Postfix Admin backup generated when updating Postfix Admin"
+usageformat="updatepfarmvbak"
+usageexample="updatepfarmvbak"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/updatepfarmvbak.replace" ]; then . /opt/verb/mods/updatepfarmvbak.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/updatepfarmvbak.before" ]; then . /opt/verb/mods/updatepfarmvbak.before; fi # Precedes this script
+
+
 /bin/rm -rf /srv/www/email/postfixadmin.vbak
 
 /bin/echo "

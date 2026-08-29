@@ -5,11 +5,31 @@
 ## This changes the path already set by installrc
 
 # How to use:
-## ./setrcpath [folder]
+## ./setrcpath [ folder ]
 
 # Eg:
 ## (To use at box.NAME.verb.email/mysecretpath do:)
 ## ./setrcpath mysecretpath
+
+
+usagenotes="This changes the path of the RoundCube web path"
+usageformat="setrcpath [ folder ]"
+usageexample="setrcpath mysecretpath"
+hierarchy=( primary )
+vsetnames=( "Folder" )
+vsettypes=( isazAZ09lines )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servernameip servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setrcpath.replace" ]; then . /opt/verb/mods/setrcpath.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setrcpath.before" ]; then . /opt/verb/mods/setrcpath.before; fi # Precedes this script
 
 
 # Include the config file

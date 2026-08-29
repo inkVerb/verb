@@ -5,10 +5,31 @@
 ## This changes the path already set by installfpa
 
 # How to use:
-## ./setpfapath [folder]
+## ./setpfapath [ folder ]
 
 # Eg:
 ## To use at po.NAME.verb.email/mysecretpath do: ./installpfa easy mysecretpath
+
+
+usagenotes="This changes the path of the PostfixAdmin web path"
+usageformat="setpfapath [ folder ]"
+usageexample="setpfapath
+setpfapath [ folder ]"
+hierarchy=( primary )
+vsetnames=( "Folder" )
+vsettypes=( isazAZ09lines )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servernameip servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setpfapath.replace" ]; then . /opt/verb/mods/setpfapath.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setpfapath.before" ]; then . /opt/verb/mods/setpfapath.before; fi # Precedes this script
 
 
 # Include the config files

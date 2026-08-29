@@ -9,7 +9,7 @@
 # TIP: Get the Host and IP info from the CA Verber using showinknetcainfo
 
 # How to use:
-## ./inknetmakeverberclient [CA Verber Host] [CA Verber IP]
+## ./inknetmakeverberclient [ CA Verber Host ] [ CA Verber IP ]
 
 # Eg: (almost certainly exactly this, but verify from inkVerb instructions at registration and available Inkers, probably region-specific)
 ## ./inknetmakeverberclient ink.ink.verb.ink 999.999.99.999 (for ink namespace - the master Inker site)
@@ -18,6 +18,29 @@
 
 # How to use as Inker: (follow exactly, this is NEVER for a normal Verber, only inkVerb corporate servers or supergeeks who know what this means)
 ## ./inknetmakeverberclient I_AM_RINK
+
+
+usagenotes="This sets the settings for this Verber to be an inkNet Verber Client to a Inker CA Verber"
+usageformat="inknetmakeverberclient [ CA Verber Host ] [ CA Verber IP ]"
+usageexample="inknetmakeverberclient ink.ink.verb.ink 999.999.99.999 (for ink namespace - the master Inker site)
+inknetmakeverberclient john.john.verb.ink 999.999.99.999 (for john namespace - if you want your own Verber to act as your keys)
+inknetmakeverberclient ink2.ink.inkisaverb.com 999.999.99.999 (for Domain Verber mod)
+inknetmakeverberclient I_AM_RINK"
+hierarchy=( primary )
+vsetnames=( "CA Verber Host" "IP" )
+vsettypes=( isazAZ09lines isazAZ09lines )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( setinkcertsslca setinkcertsshca setinkgetrepo setinknetsslca setinknetsshca setinknetrepo inknetinstallivapp inknetivappnewclientsailor )
+useconfigs=( servernameip siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inknetmakeverberclient.replace" ]; then . /opt/verb/mods/inknetmakeverberclient.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inknetmakeverberclient.before" ]; then . /opt/verb/mods/inknetmakeverberclient.before; fi # Precedes this script
 
 
 # Include the configs

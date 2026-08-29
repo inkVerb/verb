@@ -6,11 +6,32 @@
 ##DEV See #DEV notes in the script below; to use with a subdomain, run addsubdomain before running this
 
 # How to use:
-## ./wpdup [original domain.tld or subdomain.domain.tld] [to-be-duped domain.tld or subdomain.domain.tld]
+## ./wpdup [ original domain.tld or subdomain.domain.tld ] [ to-be-duped domain.tld or subdomain.domain.tld ]
 
 # Eg:
 ## ./wpdup inkisaverb.com new.inkisaverb.com
 ## ./wpdup inkisaverb.com poetryiscode.com
+
+
+usagenotes="This duplicates a domain-based WordPress site at another domain"
+usageformat="wpdup [ original domain.tld or subdomain.domain.tld ] [ to-be-duped domain.tld or subdomain.domain.tld ]"
+usageexample="wpdup inkisaverb.com new.inkisaverb.com
+wpdup inkisaverb.com poetryiscode.com"
+hierarchy=( primary )
+vsetnames=( "Domain" "Domain" )
+vsettypes=( isDomain isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( adddomain setvappconfig )
+useconfigs=( servertype )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/wpdup.replace" ]; then . /opt/verb/mods/wpdup.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/wpdup.before" ]; then . /opt/verb/mods/wpdup.before; fi # Precedes this script
 
 
 odomain="$1"

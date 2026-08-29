@@ -9,6 +9,26 @@
 ## ./inkvpnemail [ new email - optional ]
 
 
+usagenotes="This sets the inkVPN client and server email address"
+usageformat="inkvpnemail [ new email - optional ]"
+usageexample="inkvpnemail"
+hierarchy=( secondary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=( "Email" )
+vopttypes=( isEmail )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( inkvpninstall )
+useserfs=(  )
+useconfigs=( siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkvpnemail.replace" ]; then . /opt/verb/mods/inkvpnemail.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkvpnemail.before" ]; then . /opt/verb/mods/inkvpnemail.before; fi # Precedes this script
+
+
 # Include the config
 . /opt/verb/conf/siteurilist
 

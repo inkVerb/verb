@@ -5,7 +5,27 @@
 ## Thanks for the awesome instructions from: https://nextcloud.com/collaboraonline/
 
 # How to use:
-## ./installcollaboraonline [port - optional, if other than 9980]
+## ./installcollaboraonline [ port - optional, if other than 9980 ]
+
+
+usagenotes="This Collabora Online to be used with Nextcloud"
+usageformat="installcollaboraonline [ port - optional, if other than 9980 ]"
+usageexample="installcollaboraonline"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=( "Port" )
+vopttypes=( is09 )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( installdocker setvappconfig )
+useconfigs=( servernameip siteurilist servertype )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/installcollaboraonline.replace" ]; then . /opt/verb/mods/installcollaboraonline.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installcollaboraonline.before" ]; then . /opt/verb/mods/installcollaboraonline.before; fi # Precedes this script
 
 
 cVappName=collaboraonline

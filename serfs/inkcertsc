@@ -14,6 +14,27 @@
 ## ./inkcertsc somesub.inkisaverb.com
 
 
+usagenotes="This creates one-time ssl certs for inkCertSC (Self-Cert)"
+usageformat="inkcertsc FULLDOMAIN"
+usageexample="inkcertsc inkisaverb.com
+inkcertsc somesub.inkisaverb.com"
+hierarchy=( tertiary inkcertdosc )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( inkcertdosc )
+useserfs=(  )
+useconfigs=( servernameip siteurilist servertldstatus inkcertstatus )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkcertsc.replace" ]; then . /opt/verb/mods/inkcertsc.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkcertsc.before" ]; then . /opt/verb/mods/inkcertsc.before; fi # Precedes this script
+
+
 domain="${1}"
 
 # Include the configs

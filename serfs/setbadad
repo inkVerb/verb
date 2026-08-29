@@ -6,7 +6,7 @@
 ## Restarts the systemd unit
 
 # How to use:
-## ./setbadad [domain.tld] [key=value] [key=value] ...
+## ./setbadad [ domain.tld ] [ key=value ] [ key=value ] ...
 ## ./setbadad inkisaverb.com web_url=https://inkisaverb.com
 ## ./setbadad inkisaverb.com db_name=newdb db_user=newuser db_pass=newpass
 

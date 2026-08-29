@@ -4,11 +4,32 @@
 # This forwards an already-created domain to another URI
 
 # How to use:
-## ./pointdomain [forwarded domain] [destination]
+## ./pointdomain [ forwarded domain ] [ destination ]
 
 ## The destination may include 'http://' or 'https://'
 
 ## The forwarded domain can be any domain or subdomain created with adddomain or addsubdomain (and -cgi)
+
+
+usagenotes="This forwards an already-created domain to another URI"
+usageformat="pointdomain [ forwarded domain ] [ destination ]"
+usageexample="pointdomain
+pointdomain [ forwarded domain ] [ destination ]"
+hierarchy=( primary )
+vsetnames=( "Domain" "Destination" )
+vsettypes=( isDomain isazAZ09lines )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/pointdomain.replace" ]; then . /opt/verb/mods/pointdomain.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/pointdomain.before" ]; then . /opt/verb/mods/pointdomain.before; fi # Precedes this script
 
 
 fwdDom=$1

@@ -5,7 +5,7 @@
 ## Requires installvsftpd
 
 # How to use:
-## ./newftpvip [ new user] [ new user password ]
+## ./newftpvip [ new user ] [ new user password ]
 
 
 usagenotes="This creates a powerful user who can read everything and access everything in the shared home folder /srv/www/vip, including filers' home folders"

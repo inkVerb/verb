@@ -6,7 +6,28 @@
 # Usertype options are: sail vrb vrk
 
 # How to use:
-## ./inknetivappadduser [user] [password] [usertype]
+## ./inknetivappadduser [ user ] [ password ] [ usertype ]
+
+
+usagenotes="This adds an IVapp user with settings for inkNet"
+usageformat="inknetivappadduser [ user ] [ password ] [ usertype ]"
+usageexample="inknetivappadduser
+inknetivappadduser [ user ] [ password ] [ usertype ]"
+hierarchy=( tertiary inknetaddverberclient )
+vsetnames=( "Username" "Password" "Username" )
+vsettypes=( isUsername isPassword isUsername )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( inknetaddverberclient inknetaddvrkclient )
+useserfs=(  )
+useconfigs=( inknet/ivinknet- )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inknetivappadduser.replace" ]; then . /opt/verb/mods/inknetivappadduser.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inknetivappadduser.before" ]; then . /opt/verb/mods/inknetivappadduser.before; fi # Precedes this script
 
 
 ADDINIVuser=$1

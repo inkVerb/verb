@@ -24,7 +24,7 @@ inkvmailbox james inkisaverb.com - 524288000 # 0.5GB, keep old name or use email
 inkvmailbox james inkisaverb.com # Show info for existing user, otherwise add new user using defaults and emailuser as name"
 hierarchy=( primary )
 vsetnames=( "Email username" "Domain" )
-vsettypes=( isaz09lines isDomian )
+vsettypes=( isaz09lines isDomain )
 voptnames=( "Name" )
 vopttypes=( isazAZ09punct )
 voptflags=(  )

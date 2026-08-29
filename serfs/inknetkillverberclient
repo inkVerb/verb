@@ -4,7 +4,28 @@
 # This deletes a Verber Client's profile and kills the inkNet JailKit user
 
 # How to use:
-## ./inknetkillverberclient [verb host]
+## ./inknetkillverberclient [ verb host ]
+
+
+usagenotes="This deletes a Verber Client's profile and kills the inkNet JailKit user"
+usageformat="inknetkillverberclient [ verb host ]"
+usageexample="inknetkillverberclient
+inknetkillverberclient [ verb host ]"
+hierarchy=( primary )
+vsetnames=( "Verb host" )
+vsettypes=( isazAZ09lines )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( inknet/verber/client.verber. )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inknetkillverberclient.replace" ]; then . /opt/verb/mods/inknetkillverberclient.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inknetkillverberclient.before" ]; then . /opt/verb/mods/inknetkillverberclient.before; fi # Precedes this script
 
 
 killHost=$1

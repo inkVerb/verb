@@ -23,6 +23,8 @@ usedby=( inkdnsunpark )
 useserfs=(  )
 useconfigs=( servernameip )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/rinkunparkdomain.replace" ]; then . /opt/verb/mods/rinkunparkdomain.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/rinkunparkdomain.before" ]; then . /opt/verb/mods/rinkunparkdomain.before; fi # Precedes this script
 if [ -e "/opt/verb/mods/rinkparkdomain.replace" ]; then . /opt/verb/mods/rinkparkdomain.replace; return 0; fi # Replaces this script
 if [ -e "/opt/verb/mods/rinkparkdomain.before" ]; then . /opt/verb/mods/rinkparkdomain.before; fi # Precedes this script
 
@@ -89,3 +91,7 @@ fi
 
 
 if [ -e "/opt/verb/mods/rinkparkdomain.after" ]; then . /opt/verb/mods/rinkparkdomain.after; fi # Follows this script
+
+
+
+if [ -e "/opt/verb/mods/rinkunparkdomain.after" ]; then . /opt/verb/mods/rinkunparkdomain.after; fi # Follows this script

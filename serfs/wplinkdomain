@@ -6,7 +6,28 @@
 ## Prerequesite: The domain must exist for Apache in www/html as a symlink, not a real directory
 
 # How to use:
-## ./wplinkdomain [full domain of WP site]
+## ./wplinkdomain [ full domain of WP site ]
+
+
+usagenotes="This links a domain to it's wp location in vapps"
+usageformat="wplinkdomain [ full domain of WP site ]"
+usageexample="wplinkdomain
+wplinkdomain [ full domain of WP site ]"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/wplinkdomain.replace" ]; then . /opt/verb/mods/wplinkdomain.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/wplinkdomain.before" ]; then . /opt/verb/mods/wplinkdomain.before; fi # Precedes this script
 
 
 domain=$1

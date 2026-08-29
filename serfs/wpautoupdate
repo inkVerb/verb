@@ -6,7 +6,28 @@
 ## You can use this for blog.NAME.verb.ink by using "ink.blog" as the domain
 
 # How to use:
-## ./wpautoupdate [full domain of WP site]
+## ./wpautoupdate [ full domain of WP site ]
+
+
+usagenotes="This adds the Auto-Update must-use plugin from inkVerb with its 'mu-plugin' folder for an already-installed WordPress site."
+usageformat="wpautoupdate [ full domain of WP site ]"
+usageexample="wpautoupdate
+wpautoupdate [ full domain of WP site ]"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/wpautoupdate.replace" ]; then . /opt/verb/mods/wpautoupdate.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/wpautoupdate.before" ]; then . /opt/verb/mods/wpautoupdate.before; fi # Precedes this script
 
 
 domain=$1

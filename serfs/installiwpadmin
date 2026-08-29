@@ -9,7 +9,28 @@
 # All options after the email are optional, but are sequential
 
 # How to use:
-## ./installiwpadmin [sub.domain.tld or domain.tld] [email for registration] [directory of domain.tld/directory] [dbase] [dbuser] [dbpassword]
+## ./installiwpadmin [ sub.domain.tld or domain.tld ] [ email for registration ] [ directory of domain.tld/directory ] [ dbase ] [ dbuser ] [ dbpassword ]
+
+
+usagenotes="This downloads and installs the InfiniteWP Server to a new directory to an existing domain in the .../html/ folder"
+usageformat="installiwpadmin [ sub.domain.tld or domain.tld ] [ email for registration ] [ directory of domain.tld/directory ] [ dbase ] [ dbuser ] [ dbpassword ]"
+usageexample="installiwpadmin
+installiwpadmin [ sub.domain.tld or domain.tld ] [ email for registration ] [ directory of domain.tld/directory ] [ dbase ] [ dbuser ] [ dbpassword ]"
+hierarchy=( primary )
+vsetnames=( "Domain" "Email" "Domain" "Database" "Database user" "Database password" )
+vsettypes=( isDomain isEmail isDomain isSQLDatabasename isSQLDatabasename isSQLDatabasename )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( inkget setvappconfig )
+useconfigs=( servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/installiwpadmin.replace" ]; then . /opt/verb/mods/installiwpadmin.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installiwpadmin.before" ]; then . /opt/verb/mods/installiwpadmin.before; fi # Precedes this script
 
 
 cVappName=iwpadmin

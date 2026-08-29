@@ -8,6 +8,26 @@
 ## ./updateapt
 
 
+usagenotes="This runs the basic updater for /usr/bin/apt-get and includes bugfixes"
+usageformat="updateapt"
+usageexample="updateapt"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/updateapt.replace" ]; then . /opt/verb/mods/updateapt.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/updateapt.before" ]; then . /opt/verb/mods/updateapt.before; fi # Precedes this script
+
+
 /usr/bin/apt-get update
 /usr/bin/apt-get upgrade -y
 /usr/bin/dpkg --configure -a

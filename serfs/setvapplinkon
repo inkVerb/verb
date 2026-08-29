@@ -4,7 +4,28 @@
 # This sets the symlink for a vapp from the html/ folder to the vapps/ folder
 
 # How to use:
-## ./setvapplinkon [vapp name]
+## ./setvapplinkon [ vapp name ]
+
+
+usagenotes="This sets the symlink for a vapp from the html/ folder to the vapps/ folder"
+usageformat="setvapplinkon [ vapp name ]"
+usageexample="setvapplinkon
+setvapplinkon [ vapp name ]"
+hierarchy=( tertiary backuprestore )
+vsetnames=( "Vapp name" )
+vsettypes=( isazAZ09lines )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( backuprestore installampache installfossil installmediawiki installnet2ftp installnextcloud installorangehrm installsuitecrm installwpinkbb installwpinkblog )
+useserfs=(  )
+useconfigs=( serverport siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setvapplinkon.replace" ]; then . /opt/verb/mods/setvapplinkon.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setvapplinkon.before" ]; then . /opt/verb/mods/setvapplinkon.before; fi # Precedes this script
 
 
 # Include the config file

@@ -9,11 +9,29 @@
 # This will OVERWRITE any .txz destination file by the same name!
 
 # How to use:
-## ./vtxzin [directory]
+## ./vtxzin [ directory ]
 
 # Eg:
 ## ./vtxzin mystuff
 
+
+
+usagenotes="This compresses a directory into a .tar.xz file, renamed as a .txz file, all in the PWD"
+usageformat="vtxzin [ directory ]"
+usageexample="vtxzin mystuff"
+hierarchy=( secondary )
+vsetnames=( "Directory" )
+vsettypes=( isazAZ09lines )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( backup backupnextcloud backupnextcloudrestore backuprestore backupvmail inknetpackclientpkg )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/vtxzin.replace" ]; then . /opt/verb/mods/vtxzin.replace; return 0; fi # Replaces this script
 if [ -e "/opt/verb/mods/vtxzin.before" ]; then . /opt/verb/mods/vtxzin.before; fi # Precedes this script
 

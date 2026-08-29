@@ -6,11 +6,31 @@
 ## The destination must be only a domain
 
 # How to use:
-## ./pointwilddomain [forwarded domain] [destination]
+## ./pointwilddomain [ forwarded domain ] [ destination ]
 
 # Eg:
 ## ./pointwilddomain inkisaverb.com poetryiscode.com
 
+
+
+usagenotes="This \"wildly\" forwards an already-created domain to another domain"
+usageformat="pointwilddomain [ forwarded domain ] [ destination ]"
+usageexample="pointwilddomain inkisaverb.com poetryiscode.com"
+hierarchy=( primary )
+vsetnames=( "Domain" "Destination" )
+vsettypes=( isDomain isazAZ09lines )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/pointwilddomain.replace" ]; then . /opt/verb/mods/pointwilddomain.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/pointwilddomain.before" ]; then . /opt/verb/mods/pointwilddomain.before; fi # Precedes this script
 
 
 fwdDom=$1

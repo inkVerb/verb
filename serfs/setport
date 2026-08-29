@@ -23,7 +23,28 @@
 ## This port will also be used by any FTP users, vips, or filers in an FTP app such as FileZilla.
 
 # How to use:
-## ./setport [port number]
+## ./setport [ port number ]
+
+
+usagenotes="This sets a new SSH login port number and disallows the previous port"
+usageformat="setport [ port number ]"
+usageexample="setport
+setport [ port number ]"
+hierarchy=( primary )
+vsetnames=( "Port" )
+vsettypes=( is09 )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( serverport )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setport.replace" ]; then . /opt/verb/mods/setport.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setport.before" ]; then . /opt/verb/mods/setport.before; fi # Precedes this script
 
 
 # Include the config file

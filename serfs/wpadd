@@ -5,10 +5,30 @@
 ## You can use this for blog.NAME.verb.ink by using "ink.blog" as the domain
 
 # How to use:
-## ./wpadd [wpadd namespace] [domain.tld or html folder]
+## ./wpadd [ wpadd namespace ] [ domain.tld or html folder ]
 
 # Eg:
 ## ./wpadd iwp inkisaverb.com
+
+usagenotes="This downloads and installs additional useful pluings for a preinstalled WordPress domain in the .../html/ folder"
+usageformat="wpadd [ wpadd namespace ] [ domain.tld or html folder ]"
+usageexample="wpadd iwp inkisaverb.com"
+hierarchy=( primary )
+vsetnames=( "Wpadd namespace" "Domain" )
+vsettypes=( isazAZ09lines isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( inkget )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/wpadd.replace" ]; then . /opt/verb/mods/wpadd.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/wpadd.before" ]; then . /opt/verb/mods/wpadd.before; fi # Precedes this script
+
 
 # DEV: This needs to be rebuilt with donjon/wpaddsites and tar.xz
 

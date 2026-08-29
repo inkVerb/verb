@@ -6,7 +6,28 @@
 ## Prereqesite: inkcertinstall
 
 # How to use:
-## ./inkcertdosc [domain.tld NO SUBDOMAINS]
+## ./inkcertdosc [ domain.tld NO SUBDOMAINS ]
+
+usagenotes="This batch runs inkCert Self-Cert creation and install scripts for a given domain, including inkVerb namespace domains"
+usageformat="inkcertdosc [ domain.tld NO SUBDOMAINS ]"
+usageexample="inkcertdosc inkisaverb.com
+inkcertdosc YOURNAME.verb.blue"
+hierarchy=( tertiary inkcertdosc-all-verbs )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( inkcertdosc-all-verbs )
+useserfs=( inkcertsc inkcertaddsc inkcertcheck setinkcertmailcerts )
+useconfigs=( siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkcertdosc.replace" ]; then . /opt/verb/mods/inkcertdosc.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkcertdosc.before" ]; then . /opt/verb/mods/inkcertdosc.before; fi # Precedes this script
+
 
 #Eg:
 ## ./inkcertdosc inkisaverb.com

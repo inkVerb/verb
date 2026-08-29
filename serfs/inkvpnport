@@ -8,6 +8,26 @@
 ## ./inkvpnport [ new email - optional ]
 
 
+usagenotes="This sets the inkVPN server port number"
+usageformat="inkvpnport [ new email - optional ]"
+usageexample="inkvpnport"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=( "Email" )
+vopttypes=( isEmail )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( inkvpnclientdl )
+useconfigs=( siteurilist inkvpn/inkvpnstatus )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkvpnport.replace" ]; then . /opt/verb/mods/inkvpnport.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkvpnport.before" ]; then . /opt/verb/mods/inkvpnport.before; fi # Precedes this script
+
+
 # Include the config
 . /opt/verb/conf/siteurilist
 

@@ -10,7 +10,7 @@
 ## The file MUST be uploaded to the "www/vip" folder, which can be done with vsftp installed and an ftpvip
 
 # How to use:
-## ./backuprestore [app namespace] [filename]
+## ./backuprestore [ app namespace ] [ filename ]
 
 ## This uses the same app namespace as installAPPNAME and vapp.APPNAME configs
 ## This does not work for ghost sites
@@ -19,6 +19,27 @@
 # Eg:
 ## ./backuprestore orangehrm verb.orangehrm.sF52.vbak
 ## ./backuprestore wp.inkisaverb.com verb.wp.inkisaverb.com.ftU8.vbak
+
+
+usagenotes="This restores a backup .vbak file from an inkVerb app backed-up using backup"
+usageformat="backuprestore [ app namespace ] [ filename ]"
+usageexample="backuprestore orangehrm verb.orangehrm.sF52.vbak
+backuprestore wp.inkisaverb.com verb.wp.inkisaverb.com.ftU8.vbak"
+hierarchy=( primary )
+vsetnames=( "App namespace" "File" )
+vsettypes=( isazAZ09lines isFilename )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( mysqlvappex vtxzin mysqlkilldb mysqlkilluser vtxzout setvapplinkon )
+useconfigs=( servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/backuprestore.replace" ]; then . /opt/verb/mods/backuprestore.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/backuprestore.before" ]; then . /opt/verb/mods/backuprestore.before; fi # Precedes this script
 
 
 appName=$1

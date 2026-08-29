@@ -7,6 +7,26 @@
 # How to use:
 ## ./installnvm
 
+usagenotes="This installs the NVM package manager for Node.js"
+usageformat="installnvm"
+usageexample="installnvm"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/installnvm.replace" ]; then . /opt/verb/mods/installnvm.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installnvm.before" ]; then . /opt/verb/mods/installnvm.before; fi # Precedes this script
+
+
 /usr/bin/sudo -u worker /bin/bash -c '/usr/bin/yay -S --noconfirm --needed nvm'
 #/usr/local/bin/yeo -S --noconfirm --needed nvm
 if [ "$?" != "0" ]; then /usr/bin/echo 'Failed: !!'; exit 4; fi

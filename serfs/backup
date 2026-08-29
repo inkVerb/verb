@@ -4,7 +4,7 @@
 # This backs up an installed webapp by exporting the database, app folder, and siteconfig file into one downloadable vbak file in the "vip" folder and symlinked to the main site domain.
 
 # How to use:
-## ./backup [app namespace] [securename 0-9, a-z, and A-Z only, optional] [-nl for no link, optional dep]
+## ./backup [ app namespace ] [ securename 0-9, a-z, and A-Z only, optional ] [ -nl for no link, optional dep ]
 
 ## This uses the same app namespace as installAPPNAME and vapp.APPNAME configs
 ## This does not work for ghost sites
@@ -15,6 +15,29 @@
 ## ./backup orangehrm 583
 ## ./backup wp.inkisaverb.com 7aJk -nl
 ## ./backup wpinkblog b
+
+
+usagenotes="This backs up an installed webapp by exporting the database, app folder, and siteconfig file into one downloadable vbak file in the \"vip\" folder and symlinked to the main site domain."
+usageformat="backup [ app namespace ] [ securename 0-9, a-z, and A-Z only, optional ] [ -nl for no link, optional dep ]"
+usageexample="backup suitecrm
+backup orangehrm 583
+backup wp.inkisaverb.com 7aJk -nl
+backup wpinkblog b"
+hierarchy=( secondary )
+vsetnames=( "App namespace" )
+vsettypes=( isazAZ09lines )
+voptnames=( "Securename 0-9, a-z, and A-Z only, optional" "-nl for no link, optional dep" )
+vopttypes=( isazAZ09lines isazAZ09lines )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( wpvappbackupall )
+useserfs=( mysqlvappex vtxzin )
+useconfigs=( servernameip siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/backup.replace" ]; then . /opt/verb/mods/backup.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/backup.before" ]; then . /opt/verb/mods/backup.before; fi # Precedes this script
 
 
 appName=$1

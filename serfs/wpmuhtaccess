@@ -6,13 +6,36 @@
 ## This must also be run with wpmusetconfig
 
 # How to use:
-## ./wpmuhtaccess [domain.tld] [optional - "dir"]
+## ./wpmuhtaccess [ domain.tld ] [ optional - "dir" ]
 
 # Eg:
 ## ./wpmuhtaccess inkisaverb.com                  # will install to inkisaverb.com as the base, using subdomains of inkisaverb.com
 ## ./wpmuhtaccess mysubsite.inkisaverb.com        # will install to mysubsite.inkisaverb.com as the base, using subdomains of mysubsite.inkisaverb.com
 ## ./wpmuhtaccess inkisaverb.com dir              # will install to inkisaverb.com as the base, using directories of inkisaverb.com
 ## ./wpmuhtaccess mysubsite.inkisaverb.com dir    # will install to mysubsite.inkisaverb.com as the base, using directories of mysubsite.inkisaverb.com
+
+
+usagenotes="This sets up a WordPress vapp .htaccess file for use with multisite"
+usageformat="wpmuhtaccess [ domain.tld ] [ optional - "dir" ]"
+usageexample="wpmuhtaccess inkisaverb.com                  # will install to inkisaverb.com as the base, using subdomains of inkisaverb.com
+wpmuhtaccess mysubsite.inkisaverb.com        # will install to mysubsite.inkisaverb.com as the base, using subdomains of mysubsite.inkisaverb.com
+wpmuhtaccess inkisaverb.com dir              # will install to inkisaverb.com as the base, using directories of inkisaverb.com
+wpmuhtaccess mysubsite.inkisaverb.com dir    # will install to mysubsite.inkisaverb.com as the base, using directories of mysubsite.inkisaverb.com"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=( "Optional - \"dir\"" )
+vopttypes=( isazAZ09lines )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/wpmuhtaccess.replace" ]; then . /opt/verb/mods/wpmuhtaccess.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/wpmuhtaccess.before" ]; then . /opt/verb/mods/wpmuhtaccess.before; fi # Precedes this script
 
 
 wpdomain=$1

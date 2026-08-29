@@ -5,10 +5,30 @@
 ## Theoretically, this should not be necessary unless inkVerb makes changes to their own domain.
 
 # How to use:
-## ./setinknetsshca [inkNet SSH CA]
+## ./setinknetsshca [ inkNet SSH CA ]
 
 # Eg:
 ## ./setinknetsshca sshca.inkisaverb.com
+
+
+usagenotes="This sets new site-wide SSH CA for inkNet"
+usageformat="setinknetsshca [ inkNet SSH CA ]"
+usageexample="setinknetsshca sshca.inkisaverb.com"
+hierarchy=( secondary )
+vsetnames=( "InkNet SSH CA" )
+vsettypes=( isazAZ09lines )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( inknetmakeverberclient )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setinknetsshca.replace" ]; then . /opt/verb/mods/setinknetsshca.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setinknetsshca.before" ]; then . /opt/verb/mods/setinknetsshca.before; fi # Precedes this script
 
 
 inkSSHca=$1

@@ -5,12 +5,34 @@
 ## This can be run to update an existing config
 
 # How to use:
-## ./inknetaddsecondarycaverber [CA Verber host] [CA Verber IP]
+## ./inknetaddsecondarycaverber [ CA Verber host ] [ CA Verber IP ]
 
 # Eg: (almost certainly exactly this, but verify from inkVerb instructions at registration and available Inkers, probably region-specific)
 ## ./inknetaddsecondarycaverber ink.ink.verb.ink 999.999.99.999 (for ink namespace - the master Inker site)
 ## ./inknetaddsecondarycaverber john.john.verb.ink 999.999.99.999 (for john namespace - if you want your own Verber to act as your keys)
 ## ./inknetaddsecondarycaverber ink2.ink.inkisaverb.com 999.999.99.999 (for Domain Verber mod)
+
+
+usagenotes="This creates config files for this Verber to connect to a secondary CA Verber, such as other than the Inker"
+usageformat="inknetaddsecondarycaverber [ CA Verber host ] [ CA Verber IP ]"
+usageexample="inknetaddsecondarycaverber ink.ink.verb.ink 999.999.99.999 (for ink namespace - the master Inker site)
+inknetaddsecondarycaverber john.john.verb.ink 999.999.99.999 (for john namespace - if you want your own Verber to act as your keys)
+inknetaddsecondarycaverber ink2.ink.inkisaverb.com 999.999.99.999 (for Domain Verber mod)"
+hierarchy=( primary )
+vsetnames=( "CA Verber host" "IP" )
+vsettypes=( isazAZ09lines isazAZ09lines )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( inknetivappnewclientsailor )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inknetaddsecondarycaverber.replace" ]; then . /opt/verb/mods/inknetaddsecondarycaverber.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inknetaddsecondarycaverber.before" ]; then . /opt/verb/mods/inknetaddsecondarycaverber.before; fi # Precedes this script
 
 
 # Verify that this Verber candidate is already a Client Verber

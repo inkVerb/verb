@@ -8,6 +8,26 @@
 ## ./updatepfa
 
 
+usagenotes="This updates an existing Postfix Admin installation once it has been updated in the inkVerb repo"
+usageformat="updatepfa"
+usageexample="updatepfa"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( inkget )
+useconfigs=( servernameip siteurilist servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/updatepfa.replace" ]; then . /opt/verb/mods/updatepfa.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/updatepfa.before" ]; then . /opt/verb/mods/updatepfa.before; fi # Precedes this script
+
+
 pfaPass=$1
 
 # Include the config file

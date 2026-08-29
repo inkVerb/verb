@@ -9,6 +9,27 @@
 ## ./setbashrc root
 ## ./setbashrc USER
 
+usagenotes="This sets the terminal to use standard a standard Vrk Desktop prompt, wtih colors and the full path"
+usageformat="setbashrc"
+usageexample="setbashrc root
+setbashrc USER"
+hierarchy=( secondary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( newboss )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setbashrc.replace" ]; then . /opt/verb/mods/setbashrc.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setbashrc.before" ]; then . /opt/verb/mods/setbashrc.before; fi # Precedes this script
+
+
 if [ -z "$1" ]; then
 
 /usr/bin/cp /etc/bash.bashrc /etc/bash.bashrc-verb

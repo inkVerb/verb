@@ -5,13 +5,36 @@
 ## Prerequisite: inknetmakeverberclient
 
 # How to use:
-## ./inknetnewverber2clientkey [CA2 Host/Name]
+## ./inknetnewverber2clientkey [ CA2 Host/Name ]
 
 # Eg:
 ## ./inknetnewverber2clientkey joeyca2_joeyca_verb_ink
 ## ./inknetnewverber2clientkey joeyca2.joeyca.verb.ink
 ## ./inknetnewverber2clientkey joey_joey_verb_email
 ## ./inknetnewverber2clientkey joey.joey.verb.email
+
+
+usagenotes="This creates an Verber Client key to be signed by a CA Verber that will be used to sign into the CA Verber"
+usageformat="inknetnewverber2clientkey [ CA2 Host/Name ]"
+usageexample="inknetnewverber2clientkey joeyca2_joeyca_verb_ink
+inknetnewverber2clientkey joeyca2.joeyca.verb.ink
+inknetnewverber2clientkey joey_joey_verb_email
+inknetnewverber2clientkey joey.joey.verb.email"
+hierarchy=( primary )
+vsetnames=( "CA2 Host/Name" )
+vsettypes=( isazAZ09lines )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( showinknetclientinfo showinknetverberclientkey )
+useconfigs=( inknet/2cav. )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inknetnewverber2clientkey.replace" ]; then . /opt/verb/mods/inknetnewverber2clientkey.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inknetnewverber2clientkey.before" ]; then . /opt/verb/mods/inknetnewverber2clientkey.before; fi # Precedes this script
 
 
 ICASEC=$1

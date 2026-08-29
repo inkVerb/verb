@@ -4,14 +4,14 @@
 # This activates the repo....verb.vip folder so the web will provide an index
 
 # How to use:
-## ./activaterepo [on/off]
+## ./activaterepo [ on/off ]
 
 # Eg:
 ## ./activaterepo on
 ## ./activaterepo off
 
 usagenotes="This activates the repo....verb.vip folder so the web will provide an index"
-usageformat="activaterepo [on/off]"
+usageformat="activaterepo [ on/off ]"
 usageexample="activaterepo on
 activaterepo off"
 hierarchy=( primary )

@@ -4,10 +4,30 @@
 # This script points your-name.verb.one subdomains to custom-made subdomains, 
 
 # How to use:
-## ./pointvip [subdomain only]
+## ./pointvip [ subdomain only ]
 
 # Eg: (This will point name.verb.vip to lucky.your-name.verb.vip)
 ## ./pointvip lucky
+
+usagenotes="This script points your-name.verb.one subdomains to custom-made subdomains,"
+usageformat="pointvip [ subdomain only ]"
+usageexample="pointvip lucky"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servernameip siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/pointvip.replace" ]; then . /opt/verb/mods/pointvip.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/pointvip.before" ]; then . /opt/verb/mods/pointvip.before; fi # Precedes this script
+
 
 # Type ./pointvip -h for help
 

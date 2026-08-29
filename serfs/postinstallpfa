@@ -7,6 +7,26 @@
 ## ./postinstallpfa
 
 
+usagenotes="This should be run after PostfixAdmin has been setup through the web interface"
+usageformat="postinstallpfa"
+usageexample="postinstallpfa"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/postinstallpfa.replace" ]; then . /opt/verb/mods/postinstallpfa.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/postinstallpfa.before" ]; then . /opt/verb/mods/postinstallpfa.before; fi # Precedes this script
+
+
 # Deny http access to the setup file
 /bin/echo "<Files "setup.php">
 deny from all

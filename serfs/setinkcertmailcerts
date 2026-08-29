@@ -8,6 +8,27 @@
 ## ./setinkcertmailcerts [ domain.tld ] [ switch 'inkmail', optional for system email certs, used by installpostfixvmail installmaddymail ]
 
 
+usagenotes="This links the mail certs defined by setinkcertmail to the location used by the mail server"
+usageformat="setinkcertmailcerts [ domain.tld ] [ switch 'inkmail', optional for system email certs, used by installpostfixvmail installmaddymail ]"
+usageexample="setinkcertmailcerts
+setinkcertmailcerts [ domain.tld ]"
+hierarchy=( secondary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=( "Email" )
+vopttypes=( isEmail )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( inkcertdocb inkcertdocbsingle inkcertdole inkcertdosc installmaddymail installpostfixvmail setinkcertmail )
+useserfs=(  )
+useconfigs=( siteurilist servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setinkcertmailcerts.replace" ]; then . /opt/verb/mods/setinkcertmailcerts.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setinkcertmailcerts.before" ]; then . /opt/verb/mods/setinkcertmailcerts.before; fi # Precedes this script
+
+
 # Dependencies
 if ! /usr/bin/grep -q 'InkCertInstalled="DONE"' /opt/verb/conf/inkcertstatus; then
   /usr/bin/echo "Install inkCert first, I quit."; exit 8

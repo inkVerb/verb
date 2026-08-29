@@ -5,7 +5,28 @@
 ## inkDKIM is the inkVerb method of handling OpenDKIM keys
 
 # How to use:
-## ./showinkdkim [domain.tld]
+## ./showinkdkim [ domain.tld ]
+
+
+usagenotes="This displays the inkDKIM information in OpenDKIM for a specific domain so it can be added to an opendkim txt record in the DNS file"
+usageformat="showinkdkim [ domain.tld ]"
+usageexample="showinkdkim
+showinkdkim [ domain.tld ]"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/showinkdkim.replace" ]; then . /opt/verb/mods/showinkdkim.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/showinkdkim.before" ]; then . /opt/verb/mods/showinkdkim.before; fi # Precedes this script
 
 
 domain=$1

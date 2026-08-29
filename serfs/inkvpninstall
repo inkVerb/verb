@@ -7,6 +7,26 @@
 ## ./inkvpninstall
 
 
+usagenotes="This installs inkVPN, thus preparing the server to create a client file with inkvpnclient"
+usageformat="inkvpninstall"
+usageexample="inkvpninstall"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( inkvpnemail inkvpncakey inkvpnclientkey )
+useconfigs=( inkvpn/inkvpnstatus )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkvpninstall.replace" ]; then . /opt/verb/mods/inkvpninstall.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkvpninstall.before" ]; then . /opt/verb/mods/inkvpninstall.before; fi # Precedes this script
+
+
 # Include the config
 . /opt/verb/conf/inkvpn/inkvpnstatus
 

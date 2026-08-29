@@ -7,6 +7,26 @@
 ## ./showvapps
 
 
+usagenotes="This displays a list of all installed Vapps on the server"
+usageformat="showvapps"
+usageexample="showvapps"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/showvapps.replace" ]; then . /opt/verb/mods/showvapps.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/showvapps.before" ]; then . /opt/verb/mods/showvapps.before; fi # Precedes this script
+
+
 ls -1 /srv/www/vapps/
 
 

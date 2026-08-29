@@ -7,6 +7,26 @@
 # How to use:
 ## ./setrootloginoff
 
+usagenotes="This disables the ability for a root user to login over ssh with a password"
+usageformat="setrootloginoff"
+usageexample="setrootloginoff"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setrootloginoff.replace" ]; then . /opt/verb/mods/setrootloginoff.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setrootloginoff.before" ]; then . /opt/verb/mods/setrootloginoff.before; fi # Precedes this script
+
+
 /bin/sed -i "s/PermitRootLogin.*/PermitRootLogin without-password/g" /etc/ssh/sshd_config
 /bin/systemctl reload ssh
 

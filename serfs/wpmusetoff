@@ -5,11 +5,32 @@
 ## Specifically, this adds the multisite settings in wp-config.php necessary to begin the installation from the WordPress dashboard
 
 # How to use:
-## ./wpmusetoff [domain.tld]
+## ./wpmusetoff [ domain.tld ]
 
 # Eg:
 ## ./wpmusetoff inkisaverb.com
 ## ./wpmusetoff mysubsite.inkisaverb.com
+
+
+usagenotes="This turns off a WordPress vapp from being able to use multisite"
+usageformat="wpmusetoff [ domain.tld ]"
+usageexample="wpmusetoff inkisaverb.com
+wpmusetoff mysubsite.inkisaverb.com"
+hierarchy=( secondary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( wpmusetconfig )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/wpmusetoff.replace" ]; then . /opt/verb/mods/wpmusetoff.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/wpmusetoff.before" ]; then . /opt/verb/mods/wpmusetoff.before; fi # Precedes this script
 
 
 wpdomain=$1

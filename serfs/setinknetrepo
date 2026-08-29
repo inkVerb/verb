@@ -5,10 +5,30 @@
 ## This should generally not be necessary unless new repos have been added and the current repo is distant or has high traffic.
 
 # How to use:
-## ./setinknetrepo [inkNet repo]
+## ./setinknetrepo [ inkNet repo ]
 
 # Eg:
 ## ./setinknetrepo toronto.verb.ink
+
+
+usagenotes="This sets new site-wide inkNet repo for Verber app installs, used primarily or solely by the inkget serf"
+usageformat="setinknetrepo [ inkNet repo ]"
+usageexample="setinknetrepo toronto.verb.ink"
+hierarchy=( secondary )
+vsetnames=( "InkNet repo" )
+vsettypes=( isazAZ09lines )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( inknetmakeverberclient )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setinknetrepo.replace" ]; then . /opt/verb/mods/setinknetrepo.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setinknetrepo.before" ]; then . /opt/verb/mods/setinknetrepo.before; fi # Precedes this script
 
 
 NEWINKCERTRepo=$1

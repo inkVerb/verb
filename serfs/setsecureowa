@@ -8,6 +8,26 @@
 ## ./setsecureowa
 
 
+usagenotes="This adds/updates the secure salts to owa-config.php files of a pre-installed (or installing) OWA site"
+usageformat="setsecureowa"
+usageexample="setsecureowa"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setsecureowa.replace" ]; then . /opt/verb/mods/setsecureowa.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setsecureowa.before" ]; then . /opt/verb/mods/setsecureowa.before; fi # Precedes this script
+
+
 OWA_NONCE_KEY="$(/usr/bin/pwgen -s -1 27)"
 OWA_NONCE_SALT="$(/usr/bin/pwgen -s -1 27)"
 OWA_AUTH_KEY="$(/usr/bin/pwgen -s -1 27)"

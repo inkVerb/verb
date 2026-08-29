@@ -5,10 +5,32 @@
 ## Use flag "-r" to reload automatically
 
 # How to use:
-## ./ensitenginx [domain.tld or subdomain.domain.tld] [domain2.tld] [domain3.tld]
-## ./ensitenginx [domain.tld or subdomain.domain.tld]
-## ./ensitenginx -r [domain.tld or subdomain.domain.tld] [domain2.tld] [domain3.tld]
-## ./ensitenginx -r [domain.tld or subdomain.domain.tld]
+## ./ensitenginx [ domain.tld or subdomain.domain.tld ] [ domain2.tld ] [ domain3.tld ]
+## ./ensitenginx [ domain.tld or subdomain.domain.tld ]
+## ./ensitenginx -r [ domain.tld or subdomain.domain.tld ] [ domain2.tld ] [ domain3.tld ]
+## ./ensitenginx -r [ domain.tld or subdomain.domain.tld ]
+
+
+usagenotes="This enables an nginx site by creating a symlink"
+usageformat="ensitenginx [ domain.tld or subdomain.domain.tld ] [ domain2.tld ] [ domain3.tld ]"
+usageexample="ensitenginx [ domain.tld or subdomain.domain.tld ]
+ensitenginx -r [ domain.tld or subdomain.domain.tld ] [ domain2.tld ] [ domain3.tld ]
+ensitenginx -r [ domain.tld or subdomain.domain.tld ]"
+hierarchy=( tertiary adddomain )
+vsetnames=( "Domain" "Domain" "Domain" )
+vsettypes=( isDomain isDomain isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( adddomain addsubdomain newboss newonesub newvipsub setinkcertmail setserve )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/ensitenginx.replace" ]; then . /opt/verb/mods/ensitenginx.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/ensitenginx.before" ]; then . /opt/verb/mods/ensitenginx.before; fi # Precedes this script
 
 
 # Run as a loop so multiple sites can be enabled in one command, just like a2ensite

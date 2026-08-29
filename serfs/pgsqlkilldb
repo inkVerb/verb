@@ -22,6 +22,8 @@ usedby=(  )
 useserfs=(  )
 useconfigs=(  )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/pgsqlkilldb.replace" ]; then . /opt/verb/mods/pgsqlkilldb.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/pgsqlkilldb.before" ]; then . /opt/verb/mods/pgsqlkilldb.before; fi # Precedes this script
 if [ -e "/opt/verb/mods/mysqlkilldb.replace" ]; then . /opt/verb/mods/mysqlkilldb.replace; return 0; fi # Replaces this script
 if [ -e "/opt/verb/mods/mysqlkilldb.before" ]; then . /opt/verb/mods/mysqlkilldb.before; fi # Precedes this script
 
@@ -34,3 +36,7 @@ dBase=$1
 
 
 if [ -e "/opt/verb/mods/mysqlkilldb.after" ]; then . /opt/verb/mods/mysqlkilldb.after; fi # Follows this script
+
+
+
+if [ -e "/opt/verb/mods/pgsqlkilldb.after" ]; then . /opt/verb/mods/pgsqlkilldb.after; fi # Follows this script

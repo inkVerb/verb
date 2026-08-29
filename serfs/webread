@@ -5,13 +5,36 @@
 ## The "URI web path" is relative to the www/html/ folder; it must already exist.
 
 # How to use:
-## ./webread on/off [URI web path] [ -o optional overwrite existing .htaccess ]
+## ./webread on/off [ URI web path ] [ -o optional overwrite existing .htaccess ]
 
 # Eg:
 ## ./webread on inkisaverb.com/myfiles
 ## ./webread on ink.verb.vip -o
 ## ./webread off inkisaverb.com/myfiles -o
 ## ./webread off ink.verb.vip
+
+
+usagenotes="This adds the necessary minimal .htaccess file to a web folder so all its files can be read"
+usageformat="webread on/off [ URI web path ] [ -o optional overwrite existing .htaccess ]"
+usageexample="webread on inkisaverb.com/myfiles
+webread on ink.verb.vip -o
+webread off inkisaverb.com/myfiles -o
+webread off ink.verb.vip"
+hierarchy=( primary )
+vsetnames=( "Path" )
+vsettypes=( isDomain )
+voptnames=( "-o optional overwrite existing .htaccess" )
+vopttypes=( isazAZ09lines )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servertype )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/webread.replace" ]; then . /opt/verb/mods/webread.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/webread.before" ]; then . /opt/verb/mods/webread.before; fi # Precedes this script
 
 
 webpath=$1

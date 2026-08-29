@@ -7,7 +7,7 @@
 ## ./mysqlnewboss [ database username ] [ database user password - optional ]
 
 usagenotes="This creates a new MySQL/MariaDB database root user with password"
-usageformat="mysqlnewboss [ database username ] [ database user password - optional]"
+usageformat="mysqlnewboss [ database username ] [ database user password - optional ]"
 usageexample="mysqlnewboss myGreatDBuser99
 mysqlnewboss myGreatDBuser99 Secret12345%@"
 hierarchy=( primary )

@@ -13,6 +13,27 @@
 ## ./setinkcertmail name.verb.ink inkmail
 
 
+usagenotes="This sets up basic mail certificates and subdomain dummy sites for inkCert-LE"
+usageformat="setinkcertmail [ domain.tld ] [ switch 'inkmail', optional skip inkCert cli.ini, used by installpostfixvmail and installmaddymail ]"
+usageexample="setinkcertmail somedomain.tld
+setinkcertmail name.verb.ink inkmail"
+hierarchy=( secondary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=( "IP" )
+vopttypes=( isazAZ09lines )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( installmaddymail installpostfixvmail newdomainshell )
+useserfs=( setinkcertmailsubdomains setinkcertmailcerts ensitenginx ensiteapache )
+useconfigs=( siteurilist servertype servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setinkcertmail.replace" ]; then . /opt/verb/mods/setinkcertmail.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setinkcertmail.before" ]; then . /opt/verb/mods/setinkcertmail.before; fi # Precedes this script
+
+
 # Dependencies
 if ! /usr/bin/grep -q 'InkCertInstalled="DONE"' /opt/verb/conf/inkcertstatus; then
   /usr/bin/echo "Install inkCert first, I quit."; exit 8

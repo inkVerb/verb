@@ -14,6 +14,26 @@
 ## ./inknetinstallca
 
 
+usagenotes="This installs inkNet onto the Verber and..."
+usageformat="inknetinstallca"
+usageexample="inknetinstallca"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( inknetmakeca inknetnewcaselfauthpubkey inknetnewcahostkey inknetinstallivapp )
+useconfigs=( inknet/ca.verber.cnf )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inknetinstallca.replace" ]; then . /opt/verb/mods/inknetinstallca.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inknetinstallca.before" ]; then . /opt/verb/mods/inknetinstallca.before; fi # Precedes this script
+
+
 # Verify that this CA Verber candidate is already a Client Verber itself
 if [ ! -f /opt/verb/conf/inknet/rink.client.cnf ]; then
 /bin/echo "Not bad, Bucko. But, this must be a Verber Client, even to itself if need be, before it can become a CA to anything else.

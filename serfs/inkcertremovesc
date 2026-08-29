@@ -11,7 +11,29 @@
 ## The portion of this script that calls the CA to revoke the cert has not been written yet.
 
 # How to use:
-## ./inkcertremovesc [domain.tld or sub.domain.tld]
+## ./inkcertremovesc [ domain.tld or sub.domain.tld ]
+
+usagenotes="This script removes the server credentials and certificates for inkCert Self-Cert certs for a domain and replaces the Snakeoil certificate"
+usageformat="inkcertremovesc [ domain.tld or sub.domain.tld ]"
+usageexample="inkcertremovesc inkisaverb.com
+inkcertremovesc YOURNAME.verb.one
+inkcertremovesc owncloud.YOURNAME.verb.blue"
+hierarchy=( tertiary inkcertundosc )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( inkcertundosc )
+useserfs=(  )
+useconfigs=( servertype )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkcertremovesc.replace" ]; then . /opt/verb/mods/inkcertremovesc.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkcertremovesc.before" ]; then . /opt/verb/mods/inkcertremovesc.before; fi # Precedes this script
+
 
 #Eg:
 ## ./inkcertremovesc inkisaverb.com

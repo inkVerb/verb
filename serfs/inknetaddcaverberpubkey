@@ -9,7 +9,7 @@
 # Note: you can use underscores or dots
 
 # How to use:
-## ./inknetaddcaverberpubkey [secondary CA Verber name - optional]
+## ./inknetaddcaverberpubkey [ secondary CA Verber name - optional ]
 
 # Eg: (for primary CA Verber / Inker)
 ## ./inknetaddcaverberpubkey
@@ -19,6 +19,30 @@
 ## ./inknetaddcaverberpubkey two1_two_verb_ink
 ## ./inknetaddcaverberpubkey two1.ink.inkisaverb.com
 ## ./inknetaddcaverberpubkey two1_ink_inkisaverb_com
+
+
+usagenotes="This adds/updates a CA Verber's public signing key to the known_hosts of the local Verber Client"
+usageformat="inknetaddcaverberpubkey [ secondary CA Verber name - optional ]"
+usageexample="inknetaddcaverberpubkey
+inknetaddcaverberpubkey two1.two.verb.ink
+inknetaddcaverberpubkey two1_two_verb_ink
+inknetaddcaverberpubkey two1.ink.inkisaverb.com
+inknetaddcaverberpubkey two1_ink_inkisaverb_com"
+hierarchy=( tertiary inknetivappnewclientsailor )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=( "Secondary CA Verber name" )
+vopttypes=( isazAZ09lines )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( inknetivappnewclientsailor )
+useserfs=(  )
+useconfigs=( inknet/rink.client.cnf inknet/2cav. )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inknetaddcaverberpubkey.replace" ]; then . /opt/verb/mods/inknetaddcaverberpubkey.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inknetaddcaverberpubkey.before" ]; then . /opt/verb/mods/inknetaddcaverberpubkey.before; fi # Precedes this script
 
 
 CA2URI=$1

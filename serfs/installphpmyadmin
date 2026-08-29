@@ -4,7 +4,28 @@
 # This installs phpMyAdmin to a defiend directory, to become available at mysql.your-name.verb.vip/DEFINED-DIRECTORY
 
 # How to use:
-## ./installphpmyadmin [directory] [dbuser] [dbpassword]
+## ./installphpmyadmin [ directory ] [ dbuser ] [ dbpassword ]
+
+
+usagenotes="This installs phpMyAdmin to a defiend directory, to become available at mysql.your-name.verb.vip/DEFINED-DIRECTORY"
+usageformat="installphpmyadmin [ directory ] [ dbuser ] [ dbpassword ]"
+usageexample="installphpmyadmin
+installphpmyadmin [ directory ] [ dbuser ] [ dbpassword ]"
+hierarchy=( primary )
+vsetnames=( "Directory" "Database user" "Database password" )
+vsettypes=( isazAZ09lines isSQLDatabasename isSQLDatabasename )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( inkget mysqlnewboss setvappconfig )
+useconfigs=( servernameip siteurilist servertype )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/installphpmyadmin.replace" ]; then . /opt/verb/mods/installphpmyadmin.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installphpmyadmin.before" ]; then . /opt/verb/mods/installphpmyadmin.before; fi # Precedes this script
 
 
 cVappName=phpmyadmin

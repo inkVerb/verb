@@ -4,10 +4,30 @@
 # This displays the inkCert status for a specified domain
 
 # How to use:
-## ./showinkcertstatus [domain]
+## ./showinkcertstatus [ domain ]
 
 # Eg:
 ## ./showinkcertstatus inkisaverb.com
+
+
+usagenotes="This displays the inkCert status for a specified domain"
+usageformat="showinkcertstatus [ domain ]"
+usageexample="showinkcertstatus inkisaverb.com"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( inkcert/cli-ini/siteinkcert. )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/showinkcertstatus.replace" ]; then . /opt/verb/mods/showinkcertstatus.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/showinkcertstatus.before" ]; then . /opt/verb/mods/showinkcertstatus.before; fi # Precedes this script
 
 
 domain=$1

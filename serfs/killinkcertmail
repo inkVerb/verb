@@ -5,7 +5,7 @@
 ## This is run automatically by killdomainshell and normally should not be run independently
 
 # How to use:
-## ./killinkcertmail [domain]
+## ./killinkcertmail [ domain ]
 
 usagenotes="This removes basic mail certificates and subdomain dummy sites for inkCert-LE setup by setinkcertmail"
 usageformat="killinkcertmail [ domain.tld ]"

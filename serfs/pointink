@@ -6,10 +6,30 @@
 ##DEV this is out of date and may be depreciated; review the need and use of this serf
 
 # How to use:
-## ./pointink [subdomain only]
+## ./pointink [ subdomain only ]
 
 # Eg: (To point name.verb.red to hrm.your-name.verb.red do:)
 ## ./pointink hrm.red
+
+usagenotes="This script allows all of a user's main inkVerb subdomains to point to preferred apps,"
+usageformat="pointink [ subdomain only ]"
+usageexample="pointink hrm.red"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servernameip siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/pointink.replace" ]; then . /opt/verb/mods/pointink.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/pointink.before" ]; then . /opt/verb/mods/pointink.before; fi # Precedes this script
+
 
 # Type ./pointink -h for help
 

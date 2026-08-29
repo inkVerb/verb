@@ -8,6 +8,26 @@
 ## ./updateverber
 
 
+usagenotes="This downloads and updates the Verber™ core files, including serfs and inklists"
+usageformat="updateverber"
+usageexample="updateverber"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/updateverber.replace" ]; then . /opt/verb/mods/updateverber.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/updateverber.before" ]; then . /opt/verb/mods/updateverber.before; fi # Precedes this script
+
+
 # Include the config
 if [ -d "/opt/verb/inst" ]; then
   ## This allows updates on a -premade or -made verber

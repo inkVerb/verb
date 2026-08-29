@@ -7,8 +7,8 @@
 ## Dedicated-server scale.
 
 # How to use:
-## ./installbadad [domain.tld] [dbase] [dbuser] [dbpassword]
-## ./installbadad [domain.tld]
+## ./installbadad [ domain.tld ] [ dbase ] [ dbuser ] [ dbpassword ]
+## ./installbadad [ domain.tld ]
 
 usagenotes="This downloads and installs badAd to a specified domain (web + api subdomain)"
 usageformat="installbadad [ domain.tld ] [ dbase - optional ] [ dbuser - optional ] [ dbpassword - optional ]"

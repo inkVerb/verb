@@ -5,7 +5,7 @@
 ## Writes config.php (PHP array) and matching keys in vapp.pw99.DOMAIN
 
 # How to use:
-## ./setpw99 [domain.tld] [key=value] [key=value] ...
+## ./setpw99 [ domain.tld ] [ key=value ] [ key=value ] ...
 ## ./setpw99 inkisaverb.com host=99.inkisaverb.com
 ## ./setpw99 inkisaverb.com allow_create_super=false
 ## Keys: host, site_title, allow_create_super, db_name, db_user, db_pass, db_host, mail_from

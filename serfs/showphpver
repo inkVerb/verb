@@ -7,6 +7,27 @@
 # How to use:
 ## ./showphpver [ subdomain ]
 
+usagenotes="This displays the PHP vrsion"
+usageformat="showphpver [ subdomain ]"
+usageexample="showphpver
+showphpver [ subdomain ]"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/showphpver.replace" ]; then . /opt/verb/mods/showphpver.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/showphpver.before" ]; then . /opt/verb/mods/showphpver.before; fi # Precedes this script
+
+
 phpDir=$(ls /etc/php)
 phpVers=(${phpDir})
 IFS=$'\n'

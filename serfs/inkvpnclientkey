@@ -9,6 +9,26 @@
 ## ./inkvpnclientkey
 
 
+usagenotes="This creates a client key for inkVPN"
+usageformat="inkvpnclientkey"
+usageexample="inkvpnclientkey"
+hierarchy=( secondary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( inkvpninstall )
+useserfs=( inkvpnclientdl )
+useconfigs=( inkvpn/inkvpnstatus )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkvpnclientkey.replace" ]; then . /opt/verb/mods/inkvpnclientkey.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkvpnclientkey.before" ]; then . /opt/verb/mods/inkvpnclientkey.before; fi # Precedes this script
+
+
 # Check if the directory exists
 if [ ! -d "/opt/openvpn/certificates" ]; then
 /bin/echo "The OpenVPN \"certificates\" directory does not exist, something's wrong. Bye."; exit 0; fi

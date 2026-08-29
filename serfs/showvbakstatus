@@ -6,6 +6,26 @@
 # How to use:
 ## ./showvbakstatus
 
+usagenotes="This displays the vbak backup tools currently in cron"
+usageformat="showvbakstatus"
+usageexample="showvbakstatus"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/showvbakstatus.replace" ]; then . /opt/verb/mods/showvbakstatus.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/showvbakstatus.before" ]; then . /opt/verb/mods/showvbakstatus.before; fi # Precedes this script
+
+
 ls /etc/cron.d/*-vbak
 
 

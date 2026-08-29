@@ -6,7 +6,7 @@
 ## Restarts the systemd unit
 
 # How to use:
-## ./setpdt [domain.tld] [key=value] [key=value] ...
+## ./setpdt [ domain.tld ] [ key=value ] [ key=value ] ...
 ## ./setpdt inkisaverb.com mode=network
 ## ./setpdt inkisaverb.com db_name=newdb db_user=newuser db_pass=newpass
 

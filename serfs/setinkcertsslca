@@ -5,10 +5,30 @@
 ## Theoretically, this should not be necessary unless inkVerb makes changes to their own domain.
 
 # How to use:
-## ./setinkcertsslca [inkCert SSL CA]
+## ./setinkcertsslca [ inkCert SSL CA ]
 
 # Eg:
 ## ./setinkcertsslca sslca.inkisaverb.com
+
+
+usagenotes="This sets new site-wide SSL CA"
+usageformat="setinkcertsslca [ inkCert SSL CA ]"
+usageexample="setinkcertsslca sslca.inkisaverb.com"
+hierarchy=( secondary )
+vsetnames=( "InkCert SSL CA" )
+vsettypes=( isazAZ09lines )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( inknetmakeverberclient )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setinkcertsslca.replace" ]; then . /opt/verb/mods/setinkcertsslca.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setinkcertsslca.before" ]; then . /opt/verb/mods/setinkcertsslca.before; fi # Precedes this script
 
 
 INKSSLCA=$1

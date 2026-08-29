@@ -11,7 +11,28 @@
 ## Only .pem files are acceptable
 
 # How to use:
-## ./inkcertaddkeyset [domain.tld] [req.domain.tld.filename.ict]
+## ./inkcertaddkeyset [ domain.tld ] [ req.domain.tld.filename.ict ]
+
+usagenotes="This unpacks the certificates from the CA and moves files where they need to go"
+usageformat="inkcertaddkeyset [ domain.tld ] [ req.domain.tld.filename.ict ]"
+usageexample="inkcertaddkeyset
+inkcertaddkeyset [ domain.tld ] [ req.domain.tld.filename.ict ]"
+hierarchy=( primary )
+vsetnames=( "Domain" "Domain" )
+vsettypes=( isDomain isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( vtxzout )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkcertaddkeyset.replace" ]; then . /opt/verb/mods/inkcertaddkeyset.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkcertaddkeyset.before" ]; then . /opt/verb/mods/inkcertaddkeyset.before; fi # Precedes this script
+
 
 domain=$1
 icTFileName=$2

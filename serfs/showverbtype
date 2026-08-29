@@ -6,6 +6,26 @@
 # How to use:
 ## ./showverbtype
 
+usagenotes="This displays the current Verber type"
+usageformat="showverbtype"
+usageexample="showverbtype"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( inklists/verberverno )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/showverbtype.replace" ]; then . /opt/verb/mods/showverbtype.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/showverbtype.before" ]; then . /opt/verb/mods/showverbtype.before; fi # Precedes this script
+
+
 . /opt/verb/conf/inklists/verberverno
 /bin/echo "${Vtype}"
 

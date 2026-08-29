@@ -7,6 +7,26 @@
 ## ./showinknetclientinfo
 
 
+usagenotes="This displays the inkNet Client info to be used by a Client by inknetaddverberclient"
+usageformat="showinknetclientinfo"
+usageexample="showinknetclientinfo"
+hierarchy=( secondary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( inknetnewverber2clientkey inknetnewverberclientkey )
+useserfs=(  )
+useconfigs=( inknet/rink.client.cnf servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/showinknetclientinfo.replace" ]; then . /opt/verb/mods/showinknetclientinfo.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/showinknetclientinfo.before" ]; then . /opt/verb/mods/showinknetclientinfo.before; fi # Precedes this script
+
+
 # Check & include the config
 if [ -f /opt/verb/conf/inknet/rink.client.cnf ]; then
 . /opt/verb/conf/inknet/rink.client.cnf

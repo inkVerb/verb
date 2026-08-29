@@ -10,6 +10,26 @@
 ## ./inkcertinstallsc
 
 
+usagenotes="This installs the inkCert Self-Cert (SC) SSL certificate service"
+usageformat="inkcertinstallsc"
+usageexample="inkcertinstallsc"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( inkcertstatus )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkcertinstallsc.replace" ]; then . /opt/verb/mods/inkcertinstallsc.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkcertinstallsc.before" ]; then . /opt/verb/mods/inkcertinstallsc.before; fi # Precedes this script
+
+
 # Include and check the config
 . /opt/verb/conf/inkcertstatus
 

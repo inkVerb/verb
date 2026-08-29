@@ -5,7 +5,28 @@
 ## The hash is retrieved from the setup.php page
 
 # How to use:
-## ./setpfapass [rawpassword]
+## ./setpfapass [ rawpassword ]
+
+
+usagenotes="This sets the PostfixAdmin password hash for installation"
+usageformat="setpfapass [ rawpassword ]"
+usageexample="setpfapass
+setpfapass [ rawpassword ]"
+hierarchy=( tertiary installpfa )
+vsetnames=( "Password" )
+vsettypes=( isPassword )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( installpfa )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setpfapass.replace" ]; then . /opt/verb/mods/setpfapass.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setpfapass.before" ]; then . /opt/verb/mods/setpfapass.before; fi # Precedes this script
 
 
 pfaPass=$1

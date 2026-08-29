@@ -4,7 +4,28 @@
 # This updates settings from setup to a new IPv4 address on the server
 
 # How to use:
-## ./setipv4update [IPv4 number]
+## ./setipv4update [ IPv4 number ]
+
+
+usagenotes="This updates settings from setup to a new IPv4 address on the server"
+usageformat="setipv4update [ IPv4 number ]"
+usageexample="setipv4update
+setipv4update [ IPv4 number ]"
+hierarchy=( primary )
+vsetnames=( "IPv4" )
+vsettypes=( isIP4 )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( inkdnsrefreshbind )
+useconfigs=( servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setipv4update.replace" ]; then . /opt/verb/mods/setipv4update.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setipv4update.before" ]; then . /opt/verb/mods/setipv4update.before; fi # Precedes this script
 
 
 # Include the config file

@@ -7,6 +7,26 @@
 ## ./postinstallrc
 
 
+usagenotes="This should be run after roundcube has been setup through the web interface at box.your-name.verb.email/boxpath"
+usageformat="postinstallrc"
+usageexample="postinstallrc"
+hierarchy=( tertiary installrc )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( installrc updaterc )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/postinstallrc.replace" ]; then . /opt/verb/mods/postinstallrc.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/postinstallrc.before" ]; then . /opt/verb/mods/postinstallrc.before; fi # Precedes this script
+
+
 # Disable the installer
 /usr/bin/sed -i "s/\$config\['enable_installer'\].*/\$config\['enable_installer'\] = false;/g" /srv/www/email/roundcube/config/config.inc.php
 
@@ -19,3 +39,7 @@ cd $OLDPWD
 
 # Finish
 /bin/echo "Finished. Roudcube installer disabled."
+
+
+
+if [ -e "/opt/verb/mods/postinstallrc.after" ]; then . /opt/verb/mods/postinstallrc.after; fi # Follows this script

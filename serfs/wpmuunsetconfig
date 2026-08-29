@@ -4,11 +4,32 @@
 # This unsets up a WordPress vapp for multisite after it has been setup
 
 # How to use:
-## ./wpmuunsetconfig [domain.tld]
+## ./wpmuunsetconfig [ domain.tld ]
 
 # Eg:
 ## ./wpmusetconfig inkisaverb.com
 ## ./wpmusetconfig mysubsite.inkisaverb.com
+
+
+usagenotes="This unsets up a WordPress vapp for multisite after it has been setup"
+usageformat="wpmuunsetconfig [ domain.tld ]"
+usageexample="wpmusetconfig inkisaverb.com
+wpmusetconfig mysubsite.inkisaverb.com"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/wpmuunsetconfig.replace" ]; then . /opt/verb/mods/wpmuunsetconfig.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/wpmuunsetconfig.before" ]; then . /opt/verb/mods/wpmuunsetconfig.before; fi # Precedes this script
 
 
 wpdomain=$1

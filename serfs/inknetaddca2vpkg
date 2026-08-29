@@ -5,7 +5,28 @@
 ## This assumes that the key has been already uploaded to the CA, signed, downloaded from the CA, and put on the server in the www/vip folder
 
 # How to use:
-## ./inknetaddca2vpkg [CA2 Host/Name] [sec path code from CA Verber - optional, will prompt if not entered here]
+## ./inknetaddca2vpkg [ CA2 Host/Name ] [ sec path code from CA Verber - optional, will prompt if not entered here ]
+
+usagenotes="This puts the login credentials into the right place for a Verber"
+usageformat="inknetaddca2vpkg [ CA2 Host/Name ] [ sec path code from CA Verber - optional, will prompt if not entered here ]"
+usageexample="inknetaddca2vpkg
+inknetaddca2vpkg [ CA2 Host/Name ]"
+hierarchy=( primary )
+vsetnames=( "CA2 Host/Name" )
+vsettypes=( isazAZ09lines )
+voptnames=( "Path" )
+vopttypes=( isazAZ09lines )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( vtxzout )
+useconfigs=( inknet/2cav. )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inknetaddca2vpkg.replace" ]; then . /opt/verb/mods/inknetaddca2vpkg.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inknetaddca2vpkg.before" ]; then . /opt/verb/mods/inknetaddca2vpkg.before; fi # Precedes this script
+
 
 iCA2v=$1
 ca2vName="$(/bin/echo ${iCA2v} | /usr/bin/sed 's/\./_/g')"

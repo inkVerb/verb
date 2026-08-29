@@ -9,6 +9,26 @@
 ## ./showwpaddlist
 
 
+usagenotes="This displays the most recent list of available wpadd archives on the Inker"
+usageformat="showwpaddlist"
+usageexample="showwpaddlist"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/showwpaddlist.replace" ]; then . /opt/verb/mods/showwpaddlist.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/showwpaddlist.before" ]; then . /opt/verb/mods/showwpaddlist.before; fi # Precedes this script
+
+
 # inkNet to the Inker to display locally: wpaddshowlist
 
 # The read-only lists are in: tools/wpadd.human.list and tools/wpadd.list

@@ -4,11 +4,32 @@
 # This adds an IVapp inkNet Sailor based on the Client Verber profile
 
 # How to use:
-## ./inknetivappnewclientsailor [Client Verber name - optional, only if secondary]
+## ./inknetivappnewclientsailor [ Client Verber name - optional, only if secondary ]
 
 # Eg:
 ## ./inknetivappnewclientsailor ink2.ink.inkisaverb.com
 ## ./inknetivappnewclientsailor ink2_ink_inkisaverb_com
+
+
+usagenotes="This adds an IVapp inkNet Sailor based on the Client Verber profile"
+usageformat="inknetivappnewclientsailor [ Client Verber name - optional, only if secondary ]"
+usageexample="inknetivappnewclientsailor ink2.ink.inkisaverb.com
+inknetivappnewclientsailor ink2_ink_inkisaverb_com"
+hierarchy=( tertiary inknetaddsecondarycaverber )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=( "Client Verber name" )
+vopttypes=( isazAZ09lines )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( inknetaddsecondarycaverber inknetmakeverberclient )
+useserfs=( inknetivappaddsailor inknetaddcaverberpubkey )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inknetivappnewclientsailor.replace" ]; then . /opt/verb/mods/inknetivappnewclientsailor.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inknetivappnewclientsailor.before" ]; then . /opt/verb/mods/inknetivappnewclientsailor.before; fi # Precedes this script
 
 
 CA2URICFG=$1

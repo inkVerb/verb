@@ -5,10 +5,30 @@
 ## Current intended apps include Ampache, SuiteCRM
 
 # How to use:
-## ./postinstallmysqlfix [app namespace]
+## ./postinstallmysqlfix [ app namespace ]
 
 # Eg:
 ## ./postinstallmysqlfix ampache
+
+usagenotes="This revokes MySQL users' boss permissions for web apps that require boss access upon install"
+usageformat="postinstallmysqlweb postinstallmysqlfix [ app namespace ]"
+usageexample="postinstallmysqlfix ampache"
+hierarchy=( primary )
+vsetnames=( "App namespace" )
+vsettypes=( isazAZ09lines )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/postinstallmysqlweb.replace" ]; then . /opt/verb/mods/postinstallmysqlweb.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/postinstallmysqlweb.before" ]; then . /opt/verb/mods/postinstallmysqlweb.before; fi # Precedes this script
+
 
 appName=$1
 

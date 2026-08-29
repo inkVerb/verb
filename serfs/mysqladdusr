@@ -6,10 +6,10 @@
 ## Characters are limited to alnum
 
 # How to use:
-## ./mysqladdusr [ addto-dbase ] [ dbuser - optional ] [ dbpassword - optional]
+## ./mysqladdusr [ addto-dbase ] [ dbuser - optional ] [ dbpassword - optional ]
 
 usagenotes="This adds a user (new or existing) to an existing MySQL database with a password; if not specificd, user/password will be created; characters must be alnum"
-usageformat="mysqladdusr [ addto-dbase ] [ dbuser - optional ] [ dbpassword - optional]"
+usageformat="mysqladdusr [ addto-dbase ] [ dbuser - optional ] [ dbpassword - optional ]"
 usageexample="mysqladdusr somedatabase
 mysqladdusr somedatabase someuser
 mysqladdusr somedatabase someuser somepassword"

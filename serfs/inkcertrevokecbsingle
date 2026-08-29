@@ -7,7 +7,7 @@
 ## This is intended as a subscript of inkcertundocbsingle
 
 # How to use:
-## ./inkcertrevokecbsingle [domain.tld NO SUBDOMAINS]
+## ./inkcertrevokecbsingle [ domain.tld NO SUBDOMAINS ]
 
 #Eg:
 ## ./inkcertrevokecbsingle inkisaverb.com

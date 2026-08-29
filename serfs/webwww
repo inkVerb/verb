@@ -7,8 +7,28 @@
 ## This serf is kept in service because the www fix may not be necessary, especially on secure-based domains or subdomains and an untested possibility remains of breaking other serfs if it is not run deliberately. Besides, needing "www" in front of domains ended in the year 2000. It could also be fixed via a DNS cname.
 
 # How to use:
-## ./webwww on [domain.tld or subdomain.domain.tld]
-## ./webwww off [domain.tld or subdomain.domain.tld]
+## ./webwww on [ domain.tld or subdomain.domain.tld ]
+## ./webwww off [ domain.tld or subdomain.domain.tld ]
+
+
+usagenotes="This adds the www subdomain prefix to a domain's webserver config."
+usageformat="webwww on [ domain.tld or subdomain.domain.tld ]"
+usageexample="webwww off [ domain.tld or subdomain.domain.tld ]"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servertype )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/webwww.replace" ]; then . /opt/verb/mods/webwww.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/webwww.before" ]; then . /opt/verb/mods/webwww.before; fi # Precedes this script
 
 
 domain=$2

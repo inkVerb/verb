@@ -6,10 +6,10 @@
 ## Characters are limited to alnum
 
 # How to use:
-## ./mysqladdusr [ addto-dbase ] [ dbuser - optional ] [ dbpassword - optional]
+## ./mysqladdusr [ addto-dbase ] [ dbuser - optional ] [ dbpassword - optional ]
 
 usagenotes="This adds a user (new or existing) to an existing MySQL database with a password; if not specificd, user/password will be created; characters must be alnum"
-usageformat="mysqladdusr [ addto-dbase ] [ dbuser - optional ] [ dbpassword - optional]"
+usageformat="mysqladdusr [ addto-dbase ] [ dbuser - optional ] [ dbpassword - optional ]"
 usageexample="mysqladdusr somedatabase
 mysqladdusr somedatabase someuser
 mysqladdusr somedatabase someuser somepassword"
@@ -26,6 +26,8 @@ usedby=(  )
 useserfs=(  )
 useconfigs=(  )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/pgsqladdusr.replace" ]; then . /opt/verb/mods/pgsqladdusr.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/pgsqladdusr.before" ]; then . /opt/verb/mods/pgsqladdusr.before; fi # Precedes this script
 if [ -e "/opt/verb/mods/mysqladdusr.replace" ]; then . /opt/verb/mods/mysqladdusr.replace; return 0; fi # Replaces this script
 if [ -e "/opt/verb/mods/mysqladdusr.before" ]; then . /opt/verb/mods/mysqladdusr.before; fi # Precedes this script
 
@@ -57,3 +59,7 @@ FLUSH PRIVILEGES;"
 
 
 if [ -e "/opt/verb/mods/mysqladdusr.after" ]; then . /opt/verb/mods/mysqladdusr.after; fi # Follows this script
+
+
+
+if [ -e "/opt/verb/mods/pgsqladdusr.after" ]; then . /opt/verb/mods/pgsqladdusr.after; fi # Follows this script

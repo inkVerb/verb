@@ -20,7 +20,31 @@
 # NOTE: This is still testing since the .pem extention was added to .key and .csr files
 
 # How to use:
-## ./inkcertmakecsr [full domain with subdomain] [Common Name embedded in the cert] [profile name - for csr extra info]
+## ./inkcertmakecsr [ full domain with subdomain ] [ Common Name embedded in the cert ] [ profile name - for csr extra info ]
+
+usagenotes="This makes keys and a .csr file based on an inkCert profile made via inkcertsetcsr"
+usageformat="inkcertmakecsr [ full domain with subdomain ] [ Common Name embedded in the cert ] [ profile name - for csr extra info ]"
+usageexample="inkcertmakecsr jesse.verb.ink jesse.verb.ink jesseinkinfo				# For a normal site cert
+inkcertmakecsr mail.jesse.verb.ink mail.jesse.verb.ink jesseinkinfo			# For a mail cert
+inkcertmakecsr inkisaverb.com *.inkisaverb.com/CN=inkisaverb.com inkverbinfo	# For a wildcard domain, including main domain
+inkcertmakecsr repo.inkisaverb.com repo.inkisaverb.com inkverbinfo			# For a specific subdomain
+inkcertmakecsr jimmy-inkisaverb.com jimmy@inkisaverb.com inkverbinfo		# For a user domain, note hyphen to replace @ in the domain field"
+hierarchy=( primary )
+vsetnames=( "Domain" "Common Name embedded in the cert" "File" )
+vsettypes=( isDomain isazAZ09lines isFilename )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( inkcert/csr-inf/csr. )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkcertmakecsr.replace" ]; then . /opt/verb/mods/inkcertmakecsr.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkcertmakecsr.before" ]; then . /opt/verb/mods/inkcertmakecsr.before; fi # Precedes this script
+
 
 # Common Name formats:
 ## *.mydomain.com/CN=mydomain.com	# Wildcard

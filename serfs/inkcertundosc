@@ -9,7 +9,29 @@
 ## The portion of this script that calls the CA to revoke the cert has not been written yet.
 
 # How to use:
-## ./inkcertundosc [domain.tld or sub.domain.tld]
+## ./inkcertundosc [ domain.tld or sub.domain.tld ]
+
+usagenotes="This batch runs a revoke and uninstall of inkCert Self-Cert certs for a domain and replaces the Snakeoil certificate"
+usageformat="inkcertundosc [ domain.tld or sub.domain.tld ]"
+usageexample="inkcertundosc inkisaverb.com
+inkcertundosc YOURNAME.verb.one
+inkcertundosc owncloud.YOURNAME.verb.blue"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( inkcertrevokesc inkcertremovesc )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkcertundosc.replace" ]; then . /opt/verb/mods/inkcertundosc.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkcertundosc.before" ]; then . /opt/verb/mods/inkcertundosc.before; fi # Precedes this script
+
 
 #Eg:
 ## ./inkcertundosc inkisaverb.com

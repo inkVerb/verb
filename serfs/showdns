@@ -6,6 +6,26 @@
 ## ./showdns
 
 
+usagenotes="This displays the full URL of the serve address set by setserve"
+usageformat="showdns"
+usageexample="showdns"
+hierarchy=( secondary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( inkdnsinstall )
+useserfs=(  )
+useconfigs=( servernameip siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/showdns.replace" ]; then . /opt/verb/mods/showdns.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/showdns.before" ]; then . /opt/verb/mods/showdns.before; fi # Precedes this script
+
+
 # Include the configs
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/siteurilist

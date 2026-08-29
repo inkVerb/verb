@@ -4,8 +4,28 @@
 # This adds the wildcard * subdomain wildcard to a domain's webserver config.
 
 # How to use:
-## ./webwild on [domain.tld or subdomain.domain.tld]
-## ./webwild off [domain.tld or subdomain.domain.tld]
+## ./webwild on [ domain.tld or subdomain.domain.tld ]
+## ./webwild off [ domain.tld or subdomain.domain.tld ]
+
+
+usagenotes="This adds the wildcard * subdomain wildcard to a domain's webserver config."
+usageformat="webwild on [ domain.tld or subdomain.domain.tld ]"
+usageexample="webwild off [ domain.tld or subdomain.domain.tld ]"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servertype )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/webwild.replace" ]; then . /opt/verb/mods/webwild.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/webwild.before" ]; then . /opt/verb/mods/webwild.before; fi # Precedes this script
 
 
 domain=$2

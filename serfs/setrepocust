@@ -7,6 +7,26 @@
 ## ./setrepocust
 
 
+usagenotes="This sets the inkGet repo version list so that it will not automatically update when the Verber is updated"
+usageformat="setrepocust"
+usageexample="setrepocust"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setrepocust.replace" ]; then . /opt/verb/mods/setrepocust.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setrepocust.before" ]; then . /opt/verb/mods/setrepocust.before; fi # Precedes this script
+
+
 /bin/sed -i "s/InkGet_List=.*/InkGet_List=\"CUSTOM\"/g" /opt/verb/conf/serverinkget
 
 

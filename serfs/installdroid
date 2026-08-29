@@ -11,6 +11,26 @@
 ## installdroid https://github.com/inkVerb/droids
 
 
+usagenotes="This installs droids from a git repo."
+usageformat="installdroid"
+usageexample="installdroid"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/installdroid.replace" ]; then . /opt/verb/mods/installdroid.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installdroid.before" ]; then . /opt/verb/mods/installdroid.before; fi # Precedes this script
+
+
 DROIDRepo=$1
 
 # Sanitize repo

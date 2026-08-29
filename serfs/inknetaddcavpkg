@@ -5,7 +5,27 @@
 ## This assumes that the key has been already uploaded to the CA, signed, downloaded from the CA, and put on the server in the www/vip folder
 
 # How to use:
-## ./inknetaddcavpkg [sec path code from CA Verber - optional, will prompt if not entered here]
+## ./inknetaddcavpkg [ sec path code from CA Verber - optional, will prompt if not entered here ]
+
+
+usagenotes="This puts the login credentials into the right place for a Verber"
+usageformat="inknetaddcavpkg [ sec path code from CA Verber - optional, will prompt if not entered here ]"
+usageexample="inknetaddcavpkg"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=( "Path" )
+vopttypes=( isazAZ09lines )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( vtxzout )
+useconfigs=( inknet/rink.client.cnf )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inknetaddcavpkg.replace" ]; then . /opt/verb/mods/inknetaddcavpkg.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inknetaddcavpkg.before" ]; then . /opt/verb/mods/inknetaddcavpkg.before; fi # Precedes this script
 
 
 secpath=$1

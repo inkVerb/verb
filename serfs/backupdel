@@ -7,6 +7,26 @@
 ## ./backupdel
 
 
+usagenotes="This delets all backups from the server and their web-accessible symlinks"
+usageformat="backupdel"
+usageexample="backupdel"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/backupdel.replace" ]; then . /opt/verb/mods/backupdel.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/backupdel.before" ]; then . /opt/verb/mods/backupdel.before; fi # Precedes this script
+
+
 # Include the configs
 . /opt/verb/conf/servernameip
 

@@ -4,12 +4,34 @@
 # This deletes the config files for a secondary CA Verber
 
 # How to use:
-## ./inknetkillsecondarycaverber [CA verber name]
+## ./inknetkillsecondarycaverber [ CA verber name ]
 
 # Eg: (almost certainly exactly this, but verify from inkVerb instructions at registration and available Inkers, probably region-specific)
 ## ./inknetkillsecondarycaverber ink_ink_verb_ink (for ink namespace - the master Inker site)
 ## ./inknetaddsecondarycaverber john_john_verb_ink (for john namespace - if you want your own Verber to act as your keys)
 ## ./inknetaddsecondarycaverber ink2_ink_inkisaverb_com (for Domain Verber mod)
+
+
+usagenotes="This deletes the config files for a secondary CA Verber"
+usageformat="inknetkillsecondarycaverber [ CA verber name ]"
+usageexample="inknetkillsecondarycaverber ink_ink_verb_ink (for ink namespace - the master Inker site)
+inknetaddsecondarycaverber john_john_verb_ink (for john namespace - if you want your own Verber to act as your keys)
+inknetaddsecondarycaverber ink2_ink_inkisaverb_com (for Domain Verber mod)"
+hierarchy=( primary )
+vsetnames=( "CA verber name" )
+vsettypes=( isazAZ09lines )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inknetkillsecondarycaverber.replace" ]; then . /opt/verb/mods/inknetkillsecondarycaverber.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inknetkillsecondarycaverber.before" ]; then . /opt/verb/mods/inknetkillsecondarycaverber.before; fi # Precedes this script
 
 
 fullKillName=$1

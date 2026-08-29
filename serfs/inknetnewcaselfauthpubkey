@@ -11,6 +11,26 @@
 ## ./inknetnewcaselfauthpubkey
 
 
+usagenotes="This creates the CA Verber/Inker master \"authority\" keys that this CA Verber/Inker uses to sign the host key on the same CA Verber/Inker itself and that Clients recognize"
+usageformat="inknetnewcaselfauthpubkey"
+usageexample="inknetnewcaselfauthpubkey"
+hierarchy=( tertiary inknetinstallca )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( inknetinstallca )
+useserfs=(  )
+useconfigs=( inknet/ca.verber.cnf )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inknetnewcaselfauthpubkey.replace" ]; then . /opt/verb/mods/inknetnewcaselfauthpubkey.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inknetnewcaselfauthpubkey.before" ]; then . /opt/verb/mods/inknetnewcaselfauthpubkey.before; fi # Precedes this script
+
+
 # Check and include the config
 if [ ! -f /opt/verb/conf/inknet/ca.verber.cnf ]; then
 /bin/echo "Out of order. This is not a CA Verber yet.

@@ -6,6 +6,26 @@
 ## ./showserve
 
 
+usagenotes="This displays the full URL of the serve address set by setserve"
+usageformat="showserve"
+usageexample="showserve"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/showserve.replace" ]; then . /opt/verb/mods/showserve.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/showserve.before" ]; then . /opt/verb/mods/showserve.before; fi # Precedes this script
+
+
 # Include the configs
 . /opt/verb/conf/servernameip
 

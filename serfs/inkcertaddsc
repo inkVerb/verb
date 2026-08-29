@@ -10,7 +10,31 @@
 ### The isssue is that we don't want restarts with each subdomain because it causes a "too many restarts" type of systemctl error if it stops and starts with each subdomain when run through inkcertaddall*
 
 # How to use:
-## ./inkcertaddsc [domain.tld or sub.domain.tld]
+## ./inkcertaddsc [ domain.tld or sub.domain.tld ]
+
+usagenotes="This installs inkCert Self-Cert Apache/Nginx credentials for a given domain, including inkVerb namespace domains"
+usageformat="inkcertaddsc [ domain.tld or sub.domain.tld ]"
+usageexample="inkcertaddsc inkisaverb.com
+inkcertaddsc blog.inkisaverb.com inkisaverb.com
+inkcertaddsc YOURNAME.verb.one
+inkcertaddsc owncloud.YOURNAME.verb.blue
+inkcertaddsc smtp.YOURNAME.verb.email"
+hierarchy=( tertiary inkcertdosc )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( inkcertdosc installampache installghostinkblog installghostsite installnextcloud installorangehrm installowncloud installpydio installsuitecrm )
+useserfs=(  )
+useconfigs=( servernameip siteurilist servertype inkcertstatus )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkcertaddsc.replace" ]; then . /opt/verb/mods/inkcertaddsc.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkcertaddsc.before" ]; then . /opt/verb/mods/inkcertaddsc.before; fi # Precedes this script
+
 
 #Eg:
 ## ./inkcertaddsc inkisaverb.com

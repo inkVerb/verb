@@ -8,6 +8,26 @@
 ## ./inkvpnclientdl
 
 
+usagenotes="This creates a temporary link for downloading the inkVPN client profile file"
+usageformat="inkvpnclientdl"
+usageexample="inkvpnclientdl"
+hierarchy=( secondary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( inkvpnclientkey inkvpnport )
+useserfs=(  )
+useconfigs=( servernameip siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkvpnclientdl.replace" ]; then . /opt/verb/mods/inkvpnclientdl.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkvpnclientdl.before" ]; then . /opt/verb/mods/inkvpnclientdl.before; fi # Precedes this script
+
+
 # Include the configs
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/siteurilist

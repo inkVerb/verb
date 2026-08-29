@@ -10,10 +10,30 @@
 ## The file MUST be uploaded to the "vip" folder, which can be done with vsftp installed and an ftpvip
 
 # How to use:
-## ./backupnextcloudrestore [filename]
+## ./backupnextcloudrestore [ filename ]
 
 # Eg:
 ## ./backuprestorenextcloud verb.nextcloud.sF52.vbak  # (This is for the backup file verb.nextcloud.sF52.vbak)
+
+
+usagenotes="This restores a backup .vbak file from Nextcloud backed-up using backupnextcloud"
+usageformat="backupnextcloudrestore [ filename ]"
+usageexample="backuprestorenextcloud verb.nextcloud.sF52.vbak  # (This is for the backup file verb.nextcloud.sF52.vbak)"
+hierarchy=( primary )
+vsetnames=( "File" )
+vsettypes=( isFilename )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( mysqlvappex vtxzin vtxzout mysqlin )
+useconfigs=( servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/backupnextcloudrestore.replace" ]; then . /opt/verb/mods/backupnextcloudrestore.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/backupnextcloudrestore.before" ]; then . /opt/verb/mods/backupnextcloudrestore.before; fi # Precedes this script
 
 
 filename=$1

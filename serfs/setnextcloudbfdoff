@@ -7,6 +7,26 @@
 ## ./setnextcloudbfdoff
 
 
+usagenotes="This turns off bruteforce protection for nextcloud"
+usageformat="setnextcloudbfdoff"
+usageexample="setnextcloudbfdoff"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setnextcloudbfdoff.replace" ]; then . /opt/verb/mods/setnextcloudbfdoff.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setnextcloudbfdoff.before" ]; then . /opt/verb/mods/setnextcloudbfdoff.before; fi # Precedes this script
+
+
 # Fix the setting in basic.config.php, searching for both true and false
 /bin/sed -i "s/'auth\.bruteforce\.protection\.enabled' => true/'auth\.bruteforce\.protection\.enabled' => false/" /srv/www/vapps/nextcloud/config/basic.config.php
 

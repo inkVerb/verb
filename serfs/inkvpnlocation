@@ -15,6 +15,29 @@
 ## ./inkvpnlocation US AZ Phoenix "ABC Corp" VPN-EthHack
 
 
+usagenotes="This sets the inkVPN client and server location infornation"
+usageformat="inkvpnlocation [ country (two-letter) ] [ province (two-letter) ] [ city ] [ organization ] [ organizational unit ]"
+usageexample="inkvpnlocation US MI Detroit ABC-Corp IT-Dep
+inkvpnlocation US IL Chicago "Rom Corp" "Fake Attack"
+inkvpnlocation US NY NewYork "Trumpist and Friends" "Russian Hackers"
+inkvpnlocation US AZ Phoenix "ABC Corp" VPN-EthHack"
+hierarchy=( primary )
+vsetnames=( "Country (two-letter)" "Province (two-letter)" "City" "Organization" "Organizational unit" )
+vsettypes=( isazAZ09lines isazAZ09lines isazAZ09lines isazAZ09lines isazAZ09lines )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( inkvpn/inkvpnstatus )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkvpnlocation.replace" ]; then . /opt/verb/mods/inkvpnlocation.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkvpnlocation.before" ]; then . /opt/verb/mods/inkvpnlocation.before; fi # Precedes this script
+
+
 # Set the email variable
 if [ -z "$5" ]; then
  /bin/echo "All five options not specified, OK, using defaults..."

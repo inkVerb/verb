@@ -8,6 +8,26 @@
 ## ./showinknetverberclientkey
 
 
+usagenotes="This displays the inkNet Client key"
+usageformat="showinknetverberclientkey"
+usageexample="showinknetverberclientkey"
+hierarchy=( secondary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( inknetnewverber2clientkey inknetnewverberclientkey )
+useserfs=(  )
+useconfigs=( inknet/rink.client.cnf )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/showinknetverberclientkey.replace" ]; then . /opt/verb/mods/showinknetverberclientkey.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/showinknetverberclientkey.before" ]; then . /opt/verb/mods/showinknetverberclientkey.before; fi # Precedes this script
+
+
 # Check the config
 if [ ! -f /opt/verb/conf/inknet/rink.client.cnf ]; then
 /bin/echo "This is not yet connected to an Inker via inkNet."

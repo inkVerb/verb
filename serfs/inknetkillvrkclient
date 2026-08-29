@@ -4,7 +4,28 @@
 # This deletes a Vrk Client's profile and kills the inkNet JailKit user
 
 # How to use:
-## ./inknetkillvrkclient [username on machine] [machine name - AKA 'computer name']
+## ./inknetkillvrkclient [ username on machine ] [ machine name - AKA 'computer name' ]
+
+
+usagenotes="This deletes a Vrk Client's profile and kills the inkNet JailKit user"
+usageformat="inknetkillvrkclient [ username on machine ] [ machine name - AKA 'computer name' ]"
+usageexample="inknetkillvrkclient
+inknetkillvrkclient [ username on machine ] [ machine name - AKA 'computer name' ]"
+hierarchy=( primary )
+vsetnames=( "Username" "Machine name - AKA 'computer name'" )
+vsettypes=( isUsername isazAZ09lines )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( inknet/vrk/client.vrk. )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inknetkillvrkclient.replace" ]; then . /opt/verb/mods/inknetkillvrkclient.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inknetkillvrkclient.before" ]; then . /opt/verb/mods/inknetkillvrkclient.before; fi # Precedes this script
 
 
 KILLuser=$1

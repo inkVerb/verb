@@ -6,7 +6,7 @@
 ## Prerequisite: inknetaddvrkclient/inknetaddverberclient
 
 # How to use:
-## ./inknetaddclientkey [vrk/verber type] [Client Host/Name] ["FULL KEY" - in quotes! - optional]
+## ./inknetaddclientkey [ vrk/verber type ] [ Client Host/Name ] [ "FULL KEY" - in quotes! - optional ]
 
 # Eg: (for Verber)
 ## ./inknetaddclientkey verber joeyhost_joeysite_verb_ink
@@ -19,6 +19,33 @@
 ## ./inknetaddclientkey vrk joey@gCodingStationJoey
 ## ./inknetaddclientkey vrk joey_gCodingStationJoey "ssh-rsa AAAAOmIOMIWhfsdfENFSDFaffJLKfsSDJsdSDKjWdsfsadfOkEjMCAfdSDKFLOIjhWESF.....WWLKqhOIMhgbSDF joey@gCodingStationJoey"
 ## ./inknetaddclientkey vrk joey@gCodingStationJoey "ssh-rsa AAAAOmIOMIWhfsdfENFSDFaffJLKfsSDJsdSDKjWdsfsadfOkEjMCAfdSDKFLOIjhWESF.....WWLKqhOIMhgbSDF joey@gCodingStationJoey"
+
+
+usagenotes="This adds a Vrk/Verber Client's public SSH key to \"authorized_hosts\" on the CA Verber"
+usageformat="inknetaddclientkey [ vrk/verber type ] [ Client Host/Name ] [ "FULL KEY" - in quotes! - optional ]"
+usageexample="inknetaddclientkey verber joeyhost_joeysite_verb_ink
+inknetaddclientkey verber joeyhost.joeysite.verb.ink
+inknetaddclientkey verber joeyhost_joeysite_verb_ink "ssh-rsa AAAAOmIOMIWhfsdfENFSDFaffJLKfsSDJsdSDKjWdsfsadfOkEjMCAfdSDKFLOIjhWESF.....WWLKqhOIMhgbSDF boss@joey"
+inknetaddclientkey verber joeyhost.joeysite.verb.ink "ssh-rsa AAAAOmIOMIWhfsdfENFSDFaffJLKfsSDJsdSDKjWdsfsadfOkEjMCAfdSDKFLOIjhWESF.....WWLKqhOIMhgbSDF boss@joey"
+inknetaddclientkey vrk joey_gCodingStationJoey
+inknetaddclientkey vrk joey@gCodingStationJoey
+inknetaddclientkey vrk joey_gCodingStationJoey "ssh-rsa AAAAOmIOMIWhfsdfENFSDFaffJLKfsSDJsdSDKjWdsfsadfOkEjMCAfdSDKFLOIjhWESF.....WWLKqhOIMhgbSDF joey@gCodingStationJoey"
+inknetaddclientkey vrk joey@gCodingStationJoey "ssh-rsa AAAAOmIOMIWhfsdfENFSDFaffJLKfsSDJsdSDKjWdsfsadfOkEjMCAfdSDKFLOIjhWESF.....WWLKqhOIMhgbSDF joey@gCodingStationJoey""
+hierarchy=( primary )
+vsetnames=( "Vrk/verber type" "Client Host/Name" )
+vsettypes=( isazAZ09lines isazAZ09lines )
+voptnames=( "\"FULL KEY\" - in quotes!" )
+vopttypes=( isazAZ09lines )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( inknet/vrk/client.vrk. inknet/verber/client.verber. inknet/ca.verber.cnf )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inknetaddclientkey.replace" ]; then . /opt/verb/mods/inknetaddclientkey.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inknetaddclientkey.before" ]; then . /opt/verb/mods/inknetaddclientkey.before; fi # Precedes this script
 
 
 Vtype=$1

@@ -7,6 +7,26 @@
 ## ./postinstallscrm
 
 
+usagenotes="This should be run after SuiteCRM has successfully been installed at crm.your-name.verb.red"
+usageformat="postinstallscrm"
+usageexample="postinstallscrm"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/postinstallscrm.replace" ]; then . /opt/verb/mods/postinstallscrm.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/postinstallscrm.before" ]; then . /opt/verb/mods/postinstallscrm.before; fi # Precedes this script
+
+
 # Set installer to false
 /bin/echo '*    *    *    *    *     cd /srv/www/vapps/suitecrm; php -f cron.php > /dev/null 2>&1' > /etc/cron.d/suitecrm
 /bin/chmod 0644 /etc/cron.d/suitecrm

@@ -6,6 +6,26 @@
 # How to use:
 ## ./setvappmysqlvbakon
 
+usagenotes="This sets the vapp MySQL vbak cron job"
+usageformat="setvappmysqlvbakon"
+usageexample="setvappmysqlvbakon"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setvappmysqlvbakon.replace" ]; then . /opt/verb/mods/setvappmysqlvbakon.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setvappmysqlvbakon.before" ]; then . /opt/verb/mods/setvappmysqlvbakon.before; fi # Precedes this script
+
+
 /bin/echo '15 1 * * * root /opt/verb/donjon/vapp.mysql.vbak.sh' > /etc/cron.d/vappmysql-vbak
 /bin/chmod 0644 /etc/cron.d/vappmysql-vbak
 

@@ -8,13 +8,36 @@
 ## Note: underscores are allowed in the host
 
 # How to use:
-## ./inknetaddverberclient [Verber Host/Name] [Verber IP]
+## ./inknetaddverberclient [ Verber Host/Name ] [ Verber IP ]
 
 # Eg:
 ## ./inknetaddverberclient joey.joey.verb.ink 999.999.999.999 (most common)
 ## ./inknetaddverberclient joey_joey_verb_ink 999.999.999.999 (underscores always allowed in host, like this)
 ## ./inknetaddverberclient joey.joey.verb.email 999.999.999.999 (if email is on a different server)
 ## ./inknetaddverberclient joey2.ink.inkisaverb.com 999.999.999.999 (Domain Mod)
+
+usagenotes="This adds a Verber Client for this inkNet CA Verber to host"
+usageformat="inknetaddverberclient [ Verber Host/Name ] [ Verber IP ]"
+usageexample="inknetaddverberclient joey.joey.verb.ink 999.999.999.999 (most common)
+inknetaddverberclient joey_joey_verb_ink 999.999.999.999 (underscores always allowed in host, like this)
+inknetaddverberclient joey.joey.verb.email 999.999.999.999 (if email is on a different server)
+inknetaddverberclient joey2.ink.inkisaverb.com 999.999.999.999 (Domain Mod)"
+hierarchy=( primary )
+vsetnames=( "Verber Host/Name" "IP" )
+vsettypes=( isazAZ09lines isazAZ09lines )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( inknetivappadduser )
+useconfigs=( inknet/ca.verber.cnf serverport )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inknetaddverberclient.replace" ]; then . /opt/verb/mods/inknetaddverberclient.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inknetaddverberclient.before" ]; then . /opt/verb/mods/inknetaddverberclient.before; fi # Precedes this script
+
 
 # Prerequesites
 if [ -f /opt/verb/conf/inknet/ca.verber.cnf ]; then

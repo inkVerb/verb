@@ -8,6 +8,26 @@
 ## ./updaterc
 
 
+usagenotes="This updates an existing Roundcube installation once it has been updated in the inkVerb repo"
+usageformat="updaterc"
+usageexample="updaterc"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( inkget postinstallrc )
+useconfigs=( servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/updaterc.replace" ]; then . /opt/verb/mods/updaterc.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/updaterc.before" ]; then . /opt/verb/mods/updaterc.before; fi # Precedes this script
+
+
 # Include the config file
 . /opt/verb/conf/servernameip
 

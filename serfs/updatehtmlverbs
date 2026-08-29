@@ -9,6 +9,26 @@
 ## ./updatehtmlverbs
 
 
+usagenotes="This creates original verb folders to www/verb if they don't exist"
+usageformat="updatehtmlverbs"
+usageexample="updatehtmlverbs"
+hierarchy=( secondary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( killvapp )
+useserfs=(  )
+useconfigs=( servernameip siteurilist servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/updatehtmlverbs.replace" ]; then . /opt/verb/mods/updatehtmlverbs.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/updatehtmlverbs.before" ]; then . /opt/verb/mods/updatehtmlverbs.before; fi # Precedes this script
+
+
 # Include the config
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/siteurilist

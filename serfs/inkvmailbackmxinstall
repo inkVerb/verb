@@ -14,6 +14,26 @@
 # Eg:
 ## ./inkvmailbackmxinstall
 
+usagenotes="This runs installpostfix and some extra scripts to setup a backup email server on the server"
+usageformat="inkvmailbackmxinstall"
+usageexample="inkvmailbackmxinstall"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( installinkvmail )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkvmailbackmxinstall.replace" ]; then . /opt/verb/mods/inkvmailbackmxinstall.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkvmailbackmxinstall.before" ]; then . /opt/verb/mods/inkvmailbackmxinstall.before; fi # Precedes this script
+
+
 SERVER=$1
 
 /opt/verb/serfs/installinkvmail
@@ -33,3 +53,7 @@ All set. This is now a backup email server for $SERVER.
 
 
 if [ -e "/opt/verb/mods/installinkvmailbackmx.after" ]; then . /opt/verb/mods/installinkvmailbackmx.after; fi # Follows this script
+
+
+
+if [ -e "/opt/verb/mods/inkvmailbackmxinstall.after" ]; then . /opt/verb/mods/inkvmailbackmxinstall.after; fi # Follows this script

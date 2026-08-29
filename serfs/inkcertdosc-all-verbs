@@ -7,6 +7,26 @@
 ## ./inkcertdosc-all-verbs
 
 
+usagenotes="This script runs inkcertdosc for all native Verber domains... verb.ink, verb.blue, etc."
+usageformat="inkcertdosc-all-verbs"
+usageexample="inkcertdosc-all-verbs"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( inkcertdosc )
+useconfigs=( servernameip siteurilist servertldstatus )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkcertdosc-all-verbs.replace" ]; then . /opt/verb/mods/inkcertdosc-all-verbs.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkcertdosc-all-verbs.before" ]; then . /opt/verb/mods/inkcertdosc-all-verbs.before; fi # Precedes this script
+
+
 # Include the configs
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/siteurilist

@@ -5,11 +5,32 @@
 ## This runs a file remotely on the Inker server
 
 # How to use:
-## ./inkcertgetcert-verber [name of info profile] [domain]
+## ./inkcertgetcert-verber [ name of info profile ] [ domain ]
 
 # Eg:
 ## ./inkcertgetcert-verber picprofile poetryiscode.com
 ## ./inkcertgetcert-verber inkVerbProfile mysub.inkisaverb.com
+
+
+usagenotes="This communicates with the inkCert CA Inker to send the csr and retrieve the cert package"
+usageformat="inkcertgetcert-verber [ name of info profile ] [ domain ]"
+usageexample="inkcertgetcert-verber picprofile poetryiscode.com
+inkcertgetcert-verber inkVerbProfile mysub.inkisaverb.com"
+hierarchy=( primary )
+vsetnames=( "File" "Domain" )
+vsettypes=( isFilename isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkcertgetcert-verber.replace" ]; then . /opt/verb/mods/inkcertgetcert-verber.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkcertgetcert-verber.before" ]; then . /opt/verb/mods/inkcertgetcert-verber.before; fi # Precedes this script
 
 
 INFPROFILE=$1

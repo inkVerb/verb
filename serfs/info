@@ -4,8 +4,29 @@
 # This displays dependency, prerequesite, and argument info for a serf
 
 # How to use:
-## ./info serfname
+## ./info [ serfname ]
 ## ./info
+
+usagenotes="This displays dependency, prerequesite, and argument info for a serf"
+usageformat="info [ serfname ]"
+usageexample="info adddomain
+info"
+hierarchy=( primary )
+vsetnames=( "Serf name" )
+vsettypes=( isazAZ09lines )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/info.replace" ]; then . /opt/verb/mods/info.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/info.before" ]; then . /opt/verb/mods/info.before; fi # Precedes this script
+
 
 Serfsdir='/opt/verb/serfs'
 
@@ -15,8 +36,6 @@ if [ -z $1 ]; then
 else
 	serf=$1
 	infoINKonly='true'
-if [ -e "/opt/verb/mods/info.replace" ]; then . /opt/verb/mods/info.replace; return 0; fi # Replaces this script
-if [ -e "/opt/verb/mods/info.before" ]; then . /opt/verb/mods/info.before; fi # Precedes this script
 fi
 
 . "${SerfsDIR}/${serf}"

@@ -9,8 +9,8 @@
 # All options after the domain are optional, but are sequential
 
 # How to use:
-## ./installpw99 [domain.tld] [dbase] [dbuser] [dbpassword]
-## ./installpw99 [domain.tld]
+## ./installpw99 [ domain.tld ] [ dbase ] [ dbuser ] [ dbpassword ]
+## ./installpw99 [ domain.tld ]
 
 usagenotes="This downloads and installs PinkWrite 99 to 99.domain.tld on a specified domain"
 usageformat="installpw99 [ domain.tld ] [ dbase - optional ] [ dbuser - optional ] [ dbpassword - optional ]"

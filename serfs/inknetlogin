@@ -5,11 +5,32 @@
 ## You can use the name or the URI, host.namespace.verb.ink or host_namespace_verb_ink
 
 # How to use:
-## ./inknetlogin [secondary CA Verber - optional || otherwise enter CA1 ] ["Command to execute in quotes"]
+## ./inknetlogin [ secondary CA Verber - optional || otherwise enter CA1 ] [ "Command to execute in quotes" ]
 
 # Eg:
 ## ./inknetlogin CA1 "senddns txt newtxtrecord"
 ## ./inknetlogin mail3.jesse.verb.email "getverbmail"
+
+
+usagenotes="This logs into a CA Verber"
+usageformat="inknetlogin [ secondary CA Verber - optional || otherwise enter CA1 ] [ "Command to execute in quotes" ]"
+usageexample="inknetlogin CA1 "senddns txt newtxtrecord"
+inknetlogin mail3.jesse.verb.email "getverbmail""
+hierarchy=( primary )
+vsetnames=( "\"Command to execute in quotes\"" )
+vsettypes=( isazAZ09lines )
+voptnames=( "Secondary CA Verber" )
+vopttypes=( isChoice )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( inknet/rink.client.cnf inknet/client. inknet/2cav. )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inknetlogin.replace" ]; then . /opt/verb/mods/inknetlogin.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inknetlogin.before" ]; then . /opt/verb/mods/inknetlogin.before; fi # Precedes this script
 
 
 # Check & include the config

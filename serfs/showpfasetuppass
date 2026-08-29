@@ -6,6 +6,26 @@
 ## ./showpfasetuppass
 
 
+usagenotes="This displays the setup password for PostfixAdmin"
+usageformat="showpfasetuppass"
+usageexample="showpfasetuppass"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( pfasetuppass )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/showpfasetuppass.replace" ]; then . /opt/verb/mods/showpfasetuppass.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/showpfasetuppass.before" ]; then . /opt/verb/mods/showpfasetuppass.before; fi # Precedes this script
+
+
 # Include the configs
 . /opt/verb/conf/pfasetuppass
 

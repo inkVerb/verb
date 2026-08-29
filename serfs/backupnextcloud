@@ -6,12 +6,34 @@
 ## This mainly backs up the user files and database, not the app itself.
 
 # How to use:
-## ./backupnextcloud [securename 0-9, a-z, and A-Z only, optional] [-nl for no link, optional dep]
+## ./backupnextcloud [ securename 0-9, a-z, and A-Z only, optional ] [ -nl for no link, optional dep ]
 
 # Eg:
 ## ./backupnextcloud 583
 ## ./backupnextcloud 7aJk -nl
 ## ./backupnextcloud b
+
+
+usagenotes="This backs up the installed Nextcloud webapp data folder by exporting the database, and siteconfig file into one downloadable vbak file in the \"vip\" folder and symlinked to the main site domain."
+usageformat="backupnextcloud [ securename 0-9, a-z, and A-Z only, optional ] [ -nl for no link, optional dep ]"
+usageexample="backupnextcloud 583
+backupnextcloud 7aJk -nl
+backupnextcloud b"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=( "Securename 0-9, a-z, and A-Z only, optional" "-nl for no link, optional dep" )
+vopttypes=( isazAZ09lines isazAZ09lines )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( mysqlvappex vtxzin )
+useconfigs=( servernameip siteurilist )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/backupnextcloud.replace" ]; then . /opt/verb/mods/backupnextcloud.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/backupnextcloud.before" ]; then . /opt/verb/mods/backupnextcloud.before; fi # Precedes this script
 
 
 if [ -z "$1" ]; then

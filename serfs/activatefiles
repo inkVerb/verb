@@ -5,14 +5,14 @@
 ## Prerequisite: installvsftpd
 
 # How to use:
-## ./activatefiles [on/off]
+## ./activatefiles [ on/off ]
 
 # Eg:
 ## ./activatefiles on
 ## ./activatefiles off
 
 usagenotes="This activates the files....verb.vip folder so the web will provide an index"
-usageformat="activatefiles [on/off]"
+usageformat="activatefiles [ on/off ]"
 usageexample="activatefiles on
 activatefiles off"
 hierarchy=( primary )

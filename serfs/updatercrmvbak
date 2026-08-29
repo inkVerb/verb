@@ -8,6 +8,26 @@
 ## ./updatercrmvbak
 
 
+usagenotes="This removes the Roundcube backup generated when updating Roundcube"
+usageformat="updatercrmvbak"
+usageexample="updatercrmvbak"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/updatercrmvbak.replace" ]; then . /opt/verb/mods/updatercrmvbak.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/updatercrmvbak.before" ]; then . /opt/verb/mods/updatercrmvbak.before; fi # Precedes this script
+
+
 /bin/rm -rf /srv/www/email/roundcube.vbak
 
 /bin/echo "

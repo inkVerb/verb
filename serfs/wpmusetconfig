@@ -7,13 +7,36 @@
 ## This must also be run with wpmuhtaccess
 
 # How to use:
-## ./wpmusetconfig [domain.tld] [optional - "dir"]
+## ./wpmusetconfig [ domain.tld ] [ optional - "dir" ]
 
 # Eg:
 ## ./wpmusetconfig inkisaverb.com                  # will install to inkisaverb.com as the base, using subdomains of inkisaverb.com
 ## ./wpmusetconfig mysubsite.inkisaverb.com        # will install to mysubsite.inkisaverb.com as the base, using subdomains of mysubsite.inkisaverb.com
 ## ./wpmusetconfig inkisaverb.com dir              # will install to inkisaverb.com as the base, using directories of inkisaverb.com
 ## ./wpmusetconfig mysubsite.inkisaverb.com dir    # will install to mysubsite.inkisaverb.com as the base, using directories of mysubsite.inkisaverb.com
+
+
+usagenotes="This sets up a WordPress vapp for multisite"
+usageformat="wpmusetconfig [ domain.tld ] [ optional - "dir" ]"
+usageexample="wpmusetconfig inkisaverb.com                  # will install to inkisaverb.com as the base, using subdomains of inkisaverb.com
+wpmusetconfig mysubsite.inkisaverb.com        # will install to mysubsite.inkisaverb.com as the base, using subdomains of mysubsite.inkisaverb.com
+wpmusetconfig inkisaverb.com dir              # will install to inkisaverb.com as the base, using directories of inkisaverb.com
+wpmusetconfig mysubsite.inkisaverb.com dir    # will install to mysubsite.inkisaverb.com as the base, using directories of mysubsite.inkisaverb.com"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=( "Optional - \"dir\"" )
+vopttypes=( isazAZ09lines )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=( wpmusetoff )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/wpmusetconfig.replace" ]; then . /opt/verb/mods/wpmusetconfig.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/wpmusetconfig.before" ]; then . /opt/verb/mods/wpmusetconfig.before; fi # Precedes this script
 
 
 wpdomain=$1

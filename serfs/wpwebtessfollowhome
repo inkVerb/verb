@@ -5,7 +5,28 @@
 ## This only applies to the home.your-name.ink WordPress installation
 
 # How to use:
-## ./wpfixtessfollowhome [replaced contend]
+## ./wpfixtessfollowhome [ replaced contend ]
+
+
+usagenotes="This changes the Tesseract theme's \"Follow Us On\" social icon Title prefix to what you set. It can be left null for simple social media titles"
+usageformat="wpwebtessfollowhome wpfixtessfollowhome [ replaced contend ]"
+usageexample="wpwebtessfollowhome
+wpwebtessfollowhome wpfixtessfollowhome [ replaced contend ]"
+hierarchy=( primary )
+vsetnames=( "Replaced contend" )
+vsettypes=( isazAZ09lines )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/wpwebtessfollowhome.replace" ]; then . /opt/verb/mods/wpwebtessfollowhome.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/wpwebtessfollowhome.before" ]; then . /opt/verb/mods/wpwebtessfollowhome.before; fi # Precedes this script
 
 
 /bin/sed -i "s/Follow Us on/${content}/g" /srv/www/verb/ink.home/wp-content/themes/tesseract-free-theme/inc/customizer-frontend-functions.php

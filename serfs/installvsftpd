@@ -10,6 +10,26 @@
 ## ./installvsftpd
 
 
+usagenotes="This installs vsftpd and prepares it for use according to newftpvip, delftpvip, newftpfiler, and delftpfiler scripts"
+usageformat="installvsftpd"
+usageexample="installvsftpd"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=( servernameip siteurilist serverport )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/installvsftpd.replace" ]; then . /opt/verb/mods/installvsftpd.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/installvsftpd.before" ]; then . /opt/verb/mods/installvsftpd.before; fi # Precedes this script
+
+
 # Include the configs
 . /opt/verb/conf/servernameip
 . /opt/verb/conf/siteurilist

@@ -7,7 +7,28 @@
 ## This is intended as a subscript of inkcertundosc
 
 # How to use:
-## ./inkcertrevokesc [domain.tld NO SUBDOMAINS]
+## ./inkcertrevokesc [ domain.tld NO SUBDOMAINS ]
+
+usagenotes="This script revokes the inkCert Self-Cert certs for a specified domain"
+usageformat="inkcertrevokesc [ domain.tld NO SUBDOMAINS ]"
+usageexample="inkcertrevokesc inkisaverb.com
+inkcertrevokesc YOURNAME.verb.blue"
+hierarchy=( tertiary inkcertundosc )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( inkcertundosc )
+useserfs=(  )
+useconfigs=( inkcert/cli-ini/siteinkcert. )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/inkcertrevokesc.replace" ]; then . /opt/verb/mods/inkcertrevokesc.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/inkcertrevokesc.before" ]; then . /opt/verb/mods/inkcertrevokesc.before; fi # Precedes this script
+
 
 #Eg:
 ## ./inkcertrevokesc inkisaverb.com
