@@ -121,7 +121,7 @@ if [ -d "/srv/www/domains/${vappdomain}" ]; then
 	/bin/ln -sfn /srv/www/vapps/${vAppName} /srv/www/html/${vappdomain}
 	/bin/echo "${vAppName} symlink is set."
 else
-	/bin/echo "Domain '${vappdomain}' is not yet ready for ${vAppName}. Do that first."
+	/bin/echo "Domain '${vappdomain}' is not yet ready for ${vAppName}. That still needs doing."
 	exit 0
 fi
 ;;
