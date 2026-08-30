@@ -14,8 +14,8 @@
 
 # Eg:
 ## ./installinkemail # Auto-generated secure paths (different for RC BOX and inkMail), no backup
-## ./installinkemail roundcubesecretpath # RC BOX path, autogen inkMail path
-## ./installinkemail rcbase imapath # RC and inkMail paths
+## ./installinkemail roundcubesecretpath # BOX & PO path, autogen inkMail path
+## ./installinkemail rcbase imapath # BOX path, PO path, and inkMail paths
 ## ./installinkemail rcbase imapath myemailfile.vbak
 ## ./installinkemail -n -n myemailfile.vbak  # Backup, no other settings
 
