@@ -258,26 +258,6 @@ CREATE DATABASE mail DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 GRANT ALL PRIVILEGES ON mail.* TO 'mail'@'localhost' IDENTIFIED BY 'mailpass${mailpassgen}';
 FLUSH PRIVILEGES;"
 
-# Mail Domain DNS & SSL
-## Directory
-/usr/bin/mkdir -p /etc/ssl/server/mail
-## Snakeoil?
-if /usr/bin/grep -Fq "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${nameURI}; then
-  /usr/bin/rm -f /etc/ssl/server/mail/vmail.crt
-  /usr/bin/sed -i "s?^#ssl_cert = </etc/ssl/server/server.crt?ssl_cert = </etc/ssl/server/server.crt?" /etc/dovecot/conf.d/10-ssl.conf
-  /usr/bin/sed -i "s?^ssl_cert = </etc/ssl/server/mail/vmail.crt?#ssl_cert = </etc/ssl/server/mail/vmail.crt?" /etc/dovecot/conf.d/10-ssl.conf
-  /usr/bin/rm -f /etc/ssl/server/mail/vmail.key
-  /usr/bin/sed -i "s?^#smtpd_tls_chain_files = /etc/ssl/server/server.key?smtpd_tls_chain_files = /etc/ssl/server/server.key?" /etc/postfix/main.cf
-  /usr/bin/sed -i "s?^#ssl_cert = </etc/ssl/server/server.crt?ssl_cert = </etc/ssl/server/server.crt?" /etc/dovecot/conf.d/10-ssl.conf
-  /usr/bin/sed -i "s?^smtpd_tls_chain_files = /etc/ssl/server/mail/vmail.key?#smtpd_tls_chain_files = /etc/ssl/server/mail/vmail.key?" /etc/postfix/main.cf
-  /usr/bin/sed -i "s?^ssl_key = </etc/ssl/server/mail/vmail.key?#ssl_key = </etc/ssl/server/mail/vmail.key?" /etc/dovecot/conf.d/10-ssl.conf
-  /usr/bin/sed -i "s?^ssl_dh = </etc/dovecot/dh.pem?#ssl_dh = </etc/dovecot/dh.pem?" /etc/dovecot/conf.d/10-ssl.conf
-## inkCert
-else
-  #/opt/verb/serfs/setinkcertmailcerts ${nameURI} inkvmail #DEV this is redundant, run right away in serfs/setinkcertmail
-  /opt/verb/serfs/setinkcertmail ${nameURI} inkmail
-fi
-
 # Create the mailbox table
 ## We want these UNIQUE so we can update/insert appropriately with inkvmailsys* tools
 ## Note: Use as reference dev/mail-*.sql
@@ -534,7 +514,28 @@ cd ${oldPwd} || exit 6
 /usr/bin/systemctl start monit
 
 # Config settings to "EMAIL_INSTALLED"
+## We need this before running setinkcertmail
 /usr/bin/sed -i "s/ServerMailStatus=.*/ServerMailStatus=\"VMAIL_SERVER\"/g" /opt/verb/conf/servermailpath
+
+# Mail Domain DNS & SSL
+## Directory
+/usr/bin/mkdir -p /etc/ssl/server/mail
+## Snakeoil?
+if /usr/bin/grep -Fq "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${nameURI}; then
+  /usr/bin/rm -f /etc/ssl/server/mail/vmail.crt
+  /usr/bin/sed -i "s?^#ssl_cert = </etc/ssl/server/server.crt?ssl_cert = </etc/ssl/server/server.crt?" /etc/dovecot/conf.d/10-ssl.conf
+  /usr/bin/sed -i "s?^ssl_cert = </etc/ssl/server/mail/vmail.crt?#ssl_cert = </etc/ssl/server/mail/vmail.crt?" /etc/dovecot/conf.d/10-ssl.conf
+  /usr/bin/rm -f /etc/ssl/server/mail/vmail.key
+  /usr/bin/sed -i "s?^#smtpd_tls_chain_files = /etc/ssl/server/server.key?smtpd_tls_chain_files = /etc/ssl/server/server.key?" /etc/postfix/main.cf
+  /usr/bin/sed -i "s?^#ssl_cert = </etc/ssl/server/server.crt?ssl_cert = </etc/ssl/server/server.crt?" /etc/dovecot/conf.d/10-ssl.conf
+  /usr/bin/sed -i "s?^smtpd_tls_chain_files = /etc/ssl/server/mail/vmail.key?#smtpd_tls_chain_files = /etc/ssl/server/mail/vmail.key?" /etc/postfix/main.cf
+  /usr/bin/sed -i "s?^ssl_key = </etc/ssl/server/mail/vmail.key?#ssl_key = </etc/ssl/server/mail/vmail.key?" /etc/dovecot/conf.d/10-ssl.conf
+  /usr/bin/sed -i "s?^ssl_dh = </etc/dovecot/dh.pem?#ssl_dh = </etc/dovecot/dh.pem?" /etc/dovecot/conf.d/10-ssl.conf
+## inkCert
+else
+  #/opt/verb/serfs/setinkcertmailcerts ${nameURI} inkvmail #DEV this is redundant, run right away in serfs/setinkcertmail
+  /opt/verb/serfs/setinkcertmail ${nameURI} inkmail
+fi
 
 # PHP mail log
 if ! /usr/bin/grep -q '^mail.log = /var/log/phpmail.log' /opt/verb/conf/php.ini; then

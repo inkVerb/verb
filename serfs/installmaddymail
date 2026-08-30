@@ -39,7 +39,7 @@ cVappName=maddy
 . /opt/verb/conf/siteurilist
 . /opt/verb/conf/servermailpath
 
-# Check if vapp already installed
+# Check if vapp already installed, repaid
 ## Config
 if [ -f /opt/verb/conf/vapps/vapp.${cVappName} ]; then
 /usr/bin/echo "This is already installed."
@@ -215,30 +215,7 @@ if ! /usr/bin/pg_isready --quiet; then /usr/bin/echo "Waiting for PostgreSQL..."
 /usr/bin/find /etc/maddy/conf.d -type f -exec /usr/bin/chmod 0640 {} +
 /usr/bin/chmod 0640 /etc/maddy/*.conf
 
-# Mail Domain DNS & SSL
-## Directory
-/usr/bin/mkdir -p /etc/ssl/server/mail
-## Snakeoil?
-if /usr/bin/grep -Fq "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${nameURI}; then
-  /usr/bin/rm -f /etc/ssl/server/mail/email.crt
-  /usr/bin/echo "InkCert not set up. No certs available for Maddy. It might not work."
-## inkCert
-else
-  ### Certificates & structure
-  #/opt/verb/serfs/setinkcertmailcerts ${nameURI} inkemail #DEV this is redundant, run right away in serfs/setinkcertmail
-  #### We don't actually need these, but let's keep our framework in place
-  /opt/verb/serfs/setinkcertmail ${nameURI} inkmail
-  if [ -d "/etc/letsencrypt" ]; then
-    ##### Maddy requires this or it cannot read the certs and will fail
-    /usr/bin/setfacl -R -m u:maddy:rX /etc/letsencrypt/{live,archive}
-    ##### Maddy specifically loves this
-    /usr/bin/ln -sfn /etc/letsencrypt/live /etc/maddy/certs
-    #/usr/bin/ln -sfn /etc/inkcert/le/live /etc/maddy/certs # viable alternative compatible with inkcert
-  else
-    /usr/bin/echo "Can't find certs for Maddy. It might not work."
-  fi
-fi
-## Maddy wants at least one extra domain in /etc/maddy/conf.d/domains.conf BEFORE it can start (so we won't use inkemaildomain)
+# Maddy wants at least one extra domain in /etc/maddy/conf.d/domains.conf BEFORE it can start (so we won't use inkemaildomain)
 /usr/bin/sed -i "/^\$(extra_domains) =/ s/$/ ${emailTLDURI}/" /etc/maddy/conf.d/domains.conf # Rather than using serfs/inkemaildomain
 /usr/bin/chown root:maddy /etc/maddy/conf.d/domains.conf
 /usr/bin/chmod 0640 /etc/maddy/conf.d/domains.conf
@@ -433,6 +410,36 @@ else
   /usr/bin/systemctl enable --now monit # enable and start in one command
 fi
 
+# Config settings to Maddy's version of "EMAIL_INSTALLED"
+## We need this before running setinkcertmail
+/usr/bin/sed -i "s/ServerMailStatus=.*/ServerMailStatus=\"MADDY_EMAIL_SERVER\"/g" /opt/verb/conf/servermailpath
+## PFA not allowed for Maddy
+/usr/bin/sed -i "s/PFA_NOT_INSTALLED/PFA_NOT_ALLOWED/g" /opt/verb/conf/servermailpath
+
+# Mail Domain DNS & SSL
+## Directory
+/usr/bin/mkdir -p /etc/ssl/server/mail
+## Snakeoil?
+if /usr/bin/grep -Fq "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${nameURI}; then
+  /usr/bin/rm -f /etc/ssl/server/mail/email.crt
+  /usr/bin/echo "InkCert not set up. No certs available for Maddy. It might not work."
+## inkCert
+else
+  ### Certificates & structure
+  #/opt/verb/serfs/setinkcertmailcerts ${nameURI} inkemail #DEV this is redundant, run right away in serfs/setinkcertmail
+  #### We don't actually need these, but let's keep our framework in place
+  /opt/verb/serfs/setinkcertmail ${nameURI} inkmail
+  if [ -d "/etc/letsencrypt" ]; then
+    ##### Maddy requires this or it cannot read the certs and will fail
+    /usr/bin/setfacl -R -m u:maddy:rX /etc/letsencrypt/{live,archive}
+    ##### Maddy specifically loves this
+    /usr/bin/ln -sfn /etc/letsencrypt/live /etc/maddy/certs
+    #/usr/bin/ln -sfn /etc/inkcert/le/live /etc/maddy/certs # viable alternative compatible with inkcert
+  else
+    /usr/bin/echo "Can't find certs for Maddy. It might not work."
+  fi
+fi
+
 # Grand Restart
 if [ ${ServerType} = "laemp" ]; then
   /usr/bin/systemctl restart nginx; wait
@@ -442,11 +449,6 @@ elif [ ${ServerType} = "lemp" ]; then
 elif [ ${ServerType} = "lamp" ]; then
   /usr/bin/systemctl restart httpd; wait
 fi
-
-# Config settings to Maddy's version of "EMAIL_INSTALLED"
-/usr/bin/sed -i "s/ServerMailStatus=.*/ServerMailStatus=\"MADDY_EMAIL_SERVER\"/g" /opt/verb/conf/servermailpath
-## PFA not allowed for Maddy
-/usr/bin/sed -i "s/PFA_NOT_INSTALLED/PFA_NOT_ALLOWED/g" /opt/verb/conf/servermailpath
 
 # Maddy must be running for everything after this
 
