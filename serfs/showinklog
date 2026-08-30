@@ -1,0 +1,55 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This pages the ink CLI raw serf output log (journalctl-style: space page down, q quit)
+## ink.run writes serf STDOUT/STDERR to ink/log/outputlog unless -v
+## This serf talks to /dev/tty so it still works when invoked through ink.run
+
+# How to use:
+## ./showinklog
+
+
+usagenotes="This pages the ink CLI raw serf output log; space page down, q quit"
+usageformat="showinklog"
+usageexample="showinklog"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/showinklog.replace" ]; then . /opt/verb/mods/showinklog.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/showinklog.before" ]; then . /opt/verb/mods/showinklog.before; fi # Precedes this script
+
+
+logfile="/opt/verb/ink/log/outputlog"
+if [ ! -f "${logfile}" ]; then
+  logfile="/var/log/ink/outputlog"
+fi
+if [ ! -f "${logfile}" ]; then
+  /usr/bin/echo "No ink output log yet. Run an ink command first."
+  exit 6
+fi
+
+# Pager on the real tty so ink.run capture does not swallow the view
+if [ -c /dev/tty ]; then
+  if [ -x /usr/bin/less ]; then
+    /usr/bin/less -R +G -- "${logfile}" </dev/tty >/dev/tty
+  else
+    /usr/bin/more -- "${logfile}" </dev/tty >/dev/tty
+  fi
+else
+  /usr/bin/cat -- "${logfile}"
+fi
+
+
+
+
+if [ -e "/opt/verb/mods/showinklog.after" ]; then . /opt/verb/mods/showinklog.after; fi # Follows this script
