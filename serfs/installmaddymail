@@ -59,6 +59,13 @@ if [ -d /srv/email/${cVappName} ]; then
     /usr/bin/chmod 0750 /etc/maddy
     /usr/bin/chmod 0640 /etc/maddy/*.conf 2>/dev/null || true
   fi
+  if [ -d "/etc/letsencrypt/live" ]; then
+    /usr/bin/setfacl -R -m u:maddy:rX /etc/letsencrypt/{live,archive}
+    /usr/bin/ln -sfn /etc/letsencrypt/live /etc/maddy/certs
+  elif [ -d "/etc/inkcert/le/live" ]; then
+    /usr/bin/setfacl -R -m u:maddy:rX /etc/inkcert/le/{live,archive} 2>/dev/null || true
+    /usr/bin/ln -sfn /etc/inkcert/le/live /etc/maddy/certs
+  fi
   /usr/bin/systemctl daemon-reload
   /usr/bin/systemctl enable rspamd 2>/dev/null || true
   /usr/bin/systemctl start rspamd || true
@@ -219,6 +226,18 @@ if ! /usr/bin/pg_isready --quiet; then /usr/bin/echo "Waiting for PostgreSQL..."
 /usr/bin/sed -i "/^\$(extra_domains) =/ s/$/ ${emailTLDURI}/" /etc/maddy/conf.d/domains.conf # Rather than using serfs/inkemaildomain
 /usr/bin/chown root:maddy /etc/maddy/conf.d/domains.conf
 /usr/bin/chmod 0640 /etc/maddy/conf.d/domains.conf
+
+# TLS readable by User=maddy before first start (maddy.conf uses inkcert/le/live)
+/usr/bin/mkdir -p /etc/ssl/server/mail
+if [ -d "/etc/letsencrypt/live" ]; then
+  /usr/bin/setfacl -R -m u:maddy:rX /etc/letsencrypt/{live,archive}
+  /usr/bin/ln -sfn /etc/letsencrypt/live /etc/maddy/certs
+elif [ -d "/etc/inkcert/le/live" ]; then
+  /usr/bin/setfacl -R -m u:maddy:rX /etc/inkcert/le/{live,archive} 2>/dev/null || true
+  /usr/bin/ln -sfn /etc/inkcert/le/live /etc/maddy/certs
+else
+  /usr/bin/echo "Can't find certs for Maddy yet. It might not work until inkCert is done."
+fi
 
 # UFW (services and ports below them if known)
 /usr/bin/ufw allow smtp
@@ -416,7 +435,7 @@ fi
 ## PFA not allowed for Maddy
 /usr/bin/sed -i "s/PFA_NOT_INSTALLED/PFA_NOT_ALLOWED/g" /opt/verb/conf/servermailpath
 
-# Mail Domain DNS & SSL
+# Mail Domain DNS & SSL (status is SERVER so setinkcertmail will not quit)
 ## Directory
 /usr/bin/mkdir -p /etc/ssl/server/mail
 ## Snakeoil?
@@ -429,15 +448,6 @@ else
   #/opt/verb/serfs/setinkcertmailcerts ${nameURI} inkemail #DEV this is redundant, run right away in serfs/setinkcertmail
   #### We don't actually need these, but let's keep our framework in place
   /opt/verb/serfs/setinkcertmail ${nameURI} inkmail
-  if [ -d "/etc/letsencrypt" ]; then
-    ##### Maddy requires this or it cannot read the certs and will fail
-    /usr/bin/setfacl -R -m u:maddy:rX /etc/letsencrypt/{live,archive}
-    ##### Maddy specifically loves this
-    /usr/bin/ln -sfn /etc/letsencrypt/live /etc/maddy/certs
-    #/usr/bin/ln -sfn /etc/inkcert/le/live /etc/maddy/certs # viable alternative compatible with inkcert
-  else
-    /usr/bin/echo "Can't find certs for Maddy. It might not work."
-  fi
 fi
 
 # Grand Restart
