@@ -59,6 +59,10 @@ if [ -d /srv/email/${cVappName} ]; then
     /usr/bin/chmod 0750 /etc/maddy
     /usr/bin/chmod 0640 /etc/maddy/*.conf 2>/dev/null || true
   fi
+  /usr/bin/echo 'd /run/maddy 0755 maddy maddy -' > /usr/lib/tmpfiles.d/maddy.conf
+  /usr/bin/systemd-tmpfiles --create /usr/lib/tmpfiles.d/maddy.conf
+  /usr/bin/mkdir -p /run/maddy
+  /usr/bin/chown maddy:maddy /run/maddy
   if [ -d "/etc/letsencrypt/live" ]; then
     /usr/bin/setfacl -R -m u:maddy:rX /etc/letsencrypt/{live,archive}
     /usr/bin/ln -sfn /etc/letsencrypt/live /etc/maddy/certs
@@ -316,6 +320,13 @@ EOF
 /usr/bin/chown root:root /etc/systemd/system/maddy.service
 /usr/bin/sudo chmod 0644 /etc/systemd/system/maddy.service
 
+# /run/maddy for the service and for `sudo -u maddy maddy ...` CLI
+/usr/bin/echo 'd /run/maddy 0755 maddy maddy -' > /usr/lib/tmpfiles.d/maddy.conf
+/usr/bin/systemd-tmpfiles --create /usr/lib/tmpfiles.d/maddy.conf
+/usr/bin/mkdir -p /run/maddy
+/usr/bin/chown maddy:maddy /run/maddy
+/usr/bin/chmod 0755 /run/maddy
+
 # Rspamd
 ## Universal
 /usr/bin/cat <<EOF > /etc/rspamd/local.d/milter_headers.conf
@@ -398,7 +409,16 @@ EOF
 /usr/bin/echo '*/5 * * * * root /opt/verb/donjon/sync-blacklist.sh' > /etc/cron.d/maddy-rspam-blacklist-sync
 /usr/bin/chmod 0644 /etc/cron.d/maddy-rspam-blacklist-sync
 
-# Start the services before filters/aliases (those serfs restart maddy)
+# Write filters while maddy is down so they skip restart
+/opt/verb/serfs/inkemailaddscriptfilter unsubscribe ${nameURI}
+e="$?"; [[ "$e" = "0" ]] || exit "6"
+/opt/verb/serfs/inkemailaddscriptfilter unsubscribe ${emailTLDURI}
+e="$?"; [[ "$e" = "0" ]] || exit "6"
+/usr/bin/chown -R root:maddy /etc/maddy/conf.d
+/usr/bin/find /etc/maddy/conf.d -type d -exec /usr/bin/chmod 0750 {} +
+/usr/bin/find /etc/maddy/conf.d -type f -exec /usr/bin/chmod 0640 {} +
+
+# Start the services
 /usr/bin/systemctl daemon-reload
 /usr/bin/systemctl enable rspamd 2>/dev/null || true
 /usr/bin/systemctl start rspamd || true
@@ -408,13 +428,6 @@ if ! /usr/bin/systemctl is-active --quiet maddy; then
   /usr/bin/echo "maddy.service failed to start. See: systemctl status maddy.service"
   exit 8
 fi
-
-## First unsubscribe entry (maddy is up; inkemailaddscriptfilter restarts it)
-/opt/verb/serfs/inkemailaddscriptfilter unsubscribe ${nameURI}
-/opt/verb/serfs/inkemailaddscriptfilter unsubscribe ${emailTLDURI}
-/usr/bin/chown -R root:maddy /etc/maddy/conf.d
-/usr/bin/find /etc/maddy/conf.d -type d -exec /usr/bin/chmod 0750 {} +
-/usr/bin/find /etc/maddy/conf.d -type f -exec /usr/bin/chmod 0640 {} +
 
 # Run the Blacklist script now (ensuring all folders exist)
 /opt/verb/donjon/sync-blacklist.sh
@@ -448,6 +461,7 @@ else
   #/opt/verb/serfs/setinkcertmailcerts ${nameURI} inkemail #DEV this is redundant, run right away in serfs/setinkcertmail
   #### We don't actually need these, but let's keep our framework in place
   /opt/verb/serfs/setinkcertmail ${nameURI} inkmail
+  e="$?"; [[ "$e" = "0" ]] || exit "6"
 fi
 
 # Grand Restart
@@ -465,6 +479,7 @@ fi
 # System domains & addresses (Requires ServerMailStatus="MADDY_EMAIL_SERVER")
 ## Add base domains & addresses
 /opt/verb/serfs/inkemailbaseaddrs
+e="$?"; [[ "$e" = "0" ]] || exit "6"
 
 ## Setup system mail
 /opt/verb/serfs/inkemailsysmailboxmsmtp

@@ -34,4 +34,6 @@ done
 done
 
 # Reload rspamd
-/usr/bin/systemctl reload rspamd
+if /usr/bin/systemctl is-active --quiet rspamd; then
+  /usr/bin/systemctl reload rspamd
+fi

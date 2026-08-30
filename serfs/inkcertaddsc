@@ -146,7 +146,7 @@ if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
   fi
 
   ## Stop Nginx
-  [[ -n $NginxStaus ]] && /usr/bin/systemctl stop nginx
+  [[ -n $NginxStatus ]] && /usr/bin/systemctl stop nginx
 
   ## Comment the Snakeoil certs
   /usr/bin/sed -i "s/ssl_certificate/#INKVERB-INKCERT-COMMENT-ssl_certificate/g" /opt/verb/conf/webserver/sites-available/nginx/${sitedomain}.conf
@@ -169,7 +169,7 @@ if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
   /usr/bin/touch /var/log/inkcert/inkcertle.log
 
   ## Start Nginx
-  /usr/bin/systemctl start nginx; wait
+  [[ -n $NginxStatus ]] && /usr/bin/systemctl start nginx; wait
 
 elif [ ${ServerType} = "lamp" ]; then
   ## Check if config file exists

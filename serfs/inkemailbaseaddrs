@@ -18,13 +18,12 @@ voptflags=(  )
 voptflagpurpose=(  )
 dependencyinstall=( installmaddymail )
 prerequesite=(  )
-usedby=( installmaddymail ) # backupinkemailrestore?
+usedby=( installmaddymail )
 useserfs=( inkemailalias )
 useconfigs=( siteurilist )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/inkemailbaseaddrs.replace" ]; then . /opt/verb/mods/inkemailbaseaddrs.replace; return 0; fi # Replaces this script
 if [ -e "/opt/verb/mods/inkemailbaseaddrs.before" ]; then . /opt/verb/mods/inkemailbaseaddrs.before; fi # Precedes this script
-
 
 
 # Include the config
@@ -34,18 +33,34 @@ if [ -e "/opt/verb/mods/inkemailbaseaddrs.before" ]; then . /opt/verb/mods/inkem
 emailUser="admin"
 adminemail="${emailUser}@${nameURI}"
 rawPassword=$(/usr/bin/pwgen -s 15)
-#DEV hashedPassword="$(/opt/verb/serfs/inkemailpasshash c "$rawPassword")" # the hash is too long for CLI input with this tool
 /usr/bin/echo "$rawPassword" > "/srv/email/pass/${emailUser}-${nameURI}"
 passwordMessage="recorded at email/pass/${emailUser}-${nameURI}; shred after viewing with: 'shred -uf /srv/email/pass/${emailUser}-${nameURI}'"
 
-# Run the Maddy entry
-#DEV /usr/bin/sudo -u maddy maddy creds create $adminemail --hash <<< "$hashedPassword" # not with the other #DEV line commented-out
+# Creds need maddy running
+/usr/bin/mkdir -p /run/maddy
+/usr/bin/chown maddy:maddy /run/maddy
 /usr/bin/sudo -u maddy maddy creds create -password "$rawPassword" $adminemail
+e="$?"; [[ "$e" = "0" ]] || exit "6"
+
+# Stop maddy so inner inkemailalias skip restart (same idea as addall stopping nginx)
+if /usr/bin/systemctl is-active --quiet maddy.service; then
+  MaddyWas=true
+  /usr/bin/systemctl stop maddy.service
+fi
+
 /opt/verb/serfs/inkemailalias abuse $nameURI $adminemail
+e="$?"; [[ "$e" = "0" ]] || exit "6"
 /opt/verb/serfs/inkemailalias hostmaster $nameURI $adminemail
+e="$?"; [[ "$e" = "0" ]] || exit "6"
 /opt/verb/serfs/inkemailalias postmaster $nameURI $adminemail
+e="$?"; [[ "$e" = "0" ]] || exit "6"
 /opt/verb/serfs/inkemailalias webmaster $nameURI $adminemail
+e="$?"; [[ "$e" = "0" ]] || exit "6"
 /opt/verb/serfs/inkemailalias dmark $nameURI $adminemail
+e="$?"; [[ "$e" = "0" ]] || exit "6"
+
+# One start if we stopped it
+[[ -n $MaddyWas ]] && /usr/bin/systemctl start maddy.service
 
 # Run the Blacklist script now (ensuring all folders exist)
 /opt/verb/donjon/sync-blacklist.sh

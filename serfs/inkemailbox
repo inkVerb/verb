@@ -30,7 +30,7 @@ inkemailbox james inkisaverb.com My#1Pa55w0rdHA5H  # This hash will be used, you
 inkemailbox james inkisaverb.com -  # Password from file at /srv/email/pass/\$emailUser-\$domain, then shred the file; if not found, fail
 inkemailbox james inkisaverb.com My#1Pa55w0rdHA5H -  # This hash will be used, update password for existing account
 inkemailbox james inkisaverb.com - -  # Password from file, update password for existing account"
-hierarchy=( primary )
+hierarchy=( secondary )
 vsetnames=( "Email username" "Domain" "Password: hashed or just hyphen for file: -" )
 vsettypes=( isaz09lines isDomain string_match )
 voptnames=(  )
@@ -50,6 +50,11 @@ if [ -e "/opt/verb/mods/inkemailbox.before" ]; then . /opt/verb/mods/inkemailbox
 # Include the config files
 . /opt/verb/conf/siteurilist
 . /opt/verb/conf/servermailpath
+
+# Check Maddy status (only bounce if it is already running)
+if /usr/bin/systemctl is-active --quiet maddy.service; then
+  MaddyStatus=true
+fi
 
 # Check to see if inkemail is installed
 if [ "$ServerMailStatus" != "MADDY_EMAIL_SERVER" ]; then
@@ -134,8 +139,8 @@ if [ "$create_passwd" = "create" ]; then
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 
-# Restart Maddy
-/usr/bin/systemctl restart maddy.service
+# Restart Maddy only if it was running when we started
+[[ -n $MaddyStatus ]] && /usr/bin/systemctl restart maddy.service
 
 # Run the Blacklist script now (ensuring all folders exist)
 /opt/verb/donjon/sync-blacklist.sh
@@ -144,7 +149,6 @@ fi
 /usr/bin/echo "Created new email inbox!
 Email address: $emailaddress
 Password: $passwordMessage"
-fi
 
 
 

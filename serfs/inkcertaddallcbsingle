@@ -1,11 +1,10 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
-echo "This should not be used unless the cb schema is changed to include wildcards; currently -cb does standalone per-domain and -cbsingle does wildcards for all subdomains"
-exit 0
-# This runs inkcertaddcb for a domain and all of its subdomains
-## Prerequesite: inkcertreqcb
 
-# NOTE: This is intended to be run by inkcertdocb, but can be run separately, such as for updates
+# This runs inkcertaddcbsingle for a domain and all of its subdomains
+## Prerequesite: inkcertreqcbsingle
+
+# NOTE: This is intended to be run by inkcertdocbsingle, but can be run separately, such as for updates
 # NOTE: If your domain and subdomains have the same certificate then run this only for the main domain
 
 # How to use:
@@ -16,7 +15,7 @@ exit 0
 ## ./inkcertaddallcbsingle inkisaverb.com (will apply to all subdomains of inkisaverb.com)
 ## ./inkcertaddallcbsingle poetryiscode.com inkisaverb.com (if the SSL cert for poetryiscode.com is included in the CN of the certificate for inkisaverb.com)
 
-usagenotes="This runs inkcertaddcb for a domain and all of its subdomains"
+usagenotes="This runs inkcertaddcbsingle for a domain and all of its subdomains"
 usageformat="inkcertaddallcbsingle [ domain.tld or sub.domain.tld ] [ DOMAIN OF CERTIFICATE IF DIFFERENT, ie: domain.tld ]"
 usageexample="inkcertaddallcbsingle NAME.verb.ink (will apply to all subdomains of NAME.verb.ink)
 inkcertaddallcbsingle inkisaverb.com (will apply to all subdomains of inkisaverb.com)
@@ -32,7 +31,7 @@ dependencyinstall=( inkcertinstall )
 prerequesite=( inkcertinstall inkcertreqcbsingle )
 usedby=( inkcertdocbsingle )
 useserfs=( inkcertaddcbsingle )
-useconfigs=(  )	# List config files of any kind used in this serf, please preserve order of appearance
+useconfigs=(  )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/inkcertaddallcbsingle.replace" ]; then . /opt/verb/mods/inkcertaddallcbsingle.replace; return 0; fi # Replaces this script
 if [ -e "/opt/verb/mods/inkcertaddallcbsingle.before" ]; then . /opt/verb/mods/inkcertaddallcbsingle.before; fi # Precedes this script
@@ -68,16 +67,12 @@ if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
   /usr/bin/systemctl stop nginx; wait
 elif [ ${ServerType} = "lamp" ]; then
   /usr/bin/systemctl stop httpd; wait
-fi 
-
-# For the main domain first
-/opt/verb/serfs/inkcertaddcbsingle ${sitedomain} ${certdomain}
-e="$?"; [[ "$e" = "0" ]] || exit "$e"
+fi
 
 # Get each subdomain from the cli-ini file that the certificate was based on and that the domain-subdomain structure was based on from adddomain and newdomainshell
 domainlist=$(/usr/bin/grep 'domains = ' /opt/verb/conf/inkcert/cli-ini/cli.${certdomain}.ini | /usr/bin/sed 's/domains = //')
 for eachsite in ${domainlist//,/ }; do
-## Run inkCertAddLE per site config
+## Run inkCertAddCBSINGLE per site config
   /opt/verb/serfs/inkcertaddcbsingle ${eachsite} ${certdomain}
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
 done
@@ -87,11 +82,11 @@ if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then
   /usr/bin/systemctl start nginx; wait
 elif [ ${ServerType} = "lamp" ]; then
   /usr/bin/systemctl start httpd; wait
-fi 
+fi
 
 # Finish
 /bin/echo "
-Done. Certs installed for ${sitedomain}.
+Done. ${certdomain} certs installed for ${sitedomain}.
 "
 
 

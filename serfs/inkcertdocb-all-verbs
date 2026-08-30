@@ -2,6 +2,7 @@
 #inkVerbSerf! verb.ink
 
 # This script runs inkcertdocb for all native Verber domains... verb.ink, verb.blue, etc.
+## Wildcard CB is DNS-01 (LEMP/LAEMP). Same shape as inkcertdole-all-verbs: once per parent URI.
 
 # How to use:
 ## ./inkcertdocb-all-verbs
@@ -9,8 +10,8 @@
 usagenotes="This script runs inkcertdocb for all native Verber domains... verb.ink, verb.blue, et cetera"
 usageformat="inkcertdocb-all-verbs"
 usageexample=""
-hierarchy=( oversight )	# Choose: primary (works by itself, may use secondaries or tertiaries); secondary (can work by itself, but not normally, may use other secondaries or tertiaries); tertiary (cannot run by itself, must be run by a secondary or primary);oversight (uses primaries)
-vsetnames=(  )	# "Pretty" names for each setting, must be in order of settings
+hierarchy=( oversight )
+vsetnames=(  )
 vsettypes=(  )
 voptnames=(  )
 vopttypes=(  )
@@ -20,7 +21,7 @@ dependencyinstall=( inkcertinstall )
 prerequesite=( inkcertinstall )
 usedby=(  )
 useserfs=( inkcertdocb )
-useconfigs=( servernameip siteurilist servertldstatus )	# List config files of any kind used in this serf, please preserve order of appearance
+useconfigs=( servernameip siteurilist servertldstatus servertype )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/inkcertdocb-all-verbs.replace" ]; then . /opt/verb/mods/inkcertdocb-all-verbs.replace; return 0; fi # Replaces this script
 if [ -e "/opt/verb/mods/inkcertdocb-all-verbs.before" ]; then . /opt/verb/mods/inkcertdocb-all-verbs.before; fi # Precedes this script
@@ -40,7 +41,6 @@ Use inkcertdocbsingle-all-verbs / inkcertdole-all-verbs, or rebuild as LEMP/LAEM
 exit 8
 fi
 
-
 # Verify that it's not a domain Dod Verber
 if /bin/grep -Fq "ServerName=DOMAIN_MOD-" /opt/verb/conf/servernameip; then
 /bin/echo "Domain.MOD Verber NOTICE:
@@ -52,90 +52,28 @@ Eg: ./inkcertdocb ${inkURI}
 "
 exit 0; fi
 
-# For any/all sub-domains
-if [ ${ServerType} = "lamp" ] || [ ${ServerType} = "laemp" ]; then
-  cd /opt/verb/conf/webserver/sites-available/httpd
-elif [ ${ServerType} = "lemp" ]; then
-  cd /opt/verb/conf/webserver/sites-available/nginx
-fi
-
 # Let each run wait 1 second to avoid congesting the server
 if [ $VERBemail = "true" ]; then
-	## Get the name of each subdomain .conf file available
-	find . -name "*.${emailURI}.conf"|while read findsitesubdomain; do
-		## Strip the .conf extension
-		sitesubdomain=$(basename ${findsitesubdomain} .conf)
-		## Run inkCertAddLE per site config
-		/opt/verb/serfs/inkcertdocb ${sitesubdomain}
-		e="$?"; [[ "$e" = "0" ]] || exit "$e"
-	done
-fi
-
+/opt/verb/serfs/inkcertdocb ${emailURI}; fi
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 if [ $VERBone = "true" ]; then
-	## Get the name of each subdomain .conf file available
-	find . -name "*.${oneURI}.conf"|while read findsitesubdomain; do
-		## Strip the .conf extension
-		sitesubdomain=$(basename ${findsitesubdomain} .conf)
-		## Run inkCertAddLE per site config
-		/opt/verb/serfs/inkcertdocb ${sitesubdomain}
-		e="$?"; [[ "$e" = "0" ]] || exit "$e"
-	done
-fi
-
+/opt/verb/serfs/inkcertdocb ${oneURI}; fi
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 if [ $VERBink = "true" ]; then
-	## Get the name of each subdomain .conf file available
-	find . -name "*.${inkURI}.conf"|while read findsitesubdomain; do
-		## Strip the .conf extension
-		sitesubdomain=$(basename ${findsitesubdomain} .conf)
-		## Run inkCertAddLE per site config
-		/opt/verb/serfs/inkcertdocb ${sitesubdomain}
-		e="$?"; [[ "$e" = "0" ]] || exit "$e"
-	done
-fi
-
+/opt/verb/serfs/inkcertdocb ${inkURI}; fi
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 if [ $VERBblue = "true" ]; then
-	## Get the name of each subdomain .conf file available
-	find . -name "*.${blueURI}.conf"|while read findsitesubdomain; do
-		## Strip the .conf extension
-		sitesubdomain=$(basename ${findsitesubdomain} .conf)
-		## Run inkCertAddLE per site config
-		/opt/verb/serfs/inkcertdocb ${sitesubdomain}
-		e="$?"; [[ "$e" = "0" ]] || exit "$e"
-	done
-fi
-
+/opt/verb/serfs/inkcertdocb ${blueURI}; fi
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 if [ $VERBvip = "true" ]; then
-	## Get the name of each subdomain .conf file available
-	find . -name "*.${vipURI}.conf"|while read findsitesubdomain; do
-		## Strip the .conf extension
-		sitesubdomain=$(basename ${findsitesubdomain} .conf)
-		## Run inkCertAddLE per site config
-		/opt/verb/serfs/inkcertdocb ${sitesubdomain}
-		e="$?"; [[ "$e" = "0" ]] || exit "$e"
-	done
-fi
-
+/opt/verb/serfs/inkcertdocb ${vipURI}; fi
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 if [ $VERBkiwi = "true" ]; then
-	## Get the name of each subdomain .conf file available
-	find . -name "*.${kiwiURI}.conf"|while read findsitesubdomain; do
-		## Strip the .conf extension
-		sitesubdomain=$(basename ${findsitesubdomain} .conf)
-		## Run inkCertAddLE per site config
-		/opt/verb/serfs/inkcertdocb ${sitesubdomain}
-		e="$?"; [[ "$e" = "0" ]] || exit "$e"
-	done
-fi
-
+/opt/verb/serfs/inkcertdocb ${kiwiURI}; fi
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 if [ $VERBred = "true" ]; then
-	## Get the name of each subdomain .conf file available
-	find . -name "*.${redURI}.conf"|while read findsitesubdomain; do
-		## Strip the .conf extension
-		sitesubdomain=$(basename ${findsitesubdomain} .conf)
-		## Run inkCertAddLE per site config
-		/opt/verb/serfs/inkcertdocb ${sitesubdomain}
-		e="$?"; [[ "$e" = "0" ]] || exit "$e"
-	done
-fi
+/opt/verb/serfs/inkcertdocb ${redURI}; fi
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 
 

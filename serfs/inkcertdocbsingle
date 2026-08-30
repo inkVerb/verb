@@ -65,7 +65,7 @@ e="$?"; [[ "$e" = "0" ]] || exit "$e"
 # Install the certs
 if /bin/grep -q "InkCerted=NO" /opt/verb/conf/inkcert/cli-ini/siteinkcert.${domain}; then
   if [ -e /etc/inkcert/le/live/${domain} ]; then
-    /opt/verb/serfs/inkcertaddcbsingle ${domain}
+    /opt/verb/serfs/inkcertaddallcbsingle ${domain}
     e="$?"; [[ "$e" = "0" ]] || exit "$e"
   fi
 fi

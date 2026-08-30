@@ -1,0 +1,44 @@
+#!/bin/bash
+#inkVerbMaker! verb.ink
+
+# This sets Vbranch in verberverno so verb-update/update checks out that git branch before copying
+## Stock is Vbranch=main. Pass the branch name as $1.
+
+# How to use:
+## ./make-branch [ branch ]
+
+# Eg:
+## ./make-branch dev
+## ./make-branch main
+
+# Location check
+if [ ! -f "/opt/verb/inst/make-branch" ]; then
+  /bin/echo "I'm not where I'm supposed to be, I quit."
+exit 8; fi
+
+if [ -z "$1" ]; then
+  /bin/echo "Pass the branch name. Eg: ./make-branch dev"
+  exit 5
+fi
+
+branch="$1"
+# Git branch names: no spaces, no leading -, no ..
+if ! [[ "${branch}" =~ ^[A-Za-z0-9._/-]+$ ]] || [[ "${branch}" == -* ]] || [[ "${branch}" == *..* ]]; then
+  /bin/echo "Not a usable git branch name: ${branch}"
+  exit 5
+fi
+
+verno="/opt/verb/conf/inklists/verberverno"
+if [ ! -f "${verno}" ]; then
+  /bin/echo "verberverno is missing, I quit."
+  exit 8
+fi
+
+if /bin/grep -q '^Vbranch=' "${verno}"; then
+  /usr/bin/sed -i "s/^Vbranch=.*/Vbranch=\"${branch}\"/" "${verno}"
+else
+  /usr/bin/echo "Vbranch=\"${branch}\"" >> "${verno}"
+fi
+
+. "${verno}"
+/bin/echo "This verber will pull the ${Vbranch} branch on the next verb-update."

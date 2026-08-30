@@ -33,6 +33,11 @@ if [ -e "/opt/verb/mods/inkemailaddscriptfilter.before" ]; then . /opt/verb/mods
 # Include the config files
 . /opt/verb/conf/servermailpath
 
+# Check Maddy status (only bounce if it is already running)
+if /usr/bin/systemctl is-active --quiet maddy.service; then
+  MaddyStatus=true
+fi
+
 # Variables (even for check messages)
 emailuser="$1"
 domain="$2"
@@ -95,10 +100,8 @@ EOF
   /usr/bin/chmod 0755 "${scriptpath}" # Ensure proper permissions for the pre-existing script
 fi
 
-# Restart Maddy if it is already running (install writes filters before first start)
-if /usr/bin/systemctl is-active --quiet maddy.service; then
-  /usr/bin/systemctl restart maddy.service
-fi
+# Restart Maddy only if it was running when we started
+[[ -n $MaddyStatus ]] && /usr/bin/systemctl restart maddy.service
 
 # Finish
 /bin/echo "Mail filter for ${emailaddress} entered."

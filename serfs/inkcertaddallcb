@@ -2,7 +2,7 @@
 #inkVerbSerf! verb.ink
 
 # This runs inkcertaddcb for a domain and all of its subdomains
-## Prerequesite: inkcertreqcbsingle
+## Prerequesite: inkcertreqcb
 
 # NOTE: This is intended to be run by inkcertdocbsingle, but can be run separately, such as for updates
 # NOTE: If your domain and subdomains have the same certificate then run this only for the main domain
@@ -27,7 +27,7 @@ vopttypes=( isDomain )	# Value types for options in # Validity check functions, 
 voptflags=(  )
 voptflagpurpose=(  )
 dependencyinstall=( inkcertinstall )
-prerequesite=( inkcertinstall inkcertreqcbsingle )
+prerequesite=( inkcertinstall inkcertreqcb )
 usedby=( inkcertdocb )
 useserfs=( inkcertaddcb )
 useconfigs=(  )	# List config files of any kind used in this serf, please preserve order of appearance
@@ -71,8 +71,8 @@ fi
 # Get each subdomain from the cli-ini file that the domain-subdomain structure was based on from adddomain and newdomainshell
 domainlist=$(/usr/bin/grep 'domains = ' /opt/verb/conf/inkcert/cli-ini/cli.${certdomain}.ini | /usr/bin/sed 's/domains = //')
 for eachsite in ${domainlist//,/ }; do
-## Run inkCertAddLE per site config
- /opt/verb/serfs/inkcertaddle ${eachsite} ${certdomain}
+## Run inkCertAddCB per site config
+ /opt/verb/serfs/inkcertaddcb ${eachsite} ${certdomain}
  e="$?"; [[ "$e" = "0" ]] || exit "$e"
 done
 
