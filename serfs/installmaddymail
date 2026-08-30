@@ -63,11 +63,19 @@ if [ -d /srv/email/${cVappName} ]; then
   /usr/bin/systemd-tmpfiles --create /usr/lib/tmpfiles.d/maddy.conf
   /usr/bin/mkdir -p /run/maddy
   /usr/bin/chown maddy:maddy /run/maddy
-  if [ -d "/etc/letsencrypt/live" ]; then
-    /usr/bin/setfacl -R -m u:maddy:rX /etc/letsencrypt/{live,archive}
+  if [ ! -x /usr/bin/setfacl ]; then
+    /usr/bin/pacman -S --noconfirm --needed acl || true
+  fi
+  if [ -d "/etc/letsencrypt" ]; then
+    /usr/bin/setfacl -m u:maddy:--x /etc/letsencrypt
+    [ -d /etc/letsencrypt/live ] && /usr/bin/setfacl -R -m u:maddy:rX /etc/letsencrypt/live && /usr/bin/setfacl -R -d -m u:maddy:rX /etc/letsencrypt/live
+    [ -d /etc/letsencrypt/archive ] && /usr/bin/setfacl -R -m u:maddy:rX /etc/letsencrypt/archive && /usr/bin/setfacl -R -d -m u:maddy:rX /etc/letsencrypt/archive
     /usr/bin/ln -sfn /etc/letsencrypt/live /etc/maddy/certs
-  elif [ -d "/etc/inkcert/le/live" ]; then
-    /usr/bin/setfacl -R -m u:maddy:rX /etc/inkcert/le/{live,archive} 2>/dev/null || true
+  fi
+  if [ -d "/etc/inkcert/le" ]; then
+    /usr/bin/setfacl -m u:maddy:--x /etc/inkcert /etc/inkcert/le
+    [ -d /etc/inkcert/le/live ] && /usr/bin/setfacl -R -m u:maddy:rX /etc/inkcert/le/live && /usr/bin/setfacl -R -d -m u:maddy:rX /etc/inkcert/le/live
+    [ -d /etc/inkcert/le/archive ] && /usr/bin/setfacl -R -m u:maddy:rX /etc/inkcert/le/archive && /usr/bin/setfacl -R -d -m u:maddy:rX /etc/inkcert/le/archive
     /usr/bin/ln -sfn /etc/inkcert/le/live /etc/maddy/certs
   fi
   /usr/bin/systemctl daemon-reload
@@ -231,13 +239,31 @@ if ! /usr/bin/pg_isready --quiet; then /usr/bin/echo "Waiting for PostgreSQL..."
 /usr/bin/chown root:maddy /etc/maddy/conf.d/domains.conf
 /usr/bin/chmod 0640 /etc/maddy/conf.d/domains.conf
 
-# TLS readable by User=maddy before first start (maddy.conf uses inkcert/le/live)
+# TLS readable by User=maddy before first start
+# live/*/privkey.pem is a symlink; setfacl -R skips those, so archive (real files) plus parent dirs
 /usr/bin/mkdir -p /etc/ssl/server/mail
+if [ ! -x /usr/bin/setfacl ]; then
+  /usr/bin/pacman -S --noconfirm --needed acl || true
+fi
+maddy_tls_acl() {
+  local root="$1"
+  [ -d "${root}" ] || return 0
+  /usr/bin/setfacl -m u:maddy:--x "${root}"
+  for d in live archive; do
+    if [ -d "${root}/${d}" ]; then
+      /usr/bin/setfacl -R -m u:maddy:rX "${root}/${d}"
+      /usr/bin/setfacl -R -d -m u:maddy:rX "${root}/${d}"
+    fi
+  done
+}
+if [ -d /etc/inkcert ]; then
+  /usr/bin/setfacl -m u:maddy:--x /etc/inkcert
+fi
+maddy_tls_acl /etc/letsencrypt
+maddy_tls_acl /etc/inkcert/le
 if [ -d "/etc/letsencrypt/live" ]; then
-  /usr/bin/setfacl -R -m u:maddy:rX /etc/letsencrypt/{live,archive}
   /usr/bin/ln -sfn /etc/letsencrypt/live /etc/maddy/certs
 elif [ -d "/etc/inkcert/le/live" ]; then
-  /usr/bin/setfacl -R -m u:maddy:rX /etc/inkcert/le/{live,archive} 2>/dev/null || true
   /usr/bin/ln -sfn /etc/inkcert/le/live /etc/maddy/certs
 else
   /usr/bin/echo "Can't find certs for Maddy yet. It might not work until inkCert is done."
@@ -306,7 +332,7 @@ ConfigurationDirectoryMode=0750
 
 # File system & database
 ReadWritePaths=/srv/email/maddy
-ReadOnlyPaths=/etc/maddy /etc/maddy/certs/ /etc/letsencrypt/archive/ /etc/letsencrypt/live/ /run/postgresql/
+ReadOnlyPaths=/etc/maddy /etc/maddy/certs/ /etc/letsencrypt/archive/ /etc/letsencrypt/live/ /etc/inkcert/le/archive/ /etc/inkcert/le/live/ /run/postgresql/
 
 # Restrict access to system directories
 ProtectSystem=full
