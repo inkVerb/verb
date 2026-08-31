@@ -30,7 +30,7 @@ vopttypes=(  )
 voptflags=(  )
 voptflagpurpose=(  )  # purpose for each optional flag
 dependencyinstall=( inkcertinstall )
-prerequesite=( inkcertinstall inkcertreqcb )
+prerequesite=( inkcertinstall inkcertreqcb addwild )
 usedby=( inkcertaddallcb )
 useserfs=(  )
 useconfigs=( servernameip siteurilist servertype inkcertstatus )	# List config files of any kind used in this serf, please preserve order of appearance
@@ -90,6 +90,26 @@ inkCert-Letsencrypt certs were not installed for ${sitedomain} because the ${cer
   - The verb/conf/inkcert/cli-ini/ file for ${certdomain} may not contain the subdomain you are using.
 "
 exit 8
+fi
+
+# Wildcard cert parent must have addwild on certdomain.tld.conf
+wildok="false"
+if [ "${ServerType}" = "lemp" ]; then
+  if [ -f "/opt/verb/conf/webserver/sites-available/nginx/${certdomain}.conf" ] && /usr/bin/grep -qE "INKWILDFIX|\\*\\.${certdomain}" /opt/verb/conf/webserver/sites-available/nginx/${certdomain}.conf; then
+    wildok="true"
+  fi
+elif [ "${ServerType}" = "lamp" ]; then
+  if [ -f "/opt/verb/conf/webserver/sites-available/httpd/${certdomain}.conf" ] && /usr/bin/grep -qE "INKWILDFIX|\\*\\.${certdomain}" /opt/verb/conf/webserver/sites-available/httpd/${certdomain}.conf; then
+    wildok="true"
+  fi
+elif [ "${ServerType}" = "laemp" ]; then
+  if [ -f "/opt/verb/conf/webserver/sites-available/httpd/${certdomain}.conf" ] && [ -f "/opt/verb/conf/webserver/sites-available/nginx/${certdomain}.conf" ] && /usr/bin/grep -qE "INKWILDFIX|\\*\\.${certdomain}" /opt/verb/conf/webserver/sites-available/httpd/${certdomain}.conf && /usr/bin/grep -qE "INKWILDFIX|\\*\\.${certdomain}" /opt/verb/conf/webserver/sites-available/nginx/${certdomain}.conf; then
+    wildok="true"
+  fi
+fi
+if [ "${wildok}" != "true" ]; then
+  /usr/bin/echo "No wildcard vhost for ${certdomain} in sites-available. Run: ink add wild -d ${certdomain}"
+  exit 8
 fi
 
 if [ ${ServerType} = "lemp" ] || [ ${ServerType} = "laemp" ]; then

@@ -1,0 +1,96 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This enables wildcard * hosting on an already-added domain (same .conf as the apex)
+## *.domain.tld does NOT include domain.tld in nginx or Apache; both names live in domain.tld.conf
+## Web: webwild on (ServerAlias / server_name *.domain.tld)
+## DNS: *.domain.tld A/AAAA (not a CNAME — that would break MX)
+## Does not create a second sites-available file or a www/domains/* folder
+## Prereq: adddomain (the domain.tld.conf from inst/webserver/{lamp,lemp,laemp}-conf via site-files)
+
+# How to use:
+## ./addwild [ domain.tld ]
+
+usagenotes="This enables wildcard * hosting on an already-added domain, same .conf as the apex"
+usageformat="addwild [ domain.tld ]"
+usageexample="addwild inkisaverb.com"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( adddomain )
+usedby=( adddomain )
+useserfs=( webwild inkdnsrefreshbind )
+useconfigs=( servertype servernameip )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/addwild.replace" ]; then . /opt/verb/mods/addwild.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/addwild.before" ]; then . /opt/verb/mods/addwild.before; fi # Precedes this script
+
+
+domain="$1"
+if [ -z "${domain}" ]; then
+  /usr/bin/echo "Domain required."
+  exit 5
+fi
+
+. /opt/verb/conf/servertype
+. /opt/verb/conf/servernameip
+
+# Domain site conf must already exist (adddomain copies inst/webserver templates here)
+if [ "${ServerType}" = "lemp" ]; then
+  if [ ! -f "/opt/verb/conf/webserver/sites-available/nginx/${domain}.conf" ]; then
+    /usr/bin/echo "No site config for ${domain}. Run adddomain first, I quit."
+    exit 8
+  fi
+elif [ "${ServerType}" = "lamp" ]; then
+  if [ ! -f "/opt/verb/conf/webserver/sites-available/httpd/${domain}.conf" ]; then
+    /usr/bin/echo "No site config for ${domain}. Run adddomain first, I quit."
+    exit 8
+  fi
+elif [ "${ServerType}" = "laemp" ]; then
+  if [ ! -f "/opt/verb/conf/webserver/sites-available/httpd/${domain}.conf" ] || [ ! -f "/opt/verb/conf/webserver/sites-available/nginx/${domain}.conf" ]; then
+    /usr/bin/echo "No site config for ${domain}. Run adddomain first, I quit."
+    exit 8
+  fi
+else
+  /usr/bin/echo "Unknown ServerType."
+  exit 6
+fi
+
+# DNS * A/AAAA in the live zone (parked, hosted, or verb inkzones)
+zonedir=""
+if [ -f "/opt/verb/conf/inkdns/parked/db.${domain}" ]; then
+  zonedir="parked"
+elif [ -f "/opt/verb/conf/inkdns/zones/db.${domain}" ]; then
+  zonedir="zones"
+elif [ -f "/opt/verb/conf/inkdns/inkzones/db.${domain}" ]; then
+  zonedir="inkzones"
+fi
+if [ -n "${zonedir}" ]; then
+  zonefile="/opt/verb/conf/inkdns/${zonedir}/db.${domain}"
+  if ! /usr/bin/grep -Fq "*.${domain}." "${zonefile}"; then
+    /usr/bin/echo "; Wildcard Records Added by inkDNS *.${domain}" >> "${zonefile}"
+    if [ "${ServerIPv4}" != "NOIP4" ]; then
+      /usr/bin/echo "*.${domain}.		IN  A		${ServerIPv4}" >> "${zonefile}"
+    fi
+    if [ "${ServerIPv6}" != "NOIP6" ]; then
+      /usr/bin/echo "*.${domain}.		IN  AAAA	${ServerIPv6}" >> "${zonefile}"
+    fi
+    /opt/verb/serfs/inkdnsrefreshbind
+    e="$?"; [[ "$e" = "0" ]] || exit "$e"
+  fi
+fi
+
+# Same .conf as the apex — *.domain.tld does not match domain.tld by itself
+/opt/verb/serfs/webwild on "${domain}"
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+
+/usr/bin/echo "Wildcard hosting is on for ${domain} (apex + *.${domain} in the same site config)."
+
+
+
+if [ -e "/opt/verb/mods/addwild.after" ]; then . /opt/verb/mods/addwild.after; fi # Follows this script

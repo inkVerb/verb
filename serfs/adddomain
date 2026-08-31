@@ -37,7 +37,7 @@ voptflagpurpose=(  )
 dependencyinstall=(  )
 prerequesite=(  )
 usedby=(  )
-useserfs=( newdomainshell ensitenginx ensiteapache )
+useserfs=( newdomainshell ensitenginx ensiteapache addwild )
 useconfigs=( inkcertstatus inkdnsconf servermailpath servernameip servertype )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/adddomain.replace" ]; then . /opt/verb/mods/adddomain.replace; return 0; fi # Replaces this script
@@ -145,6 +145,8 @@ elif [ -n "$2" ] && [ "$2" = "single" ]; then
   # Finish
   /usr/bin/echo "Success, ${newdomain} added!"
 elif [ -n "$2" ] && [ "$2" = "wild" ]; then
+  /opt/verb/serfs/addwild ${newdomain}
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
   /usr/bin/echo '*/5 * * * * root /opt/verb/donjon/digdomain.sh' "${newdomain} wild" > /etc/cron.d/digdomain-${newdomain}
   /usr/bin/chmod 0644 /etc/cron.d/digdomain-${newdomain}
   # Finish

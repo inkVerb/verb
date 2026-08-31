@@ -37,7 +37,8 @@
     - This is achieved by creating a self-destructing `cron` task called digdomain-DOMAIN, which runs `donjon/digdomain.sh inkisaverb.com multi` every 5 minutes
   - `ink cert` will not be able to nor need to run for this domain after using this option, unless running `ink cert undo` first
 - `ink add domain -d inkisaverb.com -w`
-  - Does everything same as above, but automatically installs Certbot wildcard certs for this domain
+  - Does everything same as above, then `addwild` (apex + `*.inkisaverb.com` in the same site .conf, plus DNS `*`)
+  - Then automatically installs Certbot wildcard certs for this domain
     - This is achieved by creating a self-destructing `cron` task called digdomain-DOMAIN, which runs `donjon/digdomain.sh inkisaverb.com wild` every 5 minutes
     - Only the domain and wildcard domain `*.inkisaverb.com` will be included in this cert, despite the fact that mail subdomains reside on the server
   - `ink cert` will not be able to nor need to run for this domain after using this option, unless running `ink cert undo` first

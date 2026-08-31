@@ -27,7 +27,7 @@ vopttypes=(  )
 voptflags=( r )
 voptflagpurpose=( "Refresh if already done (required for domains with certs already installed)" )
 dependencyinstall=( inkcertinstall )
-prerequesite=( inkcertinstall )
+prerequesite=( inkcertinstall addwild )
 usedby=( inkcertdo-all-verbs inknetmakeca )
 useserfs=( inkcertreqcb inkcertaddallcb inkcertcheck setinkcertmailcerts )
 useconfigs=( siteurilist servertype inkcertstatus )
@@ -48,6 +48,27 @@ exit 8
 fi
 
 domain=$1
+
+# Wildcard vhost must already be on domain.tld.conf (addwild). *.domain does not include the apex by itself.
+. /opt/verb/conf/servertype
+wildok="false"
+if [ "${ServerType}" = "lemp" ]; then
+  if [ -f "/opt/verb/conf/webserver/sites-available/nginx/${domain}.conf" ] && /usr/bin/grep -qE "INKWILDFIX|\\*\\.${domain}" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf; then
+    wildok="true"
+  fi
+elif [ "${ServerType}" = "lamp" ]; then
+  if [ -f "/opt/verb/conf/webserver/sites-available/httpd/${domain}.conf" ] && /usr/bin/grep -qE "INKWILDFIX|\\*\\.${domain}" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf; then
+    wildok="true"
+  fi
+elif [ "${ServerType}" = "laemp" ]; then
+  if [ -f "/opt/verb/conf/webserver/sites-available/httpd/${domain}.conf" ] && [ -f "/opt/verb/conf/webserver/sites-available/nginx/${domain}.conf" ] && /usr/bin/grep -qE "INKWILDFIX|\\*\\.${domain}" /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf && /usr/bin/grep -qE "INKWILDFIX|\\*\\.${domain}" /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf; then
+    wildok="true"
+  fi
+fi
+if [ "${wildok}" != "true" ]; then
+  /usr/bin/echo "No wildcard vhost for ${domain} in sites-available. Run: ink add wild -d ${domain}"
+  exit 8
+fi
 
 # Refresh option
 if [ -n "$2" ] && [ "$2" = "r" ]; then

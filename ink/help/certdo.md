@@ -11,6 +11,7 @@
       - You can add more later with `ink add subdomain`, then run `ink cert do ...` again to update, but not too often
     - `-s` : "single" domain per cert
     - `-w` : "wildcard" domain cert
+      - Requires `ink add wild -d domain.tld` first (apex + `*.domain.tld` in the same site .conf)
       - DNS-01 via inkDNS Bind on this Verber, then AXFR to ns1/ns2 (see `docs/inkCert-wildcard.md`)
       - Does **not** require `ink dns self`
   - Choose which domain
