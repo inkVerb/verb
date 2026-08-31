@@ -3,8 +3,9 @@
 ## This installs a BIMI SVG for a hosted domain
 - VIP drop: `/srv/vip/files/domain.tld.bimi.svg`
 - FTP drop: `/srv/ftp/domain.tld.bimi.svg`
-- Destination always: `/srv/www/html/domain.tld/bimi.svg`
-- Adds `default._bimi` TXT like DKIM (`inkdnsaddbimi`)
+- Destination always: `/srv/www/html/domain.tld/bimi.svg` (must already be the site link; no mkdir)
+- Verb URIs from siteurilist are refused (exit 5)
+- Adds `default._bimi` TXT (`inkdnsaddbimi`, DNS only)
 - inkMail uploads to the VIP path, then runs this with `-p vip`
 
 ## Usage

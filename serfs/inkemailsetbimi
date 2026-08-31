@@ -3,6 +3,7 @@
 
 # This writes a BIMI SVG to www/html/domain.tld/bimi.svg and ensures the DNS TXT
 ## Used by inkMail / setbimi when the panel cannot write the html tree
+## html/domain.tld must already be the site (link to domains/ or vapps/). No mkdir.
 
 # How to use:
 ## ./inkemailsetbimi [ domain.tld ] [ /path/to.svg ]
@@ -21,7 +22,7 @@ dependencyinstall=(  )
 prerequesite=(  )
 usedby=(  )
 useserfs=( inkdnsaddbimi )
-useconfigs=(  )
+useconfigs=( siteurilist )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/inkemailsetbimi.replace" ]; then . /opt/verb/mods/inkemailsetbimi.replace; return 0; fi # Replaces this script
 if [ -e "/opt/verb/mods/inkemailsetbimi.before" ]; then . /opt/verb/mods/inkemailsetbimi.before; fi # Precedes this script
@@ -33,21 +34,36 @@ if [ -z "${domain}" ] || [ ! -f "${src}" ]; then
   /usr/bin/echo "Domain and SVG path required."
   exit 5
 fi
+
+# Verb namespace is not a hosted BIMI domain
+. /opt/verb/conf/siteurilist
+for vuri in "${nameURI}" "${hostURI}" "${serveURI}" "${emailTLDURI}" "${itsqlTLDURI}" "${emailURI}" "${oneURI}" "${inkURI}" "${blueURI}" "${kiwiURI}" "${redURI}" "${vipURI}"; do
+  if [ -n "${vuri}" ] && { [ "${domain}" = "${vuri}" ] || [[ "${domain}" == *"${vuri}"* ]]; }; then
+    /usr/bin/echo "Verb URI ${vuri} is not a BIMI host domain. I quit."
+    exit 5
+  fi
+done
+
 if ! /usr/bin/grep -qi '<svg' "${src}"; then
   /usr/bin/echo "Not an SVG."
   exit 8
 fi
 
+if [ ! -d "/srv/www/html/${domain}" ]; then
+  /usr/bin/echo "No website at /srv/www/html/${domain}. I quit."
+  exit 6
+fi
+
 dest="/srv/www/html/${domain}/bimi.svg"
-/usr/bin/mkdir -p "/srv/www/html/${domain}"
 /usr/bin/cp "${src}" "${dest}"
+e="$?"; [[ "$e" = "0" ]] || exit "6"
 /usr/bin/chown www:www "${dest}"
 /usr/bin/chmod 644 "${dest}"
 
-/opt/verb/serfs/inkdnsaddbimi "${domain}" || true
+/opt/verb/serfs/inkdnsaddbimi "${domain}"
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 /usr/bin/echo "BIMI logo at https://${domain}/bimi.svg"
-
 
 
 

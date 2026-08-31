@@ -2,8 +2,9 @@
 #inkVerbSerf! verb.ink
 
 # This adds the BIMI TXT record to an existing DNS zone file on the server
-## Logo lives at https://domain.tld/bimi.svg (SVG Tiny PS)
+## Logo lives at https://domain.tld/bimi.svg (SVG Tiny PS) — web file is site-files / 0sitedefaultInProgress, not this serf
 ## TXT: default._bimi IN TXT "v=BIMI1; l=https://domain.tld/bimi.svg;"
+## Verb URIs (siteurilist) are refused; updatehtmlverbs already has the logo on those sites
 
 # How to use:
 ## ./inkdnsaddbimi [ domain.tld ]
@@ -22,9 +23,9 @@ voptflags=(  )
 voptflagpurpose=(  )
 dependencyinstall=( inkdnsinstall )
 prerequesite=( inkdnsadddomain )
-usedby=( newdomainshell installmaddymail )
+usedby=( newdomainshell )
 useserfs=( inkdnsserial inkdnsrefreshbind )
-useconfigs=(  )
+useconfigs=( siteurilist )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/inkdnsaddbimi.replace" ]; then . /opt/verb/mods/inkdnsaddbimi.replace; return 0; fi # Replaces this script
 if [ -e "/opt/verb/mods/inkdnsaddbimi.before" ]; then . /opt/verb/mods/inkdnsaddbimi.before; fi # Precedes this script
@@ -37,6 +38,15 @@ if [ -n "$2" ] && [ "$2" = "verber" ]; then
 else
   zonedir="zones"
 fi
+
+# Verb namespace is not a hosted BIMI domain
+. /opt/verb/conf/siteurilist
+for vuri in "${nameURI}" "${hostURI}" "${serveURI}" "${emailTLDURI}" "${itsqlTLDURI}" "${emailURI}" "${oneURI}" "${inkURI}" "${blueURI}" "${kiwiURI}" "${redURI}" "${vipURI}"; do
+  if [ -n "${vuri}" ] && { [ "${dnsDomain}" = "${vuri}" ] || [[ "${dnsDomain}" == *"${vuri}"* ]]; }; then
+    /usr/bin/echo "Verb URI ${vuri} is not a BIMI host domain. I quit."
+    exit 5
+  fi
+done
 
 zonefile="/opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}"
 if [ ! -f "${zonefile}" ]; then
@@ -51,14 +61,6 @@ exit 0; fi
 if /bin/grep -Fq "default._bimi" "${zonefile}"; then
 /usr/bin/echo "The ${dnsDomain} zone file already mentions BIMI. Fix that first or use killinkdnsbimi."
 exit 7; fi
-
-# Ensure the logo file exists at the served path (adddomain copies site-files/bimi.svg)
-if [ ! -f "/srv/www/html/${dnsDomain}/bimi.svg" ] && [ -f "/opt/verb/conf/lib/logo/nib-logo.svg" ]; then
-  /usr/bin/mkdir -p "/srv/www/html/${dnsDomain}"
-  /usr/bin/cp /opt/verb/conf/lib/logo/nib-logo.svg "/srv/www/html/${dnsDomain}/bimi.svg"
-  /usr/bin/chown www:www "/srv/www/html/${dnsDomain}/bimi.svg" 2>/dev/null || true
-  /usr/bin/chmod 644 "/srv/www/html/${dnsDomain}/bimi.svg"
-fi
 
 # Add the entry
 /usr/bin/echo "; BIMI ${dnsDomain}" >> "${zonefile}"
