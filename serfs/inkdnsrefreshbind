@@ -58,8 +58,8 @@ if [ "${InkDNSStat}" = "INSTALLED" ]; then
   [[ -n "$(/usr/bin/ls -A /opt/verb/conf/inkdns/inkzones/nv.* 2> /dev/null)" ]] && /usr/bin/cp -n /opt/verb/conf/inkdns/inkzones/nv.* /var/named/zones/ || true
   [[ -n "$(/usr/bin/ls -A /opt/verb/conf/inkdns/zones/db.* 2> /dev/null)" ]] && /usr/bin/cp -n /opt/verb/conf/inkdns/zones/db.* /var/named/zones/ || true
   [[ -n "$(/usr/bin/ls -A /opt/verb/conf/inkdns/zones/nv.* 2> /dev/null)" ]] && /usr/bin/cp -n /opt/verb/conf/inkdns/zones/nv.* /var/named/zones/ || true
-  /usr/bin/chown -R root:named /var/named/zones
-  /usr/bin/chmod -R 755 /var/named/zones
+  /usr/bin/chown -R named:named /var/named/zones
+  /usr/bin/chmod 775 /var/named/zones
 
   # inkDNS domain list file
   /usr/bin/rm -f /var/named/named.conf.verb
