@@ -53,7 +53,7 @@ slow for certbot). Serial is bumped. nsupdate is still the live publish path.
    - write rfc2136.ini (127.0.0.1, HMAC-SHA512)
 2. `inkdnsrefreshbind` **includes** that same key (never regenerates it)
    - each master zone: `notify yes; also-notify { ns1; ns2; };`
-   - `update-policy { grant inkCertbotKey. name _acme-challenge.ZONE. TXT; ... }`
+   - `update-policy { grant inkCertbotKey. name _acme-challenge.ZONE. TXT; }`
 
 ### Each wildcard cert (`inkcertdocb` / adddomain ... wild)
 
