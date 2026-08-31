@@ -53,6 +53,9 @@ fi
 #/usr/bin/pacman -S --noconfirm --needed bind certbot-dns-rfc2136
 
 # Config
+# TSIG key file must exist before named.conf can include it
+/opt/verb/serfs/inkcertsetdnskey
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 /usr/bin/cp -f /etc/named.conf /etc/named.conf.original
 /usr/bin/cp -f /opt/verb/conf/inkdns/named.conf /etc/
 /usr/bin/chown root:named /etc/named.conf
@@ -61,8 +64,9 @@ fi
 ## Make sure our included files exist
 /usr/bin/touch /var/named/named.conf.rdns
 /usr/bin/touch /var/named/named.conf.verb
-## Add the Certbot DNS-01 TSIG key (once) into conf/inkcert/, then include it from named.conf
+## Include the TSIG key from named.conf (key file already written above)
 /opt/verb/serfs/inkcertsetdnskey
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 ## Logging (permissions are finicky, so create and own)
 /usr/bin/touch /var/log/named.log
 /usr/bin/chown named:named /var/log/named.log
