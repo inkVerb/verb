@@ -31,5 +31,13 @@ if [ -f "/etc/postfix/virtual_ssl.map" ]; then
   /usr/bin/systemctl restart postfix
 fi
 
+# Maddy: recopy or re-ACL keys after certbot (User=maddy cannot read 0600 privkeys)
+if [ -x /opt/verb/donjon/maddy-tls-grant.sh ] && [ -f /etc/systemd/system/maddy.service ]; then
+  /opt/verb/donjon/maddy-tls-grant.sh
+  if /usr/bin/systemctl is-active --quiet maddy.service; then
+    /usr/bin/systemctl reload maddy.service || true
+  fi
+fi
+
 # Finish
 exit 0

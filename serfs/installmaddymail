@@ -63,11 +63,14 @@ if [ -d /srv/email/${cVappName} ]; then
   /usr/bin/systemd-tmpfiles --create /usr/lib/tmpfiles.d/maddy.conf
   /usr/bin/mkdir -p /run/maddy
   /usr/bin/chown maddy:maddy /run/maddy
-  . /opt/verb/donjon/maddy-tls-grant.sh
-  if [ -d "/etc/letsencrypt/live" ]; then
-    /usr/bin/ln -sfn /etc/letsencrypt/live /etc/maddy/certs
-  elif [ -d "/etc/inkcert/le/live" ]; then
-    /usr/bin/ln -sfn /etc/inkcert/le/live /etc/maddy/certs
+  /usr/bin/sed -i 's|tls file /etc/inkcert/le/live/\$(primary_domain)/fullchain.pem /etc/inkcert/le/live/\$(primary_domain)/privkey.pem|tls file /etc/maddy/certs/\$(primary_domain)/fullchain.pem /etc/maddy/certs/\$(primary_domain)/privkey.pem|' /etc/maddy/maddy.conf 2>/dev/null || true
+  /usr/bin/sed -i 's|tls file /etc/letsencrypt/live/\$(primary_domain)/fullchain.pem /etc/letsencrypt/live/\$(primary_domain)/privkey.pem|tls file /etc/maddy/certs/\$(primary_domain)/fullchain.pem /etc/maddy/certs/\$(primary_domain)/privkey.pem|' /etc/maddy/maddy.conf 2>/dev/null || true
+  /opt/verb/donjon/maddy-tls-grant.sh
+  if [ -f /etc/systemd/system/maddy.service ]; then
+    /usr/bin/sed -i 's|^ReadOnlyPaths=.*|ReadOnlyPaths=/etc/maddy /run/postgresql/|' /etc/systemd/system/maddy.service
+    if ! /usr/bin/grep -q 'maddy-tls-grant.sh' /etc/systemd/system/maddy.service; then
+      /usr/bin/sed -i '/ExecStart=\/usr\/local\/bin\/maddy run/i ExecStartPre=+/opt/verb/donjon/maddy-tls-grant.sh' /etc/systemd/system/maddy.service
+    fi
   fi
   /usr/bin/systemctl daemon-reload
   /usr/bin/systemctl enable rspamd 2>/dev/null || true
@@ -216,7 +219,7 @@ if ! /usr/bin/pg_isready --quiet; then /usr/bin/echo "Waiting for PostgreSQL..."
 ## Custom scripts framework
 /usr/bin/echo "# This file is maintained automatically by inkemailaddscriptfilter, edits could break the file and other structure
 ## No tab syntax, each entry on one line for single-line entry and deletion" > /etc/maddy/conf.d/customscripts.conf
-## Ownership — recursive on conf.d only (certs is a symlink into letsencrypt; do not chown -R /etc/maddy).
+## Ownership — recursive on conf.d only (certs are copies, not a symlink)
 /usr/bin/chown root:maddy /etc/maddy
 /usr/bin/chown -R root:maddy /etc/maddy/conf.d
 /usr/bin/chown root:maddy /etc/maddy/*.conf
@@ -230,17 +233,15 @@ if ! /usr/bin/pg_isready --quiet; then /usr/bin/echo "Waiting for PostgreSQL..."
 /usr/bin/chown root:maddy /etc/maddy/conf.d/domains.conf
 /usr/bin/chmod 0640 /etc/maddy/conf.d/domains.conf
 
-# TLS readable by User=maddy before first start
-# Do not bind-mount live/ and archive/ separately (breaks privkey symlinks).
+# TLS for User=maddy
+# /etc/inkcert/le → /etc/letsencrypt (same 0600 privkeys). Path switch alone does not help.
+maddy_permissions_hack=true
+#DEV delete maddy_permissions_hack and this if/else when maddy reads LE privkeys as User=maddy without a copy.
 /usr/bin/mkdir -p /etc/ssl/server/mail
-. /opt/verb/donjon/maddy-tls-grant.sh
-if [ -d "/etc/letsencrypt/live" ]; then
-  /usr/bin/ln -sfn /etc/letsencrypt/live /etc/maddy/certs
-elif [ -d "/etc/inkcert/le/live" ]; then
-  /usr/bin/ln -sfn /etc/inkcert/le/live /etc/maddy/certs
-else
-  /usr/bin/echo "Can't find certs for Maddy yet. It might not work until inkCert is done."
+if [ "${maddy_permissions_hack}" = "true" ]; then
+  /usr/bin/sed -i 's|tls file /etc/letsencrypt/live/\$(primary_domain)/fullchain.pem /etc/letsencrypt/live/\$(primary_domain)/privkey.pem|tls file /etc/maddy/certs/\$(primary_domain)/fullchain.pem /etc/maddy/certs/\$(primary_domain)/privkey.pem|' /etc/maddy/maddy.conf
 fi
+/opt/verb/donjon/maddy-tls-grant.sh
 
 # UFW (services and ports below them if known)
 /usr/bin/ufw allow smtp
@@ -271,6 +272,11 @@ if [ ${ServerType} = "laemp" ]; then
 fi
 
 # Service
+if [ "${maddy_permissions_hack}" = "true" ]; then
+  maddyReadOnlyPaths="/etc/maddy /run/postgresql/"
+else
+  maddyReadOnlyPaths="/etc/maddy /etc/letsencrypt /run/postgresql/"
+fi
 /usr/bin/cat <<EOF > /etc/systemd/system/maddy.service
 [Unit]
 Description=maddy mail server
@@ -287,6 +293,7 @@ BindPaths=/srv/email/maddy
 ExecStart=
 ExecStartPre=+/usr/bin/chown root:maddy /etc/maddy
 ExecStartPre=+/usr/bin/chown -R root:maddy /etc/maddy/conf.d
+ExecStartPre=+/opt/verb/donjon/maddy-tls-grant.sh
 ExecStart=/usr/local/bin/maddy run
 ExecReload=/bin/kill -HUP \$MAINPID
 KillMode=mixed
@@ -305,7 +312,7 @@ ConfigurationDirectoryMode=0750
 
 # File system & database
 ReadWritePaths=/srv/email/maddy
-ReadOnlyPaths=/etc/maddy /etc/inkcert/le /etc/letsencrypt /run/postgresql/
+ReadOnlyPaths=${maddyReadOnlyPaths}
 
 # Restrict access to system directories
 ProtectSystem=full
