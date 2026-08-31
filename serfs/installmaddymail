@@ -83,14 +83,13 @@ if [ -d /srv/email/${cVappName} ]; then
   fi
   dkimwait=0
   while [ "${dkimwait}" -lt 30 ]; do
-    if [ -f "/srv/email/maddy/dkim_keys/${nameURI}_default.dns" ] && [ -f "/srv/email/maddy/dkim_keys/${emailTLDURI}_default.dns" ]; then
+    if [ -f "/srv/email/maddy/dkim_keys/${nameURI}_default.dns" ]; then
       break
     fi
     /usr/bin/sleep 1
     dkimwait=$((dkimwait + 1))
   done
   /opt/verb/serfs/inkdnsaddinkdkim ${nameURI} verber || true
-  /opt/verb/serfs/inkdnsaddinkdkim ${emailTLDURI} verber || true
   /usr/bin/echo "Maddy started after permission repair."
   exit 0
 fi
@@ -227,8 +226,6 @@ if ! /usr/bin/pg_isready --quiet; then /usr/bin/echo "Waiting for PostgreSQL..."
 /usr/bin/find /etc/maddy/conf.d -type f -exec /usr/bin/chmod 0640 {} +
 /usr/bin/chmod 0640 /etc/maddy/*.conf
 
-# Maddy wants at least one extra domain in /etc/maddy/conf.d/domains.conf BEFORE it can start (so we won't use inkemaildomain)
-/usr/bin/sed -i "/^\$(extra_domains) =/ s/$/ ${emailTLDURI}/" /etc/maddy/conf.d/domains.conf # Rather than using serfs/inkemaildomain
 /usr/bin/chown root:maddy /etc/maddy/conf.d/domains.conf
 /usr/bin/chmod 0640 /etc/maddy/conf.d/domains.conf
 
@@ -354,23 +351,6 @@ verb_ink {
   }
 }
 EOF
-### emailTLDURI
-filename_domain="$(/usr/bin/echo "${emailTLDURI}" | /usr/bin/sed 's/\./_/g')"
-domain="${emailTLDURI}"
-/usr/bin/cat <<EOF > /etc/rspamd/local.d/unsubscribe-domains/${filename_domain}.conf
-verb_email {
-  priority = 10;
-  from = "@${domain}";
-  apply {
-    milter_headers {
-      custom {
-        "List-Unsubscribe-Post" = "List-Unsubscribe=One-Click";
-        "List-Unsubscribe" = "<mailto:unsubscribe@${domain}>";
-      }
-    }
-  }
-}
-EOF
 
 ## Spam handling
 ### Disable Graylisting
@@ -408,8 +388,6 @@ EOF
 
 # Write filters while maddy is down so they skip restart
 /opt/verb/serfs/inkemailaddscriptfilter unsubscribe ${nameURI}
-e="$?"; [[ "$e" = "0" ]] || exit "6"
-/opt/verb/serfs/inkemailaddscriptfilter unsubscribe ${emailTLDURI}
 e="$?"; [[ "$e" = "0" ]] || exit "6"
 /usr/bin/chown -R root:maddy /etc/maddy/conf.d
 /usr/bin/find /etc/maddy/conf.d -type d -exec /usr/bin/chmod 0750 {} +
@@ -484,7 +462,7 @@ e="$?"; [[ "$e" = "0" ]] || exit "6"
 # DKIM keys & TXT records (Maddy writes dkim_keys/ on first start)
 dkimwait=0
 while [ "${dkimwait}" -lt 30 ]; do
-  if [ -f "/srv/email/maddy/dkim_keys/${nameURI}_default.dns" ] && [ -f "/srv/email/maddy/dkim_keys/${emailTLDURI}_default.dns" ]; then
+  if [ -f "/srv/email/maddy/dkim_keys/${nameURI}_default.dns" ]; then
     break
   fi
   /usr/bin/sleep 1
@@ -493,10 +471,8 @@ done
 # /opt/verb/serfs/newinkdkim ${nameURI}; wait # Handled by Maddy
 #NOTE Maddy or Postfix must be installed for this to work:
 /opt/verb/serfs/inkdnsaddmail ${nameURI} verber ; wait
-/opt/verb/serfs/inkdnsaddmail ${emailTLDURI} verber ; wait
 ## Add the DNS records for the mail server TLD itself
 /opt/verb/serfs/inkdnsaddinkdkim ${nameURI} verber; wait
-/opt/verb/serfs/inkdnsaddinkdkim ${emailTLDURI} verber; wait
 /opt/verb/serfs/inkdnsaddbimi ${nameURI} verber; wait
 /opt/verb/serfs/inkdnsaddbimi ${emailTLDURI} verber; wait
 
