@@ -1,17 +1,23 @@
 #!/bin/bash
-# Make TLS keys readable for User=maddy.
-# /etc/inkcert/le is a symlink to /etc/letsencrypt — same 0600 privkeys either path.
-# Maddy never runs as root (even at start). Upstream: setfacl on live+archive.
-
+# Make TLS keys readable for User=maddy (never root, even at start).
+# /etc/inkcert/le is a symlink to /etc/letsencrypt — same 0600 privkeys.
+#
+# ==== MADDY TLS HACK — SINGLE SWITCH (unplug here) ====
 maddy_permissions_hack=true
-#DEV delete maddy_permissions_hack and the if branch when maddy can read Let's Encrypt privkeys as User=maddy without a copy.
+# UNPLUG: set the line above to false. That is the whole switch.
+# Every caller just runs this file (install, ExecStartPre, setinkcertmailcerts,
+# inkcertcble-renew-all). They do not duplicate the flag.
+# true  = copy live keys into /etc/maddy/certs as real files (acme.sh pattern)
+# false = upstream: setfacl on /etc/letsencrypt/{live,archive} + symlink certs → live
+#DEV delete maddy_permissions_hack and the if-true branch when maddy reads LE privkeys as User=maddy without a copy.
+# ======================================================
 
 if ! /usr/bin/id -u maddy >/dev/null 2>&1; then
   exit 0
 fi
 
 if [ "${maddy_permissions_hack}" = "true" ]; then
-  # Back-door: copy (dereference) live keys into /etc/maddy/certs as real files.
+  ## HACK: copy (dereference) into /etc/maddy/certs
   /usr/bin/mkdir -p /etc/maddy/certs
   /usr/bin/chown root:maddy /etc/maddy /etc/maddy/certs
   /usr/bin/chmod 0750 /etc/maddy /etc/maddy/certs
@@ -32,7 +38,7 @@ if [ "${maddy_permissions_hack}" = "true" ]; then
   }
   copy_live /etc/letsencrypt/live
 else
-  # Normal: maddy docs — setfacl on the real Let's Encrypt tree, symlink certs → live
+  ## NORMAL (maddy docs)
   if [ ! -x /usr/bin/setfacl ]; then
     /usr/bin/pacman -S --noconfirm --needed acl
   fi

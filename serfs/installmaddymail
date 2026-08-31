@@ -63,11 +63,10 @@ if [ -d /srv/email/${cVappName} ]; then
   /usr/bin/systemd-tmpfiles --create /usr/lib/tmpfiles.d/maddy.conf
   /usr/bin/mkdir -p /run/maddy
   /usr/bin/chown maddy:maddy /run/maddy
-  /usr/bin/sed -i 's|tls file /etc/inkcert/le/live/\$(primary_domain)/fullchain.pem /etc/inkcert/le/live/\$(primary_domain)/privkey.pem|tls file /etc/maddy/certs/\$(primary_domain)/fullchain.pem /etc/maddy/certs/\$(primary_domain)/privkey.pem|' /etc/maddy/maddy.conf 2>/dev/null || true
-  /usr/bin/sed -i 's|tls file /etc/letsencrypt/live/\$(primary_domain)/fullchain.pem /etc/letsencrypt/live/\$(primary_domain)/privkey.pem|tls file /etc/maddy/certs/\$(primary_domain)/fullchain.pem /etc/maddy/certs/\$(primary_domain)/privkey.pem|' /etc/maddy/maddy.conf 2>/dev/null || true
+  # Maddy TLS hack/unplug is only donjon/maddy-tls-grant.sh (maddy_permissions_hack=)
   /opt/verb/donjon/maddy-tls-grant.sh
   if [ -f /etc/systemd/system/maddy.service ]; then
-    /usr/bin/sed -i 's|^ReadOnlyPaths=.*|ReadOnlyPaths=/etc/maddy /run/postgresql/|' /etc/systemd/system/maddy.service
+    /usr/bin/sed -i 's|^ReadOnlyPaths=.*|ReadOnlyPaths=/etc/maddy /etc/letsencrypt /run/postgresql/|' /etc/systemd/system/maddy.service
     if ! /usr/bin/grep -q 'maddy-tls-grant.sh' /etc/systemd/system/maddy.service; then
       /usr/bin/sed -i '/ExecStart=\/usr\/local\/bin\/maddy run/i ExecStartPre=+/opt/verb/donjon/maddy-tls-grant.sh' /etc/systemd/system/maddy.service
     fi
@@ -233,14 +232,9 @@ if ! /usr/bin/pg_isready --quiet; then /usr/bin/echo "Waiting for PostgreSQL..."
 /usr/bin/chown root:maddy /etc/maddy/conf.d/domains.conf
 /usr/bin/chmod 0640 /etc/maddy/conf.d/domains.conf
 
-# TLS for User=maddy
-# /etc/inkcert/le → /etc/letsencrypt (same 0600 privkeys). Path switch alone does not help.
-maddy_permissions_hack=true
-#DEV delete maddy_permissions_hack and this if/else when maddy reads LE privkeys as User=maddy without a copy.
+# TLS for User=maddy — switch is only donjon/maddy-tls-grant.sh (maddy_permissions_hack=)
+#DEV UNPLUG: set that flag false; maddy.conf already uses /etc/maddy/certs/
 /usr/bin/mkdir -p /etc/ssl/server/mail
-if [ "${maddy_permissions_hack}" = "true" ]; then
-  /usr/bin/sed -i 's|tls file /etc/letsencrypt/live/\$(primary_domain)/fullchain.pem /etc/letsencrypt/live/\$(primary_domain)/privkey.pem|tls file /etc/maddy/certs/\$(primary_domain)/fullchain.pem /etc/maddy/certs/\$(primary_domain)/privkey.pem|' /etc/maddy/maddy.conf
-fi
 /opt/verb/donjon/maddy-tls-grant.sh
 
 # UFW (services and ports below them if known)
@@ -272,11 +266,8 @@ if [ ${ServerType} = "laemp" ]; then
 fi
 
 # Service
-if [ "${maddy_permissions_hack}" = "true" ]; then
-  maddyReadOnlyPaths="/etc/maddy /run/postgresql/"
-else
-  maddyReadOnlyPaths="/etc/maddy /etc/letsencrypt /run/postgresql/"
-fi
+# ReadOnlyPaths includes /etc/letsencrypt so UNPLUG (symlink+setfacl) needs no unit edit.
+# Never bind-mount /etc/inkcert/le — that is a symlink to letsencrypt.
 /usr/bin/cat <<EOF > /etc/systemd/system/maddy.service
 [Unit]
 Description=maddy mail server
@@ -312,7 +303,7 @@ ConfigurationDirectoryMode=0750
 
 # File system & database
 ReadWritePaths=/srv/email/maddy
-ReadOnlyPaths=${maddyReadOnlyPaths}
+ReadOnlyPaths=/etc/maddy /etc/letsencrypt /run/postgresql/
 
 # Restrict access to system directories
 ProtectSystem=full
