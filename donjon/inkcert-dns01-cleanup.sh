@@ -6,7 +6,7 @@
 
 domain="${CERTBOT_DOMAIN#\*.}"
 record="_acme-challenge.${domain}."
-keyfile="/opt/verb/conf/inkcert/inkcertbot.key"
+keyfile="/etc/inkcert/inkcertbot.key"
 
 if [ -z "${CERTBOT_VALIDATION}" ] || [ ! -f "${keyfile}" ]; then
   exit 0

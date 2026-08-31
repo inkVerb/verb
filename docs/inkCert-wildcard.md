@@ -10,10 +10,10 @@ or `inkcertdole`, or rebuild as LEMP/LAEMP.
 
 ## Where things live
 
-- `conf/inkcert/` — ACME/Certbot material (cli-ini per domain, TSIG key, rfc2136.ini)
+- `conf/inkcert/` — ACME/Certbot **framework** (cli-ini per domain, sample rfc2136)
 - `conf/inkdns/` — Bind zone **entries only** (db.* / nv.*). Never the ACME key.
-- `/etc/letsencrypt/rfc2136.ini` — live Certbot RFC2136 credentials (symlink world via `/etc/inkcert/le`)
-- `/opt/verb/conf/inkcert/inkcertbot.key` — TSIG key, generated **once**
+- `/etc/inkcert/inkcertbot.key` — live TSIG key, generated **once** (named include)
+- `/etc/inkcert/rfc2136.ini` and `/etc/letsencrypt/rfc2136.ini` — Certbot RFC2136 credentials
 
 The TSIG secret stays on the Verber (the Bind master). Slaves do not need it.
 Letsencrypt queries ns1/ns2; those boxes only need the zone transfer of the
@@ -48,7 +48,7 @@ slow for certbot). Serial is bumped. nsupdate is still the live publish path.
 ### One-time (install)
 
 1. `inkdnsinstall` calls `inkcertsetdnskey`
-   - `tsig-keygen -a HMAC-SHA512 inkCertbotKey` → `conf/inkcert/inkcertbot.key`
+   - `tsig-keygen -a HMAC-SHA512 inkCertbotKey` → `/etc/inkcert/inkcertbot.key`
    - include that file from `/etc/named.conf`
    - write rfc2136.ini (127.0.0.1, HMAC-SHA512)
 2. `inkdnsrefreshbind` **includes** that same key (never regenerates it)
@@ -82,9 +82,10 @@ No web server stop is required for DNS-01.
 /opt/verb/serfs/inkcertdocb domain.tld r
 ```
 
-`inkcertsetdnskey` is idempotent: it reuses `conf/inkcert/inkcertbot.key` if
-present, otherwise lifts `inkCertbotKey` out of `/etc/named.conf` if that
-one-liner is still there, otherwise generates a new key.
+`inkcertsetdnskey` is idempotent: it reuses `/etc/inkcert/inkcertbot.key` if
+present, otherwise copies the old `conf/inkcert/inkcertbot.key` if that still
+exists, otherwise lifts `inkCertbotKey` out of `/etc/named.conf`, otherwise
+generates a new key.
 
 ## Self-parking (`ink dns self`) is not required
 

@@ -18,7 +18,7 @@ How to install:
 
 See `docs/inkCert-wildcard.md`. Short version:
 
-- TSIG key lives in `conf/inkcert/inkcertbot.key` (generated once by `inkcertsetdnskey`)
+- TSIG key lives in `/etc/inkcert/inkcertbot.key` (generated once by `inkcertsetdnskey`)
 - `inkdnsrefreshbind` includes that key and grants `_acme-challenge` TXT updates; it must not regenerate the secret
 - `inkcertreqcb` nsupdates the master, then `inkdnsslaveacme` SSHs to ns1/ns2 (`rndc retransfer`) the same way `rinkadddomain` pushes zone configs
 - `conf/inkdns/` remains zone files only

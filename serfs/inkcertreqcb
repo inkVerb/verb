@@ -184,7 +184,7 @@ if [ "${domain}" = "${redURI}" ]; then
 fi
 
 # DNS-01 wildcard (no need to stop nginx/httpd). RSA 2048 matches cli-ini rsa-key-size.
-if [ ! -f "/opt/verb/conf/inkcert/inkcertbot.key" ]; then
+if [ ! -f "/etc/inkcert/inkcertbot.key" ]; then
   /opt/verb/serfs/inkcertsetdnskey
   e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi

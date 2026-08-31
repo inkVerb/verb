@@ -1,6 +1,6 @@
 # inkCert Certbot RFC2136 credentials
 # Live copies are written by serfs/inkcertsetdnskey:
-#   /opt/verb/conf/inkcert/rfc2136.ini
+#   /etc/inkcert/rfc2136.ini
 #   /etc/letsencrypt/rfc2136.ini
 # Do not put the live secret in git. conf/inkdns/ stays zone records only.
 #

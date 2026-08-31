@@ -2,8 +2,8 @@
 #inkVerbSerf! verb.ink
 
 # This creates (once) the HMAC-SHA512 TSIG key Certbot/nsupdate use for DNS-01 wildcard certs
-## Key lives in conf/inkcert/ (same family as cli-ini). conf/inkdns/ stays zone entries only.
-## Idempotent: reuse the stored key, else lift inkCertbotKey from /etc/named.conf, else generate.
+## Live key: /etc/inkcert/inkcertbot.key (machine state, not the verb/ framework tree)
+## Idempotent: reuse that file, else lift from the old verb/conf path, else named.conf, else generate.
 ## Writes rfc2136.ini for the certbot-dns-rfc2136 plugin (optional); hooks use nsupdate -k the key file.
 
 # How to use:
@@ -31,15 +31,21 @@ if [ -e "/opt/verb/mods/inkcertsetdnskey.before" ]; then . /opt/verb/mods/inkcer
 
 . /opt/verb/conf/servernameip
 
-keyfile="/opt/verb/conf/inkcert/inkcertbot.key"
-inifile="/opt/verb/conf/inkcert/rfc2136.ini"
+# Live TSIG is machine state, not the verb/ framework tree
+keyfile="/etc/inkcert/inkcertbot.key"
+oldkeyfile="/opt/verb/conf/inkcert/inkcertbot.key"
+inifile="/etc/inkcert/rfc2136.ini"
 leini="/etc/letsencrypt/rfc2136.ini"
 
-/usr/bin/mkdir -p /opt/verb/conf/inkcert /etc/letsencrypt
+/usr/bin/mkdir -p /etc/inkcert /etc/letsencrypt
+/usr/bin/chmod 755 /etc/inkcert
 
 # Already have a usable key file?
 if [ -f "${keyfile}" ] && /usr/bin/grep -q 'secret "' "${keyfile}"; then
   /usr/bin/echo "Using existing ${keyfile}"
+elif [ -f "${oldkeyfile}" ] && /usr/bin/grep -q 'secret "' "${oldkeyfile}"; then
+  /usr/bin/cp -f "${oldkeyfile}" "${keyfile}"
+  /usr/bin/echo "Moved TSIG key from ${oldkeyfile} to ${keyfile}"
 else
   extracted=""
   # One-liner from the old inkdnsinstall: echo $(tsig-keygen ...) >> /etc/named.conf
@@ -55,6 +61,7 @@ else
   fi
 fi
 
+# named (user named) must open this include; 640 root:named, dir 755
 /usr/bin/chown root:named "${keyfile}"
 /usr/bin/chmod 640 "${keyfile}"
 
@@ -81,11 +88,12 @@ EOF
 # named.conf must include the key file once, before named.conf.verb grants it
 if [ -f "/etc/named.conf" ]; then
   /usr/bin/sed -i '/key "inkCertbotKey"/d' /etc/named.conf
-  if ! /usr/bin/grep -q '/opt/verb/conf/inkcert/inkcertbot.key' /etc/named.conf; then
+  /usr/bin/sed -i 's|/opt/verb/conf/inkcert/inkcertbot.key|/etc/inkcert/inkcertbot.key|g' /etc/named.conf
+  if ! /usr/bin/grep -q '/etc/inkcert/inkcertbot.key' /etc/named.conf; then
     if /usr/bin/grep -q 'include "/var/named/named.conf.verb"' /etc/named.conf; then
-      /usr/bin/sed -i 's#include "/var/named/named.conf.verb"#include "/opt/verb/conf/inkcert/inkcertbot.key";\ninclude "/var/named/named.conf.verb"#' /etc/named.conf
+      /usr/bin/sed -i 's#include "/var/named/named.conf.verb"#include "/etc/inkcert/inkcertbot.key";\ninclude "/var/named/named.conf.verb"#' /etc/named.conf
     else
-      /usr/bin/echo 'include "/opt/verb/conf/inkcert/inkcertbot.key";' >> /etc/named.conf
+      /usr/bin/echo 'include "/etc/inkcert/inkcertbot.key";' >> /etc/named.conf
     fi
   fi
 fi

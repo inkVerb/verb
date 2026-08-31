@@ -68,7 +68,7 @@ if [ "${InkDNSStat}" = "INSTALLED" ]; then
   /usr/bin/chmod 644 /var/named/named.conf.verb
   ## TSIG key is generated once by inkcertsetdnskey and included from /etc/named.conf
   ## Do not tsig-keygen here — a new secret would desync rfc2136.ini and break DNS-01
-  if [ ! -f "/opt/verb/conf/inkcert/inkcertbot.key" ]; then
+  if [ ! -f "/etc/inkcert/inkcertbot.key" ]; then
     /opt/verb/serfs/inkcertsetdnskey
   fi
   # Refresh global inkDNS rDNS config & zone files

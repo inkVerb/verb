@@ -8,7 +8,7 @@
 # Wildcard challenges still use _acme-challenge.domain.tld (strip leading *.)
 domain="${CERTBOT_DOMAIN#\*.}"
 record="_acme-challenge.${domain}."
-keyfile="/opt/verb/conf/inkcert/inkcertbot.key"
+keyfile="/etc/inkcert/inkcertbot.key"
 
 if [ -z "${CERTBOT_VALIDATION}" ]; then
   /usr/bin/echo "inkcert-dns01-auth: CERTBOT_VALIDATION empty"
