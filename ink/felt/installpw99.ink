@@ -10,8 +10,7 @@ surfname="installpw99"
 # About message
 aboutMsg="$(cat <<EOU
 This downloads and installs PinkWrite 99 as a vapp on a hosted domain
-PinkWrite 99 resides in www/vapps/pw99.DOMAIN.TLD; front-facing host is 99.DOMAIN.TLD
--d 99.DOMAIN.TLD is the same public host (not 99.99.DOMAIN.TLD)
+PinkWrite 99 resides in www/vapps/pw99.DOMAIN.TLD; html/DOMAIN.TLD links to it, like WordPress
 EOU
 )"
 
@@ -88,9 +87,7 @@ if [ -z "${SOd}" ]; then
 fi
 
 # Message prep
-pw99apex="${SOd}"
-[[ "${pw99apex}" == 99.* ]] && pw99apex="${pw99apex#99.}"
-success_message="PinkWrite 99 installed on 99.${pw99apex}. Finish at https://99.${pw99apex}/install.php"
+success_message="PinkWrite 99 installed on ${SOd}. Finish at https://${SOd}/install.php"
 fail_message="PinkWrite 99 failed to install on ${SOd}."
 
 # Prepare command (sequential args, same as serfs/installpw99)

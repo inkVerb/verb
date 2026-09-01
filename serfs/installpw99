@@ -1,22 +1,23 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
 
-# This downloads and installs PinkWrite 99 as a vapp
-## Machine name: www/vapps/pw99.DOMAIN.TLD
-## Front-facing host: 99.DOMAIN.TLD (addsubdomain 99)
+# This downloads and installs PinkWrite 99 as a vapp, same shape as WordPress
+## App lives in www/vapps/pw99.DOMAIN.TLD
+## Front is the domain you pass: html/DOMAIN.TLD -> that vapp (adddomain if missing)
 ## Config file is config.php (not pw99-config.php)
+## Does not invent a 99. subdomain. ink install pw99 -d 99.write.pink lives at 99.write.pink.
 
 # All options after the domain are optional, but are sequential
 
 # How to use:
 ## ./installpw99 [ domain.tld ] [ dbase ] [ dbuser ] [ dbpassword ]
 ## ./installpw99 [ domain.tld ]
-## ./installpw99 [ 99.domain.tld ]   # same public host; does not become 99.99.domain.tld
+## ./installpw99 [ 99.domain.tld ]
 
-usagenotes="This downloads and installs PinkWrite 99 to 99.domain.tld on a specified domain"
+usagenotes="This downloads and installs PinkWrite 99 to a specified domain"
 usageformat="installpw99 [ domain.tld ] [ dbase - optional ] [ dbuser - optional ] [ dbpassword - optional ]"
 usageexample="installpw99 inkisaverb.com
-installpw99 99.inkisaverb.com
+installpw99 99.write.pink
 installpw99 inkisaverb.com somedatabase somedbuser somedbpassword"
 hierarchy=( primary )
 vsetnames=( "Domain" )
@@ -28,7 +29,7 @@ voptflagpurpose=(  )
 dependencyinstall=(  )
 prerequesite=(  )
 usedby=(  )
-useserfs=( inkget adddomain addsubdomain )
+useserfs=( inkget adddomain )
 useconfigs=( servertype )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/installpw99.replace" ]; then . /opt/verb/mods/installpw99.replace; return 0; fi # Replaces this script
@@ -41,12 +42,7 @@ domain=$1
 dBase=$2
 dBaseUser=$3
 dBPassword=$4
-# -d 99.domain.tld is the public host, not a request for 99.99.domain.tld
-if [[ "${domain}" == 99.* ]]; then
-  domain="${domain#99.}"
-fi
 cleanName=$(/usr/bin/echo ${domain} | /usr/bin/sed -e 's/\.//g')
-pubhost="99.${domain}"
 
 if [ -z ${1} ]; then
 /bin/echo "You must designate a domain. Read the How to use. Can't continue."
@@ -62,10 +58,6 @@ if [ ! -d "/srv/www/domains/${domain}" ]; then
 /opt/verb/serfs/adddomain ${domain}
 wait
 fi
-if [ ! -d "/srv/www/domains/${pubhost}" ]; then
-/opt/verb/serfs/addsubdomain 99 ${domain}
-wait
-fi
 
 cd /srv/www/vapps || exit 6
 /opt/verb/serfs/inkget ${cVappName} check
@@ -79,10 +71,10 @@ if [ -z "${dBaseUser}" ]; then
 dBaseUser=${dBase}; fi
 
 /bin/mv ${cVappName} ${cVappName}.${domain}
-/bin/rm -f /srv/www/html/${pubhost}
-/bin/ln -sfn /srv/www/vapps/${cVappName}.${domain} /srv/www/html/${pubhost}
+/bin/rm -f /srv/www/html/${domain}
+/bin/ln -sfn /srv/www/vapps/${cVappName}.${domain} /srv/www/html/${domain}
 /bin/ln -sfn /srv/www/vapps/${cVappName}.${domain} /srv/vip/_webapps/; wait
-/bin/chown -R www:www /srv/www/html/${pubhost}; wait
+/bin/chown -R www:www /srv/www/html/${domain}; wait
 /bin/chown -R www:www /srv/www/vapps/${cVappName}.${domain}; wait
 
 /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "
@@ -99,7 +91,7 @@ fi
 appDDBUsr=${dBaseUser}
 appDDBPass=${dBPassword}
 appEngine=mariadb
-appPubHost=${pubhost}" > /opt/verb/conf/vapps/vapp.${cVappName}.${domain}
+appPubHost=${domain}" > /opt/verb/conf/vapps/vapp.${cVappName}.${domain}
 
 # SysAdmin config (PHP return array). Host is after https:// only.
 # allow_create_super true so the first Superintendent can be created at /install.php; set false after.
@@ -108,7 +100,7 @@ appPubHost=${pubhost}" > /opt/verb/conf/vapps/vapp.${cVappName}.${domain}
 return [
     'configured' => true,
     'allow_create_super' => true,
-    'host' => '${pubhost}',
+    'host' => '${domain}',
     'site_title' => 'PinkWrite 99',
     'db' => [
         'host' => '127.0.0.1',
@@ -157,9 +149,9 @@ fi
 Database: ${dBase}
 Database user: ${dBaseUser}
 Database password: ${dBPassword}
-Public host: ${pubhost}
+Public host: ${domain}
 
-Go to https://${pubhost}/install.php to create the first Superintendent.
+Go to https://${domain}/install.php to create the first Superintendent.
 Then set allow_create_super to false in config.php.
 "
 

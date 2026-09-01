@@ -35,10 +35,6 @@ if [ -e "/opt/verb/mods/setpw99.before" ]; then . /opt/verb/mods/setpw99.before;
 domain=$1
 shift
 cVappName=pw99
-# Same as installpw99: -d 99.domain.tld looks up the apex vapp, not pw99.99.domain.tld
-if [[ "${domain}" == 99.* ]]; then
-  domain="${domain#99.}"
-fi
 vcfg="/opt/verb/conf/vapps/vapp.${cVappName}.${domain}"
 php="/srv/www/vapps/${cVappName}.${domain}/config.php"
 if [ -z "${domain}" ] || [ ! -f "${vcfg}" ]; then

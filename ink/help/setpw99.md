@@ -3,8 +3,7 @@
 ## This modifies settings for PinkWrite 99 already installed on a hosted domain
 - Writes `www/vapps/pw99.DOMAIN.TLD/config.php`
 - Syncs db_* into `verb/conf/vapps/vapp.pw99.DOMAIN`
-- Host is everything after `https://` (no scheme); default front is `99.DOMAIN`
-- `-d 99.DOMAIN.TLD` looks up the same vapp as `-d DOMAIN.TLD`
+- Host is everything after `https://` (no scheme); it is the domain you installed on
 - `allow_create_super=false` after the first Superintendent is created
 
 ## Usage
