@@ -11,10 +11,12 @@
 # How to use:
 ## ./installpw99 [ domain.tld ] [ dbase ] [ dbuser ] [ dbpassword ]
 ## ./installpw99 [ domain.tld ]
+## ./installpw99 [ 99.domain.tld ]   # same public host; does not become 99.99.domain.tld
 
 usagenotes="This downloads and installs PinkWrite 99 to 99.domain.tld on a specified domain"
 usageformat="installpw99 [ domain.tld ] [ dbase - optional ] [ dbuser - optional ] [ dbpassword - optional ]"
 usageexample="installpw99 inkisaverb.com
+installpw99 99.inkisaverb.com
 installpw99 inkisaverb.com somedatabase somedbuser somedbpassword"
 hierarchy=( primary )
 vsetnames=( "Domain" )
@@ -39,6 +41,10 @@ domain=$1
 dBase=$2
 dBaseUser=$3
 dBPassword=$4
+# -d 99.domain.tld is the public host, not a request for 99.99.domain.tld
+if [[ "${domain}" == 99.* ]]; then
+  domain="${domain#99.}"
+fi
 cleanName=$(/usr/bin/echo ${domain} | /usr/bin/sed -e 's/\.//g')
 pubhost="99.${domain}"
 
