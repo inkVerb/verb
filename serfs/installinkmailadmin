@@ -68,11 +68,11 @@ if [ ! -f "${src}/cmd/inkmail/main.go" ]; then
 fi
 
 if ! /usr/bin/command -v go >/dev/null 2>&1; then
-  /usr/bin/echo "Go is not installed. It should have been installed by make-verber (lamp/lemp/laemp)."
+  /usr/bin/echo "Go is not installed. I quit."
   exit 6
 fi
 
-dst="/srv/www/vapps/inkmail"
+dst="/srv/www/email/inkmail"
 /usr/bin/rm -rf "${dst}"
 /usr/bin/mkdir -p "${dst}"
 /usr/bin/cp -a "${src}/." "${dst}/"
@@ -82,7 +82,7 @@ cd "${dst}" || exit 6
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 port=8099
-cfg="/opt/verb/conf/inkmail.conf"
+cfg="/etc/inkmail/conf"
 /usr/bin/cat > "${cfg}" <<EOF
 listen=127.0.0.1:${port}
 path=/${poFolder}/
@@ -158,6 +158,11 @@ if [ -f "${nconf}" ]; then
     /usr/bin/systemctl reload nginx 2>/dev/null || true
   fi
 fi
+## Remove the Apache config
+if [ -f "/opt/verb/conf/webserver/sites-available/httpd/po.${emailTLDURI}.conf" ]; then
+  /usr/bin/rm -f "/opt/verb/conf/webserver/sites-available/httpd/po.${emailTLDURI}.conf"
+  /usr/bin/systemctl reload httpd 2>/dev/null || true
+fi
 
 /usr/bin/systemctl daemon-reload
 /usr/bin/systemctl enable --now inkmail.service
@@ -165,7 +170,7 @@ fi
 /usr/bin/sed -i "s/ServerPOPath=.*/ServerPOPath=\"${poFolder}\"/" /opt/verb/conf/servermailpath
 
 /usr/bin/echo "
-inkMail (postfix-maddy agnostic) is at:
+inkMail is at:
   https://po.${emailTLDURI}/${poFolder}/
 SSO from the verb web UI once that admin is enrolled.
 "
