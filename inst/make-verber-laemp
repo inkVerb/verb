@@ -393,7 +393,7 @@ LimitMEMLOCK=infinity" >> /etc/systemd/system/mariadb.service
 /usr/bin/mkdir -p /srv/www/domains
 /usr/bin/mkdir -p /srv/www/forwards
 ## Create inkVerb app directories
-/usr/bin/mkdir -p /srv/www/email
+/usr/bin/mkdir -p /srv/www/email/bimi
 /usr/bin/mkdir -p /srv/www/one
 /usr/bin/mkdir -p /srv/www/vapps
 ## Own everything

@@ -50,8 +50,7 @@ if [ ! -f "${src}/cmd/verbadmin/main.go" ]; then
   exit 8
 fi
 if ! /usr/bin/command -v go >/dev/null 2>&1; then
-  /usr/bin/echo "Go is not installed. It should have been installed by make-verber (lamp/lemp/laemp)."
-  exit 6
+  . /opt/verb/donjon/ensure-go.sh
 fi
 /usr/bin/pacman -S --noconfirm --needed sqlite python-pam 2>/dev/null || true
 
@@ -82,7 +81,10 @@ sso_secret=${sso}
 inkmail_url=
 EOF
 /usr/bin/chmod 640 "${cfg}"
-if [ -f /opt/verb/conf/inkmail.conf ]; then
+if [ -f /etc/inkmail/conf ]; then
+  /usr/bin/sed -i "s|^sso_secret=.*|sso_secret=${sso}|" /etc/inkmail/conf
+  /usr/bin/sed -i "s|^inkmail_url=.*|inkmail_url=|" "${cfg}"
+elif [ -f /opt/verb/conf/inkmail.conf ]; then
   /usr/bin/sed -i "s|^sso_secret=.*|sso_secret=${sso}|" /opt/verb/conf/inkmail.conf
   /usr/bin/sed -i "s|^inkmail_url=.*|inkmail_url=|" "${cfg}"
 fi

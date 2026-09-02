@@ -1,14 +1,14 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
 
-# This writes a BIMI SVG to www/html/domain.tld/bimi.svg and ensures the DNS TXT
-## Used by inkMail / setbimi when the panel cannot write the html tree
-## html/domain.tld must already be the site (link to domains/ or vapps/). No mkdir.
+# This writes a BIMI SVG into the VIP drop and runs setbimi
+## Dest: /srv/www/email/bimi/domain.tld/bimi.svg
+## Public URL: https://${emailTLDURI}/domain.tld/bimi.svg
 
 # How to use:
 ## ./inkemailsetbimi [ domain.tld ] [ /path/to.svg ]
 
-usagenotes="This writes BIMI SVG to www/html/domain.tld/bimi.svg and adds the DNS TXT"
+usagenotes="This writes BIMI SVG to /srv/www/email/bimi/domain.tld/bimi.svg and adds the DNS TXT"
 usageformat="inkemailsetbimi [ domain.tld ] [ svg path ]"
 usageexample="inkemailsetbimi inkisaverb.com /tmp/logo.svg"
 hierarchy=( tertiary )
@@ -21,7 +21,7 @@ voptflagpurpose=(  )
 dependencyinstall=(  )
 prerequesite=(  )
 usedby=(  )
-useserfs=( inkdnsaddbimi )
+useserfs=( setbimi )
 useconfigs=( siteurilist )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/inkemailsetbimi.replace" ]; then . /opt/verb/mods/inkemailsetbimi.replace; return 0; fi # Replaces this script
@@ -35,35 +35,18 @@ if [ -z "${domain}" ] || [ ! -f "${src}" ]; then
   exit 5
 fi
 
-# Verb namespace is not a hosted BIMI domain
-. /opt/verb/conf/siteurilist
-for vuri in "${nameURI}" "${hostURI}" "${serveURI}" "${emailTLDURI}" "${itsqlTLDURI}" "${emailURI}" "${oneURI}" "${inkURI}" "${blueURI}" "${kiwiURI}" "${redURI}" "${vipURI}"; do
-  if [ -n "${vuri}" ] && { [ "${domain}" = "${vuri}" ] || [[ "${domain}" == *"${vuri}"* ]]; }; then
-    /usr/bin/echo "Verb URI ${vuri} is not a BIMI host domain. I quit."
-    exit 5
-  fi
-done
-
 if ! /usr/bin/grep -qi '<svg' "${src}"; then
   /usr/bin/echo "Not an SVG."
   exit 8
 fi
 
-if [ ! -d "/srv/www/html/${domain}" ]; then
-  /usr/bin/echo "No website at /srv/www/html/${domain}. I quit."
-  exit 6
-fi
-
-dest="/srv/www/html/${domain}/bimi.svg"
-/usr/bin/cp "${src}" "${dest}"
+/usr/bin/mkdir -p /srv/vip/files
+/usr/bin/cp "${src}" "/srv/vip/files/${domain}.svg"
 e="$?"; [[ "$e" = "0" ]] || exit "6"
-/usr/bin/chown www:www "${dest}"
-/usr/bin/chmod 644 "${dest}"
 
-/opt/verb/serfs/inkdnsaddbimi "${domain}"
+/opt/verb/serfs/setbimi "${domain}" vip
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
-/usr/bin/echo "BIMI logo at https://${domain}/bimi.svg"
 
 
 

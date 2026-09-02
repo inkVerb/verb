@@ -18,9 +18,13 @@ import (
 )
 
 func main() {
-	cfg := flag.String("config", os.Getenv("INKMAIL_CONFIG"), "inkmail.conf")
+	cfg := flag.String("config", os.Getenv("INKMAIL_CONFIG"), "inkmail config")
 	flag.Parse()
-	c := load(*cfg)
+	path := *cfg
+	if path == "" {
+		path = "/etc/inkmail/conf"
+	}
+	c := load(path)
 	s := &srv{c: c}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", s.home)
@@ -167,7 +171,7 @@ func (s *srv) home(w http.ResponseWriter, r *http.Request) {
 <li><a href="/aliases">Aliases</a></li>
 <li><a href="/bimi">BIMI (bimi.svg)</a></li>
 </ul>
-<p class="muted">Roundcube is webmail. This is the control plane. BIMI uploads go to <code>/srv/vip/files/domain.tld.bimi.svg</code> then <code>ink set bimi -p vip -d domain.tld</code>.</p>
+<p class="muted">Roundcube is webmail. This is the control plane. BIMI uploads go to <code>/srv/vip/files/domain.tld.svg</code> then <code>ink set bimi -p vip -d domain.tld</code>.</p>
 </div>`))
 }
 
@@ -287,7 +291,7 @@ func (s *srv) bimi(w http.ResponseWriter, r *http.Request) {
 						drop = "/srv/vip/files"
 					}
 					_ = os.MkdirAll(drop, 0750)
-					name := filepath.Join(drop, d+".bimi.svg")
+					name := filepath.Join(drop, d+".svg")
 					if err := os.WriteFile(name, raw, 0644); err != nil {
 						flash = `<p class="flash">` + html.EscapeString(err.Error()) + `</p>`
 					} else {
@@ -301,8 +305,8 @@ func (s *srv) bimi(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	fmt.Fprint(w, page("inkMail", flash+`<div class="card"><h2>BIMI</h2>
-<p class="muted">SVG Tiny PS at <code>https://domain.tld/bimi.svg</code>. TXT is <code>default._bimi</code>.</p>
-<p class="muted">Upload is written to <code>/srv/vip/files/domain.tld.bimi.svg</code>, then <code>ink set bimi -p vip -d domain.tld</code>.</p>
+<p class="muted">SVG Tiny PS served at <code>/domain.tld/bimi.svg</code> on the email TLD host. TXT is <code>default._bimi</code>.</p>
+<p class="muted">Upload is written to <code>/srv/vip/files/domain.tld.svg</code>, then <code>ink set bimi -p vip -d domain.tld</code>. The drop is deleted after install.</p>
 <form method="post" enctype="multipart/form-data">
 <label>Domain</label><input name="domain" required>
 <label>bimi.svg</label><input type="file" name="svg" accept="image/svg+xml,.svg" required>

@@ -4,7 +4,7 @@
 - Uses `inkget pdt` (ZJZ dragon `donjon/repoupdate/pdt.updaterepo`) to fetch the GitHub tarball
 - Lives in `www/vapps/pdt.DOMAIN.TLD` (machine name)
 - Builds the Go binary, binds `127.0.0.1`, Nginx reverse-proxies the domain
-- BIMI at `https://domain.tld/bimi.svg` (Nginx `location = /bimi.svg`, not the proxy)
+- BIMI via `ink set bimi` at `https://${emailTLDURI}/domain.tld/bimi.svg` (not on the pdt proxy)
 - Writes PostgreSQL credentials to `verb/conf/vapps/vapp.pdt.DOMAIN.TLD`
 - Writes the app config to `verb/conf/vapps/pdt.DOMAIN.config` (`PDT_CONFIG`)
 - Adds the domain with `adddomain` if it is not already hosted

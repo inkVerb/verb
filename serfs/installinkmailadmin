@@ -1,15 +1,16 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
 
-# This installs the Go inkMail control panel at po.emailURI
+# This installs the Go inkMail control panel at po.emailTLDURI
 ## Agnostic: Maddy (inkemail) or Postfix (inkvmail) via serfs/inkmail
 ## Roundcube stays webmail. PFA stays for Postfix if installed. This is the unified panel.
-## BIMI uploads land in /srv/vip/files/DOMAIN.bimi.svg, then `ink set bimi -p vip -d DOMAIN`
+## Binary at /srv/www/email/inkmail ; live config at /etc/inkmail/conf
+## BIMI uploads land in /srv/vip/files/DOMAIN.svg, then `ink set bimi -p vip -d DOMAIN`
 
 # How to use:
 ## ./installinkmailadmin [ path folder ]
 
-usagenotes="This installs the Go inkMail control panel on po.emailURI"
+usagenotes="This installs the Go inkMail control panel on po.emailTLDURI"
 usageformat="installinkmailadmin [ path folder - optional ]"
 usageexample="installinkmailadmin
 installinkmailadmin wink822"
@@ -82,6 +83,7 @@ cd "${dst}" || exit 6
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 port=8099
+/usr/bin/mkdir -p /etc/inkmail
 cfg="/etc/inkmail/conf"
 /usr/bin/cat > "${cfg}" <<EOF
 listen=127.0.0.1:${port}
@@ -91,6 +93,7 @@ domain_lock=
 vip_drop=/srv/vip/files
 EOF
 /usr/bin/chmod 640 "${cfg}"
+/usr/bin/chmod 750 /etc/inkmail
 
 /usr/bin/cat > /etc/systemd/system/inkmail.service <<EOF
 [Unit]
@@ -169,9 +172,12 @@ fi
 
 /usr/bin/sed -i "s/ServerPOPath=.*/ServerPOPath=\"${poFolder}\"/" /opt/verb/conf/servermailpath
 
+. /opt/verb/donjon/bimi-web.sh
+
 /usr/bin/echo "
 inkMail is at:
   https://po.${emailTLDURI}/${poFolder}/
+Config: /etc/inkmail/conf
 SSO from the verb web UI once that admin is enrolled.
 "
 

@@ -1,10 +1,10 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
 
-# This adds the BIMI TXT record to an existing DNS zone file on the server
-## Logo lives at https://domain.tld/bimi.svg (SVG Tiny PS) — web file is site-files / 0sitedefaultInProgress, not this serf
-## TXT: default._bimi IN TXT "v=BIMI1; l=https://domain.tld/bimi.svg;"
-## Verb URIs (siteurilist) are refused; updatehtmlverbs already has the logo on those sites
+# This adds (or updates) the BIMI TXT record on an existing DNS zone
+## Logo lives at https://${emailTLDURI}/domain.tld/bimi.svg
+## TXT: default._bimi IN TXT "v=BIMI1; l=https://${emailTLDURI}/domain.tld/bimi.svg;"
+## File is /srv/www/email/bimi/domain.tld/bimi.svg (setbimi / updatehtmlverbs)
 
 # How to use:
 ## ./inkdnsaddbimi [ domain.tld ]
@@ -23,7 +23,7 @@ voptflags=(  )
 voptflagpurpose=(  )
 dependencyinstall=( inkdnsinstall )
 prerequesite=( inkdnsadddomain )
-usedby=( newdomainshell )
+usedby=( newdomainshell setbimi )
 useserfs=( inkdnsserial inkdnsrefreshbind )
 useconfigs=( siteurilist )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
@@ -39,14 +39,9 @@ else
   zonedir="zones"
 fi
 
-# Verb namespace is not a hosted BIMI domain
 . /opt/verb/conf/siteurilist
-for vuri in "${nameURI}" "${hostURI}" "${serveURI}" "${emailTLDURI}" "${itsqlTLDURI}" "${emailURI}" "${oneURI}" "${inkURI}" "${blueURI}" "${kiwiURI}" "${redURI}" "${vipURI}"; do
-  if [ -n "${vuri}" ] && { [ "${dnsDomain}" = "${vuri}" ] || [[ "${dnsDomain}" == *"${vuri}"* ]]; }; then
-    /usr/bin/echo "Verb URI ${vuri} is not a BIMI host domain. I quit."
-    exit 5
-  fi
-done
+bimiURL="https://${emailTLDURI}/${dnsDomain}/bimi.svg"
+txtLine="default._bimi.${dnsDomain}.	IN  TXT	\"v=BIMI1; l=${bimiURL};\""
 
 zonefile="/opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}"
 if [ ! -f "${zonefile}" ]; then
@@ -54,17 +49,30 @@ if [ ! -f "${zonefile}" ]; then
   exit 8
 fi
 
-# Check if already added
+# Update an existing record to the emailTLDURI URL
 if /usr/bin/grep -Fq "; BIMI ${dnsDomain}" "${zonefile}"; then
-/usr/bin/echo "The BIMI record for ${dnsDomain} has already been added. Use killinkdnsbimi to remove it."
-exit 0; fi
+  /usr/bin/sed -i "s|default._bimi.${dnsDomain}.*|${txtLine}|" "${zonefile}"
+  /opt/verb/serfs/inkdnsserial ${dnsDomain}${verberny}
+  e="$?"; [[ "$e" = "0" ]] || exit "$e"
+  if [ -f "/opt/verb/conf/inkdnsconf" ]; then
+    . /opt/verb/conf/inkdnsconf
+    if [ "${InkDNSStat}" = "INSTALLED" ]; then
+      /opt/verb/serfs/inkdnsrefreshbind
+      e="$?"; [[ "$e" = "0" ]] || exit "$e"
+    fi
+  fi
+  /usr/bin/echo "The BIMI record for ${dnsDomain} was updated to ${bimiURL}."
+  if [ -e "/opt/verb/mods/inkdnsaddbimi.after" ]; then . /opt/verb/mods/inkdnsaddbimi.after; fi
+  exit 0
+fi
 if /bin/grep -Fq "default._bimi" "${zonefile}"; then
-/usr/bin/echo "The ${dnsDomain} zone file already mentions BIMI. Fix that first or use killinkdnsbimi."
-exit 7; fi
+  /usr/bin/echo "The ${dnsDomain} zone file already mentions BIMI. Fix that first or use killinkdnsbimi."
+  exit 7
+fi
 
 # Add the entry
 /usr/bin/echo "; BIMI ${dnsDomain}" >> "${zonefile}"
-/usr/bin/echo "default._bimi.${dnsDomain}.	IN  TXT	\"v=BIMI1; l=https://${dnsDomain}/bimi.svg;\"" >> "${zonefile}"
+/usr/bin/echo "${txtLine}" >> "${zonefile}"
 /usr/bin/echo ";; End BIMI ${dnsDomain}" >> "${zonefile}"
 
 # Set the Serial No
@@ -81,7 +89,7 @@ if [ -f "/opt/verb/conf/inkdnsconf" ]; then
 fi
 
 # Finish
-/usr/bin/echo "The BIMI record has been added to the ${dnsDomain} DNS zone file."
+/usr/bin/echo "The BIMI record has been added to the ${dnsDomain} DNS zone file (${bimiURL})."
 
 
 

@@ -1,0 +1,114 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This changes the URL folder of inkMail on po.emailTLDURI
+## Matches the path already set by installinkmailadmin
+## Live config is /etc/inkmail/conf (not verb/conf — verb tree perms are for the framework)
+## Email web app lives at /srv/www/email/inkmail
+
+# How to use:
+## ./setinkmailpath [ folder ]
+
+# Eg:
+## To use at po.NAME.verb.email/mysecretpath:
+## ./setinkmailpath mysecretpath
+
+
+usagenotes="This changes the URL folder of inkMail on po.emailTLDURI"
+usageformat="setinkmailpath [ folder ]"
+usageexample="setinkmailpath
+setinkmailpath wink822"
+hierarchy=( primary )
+vsetnames=( "Folder" )
+vsettypes=( isazAZ09lines )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( installinkmailadmin )
+usedby=(  )
+useserfs=(  )
+useconfigs=( siteurilist servermailpath )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setinkmailpath.replace" ]; then . /opt/verb/mods/setinkmailpath.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setinkmailpath.before" ]; then . /opt/verb/mods/setinkmailpath.before; fi # Precedes this script
+
+
+. /opt/verb/conf/siteurilist
+. /opt/verb/conf/servermailpath
+
+poFolder=$1
+
+if [ -z "${poFolder}" ]; then
+  /usr/bin/echo "Folder required."
+  exit 5
+fi
+if [ "${ServerPOPath}" = "PO_NOT_INSTALLED" ]; then
+  /usr/bin/echo "inkMail is not installed."
+  exit 8
+fi
+if [ "${ServerPFAPath}" != "PFA_NOT_INSTALLED" ] && [ "${ServerPFAPath}" != "PFA_NOT_ALLOWED" ] && [ "${ServerPFAPath}" = "${poFolder}" ]; then
+  /usr/bin/echo "Path ${poFolder} is already used by PostfixAdmin (ServerPFAPath). Choose a different path."
+  exit 7
+fi
+if [ "${ServerPOPath}" = "${poFolder}" ]; then
+  /usr/bin/echo "inkMail is already at ${poFolder}."
+  exit 0
+fi
+
+oldPath="${ServerPOPath}"
+
+# verb status file
+/usr/bin/sed -i "s/ServerPOPath=.*/ServerPOPath=\"${poFolder}\"/" /opt/verb/conf/servermailpath
+
+# Live inkMail config lives in /etc (not the verb tree)
+/usr/bin/mkdir -p /etc/inkmail
+if [ -f /opt/verb/conf/inkmail.conf ] && [ ! -f /etc/inkmail/conf ]; then
+  /usr/bin/mv /opt/verb/conf/inkmail.conf /etc/inkmail/conf
+fi
+if [ ! -f /etc/inkmail/conf ]; then
+  /usr/bin/echo "No /etc/inkmail/conf. Run installinkmailadmin first."
+  exit 8
+fi
+/usr/bin/sed -i "s|^path=.*|path=/${poFolder}/|" /etc/inkmail/conf
+/usr/bin/chmod 640 /etc/inkmail/conf
+
+# Nginx location on po.emailTLDURI
+nconf="/opt/verb/conf/webserver/sites-available/nginx/po.${emailTLDURI}.conf"
+if [ -f "${nconf}" ]; then
+  if /usr/bin/grep -q "INKMAIL-PROXY" "${nconf}"; then
+    /usr/bin/sed -i "s|location /${oldPath}/ {|location /${poFolder}/ {|" "${nconf}"
+  else
+    /usr/bin/sed -i "/location \/ {/i\\
+  #INKMAIL-PROXY-start\\
+  location /${poFolder}/ {\\
+    proxy_http_version 1.1;\\
+    proxy_set_header Host \$host;\\
+    proxy_set_header X-Real-IP \$remote_addr;\\
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;\\
+    proxy_set_header X-Forwarded-Proto \$scheme;\\
+    proxy_pass http://127.0.0.1:8099/;\\
+  }\\
+  #INKMAIL-PROXY-end
+" "${nconf}"
+  fi
+  /usr/bin/systemctl reload nginx 2>/dev/null || true
+fi
+
+# Keep the html convenience link if updatehtmlverbs made one
+if [ -n "${emailTLD}" ] && [ -d "/srv/www/verb/${emailTLD}.po" ]; then
+  /usr/bin/rm -f "/srv/www/verb/${emailTLD}.po/${oldPath}"
+  if [ -d /srv/www/email/inkmail ]; then
+    /usr/bin/ln -sfn /srv/www/email/inkmail "/srv/www/verb/${emailTLD}.po/${poFolder}"
+  fi
+fi
+
+/usr/bin/systemctl restart inkmail.service 2>/dev/null || true
+
+/usr/bin/echo "inkMail path is now https://po.${emailTLDURI}/${poFolder}/"
+
+
+
+
+if [ -e "/opt/verb/mods/setinkmailpath.after" ]; then . /opt/verb/mods/setinkmailpath.after; fi # Follows this script

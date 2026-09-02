@@ -1,17 +1,19 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
 
-# This installs a BIMI SVG for a hosted domain from the VIP drop or an FTP drop
-## VIP:  /srv/vip/files/domain.tld.bimi.svg  →  /srv/www/html/domain.tld/bimi.svg
-## FTP:  /srv/ftp/domain.tld.bimi.svg        →  /srv/www/html/domain.tld/bimi.svg
-## html/domain.tld must already be the site (link to domains/ or vapps/). No mkdir.
-## Then adds the default._bimi TXT (inkdnsaddbimi)
-## inkMail uploads to the VIP path, then runs: ink set bimi -p vip -d domain.tld
+# This installs a BIMI SVG for a mail domain from a VIP or FTP drop
+## Drop names: domain.tld.svg  (legacy domain.tld.bimi.svg still accepted)
+## VIP:  /srv/vip/files/domain.tld.svg  →  /srv/www/email/bimi/domain.tld/bimi.svg
+## FTP:  /srv/ftp/domain.tld.svg        →  same dest
+## Public URL: https://${emailTLDURI}/domain.tld/bimi.svg
+## The drop file is deleted after a successful install.
+## inkMail writes the VIP drop, then runs: ink set bimi -p vip -d domain.tld
+## scp/ftp drops are installed only by this CLI (SysAdmin).
 
 # How to use:
 ## ./setbimi [ domain.tld ] [ ftp | vip ]
 
-usagenotes="This moves a dropped BIMI SVG into www/html/domain.tld/bimi.svg and adds the DNS TXT"
+usagenotes="This moves a dropped BIMI SVG into /srv/www/email/bimi/domain.tld/bimi.svg and adds the DNS TXT"
 usageformat="setbimi [ domain.tld ] [ ftp | vip ]"
 usageexample="setbimi inkisaverb.com vip
 setbimi inkisaverb.com ftp"
@@ -40,21 +42,16 @@ if [ -z "${domain}" ] || [ -z "${drop}" ]; then
   exit 5
 fi
 
-# Verb namespace is not a hosted BIMI domain
 . /opt/verb/conf/siteurilist
-for vuri in "${nameURI}" "${hostURI}" "${serveURI}" "${emailTLDURI}" "${itsqlTLDURI}" "${emailURI}" "${oneURI}" "${inkURI}" "${blueURI}" "${kiwiURI}" "${redURI}" "${vipURI}"; do
-  if [ -n "${vuri}" ] && { [ "${domain}" = "${vuri}" ] || [[ "${domain}" == *"${vuri}"* ]]; }; then
-    /usr/bin/echo "Verb URI ${vuri} is not a BIMI host domain. I quit."
-    exit 5
-  fi
-done
 
 case "${drop}" in
   vip)
-    src="/srv/vip/files/${domain}.bimi.svg"
+    src="/srv/vip/files/${domain}.svg"
+    srclegacy="/srv/vip/files/${domain}.bimi.svg"
     ;;
   ftp)
-    src="/srv/ftp/${domain}.bimi.svg"
+    src="/srv/ftp/${domain}.svg"
+    srclegacy="/srv/ftp/${domain}.bimi.svg"
     ;;
   *)
     /usr/bin/echo "Drop path must be ftp or vip."
@@ -62,6 +59,9 @@ case "${drop}" in
     ;;
 esac
 
+if [ ! -f "${src}" ] && [ -f "${srclegacy}" ]; then
+  src="${srclegacy}"
+fi
 if [ ! -f "${src}" ]; then
   /usr/bin/echo "No BIMI SVG at ${src}"
   exit 8
@@ -71,22 +71,24 @@ if ! /usr/bin/grep -qi '<svg' "${src}"; then
   exit 8
 fi
 
-if [ ! -d "/srv/www/html/${domain}" ]; then
-  /usr/bin/echo "No website at /srv/www/html/${domain}. I quit."
-  exit 6
-fi
+. /opt/verb/donjon/bimi-web.sh
 
-dest="/srv/www/html/${domain}/bimi.svg"
+destDir="/srv/www/email/bimi/${domain}"
+dest="${destDir}/bimi.svg"
+/usr/bin/mkdir -p "${destDir}"
 /usr/bin/cp "${src}" "${dest}"
 e="$?"; [[ "$e" = "0" ]] || exit "6"
 /usr/bin/chown www:www "${dest}"
 /usr/bin/chmod 644 "${dest}"
 
-# Leave the drop in place so the operator can see it succeeded; shred is their call
+# Drop is spent once it is installed
+/usr/bin/rm -f "${src}" "${srclegacy}"
+
 /opt/verb/serfs/inkdnsaddbimi "${domain}"
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
-/usr/bin/echo "BIMI logo at https://${domain}/bimi.svg (from ${drop})"
+/usr/bin/echo "BIMI logo at https://${emailTLDURI}/${domain}/bimi.svg (from ${drop})"
+
 
 
 

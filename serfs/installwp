@@ -8,7 +8,7 @@
 ## Any files conflicting with WordPress will be replaced by the new WordPress installation created by this script
 ## The domain will automatically be added with DKIM credentials if it has not been already
 ## This will NOT run inkCert for the domain, but inkCert will be prepped at least and used if inkCert certs already exist.
-## BIMI: copies conf/lib/logo/nib-logo.svg to vapps/wp.DOMAIN/bimi.svg. WP try_files / !-f serves the real file, no rewrite.
+## BIMI is not on the WP site; use ink set bimi (https://${emailTLDURI}/domain.tld/bimi.svg).
 
 # All options after the domain are optional, but are sequential
 
@@ -86,13 +86,6 @@ dBaseUser=${dBase}; fi
 /bin/ln -sfn /srv/www/vapps/${cVappName}.${domain} /srv/vip/_webapps/; wait
 /bin/chown -R www:www /srv/www/html/${domain}; wait
 /bin/chown -R www:www /srv/www/vapps/${cVappName}.${domain}; wait
-
-# BIMI logo at the vapp root (html is the vapp). WP will not rewrite an existing file.
-if [ -f /opt/verb/conf/lib/logo/nib-logo.svg ]; then
-  /usr/bin/cp /opt/verb/conf/lib/logo/nib-logo.svg /srv/www/vapps/${cVappName}.${domain}/bimi.svg
-  /usr/bin/chown www:www /srv/www/vapps/${cVappName}.${domain}/bimi.svg
-  /usr/bin/chmod 644 /srv/www/vapps/${cVappName}.${domain}/bimi.svg
-fi
 
 # Create the database and credentials
 /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf -e "

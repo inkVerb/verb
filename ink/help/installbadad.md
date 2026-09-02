@@ -6,7 +6,7 @@
 - Machine name: `www/vapps/badad.DOMAIN.TLD`
 - Web at `DOMAIN`; API engine at `api.DOMAIN` (second localhost port, `addsubdomain api`)
 - Builds the Go binary, binds `127.0.0.1`, Nginx reverse-proxies both hosts
-- BIMI at `https://domain.tld/bimi.svg`
+- BIMI via `ink set bimi` at `https://${emailTLDURI}/domain.tld/bimi.svg`
 - Writes PostgreSQL credentials to `verb/conf/vapps/vapp.badad.DOMAIN.TLD`
 - Writes the app config to `verb/conf/vapps/badad.DOMAIN.config` (`BADAD_CONFIG`)
 - Adds the domain with `adddomain` if it is not already hosted

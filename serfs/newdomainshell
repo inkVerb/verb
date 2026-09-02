@@ -103,7 +103,7 @@ if [ "${ServerMailStatus}" != "EMAIL_NOT_INSTALLED" ]; then
 
 fi
 
-# BIMI even when mail is not the reason for the domain (logo at /bimi.svg)
+# BIMI TXT even when mail is not the reason for the domain (logo at emailTLDURI/domain/bimi.svg)
 if [ -f "/opt/verb/conf/inkdns/zones/db.${newdomain}" ]; then
   /opt/verb/serfs/inkdnsaddbimi ${newdomain}; wait
 fi

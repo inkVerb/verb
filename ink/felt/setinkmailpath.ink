@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the serf name
-surfname="setbimi"
+surfname="setinkmailpath"
 
 # Include the settings & functions
 . ${InkSet}
@@ -9,30 +9,23 @@ surfname="setbimi"
 
 # About message
 aboutMsg="$(cat <<EOU
-This moves a dropped BIMI SVG into /srv/www/email/bimi/domain.tld/bimi.svg and adds the DNS TXT.
-inkMail uploads to /srv/vip/files/domain.tld.svg then runs this with -p vip.
-Public URL is https://emailTLDURI/domain.tld/bimi.svg
+This changes the URL folder of inkMail on po.emailTLDURI.
+Updates verb/conf/servermailpath, /etc/inkmail/conf, and the nginx location.
 EOU
 )"
 
 # Available flags
-optSerf="d:p:hrcv"
+optSerf="p:hrcv"
 declare -A optName
 declare -A optDesc
-optName[d]="Domain"
-optDesc[d]="The hosted domain"
-optName[p]="Drop path"
-optDesc[p]="vip or ftp"
+optName[p]="Folder"
+optDesc[p]="URL folder under po.emailTLDURI"
 
 # Check the variables
 while getopts "${optSerf}" Flag; do
  case "${Flag}" in
-  d)
-    isDomain "${OPTARG}" "${optName[d]}"
-    SOd="${OPTARG}"
-  ;;
   p)
-    isChoice "${OPTARG}" "vip ftp" "${optName[p]}"
+    isazAZ09lines "${OPTARG}" "${optName[p]}"
     SOp="${OPTARG}"
   ;;
   c)
@@ -61,26 +54,22 @@ ${aboutMsg}"
   /bin/echo "
 Available flags:
 -h This help message
--d ${optName[d]}: ${optDesc[d]}
 -p ${optName[p]}: ${optDesc[p]}
 "
   exit 0
 fi
 
 ## Required flags & defaults
-if [ -z "${SOd}" ]; then
-  /bin/echo "${optName[d]} option must be set."; inkFail
-fi
 if [ -z "${SOp}" ]; then
   /bin/echo "${optName[p]} option must be set."; inkFail
 fi
 
 # Message prep
-success_message="BIMI SVG installed under /srv/www/email/bimi/ and DNS TXT added."
+success_message="inkMail URL folder updated."
 fail_message="Command failed."
 
 # Prepare command
-serfcommand="${Serfs}/${surfname} ${SOd} ${SOp}"
+serfcommand="${Serfs}/${surfname} ${SOp}"
 
 # Run the ink
 . $InkRun

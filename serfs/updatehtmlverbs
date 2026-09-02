@@ -116,6 +116,14 @@ fi
     /usr/bin/ln -sfn /srv/www/email/po "/srv/www/verb/${emailTLD}.po/${ServerPOPath}"
   fi
 fi
+ if [ "${ServerPOPath}" != "PO_NOT_INSTALLED " ] && [ -d "/srv/www/email/inkmail" ]; then
+  if [ ! -e "/srv/www/verb/${emailTLD}.po/${ServerPOPath}" ]; then
+    /usr/bin/ln -sfn /srv/www/email/inkmail "/srv/www/verb/${emailTLD}.po/${ServerPOPath}"
+  fi
+fi
+
+# BIMI web root (nameURI stock logo + nginx on emailTLDURI)
+. /opt/verb/donjon/bimi-web.sh
 
 # Serve URI
 /usr/bin/rm -rf /srv/www/verb/${ServerServeTLD}.serve

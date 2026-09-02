@@ -4,7 +4,7 @@
 # This points an already-hosted domain's Nginx vhost at a local reverse-proxy port
 ## Used by Go vapps (pdt-news, badAd) so the domain keeps inkCert while the app binds 127.0.0.1:PORT
 ## Replaces the PHP/static location / with a proxy_pass, preserving inkCert markers and cert paths
-## BIMI: location = /bimi.svg is served from /srv/www/html/DOMAIN/bimi.svg (adddomain site-files), not the proxy
+## BIMI is not on the site; it is https://${emailTLDURI}/domain.tld/bimi.svg via setbimi
 
 # How to use:
 ## ./setnginxvappproxy [ domain.tld ] [ 127.0.0.1:9001 ]
@@ -70,11 +70,6 @@ server {
   server_name ${domain};
 
   #INKVERB-VAPP-PROXY-start
-  location = /bimi.svg {
-    alias /srv/www/html/${domain}/bimi.svg;
-    default_type image/svg+xml;
-    add_header Access-Control-Allow-Origin *;
-  }
   location / {
     proxy_http_version 1.1;
     proxy_set_header Host \$host;
