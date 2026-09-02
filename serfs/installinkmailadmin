@@ -42,7 +42,7 @@ case "${ServerMailStatus}" in
     ;;
 esac
 if [ "${ServerType}" = "lamp" ]; then
-  /usr/bin/echo "inkMail needs Nginx (LEMP or LAEMP)."
+  /usr/bin/echo "inkMail needs Nginx (LEMP or LAEMP); LAMP not allowed."
   exit 8
 fi
 
@@ -57,7 +57,7 @@ if [ "${ServerPOPath}" != "PO_NOT_INSTALLED" ]; then
   exit 0
 fi
 if [ "${ServerPFAPath}" != "PFA_NOT_INSTALLED" ] && [ "${ServerPFAPath}" != "PFA_NOT_ALLOWED" ] && [ "${ServerPFAPath}" = "${poFolder}" ]; then
-  /usr/bin/echo "Path ${poFolder} is already used by PostfixAdmin (ServerPFAPath). Choose a different path."
+  /usr/bin/echo "Path ${poFolder} is already used by PostfixAdmin. Choose a different path."
   exit 7
 fi
 
@@ -68,8 +68,8 @@ if [ ! -f "${src}/cmd/inkmail/main.go" ]; then
 fi
 
 if ! /usr/bin/command -v go >/dev/null 2>&1; then
-  /usr/bin/echo "Go is not installed. I quit."
-  exit 6
+  /usr/bin/echo "Go is not installed. Installing..."
+  /usr/bin/pacman -Syy --noconfirm go
 fi
 
 dst="/srv/www/email/inkmail"
