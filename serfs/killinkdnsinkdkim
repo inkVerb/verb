@@ -8,7 +8,7 @@
 ## ./killinkdnsinkdkim [ domain.tld ] verber
 
 usagenotes="This removes the inkDKIM key from an existing DNS TXT record in the inkDNS zone file on the server"
-usageformat="killinkdnsdomain [ domain.tld or subdomain.domain.tld etc ] [ verber - only if addressing a verb domain ]"
+usageformat="killinkdnsinkdkim [ domain.tld or subdomain.domain.tld etc ] [ verber - only if addressing a verb domain ]"
 usageexample="killinkdnsinkdkim inkisaverb.com
 killinkdnsinkdkim NAME.verb.email verber"
 hierarchy=( tertiary killdomainshell )
@@ -29,27 +29,37 @@ if [ -e "/opt/verb/mods/killinkdnsinkdkim.before" ]; then . /opt/verb/mods/killi
 
 
 dnsDomain="$1"
-if [ -n $2 ] && [ "$2" = "verber" ]; then
-  ZONEdir="inkzones"
+if [ -n "$2" ] && [ "$2" = "verber" ]; then
+  zonedir="inkzones"
 else
-  ZONEdir="zones"
+  zonedir="zones"
 fi
 
 # Include the configs
 . /opt/verb/conf/servernameip
 
-# Check if already added
-if /bin/grep -Fq "; inkDKIM key" /opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}; then
-/bin/echo "The inkDKIM key for ${dnsDomain} has not been added. Use inkdnsaddinkdkim to add it."
-exit 0; fi
+zonefile="/opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}"
+if [ ! -f "${zonefile}" ]; then
+  /bin/echo "No zone file for ${dnsDomain}."
+  exit 8
+fi
 
-# Remove the key
-/bin/sed -i "/; inkDKIM key ${dnsDomain}/,/;; End inkDKIM key ${dnsDomain}/d" /opt/verb/conf/inkdns/${zonedir}/db.${dnsDomain}
+# Check if already added
+if ! /bin/grep -Eq "; (ink)?DKIM key ${dnsDomain}" "${zonefile}" && ! /bin/grep -q "_domainkey" "${zonefile}"; then
+  /bin/echo "The inkDKIM key for ${dnsDomain} has not been added. Use inkdnsaddinkdkim to add it."
+  exit 0
+fi
+
+# Remove the key (current and legacy comment markers)
+/bin/sed -i "/; inkDKIM key ${dnsDomain}/,/;; End inkDKIM key ${dnsDomain}/d" "${zonefile}"
+/bin/sed -i "/; DKIM key ${dnsDomain}/,/;; End DKIM key ${dnsDomain}/d" "${zonefile}"
+/bin/sed -i "/inkdkim\._domainkey/d" "${zonefile}"
+/bin/sed -i "/default\._domainkey/d" "${zonefile}"
 
 # Set the Serial No
 if [ "${zonedir}" = "inkzones" ]; then
   /opt/verb/serfs/inkdnsserial ${dnsDomain} verber
-elif [ "${zonedir}" = "zones" ]; then
+else
   /opt/verb/serfs/inkdnsserial ${dnsDomain}
 fi
 
@@ -57,7 +67,9 @@ fi
 if [ -f "/opt/verb/conf/inkdnsconf" ]; then
   . /opt/verb/conf/inkdnsconf
   if [ "${InkDNSStat}" = "INSTALLED" ]; then
-/opt/verb/serfs/inkdnsrefreshbind; fi; fi
+    /opt/verb/serfs/inkdnsrefreshbind
+  fi
+fi
 
 # Finish
 /bin/echo "The inkDKIM key has been removed from the ${dnsDomain} DNS zone file."

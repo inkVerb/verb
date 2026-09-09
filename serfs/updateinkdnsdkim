@@ -1,0 +1,97 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This checks Maddy / Postfix vmail DKIM keys and rewrites BIND-safe TXT
+# records on every zone in conf/inkdns/inkzones and conf/inkdns/zones.
+## Fixes TXT strings over 255 octets (named: dns_rdata_fromtext syntax error).
+## Ensures nameURI and emailTLDURI have keys+TXT when the mail stack allows it.
+
+# How to use:
+## ./updateinkdnsdkim
+
+usagenotes="This checks mail DKIM keys and rewrites BIND-safe TXT on all inkDNS zone files"
+usageformat="updateinkdnsdkim"
+usageexample="updateinkdnsdkim"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=( inkdnsinstall )
+prerequesite=(  )
+usedby=(  )
+useserfs=( newinkdkim inkdnsaddinkdkim inkdnsrefreshbind )
+useconfigs=( servermailpath siteurilist inkdnsconf )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/updateinkdnsdkim.replace" ]; then . /opt/verb/mods/updateinkdnsdkim.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/updateinkdnsdkim.before" ]; then . /opt/verb/mods/updateinkdnsdkim.before; fi # Precedes this script
+
+
+. /opt/verb/conf/servermailpath
+. /opt/verb/conf/siteurilist
+
+if [ "${ServerMailStatus}" != "VMAIL_SERVER" ] && [[ "${ServerMailStatus}" != "MADDY_EMAIL_"* ]]; then
+  /usr/bin/echo "No mail server installed; DKIM zone update skipped."
+  exit 0
+fi
+
+# VMAIL: make sure the two native verb mail names have OpenDKIM keys
+if [ "${ServerMailStatus}" = "VMAIL_SERVER" ]; then
+  for ensuredom in ${nameURI} ${emailTLDURI}; do
+    [ -n "${ensuredom}" ] || continue
+    if [ ! -f "/etc/opendkim/keys/${ensuredom}/inkdkim.txt" ]; then
+      /usr/bin/echo "Creating OpenDKIM keys for ${ensuredom}..."
+      /opt/verb/serfs/newinkdkim "${ensuredom}" || true
+    fi
+  done
+fi
+
+added=0
+skipped=0
+
+dkim_one() {
+  local domain="$1"
+  local verberflag="$2"
+  if [ -n "${verberflag}" ]; then
+    /opt/verb/serfs/inkdnsaddinkdkim "${domain}" verber norefresh
+  else
+    /opt/verb/serfs/inkdnsaddinkdkim "${domain}" norefresh
+  fi
+  if [ "$?" = "0" ]; then
+    added=$((added + 1))
+  else
+    skipped=$((skipped + 1))
+    /usr/bin/echo "Skipped ${domain} (no key or no zone)."
+  fi
+}
+
+if [ -d /opt/verb/conf/inkdns/inkzones ]; then
+  for zonefile in /opt/verb/conf/inkdns/inkzones/db.*; do
+    [ -f "${zonefile}" ] || continue
+    domain="$(/usr/bin/basename "${zonefile}" | /usr/bin/sed 's/^db\.//')"
+    dkim_one "${domain}" verber
+  done
+fi
+if [ -d /opt/verb/conf/inkdns/zones ]; then
+  for zonefile in /opt/verb/conf/inkdns/zones/db.*; do
+    [ -f "${zonefile}" ] || continue
+    domain="$(/usr/bin/basename "${zonefile}" | /usr/bin/sed 's/^db\.//')"
+    dkim_one "${domain}" ""
+  done
+fi
+
+if [ -f /opt/verb/conf/inkdnsconf ]; then
+  . /opt/verb/conf/inkdnsconf
+  if [ "${InkDNSStat}" = "INSTALLED" ] && [ -x /opt/verb/serfs/inkdnsrefreshbind ]; then
+    /opt/verb/serfs/inkdnsrefreshbind || true
+  fi
+fi
+
+/usr/bin/echo "inkDKIM zone update: ${added} written, ${skipped} skipped."
+
+
+
+
+if [ -e "/opt/verb/mods/updateinkdnsdkim.after" ]; then . /opt/verb/mods/updateinkdnsdkim.after; fi # Follows this script

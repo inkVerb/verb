@@ -1,14 +1,12 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
 
-# This displays the inkDKIM information in OpenDKIM for a specific domain so it can be added to an opendkim txt record in the DNS file
-## inkDKIM is the inkVerb method of handling OpenDKIM keys
+# This displays the inkDKIM TXT for a domain, split for BIND (255-octet strings)
 
 # How to use:
 ## ./showinkdkim [ domain.tld ]
 
-
-usagenotes="This displays the inkDKIM information in OpenDKIM for a specific domain so it can be added to an opendkim txt record in the DNS file"
+usagenotes="This displays the inkDKIM TXT for a domain so it can be added to DNS"
 usageformat="showinkdkim [ domain.tld ]"
 usageexample="showinkdkim
 showinkdkim [ domain.tld ]"
@@ -23,23 +21,46 @@ dependencyinstall=(  )
 prerequesite=(  )
 usedby=(  )
 useserfs=(  )
-useconfigs=(  )
+useconfigs=( servermailpath )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/showinkdkim.replace" ]; then . /opt/verb/mods/showinkdkim.replace; return 0; fi # Replaces this script
 if [ -e "/opt/verb/mods/showinkdkim.before" ]; then . /opt/verb/mods/showinkdkim.before; fi # Precedes this script
 
 
+. /opt/verb/conf/servermailpath
+. /opt/verb/donjon/inkdns-dkim-txt.sh
+
 domain=$1
-
-
-## Postfix vmail?
-if [ "${ServerMailStatus}" = "VMAIL_SERVER" ]; then
-  /usr/bin/echo $(/bin/cat /etc/opendkim/keys/${domain}/inkdkim.txt)
-
-## Maddy email?
-  elif [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ]; then
-  /usr/bin/echo "default._domainkey IN TXT \"v=DKIM1; k=rsa; p=$(/usr/bin/cat /srv/email/maddy/dkim_keys/${domain}_default.dns | /usr/bin/grep -oP 'p=\K[^"]+')\""
+if [ -z "${domain}" ]; then
+  /usr/bin/echo "Domain is required."
+  exit 5
 fi
+
+dkimfile=""
+dkimowner=""
+if [ "${ServerMailStatus}" = "VMAIL_SERVER" ]; then
+  dkimfile="/etc/opendkim/keys/${domain}/inkdkim.txt"
+  dkimowner="inkdkim._domainkey.${domain}."
+elif [ "${ServerMailStatus}" = "MADDY_EMAIL_SERVER" ] || [[ "${ServerMailStatus}" == "MADDY_EMAIL_"* ]]; then
+  dkimfile="/srv/email/maddy/dkim_keys/${domain}_default.dns"
+  dkimowner="default._domainkey.${domain}."
+else
+  /usr/bin/echo "No mail server installed."
+  exit 0
+fi
+
+if [ ! -f "${dkimfile}" ]; then
+  /usr/bin/echo "No DKIM key file for ${domain}."
+  exit 6
+fi
+
+dkimval="$(inkdns_dkim_value_from_file "${dkimfile}")"
+if [ -z "${dkimval}" ]; then
+  /usr/bin/echo "Could not read a DKIM TXT value from ${dkimfile}."
+  exit 6
+fi
+/usr/bin/printf '%s\tIN  TXT\t%s\n' "${dkimowner}" "$(inkdns_txt_rdata "${dkimval}")"
+
 
 
 

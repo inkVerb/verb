@@ -90,6 +90,9 @@ if [ -d /srv/email/${cVappName} ]; then
     dkimwait=$((dkimwait + 1))
   done
   /opt/verb/serfs/inkdnsaddinkdkim ${nameURI} verber || true
+  if [ -n "${emailTLDURI}" ] && [ "${emailTLDURI}" != "${nameURI}" ]; then
+    /opt/verb/serfs/inkdnsaddinkdkim ${emailTLDURI} verber || true
+  fi
   /usr/bin/echo "Maddy started after permission repair."
   exit 0
 fi
@@ -473,6 +476,9 @@ done
 /opt/verb/serfs/inkdnsaddmail ${nameURI} verber ; wait
 ## Add the DNS records for the mail server TLD itself
 /opt/verb/serfs/inkdnsaddinkdkim ${nameURI} verber; wait
+if [ -n "${emailTLDURI}" ] && [ "${emailTLDURI}" != "${nameURI}" ]; then
+  /opt/verb/serfs/inkdnsaddinkdkim ${emailTLDURI} verber || true
+fi
 
 # Finish
 /usr/bin/echo "The Maddy email server for inkVerb has been installed.

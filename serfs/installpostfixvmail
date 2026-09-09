@@ -481,9 +481,16 @@ cd ${oldPwd} || exit 6
 
 # DKIM keys & TXT records
 /opt/verb/serfs/newinkdkim ${nameURI}; wait
+if [ -n "${emailTLDURI}" ] && [ "${emailTLDURI}" != "${nameURI}" ]; then
+  /opt/verb/serfs/newinkdkim ${emailTLDURI}; wait
+fi
 #NOTE Maddy or Postfix must be installed for this to work:
 /opt/verb/serfs/inkdnsaddmail ${nameURI} verber ; wait
 /opt/verb/serfs/inkdnsaddinkdkim ${nameURI} verber; wait
+if [ -n "${emailTLDURI}" ] && [ "${emailTLDURI}" != "${nameURI}" ]; then
+  /opt/verb/serfs/inkdnsaddmail ${emailTLDURI} verber || true
+  /opt/verb/serfs/inkdnsaddinkdkim ${emailTLDURI} verber || true
+fi
 
 # UFW (services and ports below them if known)
 /usr/bin/ufw allow smtp
