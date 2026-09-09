@@ -1,15 +1,15 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
 
-# This checks Maddy / Postfix vmail DKIM keys and rewrites BIND-safe TXT
-# records on every zone in conf/inkdns/inkzones and conf/inkdns/zones.
-## Fixes TXT strings over 255 octets (named: dns_rdata_fromtext syntax error).
-## Ensures nameURI and emailTLDURI have keys+TXT when the mail stack allows it.
+# Rewrite BIND-safe DKIM TXT only where this host actually sends mail.
+## Native verb zones: only nameURI (the mail host), and only if that zone has MX or smtp/mail.
+## Hosted zones/: only domains whose zone already has MX or smtp/mail, and a live key.
+## Does not walk every verb TLD. Does not create keys for emailTLDURI.
 
 # How to use:
 ## ./updateinkdnsdkim
 
-usagenotes="This checks mail DKIM keys and rewrites BIND-safe TXT on all inkDNS zone files"
+usagenotes="This rewrites BIND-safe DKIM TXT on the verber nameURI and hosted mail zones (MX or smtp/mail)"
 usageformat="updateinkdnsdkim"
 usageexample="updateinkdnsdkim"
 hierarchy=( primary )
@@ -37,15 +37,38 @@ if [ "${ServerMailStatus}" != "VMAIL_SERVER" ] && [[ "${ServerMailStatus}" != "M
   exit 0
 fi
 
-# VMAIL: make sure the two native verb mail names have OpenDKIM keys
-if [ "${ServerMailStatus}" = "VMAIL_SERVER" ]; then
-  for ensuredom in ${nameURI} ${emailTLDURI}; do
-    [ -n "${ensuredom}" ] || continue
-    if [ ! -f "/etc/opendkim/keys/${ensuredom}/inkdkim.txt" ]; then
-      /usr/bin/echo "Creating OpenDKIM keys for ${ensuredom}..."
-      /opt/verb/serfs/newinkdkim "${ensuredom}" || true
-    fi
-  done
+# Zone is a mail zone if it has MX or smtp/mail host records
+zone_sends_mail() {
+  local zf="$1"
+  [ -f "${zf}" ] || return 1
+  if /usr/bin/grep -Eq '[[:space:]]IN[[:space:]]+MX[[:space:]]' "${zf}"; then
+    return 0
+  fi
+  if /usr/bin/grep -Eq '^(smtp|mail)\.' "${zf}"; then
+    return 0
+  fi
+  return 1
+}
+
+has_dkim_key() {
+  local domain="$1"
+  if [ "${ServerMailStatus}" = "VMAIL_SERVER" ]; then
+    [ -f "/etc/opendkim/keys/${domain}/inkdkim.txt" ] && return 0
+  elif [[ "${ServerMailStatus}" == "MADDY_EMAIL_"* ]]; then
+    [ -f "/srv/email/maddy/dkim_keys/${domain}_default.dns" ] && return 0
+    for alt in /srv/email/maddy/dkim_keys/${domain}_*.dns; do
+      [ -f "${alt}" ] && return 0
+    done
+  fi
+  return 1
+}
+
+# VMAIL: only the verber mail host (nameURI) may get a missing key created
+if [ "${ServerMailStatus}" = "VMAIL_SERVER" ] && [ -n "${nameURI}" ]; then
+  if [ ! -f "/etc/opendkim/keys/${nameURI}/inkdkim.txt" ]; then
+    /usr/bin/echo "Creating OpenDKIM keys for ${nameURI}..."
+    /opt/verb/serfs/newinkdkim "${nameURI}" || true
+  fi
 fi
 
 added=0
@@ -67,18 +90,25 @@ dkim_one() {
   fi
 }
 
-if [ -d /opt/verb/conf/inkdns/inkzones ]; then
-  for zonefile in /opt/verb/conf/inkdns/inkzones/db.*; do
-    [ -f "${zonefile}" ] || continue
-    domain="$(/usr/bin/basename "${zonefile}" | /usr/bin/sed 's/^db\.//')"
-    dkim_one "${domain}" verber
-  done
+# Native verb zones: only nameURI, and only if it is actually a mail zone
+if [ -n "${nameURI}" ]; then
+  namezone="/opt/verb/conf/inkdns/inkzones/db.${nameURI}"
+  if zone_sends_mail "${namezone}" && has_dkim_key "${nameURI}"; then
+    dkim_one "${nameURI}" verber
+  elif [ -f "${namezone}" ]; then
+    skipped=$((skipped + 1))
+    /usr/bin/echo "Skipped ${nameURI} (no MX/smtp/mail in zone, or no key)."
+  fi
 fi
+
+# Hosted domains: only those whose zone already has MX or smtp/mail, and a live key
 if [ -d /opt/verb/conf/inkdns/zones ]; then
   for zonefile in /opt/verb/conf/inkdns/zones/db.*; do
     [ -f "${zonefile}" ] || continue
     domain="$(/usr/bin/basename "${zonefile}" | /usr/bin/sed 's/^db\.//')"
-    dkim_one "${domain}" ""
+    if zone_sends_mail "${zonefile}" && has_dkim_key "${domain}"; then
+      dkim_one "${domain}" ""
+    fi
   done
 fi
 
