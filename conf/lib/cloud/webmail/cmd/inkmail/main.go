@@ -2,8 +2,10 @@ package main
 
 import (
 	"crypto/hmac"
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"html"
@@ -15,6 +17,11 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"inkverb/inkmail/internal/form"
+	"inkverb/inkmail/internal/ident"
+	"inkverb/inkmail/internal/oauth"
+	"inkverb/inkmail/internal/ui"
 )
 
 func main() {
@@ -25,10 +32,29 @@ func main() {
 		path = "/etc/inkmail/conf"
 	}
 	c := load(path)
-	s := &srv{c: c}
+	idPath := c["admin_json"]
+	if idPath == "" {
+		idPath = "/etc/inkmail/admin.json"
+	}
+	st, err := ident.Open(idPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	s := &srv{c: c, id: st}
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", s.home)
+	mux.HandleFunc("/", s.root)
+	mux.HandleFunc("/login", s.login)
+	mux.HandleFunc("/logout", s.logout)
+	mux.HandleFunc("/locker", s.locker)
+	mux.HandleFunc("/security", s.security)
+	mux.HandleFunc("/password", s.password)
+	mux.HandleFunc("/oauth", s.oauth)
+	mux.HandleFunc("/passkey-options", s.pkOptions)
+	mux.HandleFunc("/passkey-create", s.pkCreate)
+	mux.HandleFunc("/ajax/save-oauth", s.ajaxOauth)
+	mux.HandleFunc("/ajax/save-pass-login", s.ajaxPassLogin)
 	mux.HandleFunc("/pen-logo.svg", s.logo)
+	mux.HandleFunc("/static/", s.static)
 	mux.HandleFunc("/domains", s.domains)
 	mux.HandleFunc("/boxes", s.boxes)
 	mux.HandleFunc("/aliases", s.aliases)
@@ -42,7 +68,173 @@ func main() {
 	log.Fatal(http.ListenAndServe(addr, mux))
 }
 
-type srv struct{ c map[string]string }
+type srv struct {
+	c  map[string]string
+	id *ident.Store
+}
+
+func (s *srv) secret() string {
+	if v := s.c["sess_secret"]; v != "" {
+		return v
+	}
+	return s.c["sso_secret"]
+}
+
+func (s *srv) basePath() string {
+	p := s.c["path"]
+	if p == "" {
+		return "/"
+	}
+	if !strings.HasSuffix(p, "/") {
+		p += "/"
+	}
+	return p
+}
+
+func (s *srv) origin(r *http.Request) string {
+	scheme := r.Header.Get("X-Forwarded-Proto")
+	if scheme == "" {
+		if r.TLS != nil {
+			scheme = "https"
+		} else {
+			scheme = "http"
+		}
+	}
+	host := r.Header.Get("X-Forwarded-Host")
+	if host == "" {
+		host = r.Host
+	}
+	return scheme + "://" + host
+}
+
+func (s *srv) oauthCfg(r *http.Request) oauth.Cfg {
+	return oauth.Cfg{
+		GoogleID: s.c["oauth_google_id"], GoogleSecret: s.c["oauth_google_secret"],
+		GitHubID: s.c["oauth_github_id"], GitHubSecret: s.c["oauth_github_secret"],
+		Callback: s.origin(r) + s.basePath() + "oauth",
+	}
+}
+
+func (s *srv) host(r *http.Request) string {
+	h := r.Header.Get("X-Forwarded-Host")
+	if h == "" {
+		h = r.Host
+	}
+	if i := strings.Index(h, ":"); i > 0 {
+		h = h[:i]
+	}
+	return h
+}
+
+func (s *srv) readSess(r *http.Request) (ident.Session, bool) {
+	c, err := r.Cookie("inkmail")
+	if err != nil || c.Value == "" {
+		return ident.Session{}, false
+	}
+	return ident.ReadSess(s.secret(), c.Value)
+}
+
+func (s *srv) putSess(w http.ResponseWriter, se ident.Session) {
+	if se.Exp == 0 {
+		se.Exp = time.Now().Add(12 * time.Hour).Unix()
+	}
+	if se.CSRF == "" {
+		se.CSRF = ident.NewCSRF()
+	}
+	http.SetCookie(w, &http.Cookie{
+		Name: "inkmail", Value: ident.SignSess(s.secret(), se),
+		Path: "/", HttpOnly: true, SameSite: http.SameSiteLaxMode,
+	})
+}
+
+func (s *srv) clearSess(w http.ResponseWriter) {
+	http.SetCookie(w, &http.Cookie{Name: "inkmail", Value: "", Path: "/", MaxAge: -1})
+}
+
+func (s *srv) csrfOK(r *http.Request, se ident.Session) bool {
+	got := r.FormValue("_csrf")
+	if got == "" {
+		got = r.Header.Get("X-CSRF")
+	}
+	return se.CSRF != "" && hmac.Equal([]byte(se.CSRF), []byte(got))
+}
+
+func (s *srv) csrfField(se ident.Session) string {
+	return `<input type="hidden" name="_csrf" value="` + html.EscapeString(se.CSRF) + `">`
+}
+
+func (s *srv) authed(se ident.Session) bool {
+	return se.User != "" && !se.Pending
+}
+
+func (s *srv) nav(se ident.Session) string {
+	if !s.authed(se) {
+		return `<a href="login">Login</a>`
+	}
+	return `<a href="./">Home</a><a href="domains">Domains</a><a href="boxes">Boxes</a><a href="aliases">Aliases</a><a href="bimi">BIMI</a><a href="locker">Locker</a><a href="security">Security</a><a href="password">Password</a><a href="logout">Logout</a>`
+}
+
+func (s *srv) page(title, body string, se ident.Session, extra string) string {
+	theme := ""
+	if s.authed(se) {
+		theme = s.id.Get().Theme
+		if theme == "" {
+			theme = "theme-dusk-desk"
+		}
+	}
+	if extra == "" {
+		extra = `<script src="static/app.js"></script>`
+	} else {
+		extra = `<script src="static/app.js"></script>` + extra
+	}
+	return ui.Page(title, s.nav(se), body, s.basePath(), theme, extra, true)
+}
+
+func (s *srv) need(w http.ResponseWriter, r *http.Request) (ident.Session, bool) {
+	se, ok := s.readSess(r)
+	if ok && s.authed(se) {
+		return se, true
+	}
+	if c, err := r.Cookie("inkmail_sso"); err == nil && s.checkSSO(c.Value) {
+		se = ident.Session{User: "admin", CSRF: ident.NewCSRF(), Exp: time.Now().Add(12 * time.Hour).Unix()}
+		s.putSess(w, se)
+		return se, true
+	}
+	http.Redirect(w, r, s.basePath()+"login", http.StatusSeeOther)
+	return se, false
+}
+
+func (s *srv) root(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		http.NotFound(w, r)
+		return
+	}
+	se, ok := s.need(w, r)
+	if !ok {
+		return
+	}
+	a := s.id.Get()
+	name := a.Name
+	if name == "" {
+		name = a.Username
+	}
+	which, _ := ink("which")
+	lock := s.lock()
+	note := ""
+	if lock != "" {
+		note = "<p>Domain lock: <code>" + html.EscapeString(lock) + "</code></p>"
+	}
+	fmt.Fprint(w, s.page("inkMail", `<div class="card"><h1>inkMail</h1><p class="sans">Hi, `+html.EscapeString(name)+`.</p>`+note+
+		`<p>Stack: <code>`+html.EscapeString(strings.TrimSpace(which))+`</code></p>
+<ul>
+<li><a href="domains">Domains</a></li>
+<li><a href="boxes">Mailboxes</a></li>
+<li><a href="aliases">Aliases</a></li>
+<li><a href="bimi">BIMI (bimi.svg)</a></li>
+</ul>
+<p><a class="lt_button" href="locker">Locker</a> <a class="set_gray" href="security">Security</a> <a class="set_gray" href="password">Password</a></p>
+<p class="muted">Roundcube is webmail. This is the control plane.</p></div>`, se, ""))
+}
 
 func (s *srv) logo(w http.ResponseWriter, r *http.Request) {
 	for _, p := range []string{"web/static/pen-logo.svg", "/opt/verb/conf/lib/logo/pen-logo.svg"} {
@@ -54,6 +246,17 @@ func (s *srv) logo(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	http.NotFound(w, r)
+}
+
+func (s *srv) static(w http.ResponseWriter, r *http.Request) {
+	rel := strings.TrimPrefix(r.URL.Path, "/static/")
+	rel = filepath.Clean(rel)
+	if strings.HasPrefix(rel, "..") {
+		http.NotFound(w, r)
+		return
+	}
+	p := filepath.Join("web/static", rel)
+	http.ServeFile(w, r, p)
 }
 
 func load(path string) map[string]string {
@@ -95,17 +298,6 @@ func ink(args ...string) (string, error) {
 	return string(out), err
 }
 
-func (s *srv) authed(r *http.Request) bool {
-	// SSO cookie from verb/rink admin, or local session after SSO
-	if c, err := r.Cookie("inkmail_sso"); err == nil && s.checkSSO(c.Value) {
-		return true
-	}
-	if c, err := r.Cookie("inkmail"); err == nil && c.Value != "" {
-		return true
-	}
-	return false
-}
-
 func (s *srv) checkSSO(tok string) bool {
 	sec := s.c["sso_secret"]
 	if sec == "" || tok == "" {
@@ -119,11 +311,7 @@ func (s *srv) checkSSO(tok string) bool {
 	mac := hmac.New(sha256.New, []byte(sec))
 	mac.Write([]byte(msg))
 	want := hex.EncodeToString(mac.Sum(nil))
-	if !hmac.Equal([]byte(want), []byte(parts[2])) {
-		return false
-	}
-	// parts[1] is unix expiry
-	return true
+	return hmac.Equal([]byte(want), []byte(parts[2]))
 }
 
 func (s *srv) sso(w http.ResponseWriter, r *http.Request) {
@@ -133,217 +321,233 @@ func (s *srv) sso(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.SetCookie(w, &http.Cookie{Name: "inkmail_sso", Value: tok, Path: "/", HttpOnly: true, SameSite: http.SameSiteLaxMode})
-	http.Redirect(w, r, "/", http.StatusSeeOther)
-}
-
-func (s *srv) need(w http.ResponseWriter, r *http.Request) bool {
-	if s.authed(r) {
-		return true
-	}
-	// Local operators on the box: if no SSO yet, allow when request is loopback? No.
-	// Gate: show a short note. Verb admin SSO is the login.
-	w.WriteHeader(401)
-	fmt.Fprint(w, page("inkMail", `<div class="card"><h1>inkMail</h1>
-<p>Sign in through the verb (or rink) admin first. Once that session is enrolled, you are signed in here automatically.</p>
-<p class="muted">This panel is postfix-maddy agnostic: it runs <code>ink mail</code>.</p></div>`))
-	return false
-}
-
-func (s *srv) home(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		http.NotFound(w, r)
-		return
-	}
-	if !s.need(w, r) {
-		return
-	}
-	which, _ := ink("which")
-	lock := s.lock()
-	note := ""
-	if lock != "" {
-		note = "<p>Domain lock: <code>" + html.EscapeString(lock) + "</code> (enterprise / pdt module).</p>"
-	}
-	fmt.Fprint(w, page("inkMail", `<div class="card"><h1>inkMail</h1>`+note+`
-<p>Stack: <code>`+html.EscapeString(strings.TrimSpace(which))+`</code></p>
-<ul>
-<li><a href="/domains">Domains</a></li>
-<li><a href="/boxes">Mailboxes</a></li>
-<li><a href="/aliases">Aliases</a></li>
-<li><a href="/bimi">BIMI (bimi.svg)</a></li>
-</ul>
-<p class="muted">Roundcube is webmail. This is the control plane. BIMI uploads go to <code>/srv/vip/files/domain.tld.svg</code> then <code>ink set bimi -p vip -d domain.tld</code>.</p>
-</div>`))
+	se := ident.Session{User: "admin", CSRF: ident.NewCSRF(), Exp: time.Now().Add(12 * time.Hour).Unix()}
+	s.putSess(w, se)
+	http.Redirect(w, r, s.basePath(), http.StatusSeeOther)
 }
 
 func (s *srv) domains(w http.ResponseWriter, r *http.Request) {
-	if !s.need(w, r) {
+	se, ok := s.need(w, r)
+	if !ok {
 		return
 	}
 	flash := ""
+	f := form.New()
 	if r.Method == "POST" {
-		d := strings.ToLower(strings.TrimSpace(r.FormValue("domain")))
-		if !s.allow(d) {
-			flash = `<p class="flash">Domain is outside the lock.</p>`
-		} else if r.FormValue("act") == "add" {
-			out, err := ink("domain", d)
-			flash = pre(out, err)
-		} else if r.FormValue("act") == "del" {
-			out, err := ink("deldomain", d)
-			flash = pre(out, err)
+		if !s.csrfOK(r, se) {
+			flash = `<p class="flash noticered">Bad request.</p>`
+		} else {
+			f.Grab(r, "domain")
+			d := strings.ToLower(f.Get("domain"))
+			f.Put("domain", d)
+			if d == "" {
+				f.Fail("domain", "Domain is required.")
+			} else if !s.allow(d) {
+				f.Fail("domain", "Domain is outside the lock.")
+			}
+			if f.OK() {
+				if r.FormValue("act") == "add" {
+					out, err := ink("domain", d)
+					flash = pre(out, err)
+				} else if r.FormValue("act") == "del" {
+					out, err := ink("deldomain", d)
+					flash = pre(out, err)
+				}
+				f = form.New()
+			}
 		}
 	}
 	out, err := ink("showdomains")
-	fmt.Fprint(w, page("inkMail", flash+formDomain()+pre(out, err)))
-}
-
-func formDomain() string {
-	return `<div class="card"><h2>Domains</h2>
-<form method="post"><input type="hidden" name="act" value="add">
-<label>Domain</label><input name="domain" required>
-<button>Add</button></form>
-<form method="post" style="margin-top:1rem"><input type="hidden" name="act" value="del">
+	fmt.Fprint(w, s.page("inkMail", flash+`<div class="card"><h2>Domains</h2>
+<form method="post">`+s.csrfField(se)+`<input type="hidden" name="act" value="add">
+<label>Domain</label>`+f.Input("domain", "text", "required")+`
+<button class="lt_button">Add</button></form>
+<form method="post" style="margin-top:1rem">`+s.csrfField(se)+`<input type="hidden" name="act" value="del">
 <label>Remove</label><input name="domain" required>
-<button>Delete</button></form></div>`
+<button class="set_gray">Delete</button></form></div>`+listOrPre(out, err), se, ""))
 }
 
 func (s *srv) boxes(w http.ResponseWriter, r *http.Request) {
-	if !s.need(w, r) {
+	se, ok := s.need(w, r)
+	if !ok {
 		return
 	}
 	flash := ""
+	f := form.New()
 	if r.Method == "POST" {
-		u := strings.TrimSpace(r.FormValue("user"))
-		d := strings.ToLower(strings.TrimSpace(r.FormValue("domain")))
-		if !s.allow(d) {
-			flash = `<p class="flash">Domain is outside the lock.</p>`
-		} else if r.FormValue("act") == "add" {
-			out, err := ink("box", u, d)
-			flash = pre(out, err)
-		} else if r.FormValue("act") == "del" {
-			out, err := ink("delbox", u, d)
-			flash = pre(out, err)
+		if !s.csrfOK(r, se) {
+			flash = `<p class="flash noticered">Bad request.</p>`
+		} else {
+			f.Grab(r, "user", "domain")
+			u := f.Get("user")
+			d := strings.ToLower(f.Get("domain"))
+			f.Put("domain", d)
+			if u == "" {
+				f.Fail("user", "User is required.")
+			}
+			if d == "" {
+				f.Fail("domain", "Domain is required.")
+			} else if !s.allow(d) {
+				f.Fail("domain", "Domain is outside the lock.")
+			}
+			if f.OK() {
+				if r.FormValue("act") == "add" {
+					out, err := ink("box", u, d)
+					flash = pre(out, err)
+				} else if r.FormValue("act") == "del" {
+					out, err := ink("delbox", u, d)
+					flash = pre(out, err)
+				}
+				f = form.New()
+			}
 		}
 	}
 	out, err := ink("showboxes")
-	fmt.Fprint(w, page("inkMail", flash+`<div class="card"><h2>Mailboxes</h2>
-<form method="post"><input type="hidden" name="act" value="add">
+	fmt.Fprint(w, s.page("inkMail", flash+`<div class="card"><h2>Mailboxes</h2>
+<form method="post">`+s.csrfField(se)+`<input type="hidden" name="act" value="add">
+<label>User</label>`+f.Input("user", "text", "required")+`
+<label>Domain</label>`+f.Input("domain", "text", "required")+`
+<button class="lt_button">Create box</button></form>
+<form method="post">`+s.csrfField(se)+`<input type="hidden" name="act" value="del">
 <label>User</label><input name="user" required>
 <label>Domain</label><input name="domain" required>
-<button>Create box</button></form>
-<form method="post"><input type="hidden" name="act" value="del">
-<label>User</label><input name="user" required>
-<label>Domain</label><input name="domain" required>
-<button>Delete box</button></form></div>`+pre(out, err)))
+<button class="set_gray">Delete box</button></form></div>`+listOrPre(out, err), se, ""))
 }
 
 func (s *srv) aliases(w http.ResponseWriter, r *http.Request) {
-	if !s.need(w, r) {
+	se, ok := s.need(w, r)
+	if !ok {
 		return
 	}
 	flash := ""
+	f := form.New()
 	if r.Method == "POST" {
-		u := strings.TrimSpace(r.FormValue("user"))
-		d := strings.ToLower(strings.TrimSpace(r.FormValue("domain")))
-		e := strings.TrimSpace(r.FormValue("dest"))
-		if !s.allow(d) {
-			flash = `<p class="flash">Domain is outside the lock.</p>`
-		} else if r.FormValue("act") == "add" {
-			out, err := ink("alias", u, d, e)
-			flash = pre(out, err)
-		} else if r.FormValue("act") == "del" {
-			out, err := ink("delalias", u, d)
-			flash = pre(out, err)
+		if !s.csrfOK(r, se) {
+			flash = `<p class="flash noticered">Bad request.</p>`
+		} else {
+			f.Grab(r, "user", "domain", "dest")
+			u := f.Get("user")
+			d := strings.ToLower(f.Get("domain"))
+			e := f.Get("dest")
+			f.Put("domain", d)
+			if u == "" {
+				f.Fail("user", "Local part is required.")
+			}
+			if d == "" {
+				f.Fail("domain", "Domain is required.")
+			} else if !s.allow(d) {
+				f.Fail("domain", "Domain is outside the lock.")
+			}
+			if r.FormValue("act") == "add" && e == "" {
+				f.Fail("dest", "Forward-to is required.")
+			}
+			if f.OK() {
+				if r.FormValue("act") == "add" {
+					out, err := ink("alias", u, d, e)
+					flash = pre(out, err)
+				} else if r.FormValue("act") == "del" {
+					out, err := ink("delalias", u, d)
+					flash = pre(out, err)
+				}
+				f = form.New()
+			}
 		}
 	}
-	fmt.Fprint(w, page("inkMail", flash+`<div class="card"><h2>Aliases</h2>
-<form method="post"><input type="hidden" name="act" value="add">
+	fmt.Fprint(w, s.page("inkMail", flash+`<div class="card"><h2>Aliases</h2>
+<form method="post">`+s.csrfField(se)+`<input type="hidden" name="act" value="add">
+<label>Local part</label>`+f.Input("user", "text", "required")+`
+<label>Domain</label>`+f.Input("domain", "text", "required")+`
+<label>Forward to</label>`+f.Input("dest", "text", "required")+`
+<button class="lt_button">Add alias</button></form>
+<form method="post">`+s.csrfField(se)+`<input type="hidden" name="act" value="del">
 <label>Local part</label><input name="user" required>
 <label>Domain</label><input name="domain" required>
-<label>Forward to</label><input name="dest" required>
-<button>Add alias</button></form>
-<form method="post"><input type="hidden" name="act" value="del">
-<label>Local part</label><input name="user" required>
-<label>Domain</label><input name="domain" required>
-<button>Delete alias</button></form></div>`))
+<button class="set_gray">Delete alias</button></form></div>`, se, ""))
 }
 
 func (s *srv) bimi(w http.ResponseWriter, r *http.Request) {
-	if !s.need(w, r) {
+	se, ok := s.need(w, r)
+	if !ok {
 		return
 	}
 	flash := ""
+	f := form.New()
 	if r.Method == "POST" {
-		d := strings.ToLower(strings.TrimSpace(r.FormValue("domain")))
-		if !s.allow(d) {
-			flash = `<p class="flash">Domain is outside the lock.</p>`
+		if !s.csrfOK(r, se) {
+			flash = `<p class="flash noticered">Bad request.</p>`
 		} else {
-			f, hdr, err := r.FormFile("svg")
-			if err != nil {
-				flash = `<p class="flash">No SVG uploaded.</p>`
-			} else {
-				defer f.Close()
-				raw, _ := io.ReadAll(f)
-				if !strings.Contains(strings.ToLower(string(raw)), "<svg") {
-					flash = `<p class="flash">Not an SVG.</p>`
+			f.Grab(r, "domain")
+			d := strings.ToLower(f.Get("domain"))
+			f.Put("domain", d)
+			if d == "" {
+				f.Fail("domain", "Domain is required.")
+			} else if !s.allow(d) {
+				f.Fail("domain", "Domain is outside the lock.")
+			}
+			if f.OK() {
+				file, hdr, err := r.FormFile("svg")
+				if err != nil {
+					flash = `<p class="flash">No SVG uploaded.</p>`
 				} else {
-					drop := s.c["vip_drop"]
-					if drop == "" {
-						drop = "/srv/vip/files"
-					}
-					_ = os.MkdirAll(drop, 0750)
-					name := filepath.Join(drop, d+".svg")
-					if err := os.WriteFile(name, raw, 0644); err != nil {
-						flash = `<p class="flash">` + html.EscapeString(err.Error()) + `</p>`
+					defer file.Close()
+					raw, _ := io.ReadAll(file)
+					if !strings.Contains(strings.ToLower(string(raw)), "<svg") {
+						flash = `<p class="flash">Not an SVG.</p>`
 					} else {
-						_ = hdr
-						cmd := exec.Command("/opt/verb/serfs/setbimi", d, "vip")
-						out, err := cmd.CombinedOutput()
-						flash = pre(string(out), err)
+						drop := s.c["vip_drop"]
+						if drop == "" {
+							drop = "/srv/vip/files"
+						}
+						_ = os.MkdirAll(drop, 0750)
+						name := filepath.Join(drop, d+".svg")
+						if err := os.WriteFile(name, raw, 0644); err != nil {
+							flash = `<p class="flash">` + html.EscapeString(err.Error()) + `</p>`
+						} else {
+							_ = hdr
+							cmd := exec.Command("/opt/verb/serfs/setbimi", d, "vip")
+							out, err := cmd.CombinedOutput()
+							flash = pre(string(out), err)
+							f = form.New()
+						}
 					}
 				}
 			}
 		}
 	}
-	fmt.Fprint(w, page("inkMail", flash+`<div class="card"><h2>BIMI</h2>
+	fmt.Fprint(w, s.page("inkMail", flash+`<div class="card"><h2>BIMI</h2>
 <p class="muted">SVG Tiny PS served at <code>/domain.tld/bimi.svg</code> on the email TLD host. TXT is <code>default._bimi</code>.</p>
-<p class="muted">Upload is written to <code>/srv/vip/files/domain.tld.svg</code>, then <code>ink set bimi -p vip -d domain.tld</code>. The drop is deleted after install.</p>
-<form method="post" enctype="multipart/form-data">
-<label>Domain</label><input name="domain" required>
+<form method="post" enctype="multipart/form-data">`+s.csrfField(se)+`
+<label>Domain</label>`+f.Input("domain", "text", "required")+`
 <label>bimi.svg</label><input type="file" name="svg" accept="image/svg+xml,.svg" required>
-<p><button>Install BIMI</button></p></form></div>`))
+<p><button class="lt_button">Install BIMI</button></p></form></div>`, se, ""))
 }
 
 func pre(out string, err error) string {
-	s := html.EscapeString(strings.TrimSpace(out))
+	txt := html.EscapeString(strings.TrimSpace(out))
 	if err != nil {
-		return `<p class="flash"><pre>` + s + "\n" + html.EscapeString(err.Error()) + `</pre></p>`
+		return `<p class="flash"><pre>` + txt + "\n" + html.EscapeString(err.Error()) + `</pre></p>`
 	}
-	if s == "" {
-		return ""
+	if txt == "" {
+		return ui.EmptyList()
 	}
-	return `<div class="card"><pre>` + s + `</pre></div>`
+	return `<div class="card"><pre>` + txt + `</pre></div>`
 }
 
-func page(title, body string) string {
-	nav := `<a href="/">Home</a><a href="/domains">Domains</a><a href="/boxes">Boxes</a><a href="/aliases">Aliases</a><a href="/bimi">BIMI</a>`
-	return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>` + title + `</title>
-<style>` + css + `</style></head><body class="has-pen">
-<header><strong>` + title + `</strong><nav>` + nav + `</nav></header><main>` + body + `</main></body></html>`
+func listOrPre(out string, err error) string {
+	if err == nil && strings.TrimSpace(out) == "" {
+		return ui.EmptyList()
+	}
+	return pre(out, err)
 }
 
-const css = `
-:root { --ink:#0e1218; --paper:#e8e4d9; --accent:#c4a35a; --muted:#8a8680; --card:#161c26cc; }
-*{box-sizing:border-box}html,body{margin:0;min-height:100%}
-body{font:16px/1.45 "Source Sans 3","Segoe UI",sans-serif;color:var(--paper);background-color:var(--ink);background-repeat:no-repeat;background-position:center;background-attachment:fixed;background-size:min(62vw,62vh)}
-body.has-pen{background-image:url("/pen-logo.svg")}
-a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
-header{padding:1.2rem 1.5rem;border-bottom:1px solid #ffffff14;display:flex;gap:1rem;align-items:center;flex-wrap:wrap;background:#0e1218e6}
-header nav a{margin-right:1rem;color:var(--paper)}
-main{max-width:920px;margin:2rem auto;padding:0 1rem 3rem}
-.card{background:var(--card);backdrop-filter:blur(8px);border:1px solid #ffffff14;border-radius:12px;padding:1.25rem 1.4rem;margin:1rem 0}
-label{display:block;margin:.6rem 0 .2rem;color:var(--muted);font-size:.85rem}
-input,button{font:inherit;padding:.45rem .6rem;border-radius:6px;border:1px solid #ffffff22;background:#0e1218;color:var(--paper)}
-button{background:var(--accent);color:var(--ink);border:0;cursor:pointer;font-weight:650}
-.muted{color:var(--muted)}.flash{background:#c4a35a22;border:1px solid var(--accent);padding:.7rem 1rem;border-radius:8px}
-pre{white-space:pre-wrap}
-`
+func jsonWrite(w http.ResponseWriter, data any, code int) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(code)
+	_ = json.NewEncoder(w).Encode(data)
+}
+
+func randBytes(n int) []byte {
+	b := make([]byte, n)
+	_, _ = rand.Read(b)
+	return b
+}

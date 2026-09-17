@@ -89,11 +89,35 @@ cfg="/etc/inkmail/conf"
 listen=127.0.0.1:${port}
 path=/${poFolder}/
 sso_secret=$(/usr/bin/pwgen -s -1 32)
+sess_secret=$(/usr/bin/pwgen -s -1 32)
 domain_lock=
 vip_drop=/srv/vip/files
+oauth_google_id=
+oauth_google_secret=
+oauth_github_id=
+oauth_github_secret=
+admin_json=/etc/inkmail/admin.json
 EOF
 /usr/bin/chmod 640 "${cfg}"
 /usr/bin/chmod 750 /etc/inkmail
+if [ ! -f /etc/inkmail/admin.json ]; then
+  /usr/bin/cat > /etc/inkmail/admin.json <<'JSON'
+{
+  "username": "admin",
+  "name": "",
+  "email": "",
+  "pass": "",
+  "pass_login": true,
+  "totp_secret": "",
+  "totp_enabled": false,
+  "theme": "theme-dusk-desk",
+  "oauth": [],
+  "passkeys": [],
+  "totp_devices": []
+}
+JSON
+  /usr/bin/chmod 600 /etc/inkmail/admin.json
+fi
 
 /usr/bin/cat > /etc/systemd/system/inkmail.service <<EOF
 [Unit]
@@ -178,7 +202,13 @@ fi
 inkMail is at:
   https://po.${emailTLDURI}/${poFolder}/
 Config: /etc/inkmail/conf
+Identity: /etc/inkmail/admin.json
 SSO from the verb web UI once that admin is enrolled.
+First visit sets a local password. Passkeys, Google, GitHub, and Authenticator live under Security.
+OAuth keys: oauth_google_id / oauth_google_secret and oauth_github_id / oauth_github_secret in /etc/inkmail/conf
+  Google: https://console.cloud.google.com/apis/credentials
+  GitHub: https://github.com/settings/developers
+  Callback: https://po.${emailTLDURI}/${poFolder}/oauth
 "
 
 
