@@ -6,6 +6,7 @@
 - Writes MariaDB credentials to `verb/conf/vapps/vapp.wp.DOMAIN.TLD`
 - Adds the domain with `adddomain` if it is not already hosted
 - BIMI is not on the WP site; use `ink set bimi` (`https://${emailTLDURI}/domain.tld/bimi.svg`)
+- To import an existing Ghost site on the same domain: `ink ghost 2wp -d DOMAIN` (after this install). Ghost's database is not reused.
 
 ## Usage
 - `ink install wp -d [ domain.tld ] [ -b database ] [ -u dbuser ] [ -p dbpassword ]`

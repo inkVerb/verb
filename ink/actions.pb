@@ -1,6 +1,7 @@
 activate    # FTP features
 add         # Domains and subdomains
 cert        # SSL certtificate management
+ghost       # Import a Ghost site into WordPress
 install     # Web apps, ie: WordPress, Nextcloud, etc
 kill        # Domains, FTP users, Linux users
 mail        # Postfix-Maddy agnostic mail (inkemail or inkvmail)

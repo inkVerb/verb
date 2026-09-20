@@ -1,0 +1,77 @@
+#!/usr/bin/bash
+#inkVerbSerf! verb.ink
+
+# Copy (default) or move Ghost content media into the WordPress uploads folder,
+## then register those files in the WP Media Library.
+## Ghost originals stay unless you pass "move". Prefer copy: Ghost remains the backup.
+
+# How to use:
+## ./ghost2wpmedia [ domain.tld ]
+## ./ghost2wpmedia [ domain.tld ] move
+
+
+usagenotes="This copies Ghost media into the WordPress uploads folder and registers it in the Media Library"
+usageformat="ghost2wpmedia [ domain.tld ] [ move - optional ]"
+usageexample="ghost2wpmedia formosan.dog
+ghost2wpmedia formosan.dog move"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=( "Mode" )
+vopttypes=( isazAZ09lines )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( installwp )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/ghost2wpmedia.replace" ]; then . /opt/verb/mods/ghost2wpmedia.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/ghost2wpmedia.before" ]; then . /opt/verb/mods/ghost2wpmedia.before; fi # Precedes this script
+
+
+domain=$1
+mode="${2:-copy}"
+
+if [ -z "${domain}" ]; then
+  /usr/bin/echo "You must designate a domain. See How to use."
+  exit 5
+fi
+if [ "${mode}" = "copy" ] || [ -z "${mode}" ]; then
+  mode="copy"
+elif [ "${mode}" = "move" ]; then
+  mode="move"
+else
+  /usr/bin/echo "Second argument must be 'move' or omitted (copy)."
+  exit 5
+fi
+
+wpRoot="/srv/www/vapps/wp.${domain}"
+ghostContent="/srv/ghost/${domain}/content"
+uploads="${wpRoot}/wp-content/uploads"
+helper="/opt/verb/conf/lib/ghost2wp-media.sh"
+
+if [ ! -d "${wpRoot}" ] || [ ! -f "${wpRoot}/wp-config.php" ]; then
+  /usr/bin/echo "WordPress is not installed at ${wpRoot}. Run: /opt/verb/serfs/installwp ${domain}"
+  exit 8
+fi
+if [ ! -d "${ghostContent}" ]; then
+  /usr/bin/echo "Ghost content dir not found: ${ghostContent}"
+  exit 8
+fi
+if [ ! -x "${helper}" ] && [ ! -f "${helper}" ]; then
+  /usr/bin/echo "Helper missing: ${helper}"
+  exit 8
+fi
+
+/usr/bin/bash "${helper}" "${ghostContent}" "${uploads}" "${mode}"
+e="$?"
+[[ "$e" = "0" ]] || exit "$e"
+
+# Register files as WP attachments (and rewrite nothing else)
+/opt/verb/serfs/ghost2wp "${domain}" media-only keep-nginx
+
+
+
+if [ -e "/opt/verb/mods/ghost2wpmedia.after" ]; then . /opt/verb/mods/ghost2wpmedia.after; fi # Follows this script

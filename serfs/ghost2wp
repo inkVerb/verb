@@ -1,0 +1,200 @@
+#!/usr/bin/bash
+#inkVerbSerf! verb.ink
+
+# Import a Ghost site (MariaDB + content/) into an already-installed WordPress vapp.
+## Ghost's database is never rewritten. WordPress must exist (installwp) so schema
+## comes from WP itself. This copies posts, pages, tags, menus, and media.
+## Ghost nginx is proxy-only (no PHP). If a -ghosted.conf backup exists, it is
+## restored so the domain can serve WordPress. Ghost files and DB stay on disk.
+
+# How to use:
+## ./ghost2wp [ domain.tld ]
+## ./ghost2wp [ domain.tld ] dry-run
+## ./ghost2wp [ domain.tld ] media-only
+## ./ghost2wp [ domain.tld ] keep-nginx
+## ./ghost2wp [ domain.tld ] dry-run keep-nginx
+
+
+usagenotes="This imports Ghost posts, pages, menus, and media into an installed WordPress site. Ghost's database is not modified."
+usageformat="ghost2wp [ domain.tld ] [ dry-run | media-only | keep-nginx ]..."
+usageexample="ghost2wp formosan.dog
+ghost2wp formosan.dog dry-run
+ghost2wp formosan.dog media-only
+ghost2wp formosan.dog keep-nginx"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=( "Mode" "Mode" "Mode" )
+vopttypes=( isazAZ09lines isazAZ09lines isazAZ09lines )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( installwp )
+usedby=(  )
+useserfs=( ensitenginx ensiteapache )
+useconfigs=( servertype )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/ghost2wp.replace" ]; then . /opt/verb/mods/ghost2wp.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/ghost2wp.before" ]; then . /opt/verb/mods/ghost2wp.before; fi # Precedes this script
+
+
+domain=$1
+shift || true
+
+if [ -z "${domain}" ]; then
+  /usr/bin/echo "You must designate a domain. See How to use."
+  exit 5
+fi
+
+dry=""
+mediaOnly=""
+keepNginx=""
+for a in "$@"; do
+  case "${a}" in
+    dry-run) dry="--dry-run" ;;
+    media-only) mediaOnly="--media-only" ;;
+    keep-nginx) keepNginx="true" ;;
+    "") ;;
+    *)
+      /usr/bin/echo "Unknown option: ${a} (use dry-run, media-only, keep-nginx)"
+      exit 5
+      ;;
+  esac
+done
+
+wpRoot="/srv/www/vapps/wp.${domain}"
+ghostDir="/srv/ghost/${domain}"
+ghostContent="${ghostDir}/content"
+ghostConfig="${ghostDir}/config.production.json"
+phpBin="/usr/bin/php"
+importer="/opt/verb/conf/lib/ghost2wp.php"
+mysqlCnf="/opt/verb/conf/sql/mysqlboss.cnf"
+
+if [ ! -f "${phpBin}" ]; then
+  /usr/bin/echo "php not found at ${phpBin}"
+  exit 8
+fi
+if [ ! -f "${importer}" ]; then
+  /usr/bin/echo "Importer missing: ${importer}"
+  exit 8
+fi
+if [ ! -d "${wpRoot}" ] || [ ! -f "${wpRoot}/wp-config.php" ]; then
+  /usr/bin/echo "WordPress is not installed at ${wpRoot}."
+  /usr/bin/echo "Install it first (this creates a NEW empty database — do not point WP at the Ghost DB):"
+  /usr/bin/echo "  /opt/verb/serfs/installwp ${domain}"
+  /usr/bin/echo "  ink install wp -d ${domain}"
+  exit 8
+fi
+
+ghostDb=""
+if [ -f "/opt/verb/conf/vapps/vapp.ghost.${domain}" ]; then
+  # shellcheck disable=SC1090
+  . "/opt/verb/conf/vapps/vapp.ghost.${domain}"
+  ghostDb="${appDBase}"
+fi
+if [ -z "${ghostDb}" ] && [ -f "${ghostConfig}" ]; then
+  ghostDb="$(${phpBin} -r 'echo json_decode(file_get_contents($argv[1]), true)["database"]["connection"]["database"] ?? "";' -- "${ghostConfig}")"
+fi
+if [ -z "${ghostDb}" ]; then
+  /usr/bin/echo "Could not find the Ghost database name."
+  /usr/bin/echo "Need /opt/verb/conf/vapps/vapp.ghost.${domain} or ${ghostConfig}"
+  /usr/bin/echo "Or run the PHP importer directly with --ghost-db=NAME"
+  exit 8
+fi
+
+if [ ! -d "${ghostContent}" ]; then
+  /usr/bin/echo "Ghost content dir not found: ${ghostContent} (import will rewrite URLs only)."
+  ghostContent=""
+fi
+
+# Safety dump of Ghost (read; we never write it)
+if [ -z "${dry}" ] && [ -f "${mysqlCnf}" ]; then
+  /usr/bin/mkdir -p /srv/vip/sql
+  dump="/srv/vip/sql/ghost2wp-${domain}-$(/usr/bin/date +%Y%m%d%H%M%S).sql"
+  /usr/bin/mariadb-dump --defaults-extra-file="${mysqlCnf}" "${ghostDb}" > "${dump}" || true
+  if [ -s "${dump}" ]; then
+    /usr/bin/echo "Ghost DB dump: ${dump}"
+  fi
+fi
+
+# Ghost nginx is proxy-only. Restore the pre-Ghost PHP vhost so WP can serve.
+if [ -z "${keepNginx}" ] && [ -z "${dry}" ]; then
+  . /opt/verb/conf/servertype
+  nNow="/opt/verb/conf/webserver/sites-available/nginx/${domain}.conf"
+  nBak="/opt/verb/conf/webserver/sites-available/nginx/${domain}-ghosted.conf"
+  if [ -f "${nBak}" ] && [ -f "${nNow}" ]; then
+    if /usr/bin/grep -q 'proxy_pass http://127.0.0.1:' "${nNow}"; then
+      /usr/bin/cp -f "${nNow}" "/opt/verb/conf/webserver/sites-available/nginx/${domain}-ghost-proxy.conf"
+      /usr/bin/cp -f "${nBak}" "${nNow}"
+      /usr/bin/echo "Restored nginx vhost from ${domain}-ghosted.conf (Ghost proxy saved as ${domain}-ghost-proxy.conf)."
+    fi
+  fi
+  if [ "${ServerType}" = "laemp" ]; then
+    hBak="/opt/verb/conf/webserver/sites-available/httpd/${domain}-ghosted.conf"
+    hNow="/opt/verb/conf/webserver/sites-available/httpd/${domain}.conf"
+    if [ -f "${hBak}" ]; then
+      /usr/bin/cp -f "${hBak}" "${hNow}"
+      /opt/verb/serfs/ensiteapache "${domain}" || true
+    fi
+  fi
+  if [ "${ServerType}" = "lemp" ] || [ "${ServerType}" = "laemp" ]; then
+    /opt/verb/serfs/ensitenginx "${domain}" || true
+  fi
+  if [ "${ServerType}" = "lemp" ]; then
+    /usr/bin/systemctl restart nginx
+  elif [ "${ServerType}" = "lamp" ]; then
+    /usr/bin/systemctl restart httpd
+  elif [ "${ServerType}" = "laemp" ]; then
+    /usr/bin/systemctl restart nginx httpd
+  fi
+fi
+
+phpArgs=(
+  "${importer}"
+  "--wp-root=${wpRoot}"
+  "--ghost-db=${ghostDb}"
+  "--site-url=https://${domain}"
+  "--mysql-cnf=${mysqlCnf}"
+)
+if [ -n "${ghostContent}" ]; then
+  phpArgs+=( "--ghost-content=${ghostContent}" )
+fi
+if [ -f "${ghostConfig}" ]; then
+  phpArgs+=( "--ghost-config=${ghostConfig}" )
+fi
+if [ -n "${dry}" ]; then
+  phpArgs+=( "${dry}" )
+fi
+if [ -n "${mediaOnly}" ]; then
+  phpArgs+=( "${mediaOnly}" )
+fi
+
+/usr/bin/echo "Running Ghost → WordPress import for ${domain}…"
+"${phpBin}" "${phpArgs[@]}"
+e="$?"
+if [ "$e" != "0" ]; then
+  exit "$e"
+fi
+
+if [ -z "${dry}" ]; then
+  /usr/bin/chown -R www:www "${wpRoot}/wp-content/uploads" 2>/dev/null || true
+  /usr/bin/chown -R www:www "${wpRoot}" 2>/dev/null || true
+fi
+
+/usr/bin/echo "
+Imported Ghost → WordPress for ${domain}.
+
+Ghost files: ${ghostDir} (left in place)
+Ghost database: ${ghostDb} (left in place, not converted)
+WordPress: ${wpRoot}
+
+Log in at https://${domain}/wp-admin/
+If wp_install() ran, the admin password was printed above.
+
+Optional: stop the unused Ghost unit:
+  systemctl disable --now ghost_$(/usr/bin/echo "${domain}" | /usr/bin/sed 's/\./-/g')
+"
+
+
+
+if [ -e "/opt/verb/mods/ghost2wp.after" ]; then . /opt/verb/mods/ghost2wp.after; fi # Follows this script
