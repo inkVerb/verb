@@ -47,44 +47,46 @@ cVappName=nextcloud
 . /opt/verb/conf/servermailpath
 
 # Check if already installed
-## Config
-if [ -f /opt/verb/conf/vapps/vapp.${cVappName} ]; then
+. /opt/verb/donjon/vappinstall.sh
+if ! vappinst_clear_partial \
+  "/opt/verb/conf/vapps/vapp.${cVappName}" \
+  "/srv/www/vapps/${cVappName}" \
+  "/srv/www/vapps/${cVappName}/version.php"; then
 /usr/bin/echo "This is already installed."
 exit 0; fi
-## Directory
-if [ -d /srv/www/vapps/${cVappName} ]; then
-/usr/bin/echo "Nextcloud already exists in the system. If it isn't working, look deeper on the server. For now, doing nothing."
-exit 8; fi
+
+# Subdomain then optional database (first arg cloud|kit is not the DB name)
+subDom="kit"
+if [ "${1}" = "cloud" ] || [ "${1}" = "kit" ]; then
+  subDom="${1}"
+  dBase=$2
+  dBaseUser=$3
+  dBPassword=$4
+else
+  dBase=$1
+  dBaseUser=$2
+  dBPassword=$3
+fi
 
 # Auto database
 cleanName=$(/usr/bin/echo $cVappName | /usr/bin/sed -e 's/\.//g')
-if [ -z ${3} ]; then
+if [ -z "${dBPassword}" ]; then
 dBPassword=$(/usr/bin/pwgen -s -1 10)
-else
-dBPassword=$3
 fi
-if [ -z ${1} ]; then
+if [ -z "${dBase}" ]; then
 dBase=${cleanName}$(/usr/bin/pwgen -s -1 6)
-else
-dBase=$1
 fi
-if [ -z ${2} ]; then
+if [ -z "${dBaseUser}" ]; then
 dBaseUser=${dBase}
-else
-dBaseUser=$2
 fi
 
-# Subdomain
-if [ -n ${1} ] && [ "${1}" = "cloud" ]; then
-  subDom="cloud"
-else
-  subDom="kit"
-fi
+vappinst_begin
 
 # Download as webapp
 cd /srv/www/vapps || exit 6
 /opt/verb/serfs/inkget ${cVappName} check
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
+vappinst_note dir "/srv/www/vapps/${cVappName}"
 
 ## Install it
 /opt/verb/serfs/setvapplinkon ${cVappName}; wait
@@ -97,11 +99,14 @@ e="$?"; [[ "$e" = "0" ]] || exit "$e"
 CREATE DATABASE ${dBase} DEFAULT CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_general_ci';
 GRANT ALL PRIVILEGES ON ${dBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '${dBPassword}';
 FLUSH PRIVILEGES;"
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+vappinst_note mysql "${dBase}" "${dBaseUser}"
 
 # Write the config for backup
 /usr/bin/echo "appDBase=${dBase}
 appDDBUsr=${dBaseUser}
 appDDBPass=${dBPassword}" > /opt/verb/conf/vapps/vapp.${cVappName}
+vappinst_note conf "/opt/verb/conf/vapps/vapp.${cVappName}"
 
 # php-fpm
 /usr/bin/mkdir -p /var/run/nextcloud
@@ -148,6 +153,8 @@ EOF
 /usr/bin/systemctl restart php-fpm; wait
 /usr/bin/systemctl daemon-reload
 # Webserver setup
+vappinst_vhost_backup "/opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf"
+vappinst_vhost_backup "/opt/verb/conf/webserver/sites-available/httpd/${subDom}.${blueURI}.conf"
 if [ ${ServerType} = "laemp" ]; then
   /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf.old
   /usr/bin/mv /opt/verb/conf/webserver/sites-available/httpd/${subDom}.${blueURI}.conf /opt/verb/conf/webserver/sites-available/httpd/${subDom}.${blueURI}.conf.old
@@ -291,16 +298,12 @@ fi
 ## Nextcloud background jobs (manage the crontab files directly)
 /usr/bin/echo '*/15 * * * *  www php -f /srv/www/vapps/nextcloud/cron.php' > /etc/cron.d/nextcloud
 /usr/bin/chmod 0644 /etc/cron.d/nextcloud
-
-#DEV handling this automatically now
-# # See if PFA is installed
-# if [ "${ServerPFAPath}" = "PFA_NOT_INSTALLED" ]; then
-#   messagePFApath="_path_after_installed_"
-# else
-#   messagePFApath="${ServerPFAPath}"
-# fi
+vappinst_note file /etc/cron.d/nextcloud
+vappinst_note file /etc/php/php-fpm.d/nextcloud.conf
+vappinst_note file /etc/tmpfiles.d/nextcloud.conf
 
 # Finish
+vappinst_commit
 /usr/bin/echo "
 Go to https://${subDom}.${blueURI} to install.
 

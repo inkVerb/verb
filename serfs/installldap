@@ -40,11 +40,25 @@ if [ -f /opt/verb/conf/ldap/ldapinstalled ]; then
 /usr/bin/echo "LDAP is already installed."
 exit 0; fi
 
+. /opt/verb/donjon/vappinstall.sh
+vappinst_begin
+
 # Include the configs
 . /opt/verb/conf/siteurilist
 
+had_openldap="false"
+if /usr/bin/pacman -Qq openldap >/dev/null 2>&1; then
+  had_openldap="true"
+fi
 # Install LDAP
 /usr/bin/pacman -Syy openldap --needed --noconfirm
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+if [ "${had_openldap}" = "false" ]; then
+  vappinst_note pkg openldap
+fi
+if [ ! -d /opt/verb/conf/ldap ]; then
+  vappinst_note dir /opt/verb/conf/ldap
+fi
 
 ## Server
 ### Process Domain Components
@@ -54,6 +68,7 @@ dcstring=$(/usr/bin/echo "${blueURI}" | /usr/bin/sed 's/^/DC=/; s/\./,DC=/g')
 ldapPass=$(/usr/bin/pwgen -s -1 27)
 ldapPassHash="$(/usr/bin/slappasswd -s ${ldapPass})"
 /usr/bin/mkdir -p /opt/verb/conf/ldap/users /srv/ldap
+vappinst_note dir /srv/ldap
 /usr/bin/chown -R ldap:ldap /srv/ldap
 /usr/bin/chmod 660 -R /opt/verb/conf/ldap
 /usr/bin/echo "${ldapPass}" > /opt/verb/conf/ldap/ldaprootpassword
@@ -140,6 +155,7 @@ EOF
 ### Start the service
 /usr/bin/systemctl enable slapd
 /usr/bin/systemctl start slapd
+vappinst_note svcstop slapd
 
 ## Client
 ### Set up the self-client
@@ -250,11 +266,14 @@ EOF
 # Cron task for backup
 /bin/echo '* 5 * * * root /opt/verb/donjon/ldapbak.sh cronbak' > /etc/cron.d/ldapbak
 /bin/chmod 0644 /etc/cron.d/ldapbak
+vappinst_note file /etc/cron.d/ldapbak
 
 # Record config
 /usr/bin/touch /opt/verb/conf/ldap/ldapinstalled
+vappinst_note file /opt/verb/conf/ldap/ldapinstalled
 
 # Finish
+vappinst_commit
 /usr/bin/echo "LDAP installed; change the admin password quickly
 Login: admin
 First admin password is: ${adminPass}"

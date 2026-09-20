@@ -47,14 +47,13 @@ cVappName=pydio
 . /opt/verb/conf/servermailpath
 
 # Check if already installed
-## Config
-if [ -f /opt/verb/conf/vapps/vapp.${cVappName} ]; then
+. /opt/verb/donjon/vappinstall.sh
+if ! vappinst_clear_partial \
+  "/opt/verb/conf/vapps/vapp.${cVappName}" \
+  "/srv/cloud/${cVappName}" \
+  "/srv/cloud/pydio/pydio.json"; then
 /usr/bin/echo "This is already installed."
 exit 0; fi
-## Directory
-if [ -d /srv/cloud/${cVappName} ]; then
-/usr/bin/echo "Pydio already exists in the system. If it isn't working, look deeper on the server. For now, doing nothing."
-exit 8; fi
 ## Web server
 if [ ${ServerType} = "lamp" ]; then
 /usr/bin/echo "Only allowed with Nginx servers, LEMP or LAEMP; LAMP servers with Apache not allowed."
@@ -91,14 +90,18 @@ else
 dBaseUser="$3"
 fi
 
+vappinst_begin
+
 # Download as vapp
 cd /srv/cloud || exit 6
 /opt/verb/serfs/inkget ${cVappName} check
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
+vappinst_note dir "/srv/cloud/${cVappName}"
 
 # Install as local/bin
 /usr/bin/mkdir -p /usr/local/bin
 /usr/bin/mv -f /srv/cloud/pydio/cells /usr/local/bin/cells
+vappinst_note file /usr/local/bin/cells
 /usr/bin/echo "Binary at /usr/local/bin/cells" > /srv/cloud/pydio/cells.bin.installed
 /usr/bin/chmod 755 /usr/local/bin/cells
 ## Allow the cells binary to bind to privileged ports (80/443) without root
@@ -106,6 +109,7 @@ e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 # User & data directories
 /usr/bin/useradd -r -U -s /usr/bin/bash -d /srv/cloud/pydio pydio
+vappinst_note user pydio
 ## Served data (block storage serve-ready)
 /usr/bin/mkdir -p /srv/cloud/pydio
 /usr/bin/chown -R pydio:pydio /srv/cloud/pydio
@@ -138,16 +142,20 @@ ExecStartPre=/bin/sh -c 'echo $MAINPID > /run/pydio/pydio.pid'
 [Install]
 WantedBy=multi-user.target
 EOF
+vappinst_note systemd cells
 
 
 ## Create the database and credentials (needed now, before service starts)
 /usr/bin/sudo -u postgres psql -c "CREATE USER ${dBaseUser} WITH PASSWORD '${dBPassword}';"
 /usr/bin/sudo -u postgres psql -c "CREATE DATABASE ${dBase} OWNER ${dBaseUser};"
 /usr/bin/sudo -u postgres psql -c "GRANT ALL ON SCHEMA public TO ${dBaseUser};"
+vappinst_note pgsql "${dBase}" "${dBaseUser}"
 ## Write the config for backup
 /usr/bin/echo "appDBase=${dBase}
 appDDBUsr=${dBaseUser}
-appDDBPass=${dBPassword}" > /opt/verb/conf/vapps/vapp.${cVappName}
+appDDBPass=${dBPassword}
+appEngine=postgres" > /opt/verb/conf/vapps/vapp.${cVappName}
+vappinst_note conf "/opt/verb/conf/vapps/vapp.${cVappName}"
 
 # Use msmtp for a real SMTP address
 ## Postfix vmail?
@@ -205,6 +213,8 @@ customconfigs:
 EOF
 
 # Webserver setup
+vappinst_vhost_backup "/opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf"
+vappinst_vhost_backup "/opt/verb/conf/webserver/sites-available/httpd/${subDom}.${blueURI}.conf"
 if [ ${ServerType} = "laemp" ]; then
   /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf /opt/verb/conf/webserver/sites-available/nginx/${subDom}.${blueURI}.conf.old
   /usr/bin/mv /opt/verb/conf/webserver/sites-available/httpd/${subDom}.${blueURI}.conf /opt/verb/conf/webserver/sites-available/httpd/${subDom}.${blueURI}.conf.old
@@ -277,6 +287,7 @@ fi
 
 # Monit
 /usr/bin/cp /opt/verb/conf/lib/cloud/monit/monitrc.d/pydio /etc/monit/monitrc.d/
+vappinst_note file /etc/monit/monitrc.d/pydio
 /usr/bin/chmod 700 /etc/monit/monitrc.d/*
 ## Restart or enable, just be safe
 if systemctl is-active monit -q; then
@@ -286,6 +297,7 @@ else
 fi
 
 # Finish
+vappinst_commit
 /usr/bin/echo "
 These are setup:
 

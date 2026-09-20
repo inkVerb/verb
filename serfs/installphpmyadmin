@@ -54,27 +54,32 @@ fi
 . /opt/verb/conf/siteurilist
 
 # Check if already installed
-## Config
-if [ -f /opt/verb/conf/vapps/vapp.${cVappName} ]; then
+. /opt/verb/donjon/vappinstall.sh
+if ! vappinst_clear_partial \
+  "/opt/verb/conf/vapps/vapp.${cVappName}" \
+  "/srv/www/vapps/${cVappName}" \
+  "/srv/www/vapps/${cVappName}/config.inc.php"; then
 /bin/echo "This is already installed."
 exit 0; fi
-## Directory
-if [ -d /srv/www/vapps/${cVappName} ]; then
-/bin/echo "phpMyAdmin already exists in the system. If it isn't working, look deeper on the server. For now, doing nothing."
-exit 8; fi
+
+vappinst_begin
 
 # Download and establish Drupal in the server to pre-created domain
 cd /srv/www/vapps || exit 6
 /opt/verb/serfs/inkget ${cVappName} check; wait
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
+vappinst_note dir "/srv/www/vapps/${cVappName}"
 
 # Create the boss user
 /opt/verb/serfs/mysqlnewboss "${dBaseUser}" "${dBPassword}"
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+vappinst_note mysqlboss "${dBaseUser}"
 
 # Write the config for backup
 /bin/echo "subDir=${directry}
 appDDBUsr=${dBaseUser}
 appDDBPass=${dBPassword}" > /opt/verb/conf/vapps/vapp.${cVappName}
+vappinst_note conf "/opt/verb/conf/vapps/vapp.${cVappName}"
 
 # Prepare the config and web directory
 /bin/cp /srv/www/vapps/${cVappName}/config.sample.inc.php /srv/www/vapps/${cVappName}/config.inc.php
@@ -82,6 +87,7 @@ blowfish=$(/usr/bin/pwgen -c -1 32)
 /bin/sed -i "s/cfg\['blowfish_secret'\] = '';/cfg\['blowfish_secret'\] = '$blowfish';/" /srv/www/vapps/${cVappName}/config.inc.php
 /opt/verb/serfs/setvappconfig "vapp.${cVappName}" "/srv/www/vapps/${cVappName}/config.inc.php"
 /bin/ln -sfn /srv/www/vapps/${cVappName} /srv/www/verb/${itsqlTLD}.sql/${directry}; wait
+vappinst_note symlink "/srv/www/verb/${itsqlTLD}.sql/${directry}" MISSING
 /bin/chown -R www:www /srv/www/verb/${itsqlTLD}.sql; wait
 /bin/chown -R www:www /srv/www/vapps/${cVappName}; wait
 
@@ -96,6 +102,7 @@ elif [ ${ServerType} = "laemp" ]; then
   /usr/bin/systemctl restart nginx
 fi
 
+vappinst_commit
 /bin/echo "
 PHP My Admin now active & this MySQL admin is setup:
 

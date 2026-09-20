@@ -42,14 +42,21 @@ dBPassword=$3
 cleanName=$(/bin/echo $cVappName | /usr/bin/sed -e 's/\.//g')
 
 # Check if already installed
-if [-f /opt/verb/conf/vapps/vapp.${cVappName} ]; then
-/bin/echo "This is already installed. I quit."
+. /opt/verb/donjon/vappinstall.sh
+if ! vappinst_clear_partial \
+  "/opt/verb/conf/vapps/vapp.${cVappName}" \
+  "/srv/www/vapps/${cVappName}" \
+  "/srv/www/vapps/${cVappName}/index.php"; then
+/bin/echo "This is already installed."
 exit 0; fi
+
+vappinst_begin
 
 # Download and establish mediawiki from the inkVerb repo
 cd /srv/www/vapps || exit 6
 /opt/verb/serfs/inkget ${cVappName} check
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
+vappinst_note dir "/srv/www/vapps/${cVappName}"
 
 /opt/verb/serfs/setvapplinkon ${cVappName}; wait
 /bin/chown -R www:www /srv/www/verb/ink.wiki; wait
@@ -68,14 +75,18 @@ dBaseUser=${dBase}; fi
 CREATE DATABASE  ${dBase};
 GRANT ALL PRIVILEGES ON ${dBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '${dBPassword}';
 FLUSH PRIVILEGES;"
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+vappinst_note mysql "${dBase}" "${dBaseUser}"
 
 # Write the config for backup
 /bin/echo "#!/bin/bash
 appDBase=${dBase}
 appDDBUsr=${dBaseUser}
 appDDBPass=${dBPassword}" > /opt/verb/conf/vapps/vapp.${cVappName}
+vappinst_note conf "/opt/verb/conf/vapps/vapp.${cVappName}"
 /opt/verb/serfs/setvappconfig "vapp.${cVappName}" "/srv/www/vapps/${cVappName}/LocalSettings.php"
 
+vappinst_commit
 /bin/echo "These are setup:
 
 Host: localhost

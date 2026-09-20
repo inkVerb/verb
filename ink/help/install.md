@@ -14,11 +14,18 @@
     - pdt-news (`ink install pdt`)
     - badAd (`ink install badad`)
     - PinkWrite 99 (`ink install pw99`)
+    - Nextcloud (`ink install nextcloud`)
+    - ownCloud OCIS (`ink install owncloud`)
+    - Pydio (`ink install pydio`)
+    - OrangeHRM (`ink install orangehrm`)
+    - SuiteCRM (`ink install suitecrm`)
+    - MediaWiki (`ink install mediawiki`)
+    - phpMyAdmin (`ink install phpmyadmin`)
+    - LDAP (`ink install ldap`)
     - inkMail (`ink install inkmailadmin`) — agnostic mail panel at po.emailTLDURI
     - Verb web UI (`ink install verbadmin`) — vipURI, only if VERBvip=true before setup
-    - OrangeHRM
-    - SuiteCRM
     - Ampache
+- If an `ink install` vapp serf fails, it undoes what that run created (new DB, vapp tree, vapp conf, html symlink it made). A domain and inkCert that already existed stay. A leftover incomplete install is cleaned on retry instead of “already installed.”
 
 ## Schemas
 Find available schemas with:

@@ -51,26 +51,29 @@ cleanName=$(/usr/bin/echo ${domain} | /usr/bin/sed -e 's/\.//g')
 if [ -z ${1} ]; then
 /bin/echo "You must designate a domain. Read the How to use. Can't continue."
 exit 8; fi
-# Check if already installed
-## Config
-if [ -f /opt/verb/conf/vapps/vapp.${cVappName}.${domain} ]; then
+
+. /opt/verb/donjon/vappinstall.sh
+# Check if already installed (incomplete leftovers are cleared, not stuck)
+if ! vappinst_clear_partial \
+  "/opt/verb/conf/vapps/vapp.${cVappName}.${domain}" \
+  "/srv/www/vapps/${cVappName}.${domain}" \
+  "/srv/www/vapps/${cVappName}.${domain}/wp-config.php"; then
 /bin/echo "This is already installed."
 exit 0; fi
-## Directory
-if [ -d /srv/www/vapps/${cVappName}.${domain} ]; then
-/bin/echo "That WordPress site already exists in the system. If it isn't working, look deeper on the server. For now, doing nothing."
-exit 0; fi
+
+vappinst_begin
 
 # Domain presence check
 if [ ! -d "/srv/www/domains/${domain}" ]; then
-/opt/verb/serfs/adddomain ${domain}
-wait
+vappinst_adddomain_if_missing "${domain}"
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 
 # Download and establish wordpress in the server to pre-created domain
 cd /srv/www/vapps || exit 6
 /opt/verb/serfs/inkget ${cVappName} check
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
+vappinst_note dir "/srv/www/vapps/${cVappName}"
 
 # Auto database
 if [ -z ${4} ]; then
@@ -81,9 +84,10 @@ if [ -z ${3} ]; then
 dBaseUser=${dBase}; fi
 
 /bin/mv ${cVappName} ${cVappName}.${domain}
-/bin/rm -f /srv/www/html/${domain}
-/bin/ln -sfn /srv/www/vapps/${cVappName}.${domain} /srv/www/html/${domain}
-/bin/ln -sfn /srv/www/vapps/${cVappName}.${domain} /srv/vip/_webapps/; wait
+vappinst_note dir "/srv/www/vapps/${cVappName}.${domain}"
+vappinst_html_link "${domain}" "/srv/www/vapps/${cVappName}.${domain}"
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+vappinst_symlink "/srv/vip/_webapps/${cVappName}.${domain}" "/srv/www/vapps/${cVappName}.${domain}"
 /bin/chown -R www:www /srv/www/html/${domain}; wait
 /bin/chown -R www:www /srv/www/vapps/${cVappName}.${domain}; wait
 
@@ -92,16 +96,24 @@ dBaseUser=${dBase}; fi
 CREATE DATABASE  ${dBase};
 GRANT ALL PRIVILEGES ON ${dBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '${dBPassword}';
 FLUSH PRIVILEGES;"
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+vappinst_note mysql "${dBase}" "${dBaseUser}"
 
 # Write the config for backup
 /bin/echo "appDBase=${dBase}
 appDDBUsr=${dBaseUser}
 appDDBPass=${dBPassword}" > /opt/verb/conf/vapps/vapp.${cVappName}.${domain}
+vappinst_note conf "/opt/verb/conf/vapps/vapp.${cVappName}.${domain}"
 
 
 # Put the settings in the WordPress config file
-cd wp.${domain} || exit 6
+cd /srv/www/vapps/${cVappName}.${domain} || exit 6
+if [ ! -f wp-config-sample.php ]; then
+  /usr/bin/echo "wp-config-sample.php missing after download."
+  exit 6
+fi
 /bin/cp wp-config-sample.php wp-config.php
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 /bin/sed -i "s/database_name_here/${dBase}/g" wp-config.php
 /bin/sed -i "s/username_here/${dBaseUser}/g" wp-config.php
 /bin/sed -i "s/password_here/${dBPassword}/g" wp-config.php
@@ -112,9 +124,10 @@ define( 'WP_HOME', 'https://${domain}' );" >> wp-config.php
 
 # Add the secure salt and key strings
 /opt/verb/serfs/setsecurewp ${domain}
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 #### fixhttps already done?
-if /bin/grep -q '##INKHTTPSFIX=fixed' /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf; then
+if [ -f /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf ] && /bin/grep -q '##INKHTTPSFIX=fixed' /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf; then
 /bin/sed -i "/WP_SITEURL/d" /srv/www/vapps/wp.${domain}/wp-config.php
 /bin/sed -i "/WP_HOME/d" /srv/www/vapps/wp.${domain}/wp-config.php
 /bin/echo "define( 'WP_SITEURL', 'https://${domain}' );
@@ -122,6 +135,7 @@ define( 'WP_HOME', 'https://${domain}' );" >> /srv/www/vapps/wp.${domain}/wp-con
 fi
 
 /opt/verb/serfs/setvappconfig "vapp.${cVappName}.${domain}" "/srv/www/vapps/${cVappName}.${domain}/wp-config.php"
+vappinst_note file "/opt/verb/conf/vapps/orig/vapp.${cVappName}.${domain}"
 
 # Reset all permissions and restart webserver
 /bin/chown -R www:www /srv/www/vapps/${cVappName}.${domain}
@@ -136,6 +150,7 @@ elif [ ${ServerType} = "laemp" ]; then
 fi
 
 # Finish
+vappinst_commit
 /usr/bin/echo "These are setup:
 
 Database: ${dBase}

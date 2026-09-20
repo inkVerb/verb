@@ -6,6 +6,8 @@
 - Writes MariaDB credentials to `verb/conf/vapps/vapp.wp.DOMAIN.TLD`
 - Adds the domain with `adddomain` if it is not already hosted
 - BIMI is not on the WP site; use `ink set bimi` (`https://${emailTLDURI}/domain.tld/bimi.svg`)
+- `html/DOMAIN` must be a symlink (or missing). A real directory is refused — current BIMI is `/srv/www/email/bimi/DOMAIN/bimi.svg`, not html.
+- If this install fails, it undoes what it created (vapp dir, DB, vapp conf, html symlink it made). Pre-existing domain and certs stay. An incomplete leftover is cleaned on the next run instead of “already installed.”
 - To import an existing Ghost site on the same domain: `ink ghost 2wp -d DOMAIN` (after this install). Ghost's database is not reused.
 
 ## Usage

@@ -39,11 +39,20 @@ SECURE_AUTH_SALT="$(/usr/bin/pwgen -s -1 27)"
 LOGGED_IN_SALT="$(/usr/bin/pwgen -s -1 27)"
 NONCE_SALT="$(/usr/bin/pwgen -s -1 27)"
 
-# Writable Permissions
-/bin/chmod -R 644 wp-config.php
+wpdir=""
+if [ -f "/srv/www/vapps/wp.${domain}/wp-config.php" ]; then
+  wpdir="/srv/www/vapps/wp.${domain}"
+elif [ -f "/srv/www/html/${domain}/wp-config.php" ]; then
+  wpdir="/srv/www/html/${domain}"
+else
+  /usr/bin/echo "wp-config.php not found for ${domain} (vapps/wp.${domain} or html/${domain})."
+  exit 6
+fi
+
+cd "${wpdir}" || exit 6
+/bin/chmod 644 wp-config.php
 
 # Insert the random pwgen strings
-cd /srv/www/html/${domain}/ || exit 6
 /bin/sed -i "s/define( 'AUTH_KEY',         .*/define( 'AUTH_KEY',         '${AUTH_KEY}' );/g" wp-config.php
 /bin/sed -i "s/define( 'SECURE_AUTH_KEY',  .*/define( 'SECURE_AUTH_KEY',  '${SECURE_AUTH_KEY}' );/g" wp-config.php
 /bin/sed -i "s/define( 'LOGGED_IN_KEY',    .*/define( 'LOGGED_IN_KEY',    '${LOGGED_IN_KEY}' );/g" wp-config.php
@@ -54,8 +63,9 @@ cd /srv/www/html/${domain}/ || exit 6
 /bin/sed -i "s/define( 'NONCE_SALT',       .*/define( 'NONCE_SALT',       '${NONCE_SALT}' );/g" wp-config.php
 
 # Reset all permissions
-/bin/chmod -R 440 wp-config.php
-/bin/chown -R www:www /srv/www/html/${domain}/
+/bin/chmod 440 wp-config.php
+/bin/chown www:www wp-config.php
+/bin/chown -R www:www "${wpdir}"
 
 /bin/echo "${domain} now has secure strings and permissions."
 

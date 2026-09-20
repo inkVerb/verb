@@ -66,6 +66,15 @@ elif [ ${ServerType} = "lamp" ]; then
   exit 5
 fi
 
+. /opt/verb/donjon/vappinstall.sh
+if ! vappinst_clear_partial \
+  "/opt/verb/conf/vapps/vapp.${cVappName}.${domain}" \
+  "/srv/ghost/${domain}" \
+  "/srv/ghost/${domain}/config.production.json"; then
+  /usr/bin/echo "This is already installed."
+  exit 0
+fi
+
 # Node 22 LTS for Ghost (not pacman extra/nodejs — Arch current is too new)
 /opt/verb/serfs/setserverlts
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
@@ -92,6 +101,8 @@ if [ ! -x "${GhostCli}" ]; then
   "${NpmBin}" install -g ghost-cli@latest
 fi
 
+vappinst_begin
+
 # Auto database
 if [ -z ${4} ]; then
 dBPassword=$(/usr/bin/pwgen -s -1 10); fi
@@ -105,10 +116,13 @@ dBaseUser=${dBase}; fi
 CREATE DATABASE  ${dBase};
 GRANT ALL PRIVILEGES ON ${dBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '${dBPassword}';
 FLUSH PRIVILEGES;"
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+vappinst_note mysql "${dBase}" "${dBaseUser}"
 
 # Mail account (100M)
 emailPassword=$(/usr/bin/pwgen -s -1 15)
 /opt/verb/serfs/inkvmailbox web ${domain} 'Ghost' 104857600 ${emailPassword}
+vappinst_note mailbox web "${domain}"
 
 # Determin port 
 ghostport=2368
@@ -128,23 +142,27 @@ ghostport=\"${ghostport}\"
 ghostemail=\"${emailUser}\"
 ghostemailpas=\"${emailPassword}\"
 " > /opt/verb/conf/vapps/vapp.${cVappName}.${domain}
+vappinst_note conf "/opt/verb/conf/vapps/vapp.${cVappName}.${domain}"
 
 # Record the port in the Ghost port inklist
 /usr/bin/echo "${domain} ${ghostport}" >> /opt/verb/conf/inklists/ghostserverports
+vappinst_note portline /opt/verb/conf/inklists/ghostserverports "${domain}"
 
 # Set UFW to allow the Ghost port
 # /usr/bin/ufw allow ${ghostport} # Maybe not since the port is only used internally
 
-# Remove domain web folder link
-/usr/bin/rm -f /srv/www/html/${domain}
+# Remove domain web folder link (symlink only; leave a real directory)
+vappinst_html_unlink "${domain}"
 
 # Nginx conf
 ## Remove irrelevant site configs, back up to-be-replaced configs
 if [ ${ServerType} = "laemp" ]; then
+  vappinst_note ghosted "${domain}"
   /usr/bin/cp -f /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf /opt/verb/conf/webserver/sites-available/nginx/${domain}-ghosted.conf
   /usr/bin/rm -f /opt/verb/conf/webserver/sites-enabled/httpd/${domain}.conf
   /usr/bin/mv /opt/verb/conf/webserver/sites-available/httpd/${domain}.conf /opt/verb/conf/webserver/sites-available/httpd/${domain}-ghosted.conf
 elif [ ${ServerType} = "lemp" ]; then
+  vappinst_note ghosted "${domain}"
   /usr/bin/cp -f /opt/verb/conf/webserver/sites-available/nginx/${domain}.conf /opt/verb/conf/webserver/sites-available/nginx/${domain}-ghosted.conf
 elif [ ${ServerType} = "lamp" ]; then
   /usr/bin/echo "Ghost requires Nginx. Can't be installed on LAMP server. But, the script shouldn't have gotten this far. Something is wrong."
@@ -197,6 +215,7 @@ fi
 ## Create app directory
 ### Note make the directory owned by worker (ghost-cli must be run by worker as normal user with no-password sudo permissions)
 /usr/bin/mkdir -p /srv/ghost/${domain}
+vappinst_note dir "/srv/ghost/${domain}"
 /usr/bin/chown -R worker:worker /srv/ghost/${domain}
 ## MySQL install command (can't be root)
 ### No --start because we need to sort out user permissions and service first
@@ -234,6 +253,8 @@ EOF
 
 /usr/bin/systemctl enable ghost_${cleanDomain}
 /usr/bin/systemctl start ghost_${cleanDomain}
+vappinst_note systemd "ghost_${cleanDomain}"
+vappinst_commit
 /opt/verb/serfs/setserverlts
 
 # Finish

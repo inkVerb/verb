@@ -47,21 +47,26 @@ cleanName=$(/usr/bin/echo ${domain} | /usr/bin/sed -e 's/\.//g')
 if [ -z ${1} ]; then
 /bin/echo "You must designate a domain. Read the How to use. Can't continue."
 exit 8; fi
-if [ -f /opt/verb/conf/vapps/vapp.${cVappName}.${domain} ]; then
+
+. /opt/verb/donjon/vappinstall.sh
+if ! vappinst_clear_partial \
+  "/opt/verb/conf/vapps/vapp.${cVappName}.${domain}" \
+  "/srv/www/vapps/${cVappName}.${domain}" \
+  "/srv/www/vapps/${cVappName}.${domain}/config.php"; then
 /bin/echo "This is already installed."
 exit 0; fi
-if [ -d /srv/www/vapps/${cVappName}.${domain} ]; then
-/bin/echo "That PinkWrite 99 site already exists in the system. If it isn't working, look deeper on the server. For now, doing nothing."
-exit 0; fi
+
+vappinst_begin
 
 if [ ! -d "/srv/www/domains/${domain}" ]; then
-/opt/verb/serfs/adddomain ${domain}
-wait
+vappinst_adddomain_if_missing "${domain}"
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 fi
 
 cd /srv/www/vapps || exit 6
 /opt/verb/serfs/inkget ${cVappName} check
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
+vappinst_note dir "/srv/www/vapps/${cVappName}"
 
 if [ -z "${dBPassword}" ]; then
 dBPassword=$(/usr/bin/pwgen -s -1 10); fi
@@ -71,9 +76,10 @@ if [ -z "${dBaseUser}" ]; then
 dBaseUser=${dBase}; fi
 
 /bin/mv ${cVappName} ${cVappName}.${domain}
-/bin/rm -f /srv/www/html/${domain}
-/bin/ln -sfn /srv/www/vapps/${cVappName}.${domain} /srv/www/html/${domain}
-/bin/ln -sfn /srv/www/vapps/${cVappName}.${domain} /srv/vip/_webapps/; wait
+vappinst_note dir "/srv/www/vapps/${cVappName}.${domain}"
+vappinst_html_link "${domain}" "/srv/www/vapps/${cVappName}.${domain}"
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+vappinst_symlink "/srv/vip/_webapps/${cVappName}.${domain}" "/srv/www/vapps/${cVappName}.${domain}"
 /bin/chown -R www:www /srv/www/html/${domain}; wait
 /bin/chown -R www:www /srv/www/vapps/${cVappName}.${domain}; wait
 
@@ -81,6 +87,8 @@ dBaseUser=${dBase}; fi
 CREATE DATABASE ${dBase};
 GRANT ALL PRIVILEGES ON ${dBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '${dBPassword}';
 FLUSH PRIVILEGES;"
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+vappinst_note mysql "${dBase}" "${dBaseUser}"
 
 if [ -f /srv/www/vapps/${cVappName}.${domain}/sql/schema.sql ]; then
   /usr/bin/mariadb --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf ${dBase} < /srv/www/vapps/${cVappName}.${domain}/sql/schema.sql
@@ -92,6 +100,7 @@ appDDBUsr=${dBaseUser}
 appDDBPass=${dBPassword}
 appEngine=mariadb
 appPubHost=${domain}" > /opt/verb/conf/vapps/vapp.${cVappName}.${domain}
+vappinst_note conf "/opt/verb/conf/vapps/vapp.${cVappName}.${domain}"
 
 # SysAdmin config (PHP return array). Host is after https:// only.
 # allow_create_super true so the first Superintendent can be created at /install.php; set false after.
@@ -144,6 +153,7 @@ elif [ ${ServerType} = "laemp" ]; then
   /usr/bin/systemctl restart nginx
 fi
 
+vappinst_commit
 /usr/bin/echo "These are setup:
 
 Database: ${dBase}

@@ -44,23 +44,25 @@ dBPassword=$3
 cleanName=$(/bin/echo $cVappName | /usr/bin/sed -e 's/\.//g')
 
 # Check if already installed
-## Config
-if [ -f /opt/verb/conf/vapps/vapp.${cVappName} ]; then
+. /opt/verb/donjon/vappinstall.sh
+if ! vappinst_clear_partial \
+  "/opt/verb/conf/vapps/vapp.${cVappName}" \
+  "/srv/www/vapps/${cVappName}" \
+  "/srv/www/vapps/${cVappName}/index.php"; then
 /bin/echo "This is already installed."
 exit 0; fi
-## Directory
-if [ -d /srv/www/vapps/${cVappName} ]; then
-/bin/echo "OrangeHRM already exists in the system. If it isn't working, look deeper on the server. For now, doing nothing."
-exit 8; fi
 ## Web server
 if [ ${ServerType} = "lamp" ]; then
 /usr/bin/echo "Only allowed with Nginx servers, LEMP or LAEMP; LAMP servers with Apache not allowed."
 exit 0; fi
 
+vappinst_begin
+
 # Download and unpack the latest checked version from inkisaverb.com/repo
 cd /srv/www/vapps || exit 6
 /opt/verb/serfs/inkget ${cVappName} check; wait
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
+vappinst_note dir "/srv/www/vapps/${cVappName}"
 
 /bin/mkdir -p /srv/www/vapps/${cVappName}/lib/logs
 /bin/mkdir -p /srv/www/vapps/${cVappName}/symfony/cache
@@ -82,6 +84,8 @@ dBaseUser=${dBase}; fi
 CREATE DATABASE  ${dBase};
 GRANT ALL PRIVILEGES ON ${dBase}.* TO '${dBaseUser}'@'localhost' IDENTIFIED BY '${dBPassword}';
 FLUSH PRIVILEGES;"
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+vappinst_note mysql "${dBase}" "${dBaseUser}"
 
 # Config files
 ## Preconfig setup is currently disabled until OrangeHRM installation allows, but this would be a start:
@@ -99,9 +103,12 @@ FLUSH PRIVILEGES;"
 appDBase=${dBase}
 appDDBUsr=${dBaseUser}
 appDDBPass=${dBPassword}" > /opt/verb/conf/vapps/vapp.${cVappName}
+vappinst_note conf "/opt/verb/conf/vapps/vapp.${cVappName}"
 /opt/verb/serfs/setvappconfig "vapp.${cVappName}" "/srv/www/vapps/${cVappName}/lib/confs/Conf.php"
 
 # Webserver setup
+vappinst_vhost_backup "/opt/verb/conf/webserver/sites-available/nginx/hrm.${redURI286}.conf"
+vappinst_vhost_backup "/opt/verb/conf/webserver/sites-available/httpd/hrm.${redURI286}.conf"
 if [ ${ServerType} = "laemp" ]; then
   /usr/bin/mv /opt/verb/conf/webserver/sites-available/nginx/hrm.${redURI286}.conf /opt/verb/conf/webserver/sites-available/nginx/hrm.${redURI286}.conf.old
   /usr/bin/mv /opt/verb/conf/webserver/sites-available/httpd/hrm.${redURI286}.conf /opt/verb/conf/webserver/sites-available/httpd/hrm.${redURI286}.conf.old
@@ -162,6 +169,7 @@ else
   /usr/bin/echo "No email server detected, so not configuring email settings."
 fi
 
+vappinst_commit
 /bin/echo "These are setup:
 
 Database Host Name: localhost
