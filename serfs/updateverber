@@ -21,7 +21,7 @@ voptflagpurpose=(  )
 dependencyinstall=(  )
 prerequesite=(  )
 usedby=(  )
-useserfs=(  )
+useserfs=( setserverlts )
 useconfigs=( servernameip )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/updateverber.replace" ]; then . /opt/verb/mods/updateverber.replace; return 0; fi # Replaces this script
@@ -46,6 +46,11 @@ cd /opt/verb/ || exit 6
 /bin/chmod 750 /opt/verb/${ServerUpdateRepo}/update
 /opt/verb/${ServerUpdateRepo}/update
 wait
+
+# After serfs are copied: pin Ghost to Node 22 LTS (isolated from pacman)
+if [ -x "/opt/verb/serfs/setserverlts" ]; then
+  /opt/verb/serfs/setserverlts
+fi
 
 # Remove the entire updater
 /bin/rm -rf /opt/verb/${ServerUpdateRepo}

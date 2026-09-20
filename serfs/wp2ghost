@@ -1,0 +1,131 @@
+#!/usr/bin/bash
+#inkVerbSerf! verb.ink
+
+# This imports a WordPress site into an already-installed Ghost site on the same domain.
+## WordPress is read-only. Ghost must already exist (installghostsite).
+## Posts, pages, tags, menus, and media are copied into Ghost.
+
+# How to use:
+## ./wp2ghost [ domain.tld ]
+## ./wp2ghost [ domain.tld ] [ dry-run | media-only ]
+
+
+usagenotes="This imports WordPress posts, pages, menus, and media into an installed Ghost site"
+usageformat="wp2ghost [ domain.tld ] [ dry-run | media-only ]"
+usageexample="wp2ghost inkisaverb.com
+wp2ghost inkisaverb.com dry-run
+wp2ghost inkisaverb.com media-only"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=( "Mode" )
+vopttypes=( isazAZ09lines )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( installwp installghostsite )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/wp2ghost.replace" ]; then . /opt/verb/mods/wp2ghost.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/wp2ghost.before" ]; then . /opt/verb/mods/wp2ghost.before; fi # Precedes this script
+
+
+domain="$1"
+shift || true
+if [ -z "${domain}" ]; then
+  /usr/bin/echo "Domain required. See how to use."
+  exit 5
+fi
+
+dry=""
+mediaonly=""
+for a in "$@"; do
+  case "${a}" in
+    dry-run) dry="--dry-run" ;;
+    media-only) mediaonly="--media-only" ;;
+    *)
+      /usr/bin/echo "Unknown option: ${a}"
+      exit 5
+      ;;
+  esac
+done
+
+wpRoot="/srv/www/vapps/wp.${domain}"
+ghostDir="/srv/ghost/${domain}"
+ghostContent="${ghostDir}/content"
+ghostConfig="${ghostDir}/config.production.json"
+phpBin="/usr/bin/php"
+importer="/opt/verb/conf/lib/wp2ghost.php"
+
+if [ ! -f "${wpRoot}/wp-config.php" ]; then
+  /usr/bin/echo "WordPress not found at ${wpRoot}. Run: /opt/verb/serfs/installwp ${domain}"
+  exit 8
+fi
+if [ ! -d "${ghostDir}" ] || [ ! -f "${ghostConfig}" ]; then
+  /usr/bin/echo "Ghost not found at ${ghostDir}. Run: /opt/verb/serfs/installghostsite ${domain}"
+  exit 8
+fi
+if [ ! -f "${importer}" ]; then
+  /usr/bin/echo "Importer missing: ${importer}"
+  exit 8
+fi
+if [ ! -x "${phpBin}" ]; then
+  /usr/bin/echo "php not found at ${phpBin}"
+  exit 8
+fi
+
+ghostDb=""
+if [ -f "/opt/verb/conf/vapps/vapp.ghost.${domain}" ]; then
+  # shellcheck disable=SC1090
+  . "/opt/verb/conf/vapps/vapp.ghost.${domain}"
+  ghostDb="${appDBase:-}"
+fi
+if [ -z "${ghostDb}" ] && [ -f "${ghostConfig}" ]; then
+  ghostDb="$("${phpBin}" -r 'echo json_decode(file_get_contents($argv[1]), true)["database"]["connection"]["database"] ?? "";' -- "${ghostConfig}")"
+fi
+if [ -z "${ghostDb}" ]; then
+  /usr/bin/echo "Could not determine Ghost database. Check vapp.ghost.${domain} or ${ghostConfig}."
+  exit 8
+fi
+
+if [ -z "${dry}" ]; then
+  /usr/bin/mkdir -p /srv/vip/sql
+  stamp="$(/usr/bin/date +%Y%m%d-%H%M%S)"
+  dump="/srv/vip/sql/wp2ghost-${domain}-${stamp}.sql"
+  /usr/bin/echo "Dumping Ghost DB ${ghostDb} to ${dump} (rollback copy)..."
+  /usr/bin/mariadb-dump --defaults-extra-file=/opt/verb/conf/sql/mysqlboss.cnf "${ghostDb}" > "${dump}" || true
+fi
+
+cmd=("${phpBin}" "${importer}"
+  "--wp-root=${wpRoot}"
+  "--ghost-db=${ghostDb}"
+  "--ghost-config=${ghostConfig}"
+  "--ghost-content=${ghostContent}"
+  "--site-url=https://${domain}"
+  "--mysql-cnf=/opt/verb/conf/sql/mysqlboss.cnf"
+)
+[ -n "${dry}" ] && cmd+=("${dry}")
+[ -n "${mediaonly}" ] && cmd+=("${mediaonly}")
+
+/usr/bin/echo "Running: ${cmd[*]}"
+"${cmd[@]}"
+e="$?"
+if [ "$e" != "0" ]; then
+  /usr/bin/echo "wp2ghost failed (exit ${e})."
+  exit "$e"
+fi
+
+if [ -d "${ghostContent}" ]; then
+  /usr/bin/chown -R ghost:ghost "${ghostContent}" 2>/dev/null || true
+fi
+
+/usr/bin/echo "Imported WordPress → Ghost on ${domain}.
+Ghost admin: https://${domain}/ghost
+WordPress files and database were not changed.
+"
+
+
+
+if [ -e "/opt/verb/mods/wp2ghost.after" ]; then . /opt/verb/mods/wp2ghost.after; fi # Follows this script

@@ -23,7 +23,7 @@ voptflagpurpose=(  )
 dependencyinstall=(  )
 prerequesite=(  )
 usedby=(  )
-useserfs=( inkvmailbox inkcertaddle inkcertaddcb inkcertaddcbsingle inkcertaddsc setvappconfig )
+useserfs=( inkvmailbox inkcertaddle inkcertaddcb inkcertaddcbsingle inkcertaddsc setvappconfig setserverlts )
 useconfigs=( servernameip servertype siteurilist )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/installghostinkblog.replace" ]; then . /opt/verb/mods/installghostinkblog.replace; return 0; fi # Replaces this script
@@ -57,9 +57,13 @@ elif [ ${ServerType} = "lamp" ]; then
   exit 5
 fi
 
-# Install npm & Node.js
-if [ ! -e "/usr/bin/node" ] || [ ! -e "/usr/bin/npm" ]; then
-  /usr/bin/pacman -Syy nodejs npm --needed --noconfirm
+# Node 22 LTS for Ghost (not pacman extra/nodejs — Arch current is too new)
+/opt/verb/serfs/setserverlts
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+. /opt/verb/conf/serverlts
+if [ ! -x "${NodeBin}" ] || [ ! -x "${GhostCli}" ]; then
+  /usr/bin/echo "Node LTS / ghost-cli missing after setserverlts. Cannot install Ghost."
+  exit 4
 fi
 
 # Check the presence of the ghost user
@@ -74,9 +78,9 @@ if ! /usr/bin/id -u ghost &>/dev/null; then
   /usr/bin/chown -R ghost:ghost /srv/ghost
 fi
 
-# Install Ghost CLI tool package from npm
-if [ ! -e "/usr/bin/ghost" ]; then
-  /usr/bin/npm install ghost-cli@latest -g
+# ghost-cli lives on LTS Node (/opt/verb/lts/node), installed by setserverlts
+if [ ! -x "${GhostCli}" ]; then
+  "${NpmBin}" install -g ghost-cli@latest
 fi
 
 # Auto database
@@ -187,7 +191,8 @@ fi
 /usr/bin/chown -R worker:worker /srv/ghost/${domain}
 ## MySQL install command (can't be root)
 ### No --start because we need to sort out user permissions and service first
-/usr/bin/sudo -u worker /bin/bash -c "export GHOST_NODE_VERSION_CHECK=false; /usr/bin/ghost install --dir=/srv/ghost/${domain} --url=${domain} --port=${ghostport} --ip=127.0.0.1 --mail=SMTP --mailport=465 --mailhost=smtp.${domain} --mailuser=${emailUser} --mailpass=${emailPassword} --db=mysql --dbhost=localhost --dbname=${dBase} --dbuser=${dBaseUser} --dbpass=${dBPassword} --production --no-start --no-setup-systemd --no-setup-nginx --no-setup-ssl --no-setup-linux-user --no-setup-migrate"
+/usr/bin/sudo -u worker /usr/bin/env PATH="${NodePrefix}/bin:/usr/bin" GHOST_NODE_VERSION_CHECK=false \
+  "${GhostCli}" install --dir=/srv/ghost/${domain} --url=${domain} --port=${ghostport} --ip=127.0.0.1 --mail=SMTP --mailport=465 --mailhost=smtp.${domain} --mailuser=${emailUser} --mailpass=${emailPassword} --db=mysql --dbhost=localhost --dbname=${dBase} --dbuser=${dBaseUser} --dbpass=${dBPassword} --production --no-start --no-setup-systemd --no-setup-nginx --no-setup-ssl --no-setup-linux-user --no-setup-migrate
 ## SQLite3 install command (can't be root)
 ###DEV SQLite3 untested
 #/usr/bin/sudo -u worker /bin/bash -c "export GHOST_NODE_VERSION_CHECK=false; /usr/bin/ghost install --dir=/srv/ghost/${domain} --url=${domain} --port=${ghostport} --ip=127.0.0.1 --mail=SMTP --mailport=465 --mailhost=smtp.${domain} --mailuser=${emailUser} --mailpass=${emailPassword} --db=sqlite3 --dbpath=content/data/ghost_dev.db --production --no-start --no-setup-systemd --no-setup-nginx --no-setup-ssl --no-setup-linux-user --no-setup-migrate"
@@ -207,9 +212,10 @@ Type=simple
 WorkingDirectory=/srv/ghost/${domain}
 User=ghost
 Group=ghost
+Environment="PATH=${NodePrefix}/bin:/usr/bin"
 Environment="NODE_ENV=production"
 Environment="GHOST_NODE_VERSION_CHECK=false"
-ExecStart=/usr/bin/ghost run
+ExecStart=${GhostCli} run
 Restart=always
 SyslogIdentifier=ghost_${cleanDomain}
 
@@ -219,6 +225,7 @@ EOF
 
 /usr/bin/systemctl enable ghost_${cleanDomain}
 /usr/bin/systemctl start ghost_${cleanDomain}
+/opt/verb/serfs/setserverlts
 
 # Finish
 /usr/bin/echo "Ghost is setup.

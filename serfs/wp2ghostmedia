@@ -1,0 +1,68 @@
+#!/usr/bin/bash
+#inkVerbSerf! verb.ink
+
+# This copies (default) or moves WordPress uploads into Ghost content/images.
+
+# How to use:
+## ./wp2ghostmedia [ domain.tld ]
+## ./wp2ghostmedia [ domain.tld ] [ copy | move ]
+
+
+usagenotes="This copies WordPress media into the Ghost content/images folder"
+usageformat="wp2ghostmedia [ domain.tld ] [ copy | move ]"
+usageexample="wp2ghostmedia inkisaverb.com
+wp2ghostmedia inkisaverb.com move"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=( "Mode" )
+vopttypes=( isazAZ09lines )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( installwp installghostsite )
+usedby=(  )
+useserfs=( wp2ghost )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/wp2ghostmedia.replace" ]; then . /opt/verb/mods/wp2ghostmedia.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/wp2ghostmedia.before" ]; then . /opt/verb/mods/wp2ghostmedia.before; fi # Precedes this script
+
+
+domain="$1"
+mode="${2:-copy}"
+if [ -z "${domain}" ]; then
+  /usr/bin/echo "Domain required."
+  exit 5
+fi
+if [ "${mode}" != "copy" ] && [ "${mode}" != "move" ]; then
+  /usr/bin/echo "Mode must be copy or move."
+  exit 5
+fi
+
+wpUp="/srv/www/vapps/wp.${domain}/wp-content/uploads"
+ghostContent="/srv/ghost/${domain}/content"
+helper="/opt/verb/conf/lib/wp2ghost-media.sh"
+
+if [ ! -d "${wpUp}" ]; then
+  /usr/bin/echo "WP uploads not found: ${wpUp}"
+  exit 8
+fi
+if [ ! -d "/srv/ghost/${domain}" ]; then
+  /usr/bin/echo "Ghost not found for ${domain}."
+  exit 8
+fi
+
+/usr/bin/bash "${helper}" "${wpUp}" "${ghostContent}" "${mode}"
+e="$?"
+[[ "$e" = "0" ]] || exit "$e"
+
+/opt/verb/serfs/wp2ghost "${domain}" media-only
+e="$?"
+[[ "$e" = "0" ]] || exit "$e"
+
+/usr/bin/echo "Media ${mode}d into Ghost for ${domain}."
+
+
+
+if [ -e "/opt/verb/mods/wp2ghostmedia.after" ]; then . /opt/verb/mods/wp2ghostmedia.after; fi # Follows this script

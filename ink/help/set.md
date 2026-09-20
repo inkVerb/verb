@@ -5,6 +5,7 @@
 - badAd (`ink set badad`)
 - PinkWrite 99 (`ink set pw99`)
 - BIMI logo (`ink set bimi`) — VIP or FTP drop into `/srv/www/email/bimi/domain.tld/bimi.svg`
+- Node LTS for Ghost (`ink set serverlts`) — official Node 22 under `/opt/verb/lts/node`; writes `verb/conf/serverlts`
 - inkMail path (`ink set inkmailpath`) — URL folder on po.emailTLDURI
 - Database credentials are rewritten in `verb/conf/vapps/vapp.APP.DOMAIN`
 - App config is rewritten in the live config file

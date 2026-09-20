@@ -2,6 +2,7 @@
 #inkVerbSerf! verb.ink
 
 # This installs the NVM package manager for Node.js
+## Ghost does not use this. Ghost uses setserverlts (official Node 22 under /opt/verb/lts/node).
 ##DEV may be depreciated since pacman has a simple package for this
 
 # How to use:

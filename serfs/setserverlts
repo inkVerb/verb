@@ -1,0 +1,262 @@
+#!/usr/bin/bash
+#inkVerbSerf! verb.ink
+
+# This creates /opt/verb/conf/serverlts (runtime only — not in git, not from setup)
+## and installs the Node LTS that Ghost actually supports, isolated from pacman.
+##
+## Why not pacman nodejs / IgnorePkg:
+##   Arch extra ships one nodejs (whatever is current). Ghost 6 requires Node 22
+##   exclusively (not 20, not 24+). IgnorePkg can only freeze what is already
+##   installed — if pacman already gave you Node 24, IgnorePkg locks the broken
+##   one. The Arch-correct fix is: do not use extra/nodejs for Ghost. Official
+##   Node 22 lives in /opt/verb/lts/node. pacman -Syu cannot touch it.
+##
+## PHP is recorded but not pinned (PHPIgnore=false). WordPress is fine on rolling
+## PHP; Roundcube already uses composer --ignore-platform-reqs. Pinning php via
+## IgnorePkg would skip security updates. Set PHPIgnore=true in serverlts and
+## re-run this serf if you ever need that.
+
+# How to use:
+## ./setserverlts
+
+
+usagenotes="This installs Node 22 LTS for Ghost (isolated from pacman) and writes /opt/verb/conf/serverlts"
+usageformat="setserverlts"
+usageexample="setserverlts"
+hierarchy=( secondary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( installghostsite installghostinkblog updateverber )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setserverlts.replace" ]; then . /opt/verb/mods/setserverlts.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setserverlts.before" ]; then . /opt/verb/mods/setserverlts.before; fi # Precedes this script
+
+
+ltsfile="/opt/verb/conf/serverlts"
+NodeLTSMajor="22"
+NodeLTSName="Jod"
+PHPIgnore="false"
+if [ -f "${ltsfile}" ]; then
+  . "${ltsfile}"
+fi
+# Ghost 6 requires Node 22. Default back if the file is empty/corrupt.
+if [ -z "${NodeLTSMajor}" ]; then
+  NodeLTSMajor="22"
+fi
+if [ "${NodeLTSMajor}" != "22" ]; then
+  /usr/bin/echo "Note: Ghost 6 requires Node 22 LTS. serverlts has NodeLTSMajor=${NodeLTSMajor}."
+fi
+
+case "$(/usr/bin/uname -m)" in
+  x86_64) nodearch="linux-x64" ;;
+  aarch64|arm64) nodearch="linux-arm64" ;;
+  *)
+    /usr/bin/echo "Unsupported architecture $(/usr/bin/uname -m) for Node LTS."
+    exit 8
+    ;;
+esac
+
+NodePrefix="/opt/verb/lts/node"
+NodeBin="${NodePrefix}/bin/node"
+NpmBin="${NodePrefix}/bin/npm"
+GhostCli="${NodePrefix}/bin/ghost"
+
+discover_node_ver() {
+  local sums tarball
+  sums="$(/usr/bin/curl -fsSL --max-time 30 "https://nodejs.org/dist/latest-v${NodeLTSMajor}.x/SHASUMS256.txt" 2>/dev/null)" || return 1
+  tarball="$(/usr/bin/printf '%s\n' "${sums}" | /usr/bin/grep -oE "node-v${NodeLTSMajor}\\.[0-9]+\\.[0-9]+-${nodearch}\\.tar\\.xz" | /usr/bin/head -1)"
+  if [ -z "${tarball}" ]; then
+    return 1
+  fi
+  NodeTarball="${tarball}"
+  NodeLTSVer="$(/usr/bin/printf '%s' "${tarball}" | /usr/bin/sed -E "s/^node-v//;s/-${nodearch}\\.tar\\.xz$//")"
+  return 0
+}
+
+have_node_major() {
+  if [ ! -x "${NodeBin}" ]; then
+    return 1
+  fi
+  local v
+  v="$("${NodeBin}" -v 2>/dev/null | /usr/bin/tr -d 'v')"
+  [ -n "${v}" ] && [ "${v%%.*}" = "${NodeLTSMajor}" ]
+}
+
+# Resolve target version
+if ! discover_node_ver; then
+  if have_node_major; then
+    NodeLTSVer="$("${NodeBin}" -v 2>/dev/null | /usr/bin/tr -d 'v')"
+    /usr/bin/echo "nodejs.org unreachable; keeping installed Node v${NodeLTSVer}."
+  else
+    /usr/bin/echo "Cannot download Node ${NodeLTSMajor} LTS and none is installed at ${NodePrefix}."
+    exit 4
+  fi
+fi
+
+installed=""
+if [ -x "${NodeBin}" ]; then
+  installed="$("${NodeBin}" -v 2>/dev/null | /usr/bin/tr -d 'v')"
+fi
+
+if [ "${installed}" != "${NodeLTSVer}" ]; then
+  /usr/bin/echo "Installing Node v${NodeLTSVer} (${NodeLTSName} LTS) to ${NodePrefix}..."
+  tmpdir="$(/usr/bin/mktemp -d /tmp/verb-node.XXXXXX)"
+  url="https://nodejs.org/dist/v${NodeLTSVer}/${NodeTarball}"
+  if [ -z "${NodeTarball}" ]; then
+    NodeTarball="node-v${NodeLTSVer}-${nodearch}.tar.xz"
+    url="https://nodejs.org/dist/v${NodeLTSVer}/${NodeTarball}"
+  fi
+  if ! /usr/bin/curl -fL --max-time 120 -o "${tmpdir}/node.tar.xz" "${url}"; then
+    /usr/bin/rm -rf "${tmpdir}"
+    if have_node_major; then
+      /usr/bin/echo "Download failed; keeping Node v${installed}."
+      NodeLTSVer="${installed}"
+    else
+      /usr/bin/echo "Failed to download ${url}"
+      exit 4
+    fi
+  else
+    if ! /usr/bin/tar -xJf "${tmpdir}/node.tar.xz" -C "${tmpdir}"; then
+      /usr/bin/rm -rf "${tmpdir}"
+      /usr/bin/echo "Failed to extract Node tarball."
+      exit 4
+    fi
+    extracted="$(/usr/bin/find "${tmpdir}" -maxdepth 1 -type d -name "node-v${NodeLTSMajor}.*" | /usr/bin/head -1)"
+    if [ -z "${extracted}" ] || [ ! -x "${extracted}/bin/node" ]; then
+      /usr/bin/rm -rf "${tmpdir}"
+      /usr/bin/echo "Node tarball layout unexpected."
+      exit 4
+    fi
+    /usr/bin/mkdir -p /opt/verb/lts
+    /usr/bin/rm -rf "${NodePrefix}"
+    /usr/bin/mv "${extracted}" "${NodePrefix}"
+    /usr/bin/chmod -R a+rX /opt/verb/lts
+    /usr/bin/rm -rf "${tmpdir}"
+    installed="$("${NodeBin}" -v 2>/dev/null | /usr/bin/tr -d 'v')"
+    /usr/bin/echo "Node v${installed} installed at ${NodeBin}"
+  fi
+else
+  /usr/bin/echo "Node v${installed} already at ${NodeBin}"
+fi
+
+# ghost-cli on this Node (global prefix = NodePrefix)
+if [ -x "${NpmBin}" ] && [ ! -x "${GhostCli}" ]; then
+  /usr/bin/echo "Installing ghost-cli on LTS Node..."
+  "${NpmBin}" install -g ghost-cli@latest || true
+fi
+
+# PATH for interactive shells (ghost CLI, node -v)
+/usr/bin/cat > /etc/profile.d/verb-lts.sh <<'EOF'
+# inkVerb LTS Node (Ghost). Isolated from pacman extra/nodejs.
+if [ -d /opt/verb/lts/node/bin ]; then
+  PATH="/opt/verb/lts/node/bin:${PATH}"
+  export PATH
+fi
+EOF
+/usr/bin/chmod 644 /etc/profile.d/verb-lts.sh
+
+# PHP record (not pinned unless PHPIgnore=true)
+PHPBin="/usr/bin/php"
+if [ -x "${PHPBin}" ]; then
+  PHPMajor="$("${PHPBin}" -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;' 2>/dev/null)"
+else
+  PHPMajor="unknown"
+fi
+if [ -z "${PHPIgnore}" ]; then
+  PHPIgnore="false"
+fi
+
+# Write serverlts (always rewrite so keys stay complete)
+/usr/bin/cat > "${ltsfile}" <<EOF
+# inkVerb LTS runtimes — written by setserverlts
+# Not shipped in git. Not created by inst/setup.
+# Node is official LTS under /opt/verb/lts/node so pacman -Syu cannot break Ghost.
+# Ghost 6 requires Node 22 exclusively (https://docs.ghost.org/faq/node-versions).
+NodeLTSMajor="${NodeLTSMajor}"
+NodeLTSName="${NodeLTSName}"
+NodeLTSVer="${NodeLTSVer}"
+NodePrefix="${NodePrefix}"
+NodeBin="${NodeBin}"
+NpmBin="${NpmBin}"
+GhostCli="${GhostCli}"
+PHPMajor="${PHPMajor}"
+PHPBin="${PHPBin}"
+PHPIgnore="${PHPIgnore}"
+EOF
+/usr/bin/chmod 640 "${ltsfile}"
+
+# Optional PHP IgnorePkg (opt-in). Native Arch pin: /etc/pacman.conf IgnorePkg.
+php_ignore_pkgs="php php-cgi php-fpm php-gd php-apcu php-imagick php-intl php-pspell php-embed php-apache php-sodium php-sqlite php-pgsql php-odbc php-snmp php-tidy php-xsl php-enchant php-ftp php-igbinary php-redis php-memcached php-phpdbg"
+begin="# BEGIN inkVerb LTS"
+end="# END inkVerb LTS"
+if [ "${PHPIgnore}" = "true" ]; then
+  /usr/bin/sed -i "/${begin}/,/${end}/d" /etc/pacman.conf
+  /usr/bin/printf '\n%s\nIgnorePkg = %s\n%s\n' "${begin}" "${php_ignore_pkgs}" "${end}" >> /etc/pacman.conf
+  /usr/bin/echo "PHPIgnore=true — pacman will skip php* upgrades (IgnorePkg)."
+else
+  if /usr/bin/grep -q "${begin}" /etc/pacman.conf 2>/dev/null; then
+    /usr/bin/sed -i "/${begin}/,/${end}/d" /etc/pacman.conf
+  fi
+fi
+
+# Point every Ghost unit at LTS Node (drop-in; does not clobber the unit file)
+synced=0
+for unitfile in /lib/systemd/system/ghost_*.service /usr/lib/systemd/system/ghost_*.service /etc/systemd/system/ghost_*.service; do
+  [ -f "${unitfile}" ] || continue
+  unit="$(/usr/bin/basename "${unitfile}")"
+  case "${unit}" in
+    *.d) continue ;;
+  esac
+  dropdir="/etc/systemd/system/${unit}.d"
+  /usr/bin/mkdir -p "${dropdir}"
+  /usr/bin/cat > "${dropdir}/lts.conf" <<EOF
+[Service]
+Environment=PATH=${NodePrefix}/bin:/usr/bin
+Environment=NODE_ENV=production
+Environment=GHOST_NODE_VERSION_CHECK=false
+ExecStart=
+ExecStart=${GhostCli} run
+EOF
+  synced=$((synced + 1))
+done
+
+if [ "${synced}" -gt 0 ]; then
+  /usr/bin/systemctl daemon-reload
+  # Rebuild native addons if Ghost was installed under a different Node, then restart
+  if [ -d /srv/ghost ]; then
+    for gdir in /srv/ghost/*; do
+      [ -d "${gdir}/current" ] || continue
+      /usr/bin/sudo -u ghost /usr/bin/env PATH="${NodePrefix}/bin:/usr/bin" HOME=/srv/ghost \
+        "${NpmBin}" rebuild --prefix "${gdir}/current" >/dev/null 2>&1 || true
+    done
+  fi
+  for unitfile in /lib/systemd/system/ghost_*.service /usr/lib/systemd/system/ghost_*.service /etc/systemd/system/ghost_*.service; do
+    [ -f "${unitfile}" ] || continue
+    unit="$(/usr/bin/basename "${unitfile}" .service)"
+    case "${unit}" in
+      ghost_*) ;;
+      *) continue ;;
+    esac
+    if /usr/bin/systemctl is-enabled "${unit}" >/dev/null 2>&1; then
+      /usr/bin/systemctl try-restart "${unit}" || /usr/bin/systemctl restart "${unit}" || true
+    fi
+  done
+  /usr/bin/echo "Synced ${synced} Ghost unit(s) to Node v${NodeLTSVer}."
+fi
+
+/usr/bin/echo "serverlts:
+  Node ${NodeLTSVer} (${NodeLTSName}) at ${NodeBin}
+  PHP ${PHPMajor} at ${PHPBin} (PHPIgnore=${PHPIgnore})
+"
+
+
+
+if [ -e "/opt/verb/mods/setserverlts.after" ]; then . /opt/verb/mods/setserverlts.after; fi # Follows this script
