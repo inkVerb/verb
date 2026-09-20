@@ -3,6 +3,7 @@
 ## WordPress post/page type tools
 - Convert posts to pages: `ink wp pagify`
 - Convert pages to posts: `ink wp postify`
+- Fit overflowing images: `ink wp fitimages` (after Ghost → WP import)
 - Ghost → WordPress import creates **posts**. Use pagify if you wanted pages.
 - `-d domain.tld` extra-checks the hosted domain and `vapp.wp.DOMAIN`
 - `-v wp.domain.tld` is the vapp name (not ink verbose)

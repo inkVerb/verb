@@ -7,6 +7,7 @@
 - Copies (does not move) `content/images`, `content/files`, and `content/media` into `wp-content/uploads`, skipping Ghost `size/` variants.
 - Rewrites `__GHOST_URL__/content/images/` (and `/content/images/size/wN/`) to `/wp-content/uploads/`.
 - Imports posts and pages from Ghost `html` (fallback: lexical, mobiledoc, plaintext), tags, authors, featured images, and navigation menus.
+- Fits `<img>` to the post body (`max-width:100%;height:auto`) and keeps wrap/align / Ghost `kg-width-*`. Already-imported sites: `ink wp fitimages -d DOMAIN`.
 - Restores nginx from `DOMAIN-ghosted.conf` so PHP can run (Ghost's vhost is proxy-only). Pass `-k` to skip.
 
 ## Usage
@@ -27,6 +28,7 @@
 3. Log in at `https://formosan.dog/wp-admin/` (if `wp_install()` ran, the password is printed).
 4. Optional: `systemctl disable --now ghost_formosan-dog`
 5. Optional: `ink wp pagify -d formosan.dog -a` if the import should have been pages, not posts.
+6. If pictures overflow the post: `ink wp fitimages -d formosan.dog`
 
 ## Direct PHP (any paths)
 ```

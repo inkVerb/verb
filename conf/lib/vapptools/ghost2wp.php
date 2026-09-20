@@ -19,6 +19,8 @@
  */
 declare(strict_types=1);
 
+require_once __DIR__ . '/imgfit.php';
+
 $opt = getopt('', [
     'wp-root:',
     'ghost-db:',
@@ -608,7 +610,13 @@ function lexical_nodes(array $nodes): string
             'list' => (($n['listType'] ?? $n['tag'] ?? 'bullet') === 'number' ? '<ol>' : '<ul>') . $children . (($n['listType'] ?? $n['tag'] ?? 'bullet') === 'number' ? '</ol>' : '</ul>'),
             'listitem', 'list-item' => '<li>' . $children . $text . '</li>',
             'link' => '<a href="' . htmlspecialchars((string) ($n['url'] ?? $n['rel'] ?? '#'), ENT_QUOTES) . '">' . $children . $text . '</a>',
-            'image' => '<figure><img src="' . htmlspecialchars((string) ($n['src'] ?? ''), ENT_QUOTES) . '" alt="' . htmlspecialchars((string) ($n['alt'] ?? ''), ENT_QUOTES) . '"></figure>',
+            'image' => imgfit_image_tag((string) ($n['src'] ?? ''), (string) ($n['alt'] ?? ''), [
+                'width' => $n['width'] ?? '',
+                'height' => $n['height'] ?? '',
+                'cardWidth' => $n['cardWidth'] ?? $n['card_width'] ?? 'regular',
+                'href' => $n['href'] ?? '',
+                'caption' => $n['caption'] ?? '',
+            ]),
             'html', 'htmlcard' => (string) ($n['html'] ?? $n['value'] ?? $children),
             default => $children . $text,
         };
@@ -632,7 +640,13 @@ function mobiledoc_to_html(string $json): string
         if (in_array($name, ['html', 'card-html', 'markdown', 'card-markdown', 'embed'], true) && !empty($payload['html'])) {
             $out .= (string) $payload['html'];
         } elseif ($name === 'image' && !empty($payload['src'])) {
-            $out .= '<img src="' . htmlspecialchars((string) $payload['src'], ENT_QUOTES) . '" alt="' . htmlspecialchars((string) ($payload['alt'] ?? ''), ENT_QUOTES) . '">';
+            $out .= imgfit_image_tag((string) $payload['src'], (string) ($payload['alt'] ?? ''), [
+                'width' => $payload['width'] ?? '',
+                'height' => $payload['height'] ?? '',
+                'cardWidth' => $payload['cardWidth'] ?? $payload['card_width'] ?? 'regular',
+                'href' => $payload['href'] ?? '',
+                'caption' => $payload['caption'] ?? '',
+            ]);
         }
     }
     return $out;
@@ -805,7 +819,7 @@ function import_posts(PDO $g, array $authorMap, int $defaultAuthor, array $termM
         if (($row['visibility'] ?? 'public') !== 'public' && $status === 'publish') {
             $status = 'private';
         }
-        $html = rewrite_urls(ghost_html($row), $siteUrl, $gSite);
+        $html = imgfit_html(rewrite_urls(ghost_html($row), $siteUrl, $gSite));
         if ($html !== '') {
             $html = "<!-- wp:html -->\n{$html}\n<!-- /wp:html -->";
         }

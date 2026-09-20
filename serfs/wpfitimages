@@ -1,0 +1,77 @@
+#!/usr/bin/bash
+#inkVerbSerf! verb.ink
+
+# One-time / idempotent: fit <img> in an installed WordPress vapp so pictures
+# stay inside the post body (max-width:100%; height:auto). Uses vapp.wp.DOMAIN.
+# Does not touch Ghost. Safe to re-run.
+
+# How to use:
+## ./wpfitimages [ domain.tld ]
+## ./wpfitimages [ domain.tld ] dry-run
+
+
+usagenotes="This fits WordPress post/page images to the content width (vapp.wp.DOMAIN)"
+usageformat="wpfitimages [ domain.tld ] [ dry-run ]"
+usageexample="wpfitimages formosan.dog
+wpfitimages formosan.dog dry-run"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=( "Mode" )
+vopttypes=( isazAZ09lines )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( installwp )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi
+if [ -e "/opt/verb/mods/wpfitimages.replace" ]; then . /opt/verb/mods/wpfitimages.replace; return 0; fi
+if [ -e "/opt/verb/mods/wpfitimages.before" ]; then . /opt/verb/mods/wpfitimages.before; fi
+
+
+domain="$1"
+mode="$2"
+if [ -z "${domain}" ]; then
+  /usr/bin/echo "You must designate a domain. See How to use."
+  exit 5
+fi
+
+vfile="/opt/verb/conf/vapps/vapp.wp.${domain}"
+wpRoot="/srv/www/vapps/wp.${domain}"
+phpBin="/usr/bin/php"
+fixer="/opt/verb/conf/lib/vapptools/wpfitimages.php"
+
+if [ ! -f "${vfile}" ]; then
+  /usr/bin/echo "No WordPress vapp at ${vfile}."
+  exit 8
+fi
+# shellcheck disable=SC1090
+. "${vfile}"
+if [ -z "${appDBase}" ]; then
+  /usr/bin/echo "appDBase empty in ${vfile}."
+  exit 8
+fi
+if [ ! -f "${wpRoot}/wp-config.php" ]; then
+  /usr/bin/echo "wp-config.php missing at ${wpRoot}."
+  exit 8
+fi
+if [ ! -f "${fixer}" ]; then
+  /usr/bin/echo "Missing ${fixer}"
+  exit 8
+fi
+
+phpArgs=( "${fixer}" "--wp-root=${wpRoot}" "--site-url=https://${domain}" )
+if [ "${mode}" = "dry-run" ]; then
+  phpArgs+=( "--dry-run" )
+fi
+
+/usr/bin/echo "Fitting images in WordPress on ${domain} (DB ${appDBase})…"
+"${phpBin}" "${phpArgs[@]}"
+e="$?"
+[[ "$e" = "0" ]] || exit "$e"
+
+
+
+if [ -e "/opt/verb/mods/wpfitimages.after" ]; then . /opt/verb/mods/wpfitimages.after; fi

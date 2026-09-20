@@ -16,6 +16,8 @@
  */
 declare(strict_types=1);
 
+require_once __DIR__ . '/imgfit.php';
+
 $opt = getopt('', [
     'wp-root:',
     'ghost-db:',
@@ -476,7 +478,7 @@ function import_posts(PDO $g, string $ownerId, array $termMap, string $siteUrl, 
         };
         $vis = $p->post_status === 'private' ? 'members' : 'public';
         $html = strip_wp_comments((string) $p->post_content);
-        $html = rewrite_to_ghost($html, $siteUrl, $uploadBaseurl);
+        $html = imgfit_html(rewrite_to_ghost($html, $siteUrl, $uploadBaseurl));
         $slug = (string) ($p->post_name !== '' ? $p->post_name : sanitize_title((string) $p->post_title));
         $feat = '';
         $thumb = get_post_thumbnail_id($p->ID);
