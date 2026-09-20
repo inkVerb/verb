@@ -19,6 +19,8 @@
   - Media only
 - `ink ghost 2wp -d formosan.dog -k`
   - Keep the Ghost nginx proxy vhost
+- `ink ghost 2wp -d formosan.dog -v`
+  - Verbose (serf stdout). `-d` finds `vapp.wp.DOMAIN` / Ghost on that domain.
 
 ## Sequence for a down Ghost site (files + MariaDB still on the verber)
 1. `ink install wp -d formosan.dog`  

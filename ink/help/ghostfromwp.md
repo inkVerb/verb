@@ -14,5 +14,7 @@
   - Dry run
 - `ink ghost fromwp -d [ domain.tld ] -m`
   - Media only
+- `ink ghost fromwp -d [ domain.tld ] -v`
+  - Verbose. `-d` finds both vapps on that domain.
 
 - Standalone media helper: `./wp2ghostmedia domain.tld [ copy | move ]`

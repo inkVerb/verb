@@ -15,7 +15,7 @@ EOU
 )"
 
 # Available flags
-optSerf="d:nhrc"
+optSerf="d:nhrcv"
 declare -A optName
 declare -A optDesc
 optName[d]="Domain"
@@ -38,6 +38,9 @@ while getopts "${optSerf}" Flag; do
   c)
     SOcli="true"
   ;;
+  v)
+    SOverbose="true"
+  ;;
   h)
     SOh="true"
   ;;
@@ -58,6 +61,7 @@ Available flags:
 -h This help message
 -d ${optName[d]}: ${optDesc[d]}
 -n ${optName[n]}: ${optDesc[n]}
+-v Verbose (serf stdout to the terminal)
 "
   exit 0
 fi
@@ -66,8 +70,7 @@ if [ -z "${SOd}" ]; then
   /bin/echo "${optName[d]} option must be set."; inkFail
 fi
 
-SOverbose="true"
-success_message=""
+success_message="Fitted images on ${SOd}."
 fail_message="wpfitimages failed on ${SOd}."
 
 serfcommand="${Serfs}/${surfname} ${SOd}"

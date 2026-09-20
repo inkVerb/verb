@@ -11,3 +11,5 @@
   - Same as `/opt/verb/serfs/wpfitimages formosan.dog`
 - `ink wp fitimages -d formosan.dog -n`
   - Dry run
+- `ink wp fitimages -d formosan.dog -v`
+  - Verbose (lists each post updated)

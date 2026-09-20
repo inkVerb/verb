@@ -2,8 +2,8 @@
 
 ## Convert WordPress pages to posts
 - Inverse of `ink wp pagify`. MariaDB `post_type` page → post.
-- `-d` extra-checks the hosted domain and `vapp.wp.DOMAIN`. `-v` is the vapp `wp.domain.tld`.
-- Exactly one of `-d` or `-v`. Exactly one of `-p`, `-g`, or `-a`.
+- `-d domain.tld` finds `vapp.wp.DOMAIN`. `-v` is verbose (not a vapp).
+- Exactly one of `-p`, `-g`, or `-a`.
 - `-g` prints a tab-separated table: Title, slug, ID (pages only). Use those IDs with `-p`.
 - Menu items that pointed at converted pages are updated to object `post`.
 
@@ -14,6 +14,6 @@
   - Convert every page to a post
 - `ink wp postify -d formosan.dog -p 42`
   - Convert page ID 42 to a post
-- `ink wp postify -v wp.formosan.dog -a`
-  - Same, via the vapp name
+- `ink wp postify -d formosan.dog -a -v`
+  - Same, with serf stdout
 - Same as `/opt/verb/serfs/wppostify domain formosan.dog all`

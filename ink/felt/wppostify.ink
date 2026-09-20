@@ -10,19 +10,17 @@ surfname="wppostify"
 # About message
 aboutMsg="$(cat <<EOU
 Convert WordPress pages to posts (MariaDB post_type). Inverse of pagify.
--d domain.tld checks the hosted domain and vapp.wp.DOMAIN.
--v wp.domain.tld uses that vapp name. -p, -g, and -a are exclusive.
+-d domain.tld finds vapp.wp.DOMAIN. -v is verbose (not a vapp).
+-p, -g, and -a are exclusive.
 EOU
 )"
 
-# Available flags (-v is the vapp, not verbose)
-optSerf="d:v:p:gahrc"
+# Available flags (-v is ink verbose, like every other felt)
+optSerf="d:p:gahrcv"
 declare -A optName
 declare -A optDesc
 optName[d]="Domain"
-optDesc[d]="Hosted domain; checks vapp.wp.DOMAIN"
-optName[v]="Vapp"
-optDesc[v]="WordPress vapp name (wp.domain.tld)"
+optDesc[d]="Hosted domain; uses vapp.wp.DOMAIN"
 optName[p]="Page ID"
 optDesc[p]="Convert this page ID to a post"
 optName[g]="Get IDs"
@@ -32,7 +30,6 @@ optDesc[a]="Convert every page to a post"
 
 # Check the variables
 SOd=""
-SOvapp=""
 SOp=""
 SOg=""
 SOa=""
@@ -41,10 +38,6 @@ while getopts "${optSerf}" Flag; do
   d)
     isDomain "${OPTARG}" "${optName[d]}"
     SOd="${OPTARG}"
-  ;;
-  v)
-    isDomain "${OPTARG}" "${optName[v]}"
-    SOvapp="${OPTARG}"
   ;;
   p)
     isInt "${OPTARG}" "${optName[p]}"
@@ -58,6 +51,9 @@ while getopts "${optSerf}" Flag; do
   ;;
   c)
     SOcli="true"
+  ;;
+  v)
+    SOverbose="true"
   ;;
   h)
     SOh="true"
@@ -80,20 +76,16 @@ ${aboutMsg}"
 Available flags:
 -h This help message
 -d ${optName[d]}: ${optDesc[d]}
--v ${optName[v]}: ${optDesc[v]}
 -p ${optName[p]}: ${optDesc[p]}
 -g ${optName[g]}: ${optDesc[g]}
 -a ${optName[a]}: ${optDesc[a]}
+-v Verbose (serf stdout to the terminal)
 "
   exit 0
 fi
 
-## Exclusive target: -d or -v
-nTarget=0
-[ -n "${SOd}" ] && nTarget=$((nTarget + 1))
-[ -n "${SOvapp}" ] && nTarget=$((nTarget + 1))
-if [ "${nTarget}" != "1" ]; then
-  /bin/echo "Set exactly one of -d domain.tld or -v wp.domain.tld."; inkFail
+if [ -z "${SOd}" ]; then
+  /bin/echo "${optName[d]} option must be set."; inkFail
 fi
 
 ## Exclusive action: -p, -g, or -a
@@ -105,28 +97,17 @@ if [ "${nAct}" != "1" ]; then
   /bin/echo "Set exactly one of -p ID, -g, or -a."; inkFail
 fi
 
-# Table / count must reach the terminal and the GUI (default ink hides serf stdout)
-SOverbose="true"
-
-# Message prep
-if [ -n "${SOd}" ]; then
-  targetLabel="${SOd}"
-else
-  targetLabel="${SOvapp}"
-fi
+# -g is a listing; hide it and the command is useless
 if [ "${SOg}" = "true" ]; then
+  SOverbose="true"
   success_message=""
 else
-  success_message="WordPress pages converted to posts on ${targetLabel}."
+  success_message="WordPress pages converted to posts on ${SOd}."
 fi
-fail_message="wppostify failed on ${targetLabel}."
+fail_message="wppostify failed on ${SOd}."
 
-# Prepare command
-if [ -n "${SOd}" ]; then
-  serfcommand="${Serfs}/${surfname} domain ${SOd}"
-else
-  serfcommand="${Serfs}/${surfname} vapp ${SOvapp}"
-fi
+# Prepare command (-d always resolves vapp.wp.DOMAIN)
+serfcommand="${Serfs}/${surfname} domain ${SOd}"
 if [ "${SOg}" = "true" ]; then
   serfcommand="${serfcommand} get"
 elif [ "${SOa}" = "true" ]; then

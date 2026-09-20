@@ -67,6 +67,7 @@ Available flags:
 -d ${optName[d]}: ${optDesc[d]}
 -n ${optName[n]}: ${optDesc[n]}
 -m ${optName[m]}: ${optDesc[m]}
+-v Verbose (serf stdout to the terminal)
 "
   exit 0
 fi
