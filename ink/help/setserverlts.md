@@ -6,7 +6,7 @@
 - `serverlts` is created at runtime. It is **not** in git and **not** written by `inst/setup`.
 - PHP version is recorded. PHP is **not** IgnorePkg'd unless you set `PHPIgnore=true` in `serverlts` and re-run (skipping php upgrades means missing security updates; Roundcube already uses `composer --ignore-platform-reqs`).
 - Rewrites every `ghost_*.service` to `ExecStart=/opt/verb/lts/node/bin/ghost run`.
-- `updateverber` runs this after serfs are copied, so existing Ghost sites are synced.
+- `ink update verber` (`updateverber`) runs this after serfs are copied, so existing Ghost sites are synced.
 
 ## Usage
 - `ink set serverlts`

@@ -9,4 +9,5 @@ mysql       # SQL user & database actions
 new         # Linux users, DKIM keys, non-hosted domain shell, FTP users
 set         # Modify installed vapp settings
 show        # View ink CLI serf output log and related info
+update      # Verber core and other updaters
 web         # HTTPS forwarding, www forwarding, wildcard hosting, web folder readability
