@@ -8,4 +8,3 @@
 ## Usage
 - `ink set winstonpress -d [ domain.tld ] [ -m single|network ] [ -b database ] [ -u dbuser ] [ -p dbpassword ] [ -k key -s value ]`
 - `ink set winstonpress -d inkisaverb.com -m network`
-- `ink set pdt` still works (alias)

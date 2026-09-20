@@ -22,7 +22,7 @@ fi
 /usr/bin/echo "Retrieving Winston Press ${distVer}..."
 
 # Get the package (GitHub auto-archive; same wget family as postfixadmin/maddy)
-/usr/bin/wget -O ${cVappName}.tgz "https://github.com/JesseSteele/winstonpress/archive/refs/heads/${distVer}.tar.gz"
+/usr/bin/wget -O ${cVappName}.tgz "https://github.com/JesseSteele/WinstonPress/archive/refs/heads/${distVer}.tar.gz"
 if [ ! -f "${cVappName}.tgz" ]; then
 /bin/echo "Failed download."; touch "${cVappName}.failed"
 exit 4; else

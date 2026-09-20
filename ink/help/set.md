@@ -1,9 +1,9 @@
 # set
 
 ## This modifies settings for vapps already installed with `ink install`
-- Winston Press (`ink set winstonpress`; alias `ink set pdt`)
+- Winston Press (`ink set winstonpress`)
 - badAd (`ink set badad`)
-- Winston 99 (`ink set winston99`; alias `ink set pw99`)
+- Winston 99 (`ink set winston99`)
 - BIMI logo (`ink set bimi`) — VIP or FTP drop into `/srv/www/email/bimi/domain.tld/bimi.svg`
 - Node LTS for Ghost (`ink set serverlts`) — official Node 22 under `/opt/verb/lts/node`; writes `verb/conf/serverlts`
 - inkMail path (`ink set inkmailpath`) — URL folder on po.emailTLDURI

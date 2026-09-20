@@ -11,9 +11,9 @@
     - WordPress (`ink install wp`)
     - Ghost (`ink install ghost`) — Node 22 LTS via `ink set serverlts`
     - Ghost → WordPress import (`ink ghost 2wp`) after WordPress is installed
-    - Winston Press (`ink install winstonpress`; alias `ink install pdt`)
+    - Winston Press (`ink install winstonpress`)
     - badAd (`ink install badad`)
-    - Winston 99 (`ink install winston99`; alias `ink install pw99`)
+    - Winston 99 (`ink install winston99`)
     - Nextcloud (`ink install nextcloud`)
     - ownCloud OCIS (`ink install owncloud`)
     - Pydio (`ink install pydio`)

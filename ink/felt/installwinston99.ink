@@ -90,7 +90,7 @@ fi
 success_message="Winston 99 installed on ${SOd}. Finish at https://${SOd}/install.php"
 fail_message="Winston 99 failed to install on ${SOd}."
 
-# Prepare command (sequential args, same as serfs/installpw99)
+# Prepare command (sequential args, same as serfs/installwinston99)
 serfcommand="${Serfs}/${surfname} ${SOd} ${SOb} ${SOu} ${SOp}"
 
 # Run the ink
