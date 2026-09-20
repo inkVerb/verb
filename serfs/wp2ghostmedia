@@ -42,7 +42,7 @@ fi
 
 wpUp="/srv/www/vapps/wp.${domain}/wp-content/uploads"
 ghostContent="/srv/ghost/${domain}/content"
-helper="/opt/verb/conf/lib/wp2ghost-media.sh"
+helper="/opt/verb/conf/lib/vapptools/wp2ghost-media.sh"
 
 if [ ! -d "${wpUp}" ]; then
   /usr/bin/echo "WP uploads not found: ${wpUp}"

@@ -4,13 +4,13 @@
 # Files land at wp-content/uploads/YYYY/MM/ so rewritten post HTML can see them.
 #
 # This only places files on disk. Register them in the Media Library with:
-#   php /opt/verb/conf/lib/ghost2wp.php --media-only --wp-root=... --ghost-db=...
+#   php /opt/verb/conf/lib/vapptools/ghost2wp.php --media-only --wp-root=... --ghost-db=...
 #
 # Usage:
 #   ghost2wp-media.sh [ ghost-content-dir ] [ wp-uploads-dir ] [ copy | move ]
 #
 # Example:
-#   /opt/verb/conf/lib/ghost2wp-media.sh \
+#   /opt/verb/conf/lib/vapptools/ghost2wp-media.sh \
 #     /srv/ghost/formosan.dog/content \
 #     /srv/www/vapps/wp.formosan.dog/wp-content/uploads \
 #     copy

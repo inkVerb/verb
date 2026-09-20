@@ -9,7 +9,7 @@
  * only if those tables are missing, then copies posts, pages, tags, menus,
  * and media into the WP library.
  *
- *   php /opt/verb/conf/lib/ghost2wp.php \
+ *   php /opt/verb/conf/lib/vapptools/ghost2wp.php \
  *     --wp-root=/srv/www/vapps/wp.formosan.dog \
  *     --ghost-db=gstformosandogXXXX \
  *     --ghost-content=/srv/ghost/formosan.dog/content \

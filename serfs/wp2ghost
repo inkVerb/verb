@@ -57,7 +57,7 @@ ghostDir="/srv/ghost/${domain}"
 ghostContent="${ghostDir}/content"
 ghostConfig="${ghostDir}/config.production.json"
 phpBin="/usr/bin/php"
-importer="/opt/verb/conf/lib/wp2ghost.php"
+importer="/opt/verb/conf/lib/vapptools/wp2ghost.php"
 
 if [ ! -f "${wpRoot}/wp-config.php" ]; then
   /usr/bin/echo "WordPress not found at ${wpRoot}. Run: /opt/verb/serfs/installwp ${domain}"

@@ -50,7 +50,7 @@ fi
 wpRoot="/srv/www/vapps/wp.${domain}"
 ghostContent="/srv/ghost/${domain}/content"
 uploads="${wpRoot}/wp-content/uploads"
-helper="/opt/verb/conf/lib/ghost2wp-media.sh"
+helper="/opt/verb/conf/lib/vapptools/ghost2wp-media.sh"
 
 if [ ! -d "${wpRoot}" ] || [ ! -f "${wpRoot}/wp-config.php" ]; then
   /usr/bin/echo "WordPress is not installed at ${wpRoot}. Run: /opt/verb/serfs/installwp ${domain}"

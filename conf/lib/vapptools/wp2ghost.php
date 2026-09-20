@@ -6,7 +6,7 @@
  * WordPress is READ-ONLY. Ghost must already be installed (tables exist).
  * Copies posts, pages, tags, navigation, and media into Ghost.
  *
- *   php /opt/verb/conf/lib/wp2ghost.php \
+ *   php /opt/verb/conf/lib/vapptools/wp2ghost.php \
  *     --wp-root=/srv/www/vapps/wp.example.com \
  *     --ghost-db=gstexampleXXXX \
  *     --ghost-content=/srv/ghost/example.com/content \

@@ -29,7 +29,7 @@
 
 ## Direct PHP (any paths)
 ```
-/usr/bin/php /opt/verb/conf/lib/ghost2wp.php \
+/usr/bin/php /opt/verb/conf/lib/vapptools/ghost2wp.php \
   --wp-root=/srv/www/vapps/wp.formosan.dog \
   --ghost-db=GHOST_DB_NAME \
   --ghost-content=/srv/ghost/formosan.dog/content \

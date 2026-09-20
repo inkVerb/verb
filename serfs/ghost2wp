@@ -67,7 +67,7 @@ ghostDir="/srv/ghost/${domain}"
 ghostContent="${ghostDir}/content"
 ghostConfig="${ghostDir}/config.production.json"
 phpBin="/usr/bin/php"
-importer="/opt/verb/conf/lib/ghost2wp.php"
+importer="/opt/verb/conf/lib/vapptools/ghost2wp.php"
 mysqlCnf="/opt/verb/conf/sql/mysqlboss.cnf"
 
 if [ ! -f "${phpBin}" ]; then
