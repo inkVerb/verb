@@ -53,10 +53,10 @@ Available flags:
   exit 0
 fi
 
-# ink default hides serf stdout. This MUST dump verb-update/update (Verno line).
-SOverbose="true"
+# Hidden flags: -c print command, -v serf stdout (same as every ink felt).
+# Default is quiet: only the new Verno after success.
 
-# Message prep — dump already ends with "Verber at v…"
+# Message prep
 success_message=""
 fail_message="updateverber failed."
 
@@ -65,3 +65,8 @@ serfcommand="${Serfs}/${surfname}"
 
 # Run the ink
 . $InkRun
+
+if [ "${vsuccess}" = "true" ] && [ -f /opt/verb/conf/inklists/verberverno ]; then
+  . /opt/verb/conf/inklists/verberverno
+  /usr/bin/echo "Verber at v${Verno}."
+fi

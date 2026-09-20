@@ -38,6 +38,13 @@ Files updated with `updateverber` can be seen at in several "Update..." blocks a
 - verb/conf/lib
 - verb/conf/inklists/ (some files, never verberverno)
 
+## ink hidden flags
+Every felt already accepts `-c` and `-v`. They are not listed in per-schema `-h` (same as `-c` always was). Documented in the repo-root [README.md](../README.md):
+
+- `-c` print the serf command, exit
+- `-v` serf stdout on the terminal. Default quiet.
+- `ink update verber` prints `Verber at v…` only; `ink update verber -v` dumps `verb-update/update`
+
 ## File & Script Structure Basics
 
 I. All files are in the "verb" directory

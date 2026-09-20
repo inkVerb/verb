@@ -22,6 +22,11 @@ Help:
 - action: `ink add -h`
 - schema: `ink add domain -h`
 
+Hidden flags (every `ink` command, not listed in per-schema `-h`; same idea as `-c`):
+
+- `-c` print the serf command that would run, then exit (no change)
+- `-v` verbose: serf stdout/stderr on the terminal. Default is quiet: only the ink success/fail line. `ink update verber` prints `Verber at v…` unless you pass `-v`.
+
 ## Webmaster info
 - `ink/actions.pb` lists actions
 - `ink/help/*.md` has help files that correspond to ink/
