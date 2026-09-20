@@ -10,18 +10,25 @@ surfname="setserverlts"
 # About message
 aboutMsg="$(cat <<EOU
 Install Node 22 LTS for Ghost, isolated from pacman, and write /opt/verb/conf/serverlts
-Rewrites Ghost systemd units to use that Node. PHP is recorded, not pinned.
+If Node 22 is already there, skip download. -f fetches the latest 22.x patch.
+PHP is recorded, not pinned. Not run by ink update verber.
 EOU
 )"
 
 # Available flags
-optSerf="hrcv"
+optSerf="fhrcv"
 declare -A optName
 declare -A optDesc
+optName[f]="Refresh"
+optDesc[f]="Fetch latest Node 22.x even if major 22 is already installed"
 
 # Check the variables
+SOf=""
 while getopts "${optSerf}" Flag; do
  case "${Flag}" in
+  f)
+    SOf="true"
+  ;;
   c)
     SOcli="true"
   ;;
@@ -48,16 +55,20 @@ ${aboutMsg}"
   /bin/echo "
 Available flags:
 -h This help message
+-f ${optName[f]}: ${optDesc[f]}
 "
   exit 0
 fi
 
+SOverbose="true"
+
 # Message prep
-success_message="Node LTS installed and serverlts written."
+success_message=""
 fail_message="setserverlts failed."
 
 # Prepare command
 serfcommand="${Serfs}/${surfname}"
+[ "${SOf}" = "true" ] && serfcommand="${serfcommand} refresh"
 
 # Run the ink
 . $InkRun

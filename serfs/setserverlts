@@ -15,24 +15,30 @@
 ## PHP; Roundcube already uses composer --ignore-platform-reqs. Pinning php via
 ## IgnorePkg would skip security updates. Set PHPIgnore=true in serverlts and
 ## re-run this serf if you ever need that.
+##
+## Default: if Node major already matches, do NOT hit nodejs.org, do NOT
+## download, do NOT npm rebuild, do NOT restart Ghost. Pass "refresh" to
+## fetch the latest 22.x patch.
 
 # How to use:
 ## ./setserverlts
+## ./setserverlts refresh
 
 
 usagenotes="This installs Node 22 LTS for Ghost (isolated from pacman) and writes /opt/verb/conf/serverlts"
-usageformat="setserverlts"
-usageexample="setserverlts"
+usageformat="setserverlts [ refresh ]"
+usageexample="setserverlts
+setserverlts refresh"
 hierarchy=( secondary )
 vsetnames=(  )
 vsettypes=(  )
-voptnames=(  )
-vopttypes=(  )
+voptnames=( "Mode" )
+vopttypes=( isazAZ09lines )
 voptflags=(  )
 voptflagpurpose=(  )
 dependencyinstall=(  )
 prerequesite=(  )
-usedby=( installghostsite installghostinkblog updateverber )
+usedby=( installghostsite installghostinkblog )
 useserfs=(  )
 useconfigs=(  )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
@@ -53,6 +59,11 @@ if [ -z "${NodeLTSMajor}" ]; then
 fi
 if [ "${NodeLTSMajor}" != "22" ]; then
   /usr/bin/echo "Note: Ghost 6 requires Node 22 LTS. serverlts has NodeLTSMajor=${NodeLTSMajor}."
+fi
+
+refresh="false"
+if [ "$1" = "refresh" ]; then
+  refresh="true"
 fi
 
 case "$(/usr/bin/uname -m)" in
@@ -90,64 +101,72 @@ have_node_major() {
   [ -n "${v}" ] && [ "${v%%.*}" = "${NodeLTSMajor}" ]
 }
 
-# Resolve target version
-if ! discover_node_ver; then
-  if have_node_major; then
-    NodeLTSVer="$("${NodeBin}" -v 2>/dev/null | /usr/bin/tr -d 'v')"
-    /usr/bin/echo "nodejs.org unreachable; keeping installed Node v${NodeLTSVer}."
-  else
-    /usr/bin/echo "Cannot download Node ${NodeLTSMajor} LTS and none is installed at ${NodePrefix}."
-    exit 4
-  fi
-fi
-
 installed=""
 if [ -x "${NodeBin}" ]; then
   installed="$("${NodeBin}" -v 2>/dev/null | /usr/bin/tr -d 'v')"
 fi
 
-if [ "${installed}" != "${NodeLTSVer}" ]; then
-  /usr/bin/echo "Installing Node v${NodeLTSVer} (${NodeLTSName} LTS) to ${NodePrefix}..."
-  tmpdir="$(/usr/bin/mktemp -d /tmp/verb-node.XXXXXX)"
-  url="https://nodejs.org/dist/v${NodeLTSVer}/${NodeTarball}"
-  if [ -z "${NodeTarball}" ]; then
-    NodeTarball="node-v${NodeLTSVer}-${nodearch}.tar.xz"
-    url="https://nodejs.org/dist/v${NodeLTSVer}/${NodeTarball}"
-  fi
-  if ! /usr/bin/curl -fL --max-time 120 -o "${tmpdir}/node.tar.xz" "${url}"; then
-    /usr/bin/rm -rf "${tmpdir}"
+node_changed="false"
+
+# Fast path: already on the required major — no network, no tarball, no npm rebuild.
+if [ "${refresh}" != "true" ] && have_node_major; then
+  NodeLTSVer="${installed}"
+  /usr/bin/echo "Node v${installed} already at ${NodeBin} (major ${NodeLTSMajor}). Skip download."
+else
+  if ! discover_node_ver; then
     if have_node_major; then
-      /usr/bin/echo "Download failed; keeping Node v${installed}."
-      NodeLTSVer="${installed}"
+      NodeLTSVer="$("${NodeBin}" -v 2>/dev/null | /usr/bin/tr -d 'v')"
+      /usr/bin/echo "nodejs.org unreachable; keeping installed Node v${NodeLTSVer}."
     else
-      /usr/bin/echo "Failed to download ${url}"
+      /usr/bin/echo "Cannot download Node ${NodeLTSMajor} LTS and none is installed at ${NodePrefix}."
       exit 4
+    fi
+  fi
+
+  if [ "${installed}" != "${NodeLTSVer}" ]; then
+    /usr/bin/echo "Installing Node v${NodeLTSVer} (${NodeLTSName} LTS) to ${NodePrefix}..."
+    tmpdir="$(/usr/bin/mktemp -d /tmp/verb-node.XXXXXX)"
+    if [ -z "${NodeTarball}" ]; then
+      NodeTarball="node-v${NodeLTSVer}-${nodearch}.tar.xz"
+    fi
+    url="https://nodejs.org/dist/v${NodeLTSVer}/${NodeTarball}"
+    if ! /usr/bin/curl -fL --max-time 120 -o "${tmpdir}/node.tar.xz" "${url}"; then
+      /usr/bin/rm -rf "${tmpdir}"
+      if have_node_major; then
+        /usr/bin/echo "Download failed; keeping Node v${installed}."
+        NodeLTSVer="${installed}"
+      else
+        /usr/bin/echo "Failed to download ${url}"
+        exit 4
+      fi
+    else
+      if ! /usr/bin/tar -xJf "${tmpdir}/node.tar.xz" -C "${tmpdir}"; then
+        /usr/bin/rm -rf "${tmpdir}"
+        /usr/bin/echo "Failed to extract Node tarball."
+        exit 4
+      fi
+      extracted="$(/usr/bin/find "${tmpdir}" -maxdepth 1 -type d -name "node-v${NodeLTSMajor}.*" | /usr/bin/head -1)"
+      if [ -z "${extracted}" ] || [ ! -x "${extracted}/bin/node" ]; then
+        /usr/bin/rm -rf "${tmpdir}"
+        /usr/bin/echo "Node tarball layout unexpected."
+        exit 4
+      fi
+      /usr/bin/mkdir -p /opt/verb/lts
+      /usr/bin/rm -rf "${NodePrefix}"
+      /usr/bin/mv "${extracted}" "${NodePrefix}"
+      /usr/bin/chmod -R a+rX /opt/verb/lts
+      /usr/bin/rm -rf "${tmpdir}"
+      installed="$("${NodeBin}" -v 2>/dev/null | /usr/bin/tr -d 'v')"
+      NodeLTSVer="${installed}"
+      node_changed="true"
+      /usr/bin/echo "Node v${installed} installed at ${NodeBin}"
     fi
   else
-    if ! /usr/bin/tar -xJf "${tmpdir}/node.tar.xz" -C "${tmpdir}"; then
-      /usr/bin/rm -rf "${tmpdir}"
-      /usr/bin/echo "Failed to extract Node tarball."
-      exit 4
-    fi
-    extracted="$(/usr/bin/find "${tmpdir}" -maxdepth 1 -type d -name "node-v${NodeLTSMajor}.*" | /usr/bin/head -1)"
-    if [ -z "${extracted}" ] || [ ! -x "${extracted}/bin/node" ]; then
-      /usr/bin/rm -rf "${tmpdir}"
-      /usr/bin/echo "Node tarball layout unexpected."
-      exit 4
-    fi
-    /usr/bin/mkdir -p /opt/verb/lts
-    /usr/bin/rm -rf "${NodePrefix}"
-    /usr/bin/mv "${extracted}" "${NodePrefix}"
-    /usr/bin/chmod -R a+rX /opt/verb/lts
-    /usr/bin/rm -rf "${tmpdir}"
-    installed="$("${NodeBin}" -v 2>/dev/null | /usr/bin/tr -d 'v')"
-    /usr/bin/echo "Node v${installed} installed at ${NodeBin}"
+    /usr/bin/echo "Node v${installed} already at ${NodeBin}"
   fi
-else
-  /usr/bin/echo "Node v${installed} already at ${NodeBin}"
 fi
 
-# ghost-cli on this Node (global prefix = NodePrefix)
+# ghost-cli only if missing (npm install -g is slow; do not run it on every call)
 if [ -x "${NpmBin}" ] && [ ! -x "${GhostCli}" ]; then
   /usr/bin/echo "Installing ghost-cli on LTS Node..."
   "${NpmBin}" install -g ghost-cli@latest || true
@@ -163,7 +182,7 @@ fi
 EOF
 /usr/bin/chmod 644 /etc/profile.d/verb-lts.sh
 
-# PHP record (not pinned unless PHPIgnore=true)
+# PHP record (not pinned unless PHPIgnore=true) — no download, no composer
 PHPBin="/usr/bin/php"
 if [ -x "${PHPBin}" ]; then
   PHPMajor="$("${PHPBin}" -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;' 2>/dev/null)"
@@ -209,6 +228,7 @@ fi
 
 # Point every Ghost unit at LTS Node (drop-in; does not clobber the unit file)
 synced=0
+dropins_changed="false"
 for unitfile in /lib/systemd/system/ghost_*.service /usr/lib/systemd/system/ghost_*.service /etc/systemd/system/ghost_*.service; do
   [ -f "${unitfile}" ] || continue
   unit="$(/usr/bin/basename "${unitfile}")"
@@ -217,7 +237,9 @@ for unitfile in /lib/systemd/system/ghost_*.service /usr/lib/systemd/system/ghos
   esac
   dropdir="/etc/systemd/system/${unit}.d"
   /usr/bin/mkdir -p "${dropdir}"
-  /usr/bin/cat > "${dropdir}/lts.conf" <<EOF
+  dropfile="${dropdir}/lts.conf"
+  newdrop="$(/usr/bin/mktemp /tmp/verb-ghost-drop.XXXXXX)"
+  /usr/bin/cat > "${newdrop}" <<EOF
 [Service]
 Environment=PATH=${NodePrefix}/bin:/usr/bin
 Environment=NODE_ENV=production
@@ -225,15 +247,21 @@ Environment=GHOST_NODE_VERSION_CHECK=false
 ExecStart=
 ExecStart=${GhostCli} run
 EOF
+  if [ ! -f "${dropfile}" ] || ! /usr/bin/cmp -s "${newdrop}" "${dropfile}"; then
+    /usr/bin/mv -f "${newdrop}" "${dropfile}"
+    dropins_changed="true"
+  else
+    /usr/bin/rm -f "${newdrop}"
+  fi
   synced=$((synced + 1))
 done
 
-if [ "${synced}" -gt 0 ]; then
+if [ "${synced}" -gt 0 ] && { [ "${node_changed}" = "true" ] || [ "${dropins_changed}" = "true" ]; }; then
   /usr/bin/systemctl daemon-reload
-  # Rebuild native addons if Ghost was installed under a different Node, then restart
-  if [ -d /srv/ghost ]; then
+  if [ "${node_changed}" = "true" ] && [ -d /srv/ghost ] && [ -x "${NpmBin}" ]; then
     for gdir in /srv/ghost/*; do
       [ -d "${gdir}/current" ] || continue
+      /usr/bin/echo "npm rebuild in ${gdir}/current (Node changed)..."
       /usr/bin/sudo -u ghost /usr/bin/env PATH="${NodePrefix}/bin:/usr/bin" HOME=/srv/ghost \
         "${NpmBin}" rebuild --prefix "${gdir}/current" >/dev/null 2>&1 || true
     done
@@ -250,6 +278,8 @@ if [ "${synced}" -gt 0 ]; then
     fi
   done
   /usr/bin/echo "Synced ${synced} Ghost unit(s) to Node v${NodeLTSVer}."
+elif [ "${synced}" -gt 0 ]; then
+  /usr/bin/echo "Ghost units already on Node v${NodeLTSVer}; no restart."
 fi
 
 /usr/bin/echo "serverlts:

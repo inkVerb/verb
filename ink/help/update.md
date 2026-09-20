@@ -1,7 +1,9 @@
 # update
 
 ## This runs Verber and other updaters
-- `ink update verber` downloads the latest verb repo and copies ink, serfs, donjon, and `conf/lib` (same as `./updateverber`)
+- `ink update verber` clones `verb-update` and runs `verb-update/update` (copies ink, serfs, donjon, `conf/lib`, then version patches). Same as `./updateverber`
+- The Verno / changelog dump from `verb-update/update` is shown in the terminal
+- Node/PHP LTS is **not** an every-update hook. It is version-gated in `verb-update` and `ink set serverlts`
 - Other updaters belong under this action as new schemas, not new actions
   - Add `ink/felt/updateSCHEMA.ink` and `ink/help/updateSCHEMA.md`
   - `ink update -s` lists them

@@ -3,6 +3,8 @@
 
 # This downloads and updates the Verber™ core files, including serfs and inklists
 ## This also runs scripts that make other changes that may affect the Verber
+## Node/PHP LTS is NOT done here. That is version-gated in verb-update/update
+## (and ink set serverlts / installghost). Do not hang the updater on npm.
 
 # How to use:
 ## ./updateverber
@@ -21,7 +23,7 @@ voptflagpurpose=(  )
 dependencyinstall=(  )
 prerequesite=(  )
 usedby=(  )
-useserfs=( setserverlts )
+useserfs=(  )
 useconfigs=( servernameip )
 if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
 if [ -e "/opt/verb/mods/updateverber.replace" ]; then . /opt/verb/mods/updateverber.replace; return 0; fi # Replaces this script
@@ -41,21 +43,19 @@ fi
 # Download the latest checked version from GitHub
 cd /opt/verb/ || exit 6
 /usr/bin/git clone https://github.com/${ServerUpdateOrg}/${ServerUpdateRepo}
-
-# Run the update script
-/bin/chmod 750 /opt/verb/${ServerUpdateRepo}/update
-/opt/verb/${ServerUpdateRepo}/update
-wait
-
-# After serfs are copied: pin Ghost to Node 22 LTS (isolated from pacman)
-if [ -x "/opt/verb/serfs/setserverlts" ]; then
-  /opt/verb/serfs/setserverlts
+e="$?"
+if [ "$e" != "0" ] || [ ! -f "/opt/verb/${ServerUpdateRepo}/update" ]; then
+  /usr/bin/echo "Could not clone ${ServerUpdateOrg}/${ServerUpdateRepo}."
+  exit 6
 fi
 
-# Remove the entire updater
-/bin/rm -rf /opt/verb/${ServerUpdateRepo}
+# Run the update script (copies serfs/ink/donjon, then version patches, then prints Verno)
+/bin/chmod 750 /opt/verb/${ServerUpdateRepo}/update
+/opt/verb/${ServerUpdateRepo}/update
+e="$?"
+# update already rm -rf's itself; do not call setserverlts here
 
-
+[[ "$e" = "0" ]] || exit "$e"
 
 
 
