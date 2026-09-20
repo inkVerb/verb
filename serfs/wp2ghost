@@ -2,7 +2,7 @@
 #inkVerbSerf! verb.ink
 
 # This imports a WordPress site into an already-installed Ghost site on the same domain.
-## WordPress is read-only. Ghost must already exist (installghostsite).
+## WordPress is read-only. Ghost must already exist (`ink install ghost`).
 ## Posts, pages, tags, menus, and media are copied into Ghost.
 
 # How to use:
@@ -64,7 +64,7 @@ if [ ! -f "${wpRoot}/wp-config.php" ]; then
   exit 8
 fi
 if [ ! -d "${ghostDir}" ] || [ ! -f "${ghostConfig}" ]; then
-  /usr/bin/echo "Ghost not found at ${ghostDir}. Run: /opt/verb/serfs/installghostsite ${domain}"
+  /usr/bin/echo "Ghost not found at ${ghostDir}. Run: ink install ghost -d ${domain}"
   exit 8
 fi
 if [ ! -f "${importer}" ]; then

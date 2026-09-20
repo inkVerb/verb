@@ -9,6 +9,7 @@
       - It is not recommended to install a service manually, but use this so the server handles the Linux package and its settings
   - Downloads and sets up databases with domains for web apps ('vapps'), such as:
     - WordPress (`ink install wp`)
+    - Ghost (`ink install ghost`) — Node 22 LTS via `ink set serverlts`
     - Ghost → WordPress import (`ink ghost 2wp`) after WordPress is installed
     - pdt-news (`ink install pdt`)
     - badAd (`ink install badad`)

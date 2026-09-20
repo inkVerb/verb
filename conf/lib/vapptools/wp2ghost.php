@@ -79,7 +79,7 @@ try {
     exit(8);
 }
 if (!ghost_has($ghost, 'posts')) {
-    fwrite(STDERR, "Ghost database {$ghostDb} has no posts table. Run installghostsite first.\n");
+    fwrite(STDERR, "Ghost database {$ghostDb} has no posts table. Run ink install ghost first.\n");
     exit(8);
 }
 

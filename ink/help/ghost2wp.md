@@ -20,9 +20,9 @@
   - Keep the Ghost nginx proxy vhost
 
 ## Sequence for a down Ghost site (files + MariaDB still on the verber)
-1. `/opt/verb/serfs/installwp formosan.dog`  
+1. `ink install wp -d formosan.dog`  
    New WordPress files + **new** empty database. Do not reuse the Ghost DB.
-2. `/opt/verb/serfs/ghost2wp formosan.dog`  
+2. `ink ghost 2wp -d formosan.dog`  
    Import, copy media, restore PHP nginx.
 3. Log in at `https://formosan.dog/wp-admin/` (if `wp_install()` ran, the password is printed).
 4. Optional: `systemctl disable --now ghost_formosan-dog`
