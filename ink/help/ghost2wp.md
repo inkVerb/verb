@@ -26,6 +26,7 @@
    Import, copy media, restore PHP nginx.
 3. Log in at `https://formosan.dog/wp-admin/` (if `wp_install()` ran, the password is printed).
 4. Optional: `systemctl disable --now ghost_formosan-dog`
+5. Optional: `ink wp pagify -d formosan.dog -a` if the import should have been pages, not posts.
 
 ## Direct PHP (any paths)
 ```

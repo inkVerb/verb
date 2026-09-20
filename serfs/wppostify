@@ -1,0 +1,44 @@
+#!/usr/bin/bash
+#inkVerbSerf! verb.ink
+
+# Convert WordPress pages to posts (MariaDB post_type). Inverse of wppagify.
+
+# How to use:
+## ./wppostify [ domain.tld ] [ all | get | ID ]
+## ./wppostify [ wp.domain.tld ] [ all | get | ID ]
+## ./wppostify domain [ domain.tld ] [ all | get | ID ]
+## ./wppostify vapp [ wp.domain.tld ] [ all | get | ID ]
+
+
+usagenotes="This converts WordPress pages to posts (or lists page IDs)"
+usageformat="wppostify [ domain.tld | wp.domain.tld | domain DOMAIN | vapp wp.DOMAIN ] [ all | get | ID ]"
+usageexample="wppostify formosan.dog all
+wppostify formosan.dog get
+wppostify formosan.dog 42
+wppostify domain formosan.dog all
+wppostify vapp wp.formosan.dog get"
+hierarchy=( primary )
+vsetnames=( "Target" "Mode" )
+vsettypes=( isDomain isazAZ09lines )
+voptnames=( "Mode" )
+vopttypes=( isazAZ09lines )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( installwp )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi
+if [ -e "/opt/verb/mods/wppostify.replace" ]; then . /opt/verb/mods/wppostify.replace; return 0; fi
+if [ -e "/opt/verb/mods/wppostify.before" ]; then . /opt/verb/mods/wppostify.before; fi
+
+
+. /opt/verb/donjon/wpptype.sh
+wpptype_main page post "$@"
+e="$?"
+[[ "$e" = "0" ]] || exit "$e"
+
+
+
+if [ -e "/opt/verb/mods/wppostify.after" ]; then . /opt/verb/mods/wppostify.after; fi

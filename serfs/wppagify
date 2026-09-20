@@ -1,0 +1,45 @@
+#!/usr/bin/bash
+#inkVerbSerf! verb.ink
+
+# Convert WordPress posts to pages (MariaDB post_type). Ghost import creates posts;
+# this turns them into pages. Does not touch the Ghost database.
+
+# How to use:
+## ./wppagify [ domain.tld ] [ all | get | ID ]
+## ./wppagify [ wp.domain.tld ] [ all | get | ID ]
+## ./wppagify domain [ domain.tld ] [ all | get | ID ]
+## ./wppagify vapp [ wp.domain.tld ] [ all | get | ID ]
+
+
+usagenotes="This converts WordPress posts to pages (or lists post IDs)"
+usageformat="wppagify [ domain.tld | wp.domain.tld | domain DOMAIN | vapp wp.DOMAIN ] [ all | get | ID ]"
+usageexample="wppagify formosan.dog all
+wppagify formosan.dog get
+wppagify formosan.dog 42
+wppagify domain formosan.dog all
+wppagify vapp wp.formosan.dog get"
+hierarchy=( primary )
+vsetnames=( "Target" "Mode" )
+vsettypes=( isDomain isazAZ09lines )
+voptnames=( "Mode" )
+vopttypes=( isazAZ09lines )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( installwp )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi
+if [ -e "/opt/verb/mods/wppagify.replace" ]; then . /opt/verb/mods/wppagify.replace; return 0; fi
+if [ -e "/opt/verb/mods/wppagify.before" ]; then . /opt/verb/mods/wppagify.before; fi
+
+
+. /opt/verb/donjon/wpptype.sh
+wpptype_main post page "$@"
+e="$?"
+[[ "$e" = "0" ]] || exit "$e"
+
+
+
+if [ -e "/opt/verb/mods/wppagify.after" ]; then . /opt/verb/mods/wppagify.after; fi
