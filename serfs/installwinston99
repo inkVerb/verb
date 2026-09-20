@@ -140,6 +140,8 @@ return [
 EOF
 /bin/chown www:www /srv/www/vapps/${cVappName}.${domain}/config.php
 /bin/chmod 640 /srv/www/vapps/${cVappName}.${domain}/config.php
+/usr/bin/mkdir -p /etc/winston99
+/bin/ln -sfn /srv/www/vapps/${cVappName}.${domain}/config.php /etc/winston99/${domain}
 /opt/verb/serfs/setvappconfig "vapp.${cVappName}.${domain}" "/srv/www/vapps/${cVappName}.${domain}/config.php"
 
 /bin/chown -R www:www /srv/www/vapps/${cVappName}.${domain}

@@ -1,7 +1,7 @@
 # set winstonpress
 
 ## This modifies settings for Winston Press already installed on a hosted domain
-- Writes `verb/conf/vapps/winstonpress.DOMAIN.config` (`PDT_CONFIG`)
+- Writes `verb/conf/vapps/winstonpress.DOMAIN.config` (`WINSTONPRESS_CONFIG`)
 - Syncs db_* into `verb/conf/vapps/vapp.winstonpress.DOMAIN`
 - Restarts the systemd unit
 

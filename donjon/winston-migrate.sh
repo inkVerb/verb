@@ -99,7 +99,8 @@ migrate_pdt() {
       svc="$(/usr/bin/grep -m1 '^appService=' "${newv}" | /usr/bin/sed 's/^appService=//;s/^["'\'']//;s/["'\'']$//')"
     fi
     if [ -n "${newc}" ] && [ -f "${newc}" ]; then
-      /bin/ln -sfn "${newc}" "/etc/pdt/${domain}" 2>/dev/null || true
+      /usr/bin/mkdir -p /etc/winstonpress
+      /bin/ln -sfn "${newc}" "/etc/winstonpress/${domain}" 2>/dev/null || true
     fi
     if [ -f "/opt/verb/conf/vapps/orig/vapp.pdt.${domain}" ]; then
       /bin/mv "/opt/verb/conf/vapps/orig/vapp.pdt.${domain}" "/opt/verb/conf/vapps/orig/vapp.winstonpress.${domain}"
@@ -109,7 +110,9 @@ migrate_pdt() {
       if [ -f "${unit}" ]; then
         /usr/bin/sed -i \
           -e "s|/srv/www/vapps/pdt\\.|/srv/www/vapps/winstonpress.|g" \
-          -e "s|PDT_CONFIG=/opt/verb/conf/vapps/pdt\\.|PDT_CONFIG=/opt/verb/conf/vapps/winstonpress.|g" \
+          -e "s|PDT_CONFIG=|WINSTONPRESS_CONFIG=|g" \
+          -e "s|/bin/pdt|/bin/winstonpress|g" \
+          -e "s|/etc/pdt|/etc/winstonpress|g" \
           "${unit}"
         /usr/bin/systemctl daemon-reload
         if /usr/bin/systemctl is-enabled --quiet "${svc}.service" 2>/dev/null; then
@@ -138,4 +141,20 @@ ensure_repover_keys() {
 ensure_repover_keys
 migrate_pw99
 migrate_pdt
+
+# FHS leftovers
+if [ -d /etc/pdt ] && [ ! -e /etc/winstonpress ]; then
+  /bin/mv /etc/pdt /etc/winstonpress || true
+fi
+if [ -d /etc/pw99 ] && [ ! -e /etc/winston99 ]; then
+  /bin/mv /etc/pw99 /etc/winston99 || true
+fi
+for unit in /etc/systemd/system/winstonpress-*.service /etc/systemd/system/pdt-*.service; do
+  [ -f "${unit}" ] || continue
+  /usr/bin/sed -i \
+    -e 's|PDT_CONFIG=|WINSTONPRESS_CONFIG=|g' \
+    -e 's|/bin/pdt|/bin/winstonpress|g' \
+    -e 's|/etc/pdt|/etc/winstonpress|g' \
+    "${unit}"
+done
 /usr/bin/echo "winston-migrate: done."

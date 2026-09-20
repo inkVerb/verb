@@ -455,7 +455,8 @@ func allowedConfig(p string) bool {
 	for _, prefix := range []string{
 		"/srv/www/vapps/",
 		"/opt/verb/conf/vapps/",
-		"/etc/pdt/",
+		"/etc/winstonpress/",
+		"/etc/winston99/",
 		"/etc/badad/",
 		"/srv/cloud/",
 		"/srv/ghost/",

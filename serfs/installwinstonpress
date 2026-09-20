@@ -58,7 +58,7 @@ exit 8; fi
 if ! vappinst_clear_partial \
   "/opt/verb/conf/vapps/vapp.${cVappName}.${domain}" \
   "/srv/www/vapps/${cVappName}.${domain}" \
-  "/srv/www/vapps/${cVappName}.${domain}/bin/pdt"; then
+  "/srv/www/vapps/${cVappName}.${domain}/bin/winstonpress"; then
 /bin/echo "This is already installed."
 exit 0; fi
 
@@ -96,7 +96,7 @@ if ! /usr/bin/command -v go >/dev/null 2>&1; then
 fi
 cd /srv/www/vapps/${cVappName}.${domain} || exit 6
 /usr/bin/mkdir -p bin
-/usr/bin/go build -o bin/pdt ./cmd/pdt
+/usr/bin/go build -o bin/winstonpress ./cmd/winstonpress
 e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
 /opt/verb/serfs/pgsqlnewdb ${dBase} ${dBaseUser} ${dBPassword}
@@ -110,10 +110,10 @@ if [ -f sql/schema.sql ]; then
   [[ "$e" = "0" ]] || exit "$e"
 fi
 
-/usr/bin/mkdir -p /etc/pdt/wallet
-/usr/bin/chown www:www /etc/pdt /etc/pdt/wallet
-/usr/bin/chmod 0750 /etc/pdt
-/usr/bin/chmod 0700 /etc/pdt/wallet
+/usr/bin/mkdir -p /etc/winstonpress/wallet
+/usr/bin/chown www:www /etc/winstonpress /etc/winstonpress/wallet
+/usr/bin/chmod 0750 /etc/winstonpress
+/usr/bin/chmod 0700 /etc/winstonpress/wallet
 
 cfg="/opt/verb/conf/vapps/${cVappName}.${domain}.config"
 /usr/bin/mkdir -p /opt/verb/conf/vapps
@@ -129,11 +129,11 @@ db_pass=${dBPassword}
 mode=${appMode}
 mail_transport=off
 theme=masthead
-wallet_dir=/etc/pdt/wallet
+wallet_dir=/etc/winstonpress/wallet
 EOF
 /usr/bin/chmod 640 "${cfg}"
 /usr/bin/chown root:www "${cfg}"
-/bin/ln -sfn "${cfg}" /etc/pdt/${domain}
+/bin/ln -sfn "${cfg}" /etc/winstonpress/${domain}
 
 /bin/echo "appDBase=${dBase}
 appDDBUsr=${dBaseUser}
@@ -143,10 +143,10 @@ appPort=${appPort}
 appMode=${appMode}
 appConfig=${cfg}
 appService=${svcName}
-appEtcLink=/etc/pdt/${domain}" > /opt/verb/conf/vapps/vapp.${cVappName}.${domain}
+appEtcLink=/etc/winstonpress/${domain}" > /opt/verb/conf/vapps/vapp.${cVappName}.${domain}
 vappinst_note conf "/opt/verb/conf/vapps/vapp.${cVappName}.${domain}"
 vappinst_note file "${cfg}"
-vappinst_note symlink "/etc/pdt/${domain}" MISSING
+vappinst_note symlink "/etc/winstonpress/${domain}" MISSING
 
 /opt/verb/serfs/setvappconfig "vapp.${cVappName}.${domain}" "${cfg}"
 
@@ -160,9 +160,9 @@ Type=simple
 User=www
 Group=www
 WorkingDirectory=/srv/www/vapps/${cVappName}.${domain}
-ExecStart=/srv/www/vapps/${cVappName}.${domain}/bin/pdt
+ExecStart=/srv/www/vapps/${cVappName}.${domain}/bin/winstonpress
 Restart=on-failure
-Environment=PDT_CONFIG=${cfg}
+Environment=WINSTONPRESS_CONFIG=${cfg}
 
 [Install]
 WantedBy=multi-user.target
