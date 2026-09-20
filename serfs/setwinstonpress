@@ -1,0 +1,89 @@
+#!/bin/bash
+#inkVerbSerf! verb.ink
+
+# This modifies settings for an installed Winston Press vapp
+## Writes verb/conf/vapps/winstonpress.DOMAIN.config and matching keys in vapp.winstonpress.DOMAIN
+## Restarts the systemd unit
+
+# How to use:
+## ./setwinstonpress [ domain.tld ] [ key=value ] [ key=value ] ...
+## ./setwinstonpress inkisaverb.com mode=network
+## ./setwinstonpress inkisaverb.com db_name=newdb db_user=newuser db_pass=newpass
+
+usagenotes="This modifies settings for an installed Winston Press vapp"
+usageformat="setwinstonpress [ domain.tld ] [ key=value ] [ key=value ] ..."
+usageexample="setwinstonpress inkisaverb.com mode=network
+setwinstonpress inkisaverb.com web_url=https://inkisaverb.com
+setwinstonpress inkisaverb.com db_name=newdb db_user=newuser db_pass=secret"
+hierarchy=( primary )
+vsetnames=( "Domain" )
+vsettypes=( isDomain )
+voptnames=( "Mode" "Database" "Database user" "Database password" "Config key" "Setting value" )
+vopttypes=( isChoice isSQLDatabasename isSQLDatabasename isSQLDatabasename isazAZ09lines isazAZ09lines )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=( installwinstonpress )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
+if [ -e "/opt/verb/mods/setwinstonpress.replace" ]; then . /opt/verb/mods/setwinstonpress.replace; return 0; fi # Replaces this script
+if [ -e "/opt/verb/mods/setwinstonpress.before" ]; then . /opt/verb/mods/setwinstonpress.before; fi # Precedes this script
+
+
+domain=$1
+shift
+cVappName=winstonpress
+vcfg="/opt/verb/conf/vapps/vapp.${cVappName}.${domain}"
+if [ -z "${domain}" ] || [ ! -f "${vcfg}" ]; then
+  /usr/bin/echo "Winston Press is not installed on ${domain}."
+  exit 8
+fi
+. "${vcfg}"
+cfg="${appConfig}"
+if [ ! -f "${cfg}" ]; then
+  /usr/bin/echo "Config missing: ${cfg}"
+  exit 8
+fi
+
+setkv() {
+  local k="$1"
+  local v="$2"
+  if /bin/grep -q "^${k}=" "${cfg}"; then
+    /bin/sed -i "s|^${k}=.*|${k}=${v}|" "${cfg}"
+  else
+    /bin/echo "${k}=${v}" >> "${cfg}"
+  fi
+  case "${k}" in
+    db_name) /bin/sed -i "s|^appDBase=.*|appDBase=${v}|" "${vcfg}";;
+    db_user) /bin/sed -i "s|^appDDBUsr=.*|appDDBUsr=${v}|" "${vcfg}";;
+    db_pass) /bin/sed -i "s|^appDDBPass=.*|appDDBPass=${v}|" "${vcfg}";;
+    mode) /bin/sed -i "s|^appMode=.*|appMode=${v}|" "${vcfg}";;
+  esac
+}
+
+if [ -z "$1" ]; then
+  /usr/bin/echo "No settings given. Use key=value pairs."
+  exit 5
+fi
+for pair in "$@"; do
+  [ -z "${pair}" ] && continue
+  key="${pair%%=*}"
+  val="${pair#*=}"
+  if [ "${key}" = "${pair}" ]; then
+    /usr/bin/echo "Skip (not key=value): ${pair}"
+    continue
+  fi
+  setkv "${key}" "${val}"
+  /usr/bin/echo "Set ${key}"
+done
+
+if [ -n "${appService}" ]; then
+  /usr/bin/systemctl restart "${appService}.service" 2>/dev/null || true
+fi
+
+/usr/bin/echo "Updated ${cfg}"
+
+
+if [ -e "/opt/verb/mods/setwinstonpress.after" ]; then . /opt/verb/mods/setwinstonpress.after; fi # Follows this script

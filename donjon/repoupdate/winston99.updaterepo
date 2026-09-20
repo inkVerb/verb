@@ -1,16 +1,16 @@
 #!/bin/bash
 #inkVerb! repo donjon dragon, verb.ink
 
-# This updates the pdt-news repo package from GitHub (tarball, not git clone)
+# This updates the Winston 99 repo package from GitHub (tarball, not git clone)
 
 # How to use:
-## ./pdt.updaterepo
+## ./winston99.updaterepo
 
-cVappName=pdt
+cVappName=winston99
 # Include the config files
 . /opt/verb/conf/serverinkget
 . /opt/verb/conf/inklists/repoverlist
-distVer="${pdt}"
+distVer="${winston99}"
 
 if [ $InkGet_Method != "ZJZ" ]; then
   cd /opt/verb/repo
@@ -19,19 +19,17 @@ elif [ $InkGet_Method = "ZJZ" ] ; then
 fi
 
 # Announce
-/usr/bin/echo "Retrieving pdt-news ${distVer}..."
+/usr/bin/echo "Retrieving Winston 99 ${distVer}..."
 
-# Get the package (GitHub auto-archive; same wget family as postfixadmin/maddy)
-/usr/bin/wget -O ${cVappName}.tgz "https://github.com/PacificDailyTimes/pdt-news/archive/refs/heads/${distVer}.tar.gz"
+/usr/bin/wget -O ${cVappName}.tgz "https://github.com/JesseSteele/Winston99/archive/refs/heads/${distVer}.tar.gz"
 if [ ! -f "${cVappName}.tgz" ]; then
 /bin/echo "Failed download."; touch "${cVappName}.failed"
 exit 4; else
 /bin/rm -f ${cVappName}.failed; fi
 
-## Check the hash unless SKIP (rolling branch until a tagged release is pinned)
-if [ -n "${pdtsha}" ] && [ "${pdtsha}" != "SKIP" ]; then
+if [ -n "${winston99sha}" ] && [ "${winston99sha}" != "SKIP" ]; then
   checksha=$(/usr/bin/sha256sum ${cVappName}.tgz)
-  if [ "${checksha}" = "${pdtsha}  ${cVappName}.tgz" ]; then
+  if [ "${checksha}" = "${winston99sha}  ${cVappName}.tgz" ]; then
     /usr/bin/echo "Download checks out."
   else
     /usr/bin/echo "SHA check failed. The downloaded file ${PWD}/${cVappName}.tgz is not what was expected."
@@ -56,4 +54,4 @@ if [ $InkGet_Method != "ZJZ" ]; then
 fi
 
 # Finish
-/bin/echo "Downloaded pdt-news ${distVer}."
+/bin/echo "Downloaded Winston 99 ${distVer}."

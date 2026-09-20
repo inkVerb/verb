@@ -1,20 +1,10 @@
 #!/bin/bash
 #inkVerbSerf! verb.ink
+# Compatibility: pdt is now winstonpress
 
-# This downloads and installs pdt-news as a vapp on a hosted domain
-## App resides in www/vapps/pdt.DOMAIN.TLD, Go binary on a localhost port, Nginx proxies the domain
-## Credentials in verb/conf/vapps/vapp.pdt.DOMAIN.TLD; app config in verb/conf/vapps/pdt.DOMAIN.config
-## Domain is added if missing. Does NOT run inkCert.
-
-# How to use:
-## ./installpdt [ domain.tld ] [ single|network - optional ] [ dbase ] [ dbuser ] [ dbpassword ]
-## ./installpdt [ domain.tld ]
-
-usagenotes="This downloads and installs pdt-news to a specified domain"
+usagenotes="This installs Winston Press (was pdt-news / installpdt)"
 usageformat="installpdt [ domain.tld ] [ single|network - optional ] [ dbase - optional ] [ dbuser - optional ] [ dbpassword - optional ]"
-usageexample="installpdt inkisaverb.com
-installpdt inkisaverb.com network
-installpdt inkisaverb.com single somedb someuser somepass"
+usageexample="installpdt inkisaverb.com"
 hierarchy=( primary )
 vsetnames=( "Domain" )
 vsettypes=( isDomain )
@@ -25,170 +15,10 @@ voptflagpurpose=(  )
 dependencyinstall=(  )
 prerequesite=(  )
 usedby=(  )
-useserfs=( inkget adddomain pgsqlnewdb setnginxvappproxy )
-useconfigs=( servertype )
-if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi # Must have for proper usage to not run the full serf
-if [ -e "/opt/verb/mods/installpdt.replace" ]; then . /opt/verb/mods/installpdt.replace; return 0; fi # Replaces this script
-if [ -e "/opt/verb/mods/installpdt.before" ]; then . /opt/verb/mods/installpdt.before; fi # Precedes this script
+useserfs=( installwinstonpress )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi
+if [ -e "/opt/verb/mods/installpdt.replace" ]; then . /opt/verb/mods/installpdt.replace; return 0; fi
 
-
-cVappName=pdt
-
-domain=$1
-if [ "$2" = "single" ] || [ "$2" = "network" ] || [ "$2" = "multi" ]; then
-  appMode=$2
-  dBase=$3
-  dBaseUser=$4
-  dBPassword=$5
-else
-  appMode="single"
-  dBase=$2
-  dBaseUser=$3
-  dBPassword=$4
-fi
-cleanName=$(/usr/bin/echo ${domain} | /usr/bin/sed -e 's/\.//g')
-svcName="pdt-$(/usr/bin/echo ${domain} | /usr/bin/tr '.' '-')"
-appPort=$(( 9100 + $(/usr/bin/printf '%s' "${domain}" | /usr/bin/cksum | /usr/bin/awk '{print $1 % 800}') ))
-
-if [ -z ${1} ]; then
-/bin/echo "You must designate a domain. Read the How to use. Can't continue."
-exit 8; fi
-
-. /opt/verb/donjon/vappinstall.sh
-if ! vappinst_clear_partial \
-  "/opt/verb/conf/vapps/vapp.${cVappName}.${domain}" \
-  "/srv/www/vapps/${cVappName}.${domain}" \
-  "/srv/www/vapps/${cVappName}.${domain}/bin/pdt"; then
-/bin/echo "This is already installed."
-exit 0; fi
-
-. /opt/verb/conf/servertype
-if [ ${ServerType} = "lamp" ]; then
-  /usr/bin/echo "pdt-news needs Nginx (LEMP or LAEMP)."; exit 8
-fi
-
-vappinst_begin
-
-if [ ! -d "/srv/www/domains/${domain}" ]; then
-vappinst_adddomain_if_missing "${domain}"
-e="$?"; [[ "$e" = "0" ]] || exit "$e"
-fi
-
-cd /srv/www/vapps || exit 6
-/opt/verb/serfs/inkget ${cVappName} check
-e="$?"; [[ "$e" = "0" ]] || exit "$e"
-vappinst_note dir "/srv/www/vapps/${cVappName}"
-
-if [ -z "${dBPassword}" ]; then
-dBPassword=$(/usr/bin/pwgen -s -1 16); fi
-if [ -z "${dBase}" ]; then
-dBase=pdt$(/usr/bin/echo ${cleanName} | /usr/bin/cut -c1-20)$(/usr/bin/pwgen -s -1 6); fi
-if [ -z "${dBaseUser}" ]; then
-dBaseUser=${dBase}; fi
-if [ "${appMode}" != "network" ] && [ "${appMode}" != "multi" ]; then
-appMode="single"; fi
-
-/bin/mv ${cVappName} ${cVappName}.${domain}
-vappinst_note dir "/srv/www/vapps/${cVappName}.${domain}"
-
-if ! /usr/bin/command -v go >/dev/null 2>&1; then
-  . /opt/verb/donjon/ensure-go.sh
-fi
-cd /srv/www/vapps/${cVappName}.${domain} || exit 6
-/usr/bin/mkdir -p bin
-/usr/bin/go build -o bin/pdt ./cmd/pdt
-e="$?"; [[ "$e" = "0" ]] || exit "$e"
-
-/opt/verb/serfs/pgsqlnewdb ${dBase} ${dBaseUser} ${dBPassword}
-e="$?"; [[ "$e" = "0" ]] || exit "$e"
-vappinst_note pgsql "${dBase}" "${dBaseUser}"
-
-if [ -f sql/schema.sql ]; then
-  export PGPASSWORD="${dBPassword}"
-  /usr/bin/psql -h 127.0.0.1 -U ${dBaseUser} -d ${dBase} -f sql/schema.sql
-  e="$?"; unset PGPASSWORD
-  [[ "$e" = "0" ]] || exit "$e"
-fi
-
-/usr/bin/mkdir -p /etc/pdt/wallet
-/usr/bin/chown www:www /etc/pdt /etc/pdt/wallet
-/usr/bin/chmod 0750 /etc/pdt
-/usr/bin/chmod 0700 /etc/pdt/wallet
-
-cfg="/opt/verb/conf/vapps/${cVappName}.${domain}.config"
-/usr/bin/mkdir -p /opt/verb/conf/vapps
-/usr/bin/cat > "${cfg}" <<EOF
-web_bind=127.0.0.1
-web_port=${appPort}
-web_url=https://${domain}
-db_host=127.0.0.1
-db_port=5432
-db_name=${dBase}
-db_user=${dBaseUser}
-db_pass=${dBPassword}
-mode=${appMode}
-mail_transport=off
-theme=masthead
-wallet_dir=/etc/pdt/wallet
-EOF
-/usr/bin/chmod 640 "${cfg}"
-/usr/bin/chown root:www "${cfg}"
-/bin/ln -sfn "${cfg}" /etc/pdt/${domain}
-
-/bin/echo "appDBase=${dBase}
-appDDBUsr=${dBaseUser}
-appDDBPass=${dBPassword}
-appEngine=postgres
-appPort=${appPort}
-appMode=${appMode}
-appConfig=${cfg}
-appService=${svcName}
-appEtcLink=/etc/pdt/${domain}" > /opt/verb/conf/vapps/vapp.${cVappName}.${domain}
-vappinst_note conf "/opt/verb/conf/vapps/vapp.${cVappName}.${domain}"
-vappinst_note file "${cfg}"
-vappinst_note symlink "/etc/pdt/${domain}" MISSING
-
-/opt/verb/serfs/setvappconfig "vapp.${cVappName}.${domain}" "${cfg}"
-
-/usr/bin/cat > /etc/systemd/system/${svcName}.service <<EOF
-[Unit]
-Description=pdt-news CMS (${domain})
-After=network.target postgresql.service
-
-[Service]
-Type=simple
-User=www
-Group=www
-WorkingDirectory=/srv/www/vapps/${cVappName}.${domain}
-ExecStart=/srv/www/vapps/${cVappName}.${domain}/bin/pdt
-Restart=on-failure
-Environment=PDT_CONFIG=${cfg}
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-/bin/chown -R www:www /srv/www/vapps/${cVappName}.${domain}
-/usr/bin/systemctl daemon-reload
-/usr/bin/systemctl enable --now ${svcName}.service
-vappinst_note systemd "${svcName}"
-
-vappinst_vhost_backup "/opt/verb/conf/webserver/sites-available/nginx/${domain}.conf"
-/opt/verb/serfs/setnginxvappproxy ${domain} 127.0.0.1:${appPort}
-e="$?"; [[ "$e" = "0" ]] || exit "$e"
-
-vappinst_commit
-/usr/bin/echo "These are setup:
-
-Database: ${dBase}
-Database user: ${dBaseUser}
-Database password: ${dBPassword}
-Mode: ${appMode}
-Proxy: 127.0.0.1:${appPort}
-
-Go to https://${domain}/install to finish pdt-news (passwordless by default).
-"
-
-
-
-if [ -e "/opt/verb/mods/installpdt.after" ]; then . /opt/verb/mods/installpdt.after; fi # Follows this script
+/usr/bin/echo "installpdt is now installwinstonpress (ink install winstonpress)."
+exec /opt/verb/serfs/installwinstonpress "$@"
