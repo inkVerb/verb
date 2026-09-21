@@ -4,7 +4,7 @@
 - Convert posts to pages: `ink wp pagify`
 - Convert pages to posts: `ink wp postify`
 - Fit overflowing images: `ink wp fitimages` (after Ghost → WP import)
-- Rewrite the site URL (wp-config + whole database): `ink wp url`
+- Rewrite the site URL (wp-config + whole database): `ink wp url -d hosted.domain -o https://old.host -t https://new.host`
 - Ghost → WordPress import creates **posts**. Use pagify if you wanted pages.
 - `-d domain.tld` finds `vapp.wp.DOMAIN` (no separate vapp flag)
 - `-v` is verbose, same as every other `ink` command

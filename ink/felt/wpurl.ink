@@ -10,8 +10,10 @@ surfname="wpurl"
 # About message
 aboutMsg="$(cat <<EOU
 Rewrite a WordPress site URL in wp-config.php and the whole database
-(serialized PHP, JSON, posts, media, options). -d is the installed
-domain (vapp.wp.DOMAIN), even if the public URL has not moved yet.
+(serialized PHP, JSON, posts, media, options).
+-d is the hosted domain only (church.jesse.house), not https://
+-o old public URL (https://jesse.church)
+-t new public URL (https://church.jesse.house)
 Old URL must match WP_HOME / WP_SITEURL (or wp-config already has the new URL).
 -v is verbose (not a vapp).
 EOU
@@ -22,11 +24,11 @@ optSerf="d:o:t:nhrcv"
 declare -A optName
 declare -A optDesc
 optName[d]="Domain"
-optDesc[d]="Hosted domain; uses vapp.wp.DOMAIN"
+optDesc[d]="Hosted domain only, no https:// (vapp.wp.DOMAIN)"
 optName[o]="Old URL"
-optDesc[o]="Current public URL (checked against wp-config)"
+optDesc[o]="Current public URL, e.g. https://jesse.church"
 optName[t]="To URL"
-optDesc[t]="New public URL"
+optDesc[t]="New public URL, e.g. https://church.jesse.house"
 optName[n]="Dry run"
 optDesc[n]="Print what would change; no writes"
 
@@ -44,16 +46,14 @@ while getopts "${optSerf}" Flag; do
   o)
     oArg="${OPTARG}"
     [[ "${oArg}" != *"://"* ]] && oArg="https://${oArg}"
-    [[ "${oArg}" != */ ]] && oArg="${oArg}/"
     isURL "${oArg}" "${optName[o]}"
-    SOo="${OPTARG}"
+    SOo="${oArg}"
   ;;
   t)
     tArg="${OPTARG}"
     [[ "${tArg}" != *"://"* ]] && tArg="https://${tArg}"
-    [[ "${tArg}" != */ ]] && tArg="${tArg}/"
     isURL "${tArg}" "${optName[t]}"
-    SOt="${OPTARG}"
+    SOt="${tArg}"
   ;;
   n)
     SOn="true"

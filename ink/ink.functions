@@ -460,11 +460,12 @@ if [ "$3" != "n" ] && [ "${isSpecialURL}" = "false" ]; then
 exit 0; fi
 }
 
-## URL (http{s}://[az09.].az/...)
+## URL (http{s}://host.tld  or  http{s}://host.tld/path)
 isURL() {
 local URL="$1"
 local vvar="$2"
-local URLregex="^(https?|file|s?ftp|itpc)://([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z0-9]([a-z0-9-]*[a-z0-9])/[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]$"
+# Path is optional so origin URLs (https://jesse.church) are valid.
+local URLregex="^(https?|file|s?ftp|itpc)://([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z0-9]([a-z0-9-]*[a-z0-9])(/[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*)?$"
 if [[ "${URL}" =~ ${URLregex} ]]; then
 isURL="true"; else
 isURL="false"; fi
