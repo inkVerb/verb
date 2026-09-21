@@ -1,0 +1,108 @@
+#!/usr/bin/bash
+#inkVerbSerf! verb.ink
+
+# Rewrite a WordPress site URL in wp-config.php and the whole MariaDB schema
+# (serialized PHP, JSON, and plain text — media, posts, options, GUIDs).
+# -d is the domain the vapp is installed at (vapp.wp.DOMAIN), even if the
+# public URL has not moved yet.
+
+# How to use:
+## ./wpurl [ old-url ] [ new-url ] -d [ domain.tld ]
+
+# Eg:
+## ./wpurl https://old.example https://formosan.dog -d formosan.dog
+## ./wpurl http://formosan.dog https://formosan.dog -d formosan.dog
+
+
+usagenotes="This rewrites a WordPress site URL in wp-config.php and the database (serialized-safe)"
+usageformat="wpurl [ old-url ] [ new-url ] -d [ domain.tld ]"
+usageexample="wpurl https://old.example https://formosan.dog -d formosan.dog
+wpurl http://formosan.dog https://formosan.dog -d formosan.dog"
+hierarchy=( primary )
+vsetnames=( "Old URL" "New URL" )
+vsettypes=( isURL isURL )
+voptnames=( "Domain" )
+vopttypes=( isDomain )
+voptflags=( "d" )
+voptflagpurpose=( "Hosted domain; uses vapp.wp.DOMAIN" )
+dependencyinstall=(  )
+prerequesite=( installwp )
+usedby=(  )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi
+if [ -e "/opt/verb/mods/wpurl.replace" ]; then . /opt/verb/mods/wpurl.replace; return 0; fi
+if [ -e "/opt/verb/mods/wpurl.before" ]; then . /opt/verb/mods/wpurl.before; fi
+
+
+oldUrl=""
+newUrl=""
+domain=""
+dry=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -d)
+      domain="${2:-}"
+      shift 2
+      ;;
+    --dry-run|dry-run)
+      dry="true"
+      shift
+      ;;
+    -h|--help)
+      /usr/bin/echo "Usage: wpurl [ old-url ] [ new-url ] -d [ domain.tld ]"
+      exit 0
+      ;;
+    *)
+      if [ -z "${oldUrl}" ]; then
+        oldUrl="$1"
+      elif [ -z "${newUrl}" ]; then
+        newUrl="$1"
+      else
+        /usr/bin/echo "Unexpected argument: $1"
+        exit 5
+      fi
+      shift
+      ;;
+  esac
+done
+
+if [ -z "${oldUrl}" ] || [ -z "${newUrl}" ] || [ -z "${domain}" ]; then
+  /usr/bin/echo "Need old URL, new URL, and -d domain.tld."
+  exit 5
+fi
+
+. /opt/verb/donjon/wpptype.sh
+wpptype_resolve domain "${domain}"
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+
+phpBin="/usr/bin/php"
+rewriter="/opt/verb/conf/lib/vapptools/dburl.php"
+if [ ! -f "${rewriter}" ]; then
+  /usr/bin/echo "Missing ${rewriter}"
+  exit 8
+fi
+
+phpArgs=(
+  "${rewriter}"
+  "--wp-config=${wpptype_root}/wp-config.php"
+  "--db=${wpptype_db}"
+  "--old=${oldUrl}"
+  "--new=${newUrl}"
+)
+# Prefer vapp DB user if present; wp-config DB_* is the fallback inside dburl.php
+if [ -n "${appDDBUsr}" ] && [ -n "${appDDBPass}" ]; then
+  phpArgs+=( "--user=${appDDBUsr}" "--pass=${appDDBPass}" )
+fi
+if [ "${dry}" = "true" ]; then
+  phpArgs+=( "--dry-run" )
+fi
+
+/usr/bin/echo "Rewriting ${oldUrl} → ${newUrl} on vapp ${wpptype_vapp} (DB ${wpptype_db})…"
+"${phpBin}" "${phpArgs[@]}"
+e="$?"
+[[ "$e" = "0" ]] || exit "$e"
+
+
+
+if [ -e "/opt/verb/mods/wpurl.after" ]; then . /opt/verb/mods/wpurl.after; fi

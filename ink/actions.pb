@@ -11,4 +11,4 @@ set         # Modify installed vapp settings
 show        # View ink CLI serf output log and related info
 update      # Verber core and other updaters
 web         # HTTPS forwarding, www forwarding, wildcard hosting, web folder readability
-wp          # Convert WordPress posts and pages
+wp          # WordPress: pagify, postify, fitimages, url
