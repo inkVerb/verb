@@ -49,7 +49,9 @@ if [ -d /opt/verb/conf/inkdrive ]; then
     /bin/rm -f "/mnt/${n}/vip"/*.vbak 2>/dev/null || true
   done
 fi
-/bin/rm -f /srv/www/html/${ServerTLD}/*.vbak -f
+. /opt/verb/donjon/servedl.sh
+sdir=$(servedl_dir)
+/bin/rm -f "${sdir}"/*.vbak "${sdir}"/*.vbak.sql 2>/dev/null || true
 
 
 

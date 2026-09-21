@@ -34,17 +34,12 @@ if [ -e "/opt/verb/mods/inkvpnclientdl.before" ]; then . /opt/verb/mods/inkvpncl
 
 # Set the link names
 cdir="$(/usr/bin/pwgen -s -1 128)"
-/bin/mkdir -p /srv/www/verb/ink.serve/${ServerServeDir}/${cDIR}
-
-# Link it to the Serve folder
-/bin/ln -sfn /opt/openvpn/certificates/clients/client.ovpn /srv/www/verb/ink.serve/${ServerServeDir}/${cDIR}/${ServerName}-${ServerTLD}-client.ovpn
-
-# Permissions
-/bin/chown -R www:www /srv/www/verb/ink.serve
+. /opt/verb/donjon/servedl.sh
+serveURL=$(servedl_put /opt/openvpn/certificates/clients/client.ovpn "${cdir}" "${ServerName}-${ServerTLD}-client.ovpn")
 
 # Finish
 /bin/echo "The client OVPN profile is ready for download.
-Get it here: https://${serveURI}/${ServerServeDir}/${cDIR}/${ServerName}-${ServerTLD}-client.ovpn
+Get it here: ${serveURL}
 This download link will expire in at least 30 minutes."
 
 

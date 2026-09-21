@@ -75,11 +75,11 @@ Note that the email server remains live."
 exit 0
 fi
 
-/bin/ln -sfn /srv/www/vip/verb.inkvmail.${secName}.vbak /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/
-/bin/chown -R www:www /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/verb.inkvmail.${secName}.vbak
+. /opt/verb/donjon/servedl.sh
+serveURL=$(servedl_put "/srv/www/vip/verb.inkvmail.${secName}.vbak")
 /bin/echo "The email server data has been backed up to the 'vip' folder and can also be downloaded at
 
-http://${ServerServePath}/verb.inkvmail.${secName}.vbak
+${serveURL}
 
 Note that the email server remains live.
 "

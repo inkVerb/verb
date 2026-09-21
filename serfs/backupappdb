@@ -64,11 +64,11 @@ Note that the app remains live.
 exit 0
 fi
 
-/bin/ln -sfn /srv/www/vip/sql/verb.${appDBase}.${secName}.vbak.sql /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/
-/bin/chown -R www:www /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/verb.${appDBase}.${secName}.vbak.sql
+. /opt/verb/donjon/servedl.sh
+serveURL=$(servedl_put "/srv/www/vip/sql/verb.${appDBase}.${secName}.vbak.sql")
 /bin/echo "The database for ${appName} has been backed up and can be downloaded at:
 
-https://${ServerServePath}/verb.${appDBase}.${secName}.vbak.sql
+${serveURL}
 
 Note that the app remains live.
 "

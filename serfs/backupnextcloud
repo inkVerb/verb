@@ -78,11 +78,11 @@ Note that the app remains live.
 exit 0
 fi
 
-/bin/ln -sfn /srv/www/vip/verb.nextcloud.${secName}.vbak /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/
-/bin/chown -R www:www /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/verb.nextcloud.${secName}.vbak
+. /opt/verb/donjon/servedl.sh
+serveURL=$(servedl_put "/srv/www/vip/verb.nextcloud.${secName}.vbak")
 /bin/echo "Nextcloud has been backed up to the 'vip' folder and can also be downloaded at:
 
-http://${ServerServePath}/verb.nextcloud.${secName}.vbak
+${serveURL}
 
 Note that the app remains live.
 "

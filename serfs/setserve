@@ -103,7 +103,8 @@ fi
 # Create the serve dir
 /bin/rm -rf /srv/www/verb/${vTLD}.serve
 /bin/mkdir -p /srv/www/verb/${vTLD}.serve/${sDIR}
-/bin/echo "<?php header(\"HTTP/1.1 301 Moved Permanently\"); header(\"Location: http://${nameURI}\"); die(); ?>" > /srv/www/verb/${vTLD}.serve/index.php
+/bin/echo "<?php header(\"HTTP/1.1 301 Moved Permanently\"); header(\"Location: https://${nameURI}\"); die(); ?>" > /srv/www/verb/${vTLD}.serve/index.php
+/bin/chown -R www:www /srv/www/verb/${vTLD}.serve
 /bin/chmod -R 750 /srv/www/verb/${vTLD}.serve
 
 # Create cron to delete download directories

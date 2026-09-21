@@ -86,11 +86,11 @@ Note that the app remains live.
 exit 0
 fi
 
-/bin/ln -sfn /srv/www/vip/verb.${appName}.${secName}.vbak /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/
-/bin/chown -R www:www /srv/www/html/${ServerServeTLD}.serve/${ServerServeDir}/verb.${appName}.${secName}.vbak
+. /opt/verb/donjon/servedl.sh
+serveURL=$(servedl_put "/srv/www/vip/verb.${appName}.${secName}.vbak")
 /bin/echo "${appName} has been backed up to the 'vip' folder and can also be downloaded at:
 
-http://${ServerServePath}/${ServerServeDir}/verb.${appName}.${secName}.vbak
+${serveURL}
 
 Note that the app remains live.
 "

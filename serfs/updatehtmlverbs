@@ -129,8 +129,7 @@ fi
 /usr/bin/rm -rf /srv/www/verb/${ServerServeTLD}.serve
 /usr/bin/mkdir -p /srv/www/verb/${ServerServeTLD}.serve/${ServerServeDir}
 /usr/bin/echo "Options -Indexes" >> /srv/www/verb/${ServerServeTLD}.serve/${ServerServeDir}/.htaccess
-/usr/bin/echo "<?php header(\"HTTP/1.1 301 Moved Permanently\"); header(\"Location: http://${nameURI}\"); die(); ?>" > /srv/www/verb/${ServerServeTLD}.serve/index.php
-
+/usr/bin/echo "<?php header(\"HTTP/1.1 301 Moved Permanently\"); header(\"Location: https://${nameURI}\"); die(); ?>" > /srv/www/verb/${ServerServeTLD}.serve/index.php
 # Own
 /usr/bin/chown -R www:www /srv/www/verb
 /usr/bin/chmod -R 750 ${itsqlTLD}.sql
