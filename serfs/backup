@@ -65,11 +65,17 @@ cd /srv/www/vapps/${appName}/ || exit 6
 # Backup the config
 /bin/cp /opt/verb/conf/vapps/vapp.${appName} /srv/www/vapps/${appName}/
 
-# Pack the directory
+# Space: include inkDrive /mnt/{h|s}dd trees (du -L). Fail if nothing has room.
+. /opt/verb/donjon/vbak.sh
+vbakNeed=$(vbak_need_kb "$(vbak_tree_kb /srv/www/vapps/${appName})")
+vbakDest=$(vbak_dest "${vbakNeed}")
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+
+# Pack onto the dest disk (tar -h follows wp-content bind/symlink as real dirs)
 cd /srv/www/vapps || exit 6
-/opt/verb/serfs/vtxzin ${appName}
-/bin/mv ${appName}.txz verb.${appName}.${secName}.vbak
-/bin/mv verb.${appName}.${secName}.vbak /srv/www/vip/
+/opt/verb/serfs/vtxzin ${appName} "${vbakDest}/verb.${appName}.${secName}.vbak"
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+vbak_linkvip "${vbakDest}/verb.${appName}.${secName}.vbak"
 
 # Finish
 if [ "$3" = "-nl" ]; then

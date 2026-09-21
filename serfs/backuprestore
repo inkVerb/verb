@@ -54,18 +54,26 @@ if [ -e "/opt/verb/conf/vapps/vapp.${appName}" ]; then
 cd /srv/www/vapps/${appName}/ || exit 6
 /opt/verb/serfs/mysqlvappex vapp.${appName}; wait
 /bin/mv /opt/verb/conf/vapps/vapp.${appName} .
+. /opt/verb/donjon/vbak.sh
+vbakNeed=$(vbak_need_kb "$(vbak_tree_kb /srv/www/vapps/${appName})")
+vbakDest=$(vbak_dest "${vbakNeed}")
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 cd /srv/www/vapps/ || exit 6
-/opt/verb/serfs/vtxzin ${appName}
-/bin/mv ${appName}.txz verb.${appName}.restore-originalbackedup.vbak
-/bin/mv verb.${appName}.restore-originalbackedup.vbak /srv/www/vip/
+/opt/verb/serfs/vtxzin ${appName} "${vbakDest}/verb.${appName}.restore-originalbackedup.vbak"
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+vbak_linkvip "${vbakDest}/verb.${appName}.restore-originalbackedup.vbak"
 /opt/verb/serfs/mysqlkilldb ${appDBase}; wait
 /opt/verb/serfs/mysqlkilluser ${appDDBUsr}; wait
 /bin/rm -rf ${appName}
 fi
 
-# Unpack the file
+# Unpack the file (vip entry may be a symlink to /mnt/{h|s}dd/vip)
 cd /srv/www/vip || exit 6
-/bin/mv ${filename} ${appName}.txz
+if [ -L "${filename}" ]; then
+  /bin/ln -sfn "$(/usr/bin/readlink -f "${filename}")" "${appName}.txz"
+else
+  /bin/mv ${filename} ${appName}.txz
+fi
 /opt/verb/serfs/vtxzout ${appName}; wait
 /bin/mv ${appName} /srv/www/vapps/
 

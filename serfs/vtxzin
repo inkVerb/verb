@@ -9,10 +9,11 @@
 # This will OVERWRITE any .txz destination file by the same name!
 
 # How to use:
-## ./vtxzin [ directory ]
+## ./vtxzin [ directory ] [ outfile - optional, default DIR.txz ]
 
 # Eg:
 ## ./vtxzin mystuff
+## ./vtxzin mystuff /mnt/hdd/vip/mystuff.txz
 
 
 
@@ -37,10 +38,19 @@ if [ -e "/opt/verb/mods/vtxzin.before" ]; then . /opt/verb/mods/vtxzin.before; f
 
 
 dir=$1
+out="${2:-${dir}.txz}"
 
 /usr/bin/echo "Creating .txz archive file..."
-/bin/tar c ${dir} | /usr/bin/xz -v > ${dir}.tar.xz
-/bin/mv ${dir}.tar.xz ${dir}.txz
+# -h: store symlink (and inkDrive /mnt/{h|s}dd) targets as real files in the archive tree
+set -o pipefail
+/bin/tar -h -c "${dir}" | /usr/bin/xz -v > "${out}.part"
+e="$?"
+set +o pipefail
+if [ "$e" != "0" ]; then
+  /usr/bin/rm -f "${out}.part"
+  exit "$e"
+fi
+/bin/mv "${out}.part" "${out}"
 /usr/bin/echo "Done."
 
 

@@ -59,11 +59,15 @@ cd /srv/www/vapps/nextcloud/data || exit 6
 # Backup the config
 /bin/cp /opt/verb/conf/vapps/vapp.nextcloud /srv/www/vapps/nextcloud/data/
 
-# Pack the data directory
+. /opt/verb/donjon/vbak.sh
+vbakNeed=$(vbak_need_kb "$(vbak_tree_kb /srv/www/vapps/nextcloud/data)")
+vbakDest=$(vbak_dest "${vbakNeed}")
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+
 cd /srv/www/vapps/nextcloud || exit 6
-/opt/verb/serfs/vtxzin data
-/bin/mv data.txz verb.nextcloud.${secName}.vbak
-/bin/mv verb.nextcloud.${secName}.vbak /srv/www/vip/
+/opt/verb/serfs/vtxzin data "${vbakDest}/verb.nextcloud.${secName}.vbak"
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+vbak_linkvip "${vbakDest}/verb.nextcloud.${secName}.vbak"
 
 # Finish
 if [ "$2" = "-nl" ]; then

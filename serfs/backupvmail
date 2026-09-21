@@ -52,13 +52,22 @@ cd /srv/vmail || exit 6
 /bin/cp /opt/verb/conf/servermailpass /srv/vmail/servermailpass-old
 /bin/cp /opt/verb/conf/servernameip /srv/vmail/servernameip-old
 
-# Zip the directory
-cd /var || exit 6
-/opt/verb/serfs/vtxzin inkvmail
-/bin/mv inkvmail.txz verb.inkvmail.${secName}.vbak
+. /opt/verb/donjon/vbak.sh
+vmailTree="/srv/vmail"
+[ -d /var/inkvmail ] && vmailTree="/var/inkvmail"
+vbakNeed=$(vbak_need_kb "$(vbak_tree_kb "${vmailTree}")")
+vbakDest=$(vbak_dest "${vbakNeed}")
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
 
-# Move to web-download area
-/bin/mv /var/verb.inkvmail.${secName}.vbak /srv/www/vip/
+if [ -d /var/inkvmail ]; then
+  cd /var || exit 6
+  /opt/verb/serfs/vtxzin inkvmail "${vbakDest}/verb.inkvmail.${secName}.vbak"
+else
+  cd /srv || exit 6
+  /opt/verb/serfs/vtxzin vmail "${vbakDest}/verb.inkvmail.${secName}.vbak"
+fi
+e="$?"; [[ "$e" = "0" ]] || exit "$e"
+vbak_linkvip "${vbakDest}/verb.inkvmail.${secName}.vbak"
 
 if [ "$2" = "-nl" ]; then
 /bin/echo "The email server data has been backed up to the 'vip' folder.

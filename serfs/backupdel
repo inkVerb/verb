@@ -30,7 +30,25 @@ if [ -e "/opt/verb/mods/backupdel.before" ]; then . /opt/verb/mods/backupdel.bef
 # Include the configs
 . /opt/verb/conf/servernameip
 
-/bin/rm -f /srv/www/vip/*.vbak
+for f in /srv/www/vip/*.vbak; do
+  [ -e "${f}" ] || continue
+  if [ -L "${f}" ]; then
+    /bin/rm -f "$(/usr/bin/readlink -f "${f}")"
+  fi
+  /bin/rm -f "${f}"
+done
+for d in /mnt/hdd/vip /mnt/ssd/vip; do
+  /bin/rm -f "${d}"/*.vbak 2>/dev/null || true
+done
+if [ -d /opt/verb/conf/inkdrive ]; then
+  for cfg in /opt/verb/conf/inkdrive/hdd.* /opt/verb/conf/inkdrive/ssd.*; do
+    [ -f "${cfg}" ] || continue
+    n=$(/usr/bin/basename "${cfg}")
+    n="${n#hdd.}"
+    n="${n#ssd.}"
+    /bin/rm -f "/mnt/${n}/vip"/*.vbak 2>/dev/null || true
+  done
+fi
 /bin/rm -f /srv/www/html/${ServerTLD}/*.vbak -f
 
 

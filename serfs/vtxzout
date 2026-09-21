@@ -43,16 +43,17 @@ if [ -e "${fil}.tar.xz" ]; then
   /bin/echo "The file ${fil}.tar.xz exists, which conflicts with this operation. Deal with that out first."
 exit 7; fi
 
-# Move to the proper name
-/bin/mv ${fil}.txz ${fil}.tar.xz
-
-# Extract
+# Extract. A .txz that is a symlink to /mnt/{h|s}dd/vip stays on that disk.
 /usr/bin/echo "Quietly extracting ${fil}.tar.xz..."
-/usr/bin/tar xf ${fil}.tar.xz
+if [ -L "${fil}.txz" ]; then
+  /usr/bin/tar xf "$(/usr/bin/readlink -f "${fil}.txz")"
+  /bin/rm -f "${fil}.txz"
+else
+  /bin/mv ${fil}.txz ${fil}.tar.xz
+  /usr/bin/tar xf ${fil}.tar.xz
+  /usr/bin/rm ${fil}.tar.xz
+fi
 /usr/bin/echo "Done."
-
-# Remove
-/usr/bin/rm ${fil}.tar.xz
 
 
 

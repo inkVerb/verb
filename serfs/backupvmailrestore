@@ -51,8 +51,15 @@ tbrSMPAPG=${ServerMailPassApg}
 
 # Unpack the file
 cd /srv/www/vip || exit 6
-/bin/mv ${filename} inkvmail.txz
+if [ -L "${filename}" ]; then
+  /bin/ln -sfn "$(/usr/bin/readlink -f "${filename}")" inkvmail.txz
+else
+  /bin/mv ${filename} inkvmail.txz
+fi
 /opt/verb/serfs/vtxzout inkvmail
+if [ ! -d inkvmail ] && [ -d vmail ]; then
+  /bin/mv vmail inkvmail
+fi
 
 # Restore and include BOX settings in the sitemail config
 . /srv/www/vip/inkvmail/servermailpass-old
