@@ -242,17 +242,20 @@ EOF
             /usr/bin/rm -f "${snsverber}/domains/fresh/.${sDomain}"
           fi
         done
-        ##### Killed
-        if [ -d "${snsverber}/domains/killed/fresh" ]; then
-          cd ${snsverber}/domains/killed/fresh
-          for sDomain in *; do
-            if [ "${sDomain}" = '*' ]; then continue; fi
-            /usr/bin/rm -f "/var/named/db.${sDomain}"
-            /usr/bin/mv /domains/killed/fresh/${sDomain} /domains/killed/
-          done
-          cd ..
-          /usr/bin/rm -rf ${snsverber}/domains/killed/fresh
-        fi
+        ##### Killed / delisted (one-shot: drop slave zone file, then archive)
+        for kind in killed delisted; do
+          if [ -d "${snsverber}/domains/${kind}/fresh" ]; then
+            /usr/bin/mkdir -p "${snsverber}/domains/${kind}"
+            for sFresh in "${snsverber}/domains/${kind}/fresh/"*; do
+              [ -e "${sFresh}" ] || continue
+              sDomain=$(/usr/bin/basename "${sFresh}")
+              [ "${sDomain}" = '*' ] && continue
+              /usr/bin/rm -f "/var/named/db.${sDomain}" "/var/named/db.${sDomain}.jnl"
+              /usr/bin/mv "${sFresh}" "${snsverber}/domains/${kind}/"
+            done
+            /usr/bin/rm -rf "${snsverber}/domains/${kind}/fresh"
+          fi
+        done
         ## Delete the domains/fresh folder
         /usr/bin/rm -rf "${snsverber}/domains/fresh"
       done
