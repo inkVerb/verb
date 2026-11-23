@@ -287,14 +287,9 @@ EOF
 ##### End inkVerb #####
 #" >> /etc/my.cnf
 
-# Prepare a MariaDB/MySQL service file and remove memory limits
-/usr/bin/cp /lib/systemd/system/mariadb.service /etc/systemd/system/
-/usr/bin/sed -i 's/^LimitNOFILE=/#LimitNOFILE=/' /etc/systemd/system/mariadb.service
-/usr/bin/sed -i 's/^LimitMEMLOCK=/#LimitMEMLOCK=/' /etc/systemd/system/mariadb.service
-/usr/bin/echo "LimitNOFILE=infinity
-LimitMEMLOCK=infinity" >> /etc/systemd/system/mariadb.service
-
-/usr/bin/systemctl restart mariadb; wait
+# File limits only. Do not copy the unit into /etc: that freezes it and
+# MariaDB 12.1 then fails because /run/mariadb was never created.
+/opt/verb/serfs/mariadbrundir; wait
 
 # Firewall web ports
 /usr/bin/ufw allow 80/tcp

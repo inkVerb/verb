@@ -1,0 +1,47 @@
+#!/usr/bin/bash
+#inkVerbSerf! verb.ink
+
+# MariaDB 12.1's galera ExecStartPre writes /run/mariadb/wsrep-start-position.
+# A full copy of the unit in /etc/systemd/system/mariadb.service freezes the
+# unit from install day, so pacman never supplies RuntimeDirectory=mariadb
+# and the pre-start fails before the server is launched.
+# Keep only the file-limit drop-in. Let the package unit own the rest.
+
+# How to use:
+## ./mariadbrundir
+
+usagenotes="Lets the packaged MariaDB unit run, and creates /run/mariadb"
+usageformat="mariadbrundir"
+usageexample="mariadbrundir"
+hierarchy=( primary )
+vsetnames=(  )
+vsettypes=(  )
+voptnames=(  )
+vopttypes=(  )
+voptflags=(  )
+voptflagpurpose=(  )
+dependencyinstall=(  )
+prerequesite=(  )
+usedby=( setup )
+useserfs=(  )
+useconfigs=(  )
+if [ -n "$infoINKonly" ] && [ "$infoINKonly" = "true" ]; then return 0; fi
+if [ -e "/opt/verb/mods/mariadbrundir.replace" ]; then . /opt/verb/mods/mariadbrundir.replace; return 0; fi
+if [ -e "/opt/verb/mods/mariadbrundir.before" ]; then . /opt/verb/mods/mariadbrundir.before; fi
+
+/usr/bin/mkdir -p /etc/systemd/system/mariadb.service.d
+/usr/bin/cat > /etc/systemd/system/mariadb.service.d/limits.conf <<'EOF'
+[Service]
+LimitNOFILE=infinity
+LimitMEMLOCK=infinity
+EOF
+/usr/bin/printf 'd /run/mariadb 0755 mysql mysql -\n' > /etc/tmpfiles.d/mariadb-run.conf
+/usr/bin/systemd-tmpfiles --create /etc/tmpfiles.d/mariadb-run.conf
+if [ -f /etc/systemd/system/mariadb.service ]; then
+  /usr/bin/mv -f /etc/systemd/system/mariadb.service /etc/systemd/system/mariadb.service.frozen-by-verb
+fi
+/usr/bin/install -d -o mysql -g mysql -m 755 /run/mariadb
+/usr/bin/systemctl daemon-reload
+/usr/bin/systemctl restart mariadb
+
+if [ -e "/opt/verb/mods/mariadbrundir.after" ]; then . /opt/verb/mods/mariadbrundir.after; fi
